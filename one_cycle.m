@@ -122,10 +122,10 @@ function one_cycle_video = one_cycle(video, Ninterp)
 
     one_cycle_video = mat2gray(mean(A1_video, 4));
 
-    w = VideoWriter('one_cycle_video.avi');
-    open(w);
-    for i = 1:size(one_cycle_video,3)
-        writeVideo(w, one_cycle_video(:,:,i));   
-    end
-    close(w)
+%     w = VideoWriter('one_cycle_video.avi');
+%     open(w);
+%     for i = 1:size(one_cycle_video,3)
+%         writeVideo(w, one_cycle_video(:,:,i));   
+%     end
+%     close(w)
 end
