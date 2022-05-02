@@ -13,10 +13,9 @@ classdef OneCycleClass
             obj.data = cell(1,length(files)) ;
             for i = 1 : length(files)
                 V = VideoReader(fullfile(path,files{i})) ;
-                tmp = im2double(read(V, [1 Inf]));
-                video = zeros(size(tmp, 1), size(tmp, 2), size(tmp, 4));
-                for frame = 1 : size(video, 3)
-                    video(:,:,frame) = squeeze(rgb2gray(tmp(:,:,:, frame)));
+                video = zeros(V.Height, V.Width, V.NumFrames);
+                for n = 1 : V.NumFrames
+                    video(:,:,n) = rgb2gray(read(V, n));
                 end
                 obj.data{i} = video;
             end
@@ -29,9 +28,9 @@ classdef OneCycleClass
             end
         end
 
-        function writeCut(obj,sys_index_list_cell,Ninterp)
+        function writeCut(obj,sys_index_list_cell, Ninterp)
             for n = 1 : length(obj.data)
-                one_cycle_video = one_cycle_2(obj.data{n},sys_index_list_cell{n},Ninterp) ;
+                one_cycle_video = create_one_cycle(obj.data{n}, sys_index_list_cell{n}, Ninterp) ;
                 if (~exist(fullfile(obj.directory, 'one_cycle'), 'dir'))
                     mkdir(fullfile(obj.directory, 'one_cycle'));
                 end

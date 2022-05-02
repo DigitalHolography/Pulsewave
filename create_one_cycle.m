@@ -1,4 +1,4 @@
-function one_cycle_video = one_cycle_2(video, sys_index_list, Ninterp)
+function one_cycle_video = create_one_cycle(video, sys_index_list, Ninterp)
     %   one_cycle() : identifies pulse cycles and average them to one video
     %   sys_index_list : list of systole indexes in video
     arguments
