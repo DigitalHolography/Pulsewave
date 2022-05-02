@@ -6,7 +6,6 @@ function one_cycle_video = one_cycle_2(video, sys_index_list, Ninterp)
         sys_index_list {mustBeNumeric, mustBeNonnegative} = []
         Ninterp {mustBeNumeric, mustBePositive} = 64
     end
-
     %Video retrieval frame by frame
     
     M = length(sys_index_list)-1;
@@ -21,19 +20,6 @@ function one_cycle_video = one_cycle_2(video, sys_index_list, Ninterp)
     end
     shift = floor(size(A1_video, 3) / 16);
     A1_video = circshift(A1_video, shift, 3);
-    figure(43)
-    plot(squeeze(mean(A1_video(200:300,200:300,:,:), [1 2])));
 
     one_cycle_video = mat2gray(mean(A1_video, 4));
-
-%     [path, name, ext] = fileparts(video_pathname);
-%     if (~exist(fullfile(path, 'one_cycle'), 'dir'))
-%         mkdir(fullfile(path, 'one_cycle'));
-%     end
-%     V = VideoWriter(fullfile(path, 'one_cycle', [name, '_oneCycle', ext]));
-%     open(V);
-%     for i = 1:size(one_cycle_video,3)
-%         writeVideo(V, one_cycle_video(:,:,i));
-%     end
-%     close(V);
 end

@@ -2,15 +2,6 @@ function sys_index_list = find_systole_index(video)
     arguments
         video 
     end
-    
-    
-    tmp = im2double(video);
-    video = zeros(size(tmp, 1), size(tmp, 2), size(tmp, 4));
-    for frame = 1 : size(video, 4)
-        video(:,:,frame) = squeeze(rgb2gray(tmp(:,:,:, frame)));
-    end
- 
-    
     %Video retrieval frame by frame
     
 
@@ -19,22 +10,7 @@ function sys_index_list = find_systole_index(video)
     end
     mask = std(video, 0, 3);
     mask = imbinarize(im2gray(mask), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
-%         figure(1)
-%         imagesc(mask);
-
-%     pulse = zeros(1, 2 * size(video, 3) - 1);
-%     for pp = 1:size(video, 3)-1
-%         video(:,:,pp) = video(:,:,pp) .* mask;
-%         video(:,:,pp+1) = video(:,:,pp+1) .* mask;
-%         J(:,:) = (video(:,:,pp) + video(:,:,pp + 1)) ./ 2;
-%         pulse(2*pp - 1) = squeeze(mean(video(:,:,pp), [1 2]));
-%         pulse(2*pp) = squeeze(mean(J(:,:), [1 2]));
-%     end
-%     pulse(2 * size(video, 3) - 1) = squeeze(mean(video(:,:,size(video, 3)), [1 2]));
     pulse = squeeze(mean(video .* mask, [1 2]));
-    figure(2);
-    plot(pulse);
-
 
     pulse_init = pulse - mean(pulse, "all");
     C = video;
@@ -54,14 +30,11 @@ function sys_index_list = find_systole_index(video)
     pulse = squeeze(mean(video .* mask, [1 2]));
 
     pulse_init = pulse - mean(pulse, "all");
-    figure(5);
-    plot(pulse_init);
 
     pulse_init = detrend(pulse_init);
 
     diff_signal = diff(pulse_init);
-    figure(40)
-    plot(diff_signal);
+
 %     spectrum_signal = fft(diff_signal);
 %     w = 1:length(spectrum_signal);
 %     figure(41);
@@ -91,5 +64,4 @@ function sys_index_list = find_systole_index(video)
 %     end
 %     sys_index_list = sort(sys_index_list, 'ascend');
     [~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * 0.7);
-%     disp(sys_index_list);
 end
