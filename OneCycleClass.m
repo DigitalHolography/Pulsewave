@@ -3,15 +3,16 @@ classdef OneCycleClass
         data (1,:) cell
         directory char
         filenames (1,:) cell
-
+        nbFiles {mustBeNumeric , mustBePositive}  
     end
 
     methods
         function obj = OneCycleClass(files,path)
             obj.directory = path;
             obj.filenames = files ;
-            obj.data = cell(1,length(files)) ;
-            for i = 1 : length(files)
+            obj.nbFiles = length(files) ; 
+            obj.data = cell(1,obj.nbFiles) ;
+            for i = 1 : obj.nbFiles
                 V = VideoReader(fullfile(path,files{i})) ;
                 video = zeros(V.Height, V.Width, V.NumFrames);
                 for n = 1 : V.NumFrames
@@ -22,14 +23,14 @@ classdef OneCycleClass
         end
 
         function sys_index_list_cell = getSystole(obj)
-            sys_index_list_cell = cell(length(obj.data)) ;
-            for i = 1:length(obj.data)
+            sys_index_list_cell = cell(obj.nbFiles) ;
+            for i = 1:obj.nbFiles
                 sys_index_list_cell{i} = find_systole_index(obj.data{i});
             end
         end
 
         function writeCut(obj,sys_index_list_cell, Ninterp)
-            for n = 1 : length(obj.data)
+            for n = 1 : obj.nbFiles
                 one_cycle_video = create_one_cycle(obj.data{n}, sys_index_list_cell{n}, Ninterp) ;
                 if (~exist(fullfile(obj.directory, 'one_cycle'), 'dir'))
                     mkdir(fullfile(obj.directory, 'one_cycle'));
