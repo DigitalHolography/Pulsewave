@@ -30,13 +30,13 @@ classdef OneCycleClass
         end
 
         function writeCut(obj,sys_index_list_cell, Ninterp)
+            idx = 0 ;
+            while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
+                idx = idx + 1 ;
+            end
+            mkdir(fullfile(obj.directory, sprintf("one_cycle_%d",idx)));
             for n = 1 : obj.nbFiles
                 one_cycle_video = create_one_cycle(obj.data{n}, sys_index_list_cell{n}, Ninterp) ;
-                idx = 0 ;
-                while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
-                    idx = idx + 1 ; 
-                end
-                mkdir(fullfile(obj.directory, sprintf("one_cycle_%d",idx)));
                 [~,name,ext]=fileparts(obj.filenames{n}) ;
                 w = VideoWriter(fullfile(obj.directory,sprintf("one_cycle_%d",idx),strcat(name,'_one_cycle',ext))) ;
                 open(w)
