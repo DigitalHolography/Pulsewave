@@ -29,22 +29,25 @@ classdef OneCycleClass
             end
         end
 
-        function writeCut(obj,sys_index_list_cell, Ninterp)
+        function writeCut(obj,sys_index_list_cell, Ninterp, add_infos)
             idx = 0 ;
             while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
                 idx = idx + 1 ;
             end
-            mkdir(fullfile(obj.directory, sprintf("one_cycle_%d",idx)));
+            one_cycle_dir = fullfile(obj.directory, sprintf("one_cycle_%d",idx)) ; 
+            mkdir(one_cycle_dir);
             for n = 1 : obj.nbFiles
                 one_cycle_video = create_one_cycle(obj.data{n}, sys_index_list_cell{n}, Ninterp) ;
                 [~,name,ext]=fileparts(obj.filenames{n}) ;
-                w = VideoWriter(fullfile(obj.directory,sprintf("one_cycle_%d",idx),strcat(name,'_one_cycle',ext))) ;
+                w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_one_cycle',ext))) ;
                 open(w)
                 for j = 1:size(one_cycle_video,3)
                     writeVideo(w,one_cycle_video(:,:,j)) ;
                 end
-                close(w)
-
+                close(w);
+                if add_infos
+                    SegmentationAV(one_cycle_video,one_cycle_dir, name) ; 
+                end 
             end
         end
     end

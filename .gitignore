@@ -1,4 +1,6 @@
 *.asv
+*.avi
+*.png
 # Prerequisites
 *.d
 
