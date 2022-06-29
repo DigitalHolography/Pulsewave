@@ -9,17 +9,19 @@ function one_cycle_video = create_one_cycle(video, sys_index_list, Ninterp)
     %Video retrieval frame by frame
     
     M = length(sys_index_list)-1;
-    A1_video = zeros(size(video,1), size(video,2), Ninterp, M);
+    one_cycle_video = zeros(size(video,1), size(video,2), Ninterp, M);
     for ii = 1:M
         for id_x = 1 : size(video,1)
             for id_y = 1 : size(video,2)
                 interp_range = linspace(sys_index_list(ii),sys_index_list(ii+1)-1,Ninterp);
-                A1_video(id_x,id_y,:,ii) = interp1((sys_index_list(ii):sys_index_list(ii+1)-1),squeeze(video(id_x, id_y,sys_index_list(ii):sys_index_list(ii+1)-1)),interp_range);
+                one_cycle_video(id_x,id_y,:,ii) = interp1((sys_index_list(ii):sys_index_list(ii+1)-1),squeeze(video(id_x, id_y,sys_index_list(ii):sys_index_list(ii+1)-1)),interp_range);
             end
         end
     end
-    shift = floor(size(A1_video, 3) / 16);
-    A1_video = circshift(A1_video, shift, 3);
+    shift = floor(size(one_cycle_video, 3) / 32);
+    [min_val,shift] = min(squeeze(mean(one_cycle_video,[1 2 4]))) ;  
+    disp(shift) ; 
+    one_cycle_video = circshift(one_cycle_video, -shift, 3);
 
-    one_cycle_video = mat2gray(mean(A1_video, 4));
+    one_cycle_video = mat2gray(mean(one_cycle_video, 4));
 end

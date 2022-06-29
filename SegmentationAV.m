@@ -1,4 +1,4 @@
-function SegmentationAV(one_pulse_video, directory, filename)
+function arteries = SegmentationAV(one_pulse_video, directory, filename)
 
 %     videoObject = VideoReader(one_pulse_video);
 %     h=videoObject.height;
@@ -21,12 +21,13 @@ function SegmentationAV(one_pulse_video, directory, filename)
     end
     
     % identify dominant arteries pulse
-    mask_arteries = std(I, 0, 3);
-    mask_arteries = imbinarize(im2gray(mask_arteries), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.05);
-    I_arteries = I .* mask_arteries;
+    stdPulse = std(I, 0, 3);
+    stdPulse = imbinarize(im2gray(stdPulse), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.05);
+    imwrite(mat2gray(stdPulse), 'stdPulse.png') ; 
+    I_arteries = I .* stdPulse;
     % calculate the vector of pulse in arteries
     pulse_arteries = squeeze(mean(I_arteries, [1 2]));
-
+    
 %     pulse_init = pulse - mean(pulse, "all");
 %     C = I - mean(I, 3);
     C = I;
@@ -49,8 +50,8 @@ function SegmentationAV(one_pulse_video, directory, filename)
     imagesc(id_max);
     colorbar ; 
     toc
-    
-    print('-f1','-dpng',fullfile(directory,strcat(filename,'_AVmap.png'))) ; 
+    imwrite(id_max,'segmentationAV.png')
+    print('-f1','-dpng',fullfile(directory,strcat(filename,'segmentationAV_fig.png'))) ; 
     
 
     % pulses 
@@ -59,6 +60,7 @@ function SegmentationAV(one_pulse_video, directory, filename)
     arteries (id_max >0.95*nb_frame) = 1 ; 
     figure(10)
     imagesc(arteries) ;
+    imwrite(mat2gray(arteries),'arteries_mask.png') ; 
     veins = zeros(size(id_max)) ; 
     veins(and(id_max>0.15*nb_frame,id_max<0.3*nb_frame)) = 1 ;  
     figure(11)

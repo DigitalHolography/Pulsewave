@@ -13,12 +13,20 @@ classdef OneCycleClass
             obj.nbFiles = length(files) ; 
             obj.data = cell(1,obj.nbFiles) ;
             for i = 1 : obj.nbFiles
-                V = VideoReader(fullfile(path,files{i})) ;
+                V = VideoReader(fullfile(path,files{i}));
                 video = zeros(V.Height, V.Width, V.NumFrames);
                 for n = 1 : V.NumFrames
                     video(:,:,n) = rgb2gray(read(V, n));
                 end
                 obj.data{i} = video;
+                
+%                 fd = fopen(fullfile(path, files{i}));
+%                 video = fread(fd, 512*512*64, 'int32');
+%                 obj.data{i} = reshape(video, [512 512 64]);
+%                 disp(size(obj.data{i}));
+%                 figure(2);
+%                 test = obj.data{i};
+%                 imagesc(mat2gray(test(:,:,1)));
             end
         end
 
