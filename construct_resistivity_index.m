@@ -46,28 +46,36 @@ function [RI_map , ARI] = construct_resistivity_index(video,path)
     axis square
     axis off
     set(gca,'LineWidth', 2); 
-    arteries = squeeze(sum(M0 .* mask, [1 2])) / sum(mask, "all");
+    pulse_arteries = squeeze(sum(M0 .* mask, [1 2])) / sum(mask, "all");
     sze = size(M0) ; 
     filename_png = fullfile(path_png,'arteries_mask') ; 
     filename_eps = fullfile(path_eps,'arteries_mask') ; 
     print('-f1','-depsc',filename_eps) ; 
     print('-f1','-dpng',filename_png) ;
     imwrite(mat2gray(mask),strcat(filename_png,'.png'),'png') ; 
-%     ARI = 1 ;  
-%%
+
+    
+    %%
+    ARI = (max(pulse_arteries)-min(pulse_arteries))/max(pulse_arteries) ; 
+    %%
+
     figure(2) 
-    p = plot(arteries) ; 
+    X = 1:size(video,3) ; 
+    X = X/32 ; 
+    p = plot(X,pulse_arteries','LineWidth', 2);
     p.Color = 'k' ; 
-    title('Pulse wave')
-    xlabel('Time (s)','FontSize',16) ; 
-    xlim([0 size(video,3)])
+    title(['Pulse wave. Arterial resistivity index : ' sprintf('%3.2f',ARI)]);
+    xlabel('Time (sec)','FontSize',14) ;
+    set(gca,'FontSize',14);
+    xlim([0 2])
     pbaspect([1.618 1 1]) ; 
     set(gca,'LineWidth', 2); 
     filename_png = fullfile(path_png,'pulse_wave') ; 
     filename_eps = fullfile(path_eps,'pulse_wave') ; 
     print('-f2','-depsc',filename_eps) ; 
     print('-f2','-dpng',filename_png) ;
-    imwrite(mat2gray(arteries),strcat(filename_png,'.png'),'png') ; 
+    
+%     imwrite(mat2gray(arteries),strcat(filename_png,'.png'),'png') ; 
 
 
 %%
@@ -76,7 +84,7 @@ function [RI_map , ARI] = construct_resistivity_index(video,path)
 % 
 %     disp([sze(1), sze(2)])
 
-    ARI = (max(arteries)-min(arteries))/max(arteries) ; 
+
     
     RI_map = ones(sze(1),sze(2)) ; 
     for n=1:sze(1)
@@ -103,27 +111,14 @@ function [RI_map , ARI] = construct_resistivity_index(video,path)
     cmap(:,end+1:end+n3) = [linspace(c2(1), c3(1), n3) ; linspace(c2(2), c3(2), n3) ; linspace(c2(3), c3(3),n3) ]; 
     cmap(:,end+1:end+n4) = [linspace(1, 1, n4) ; linspace(0, 0, n4) ; linspace(0, 0,n4) ];
     
-%     disp(size(Y)) ; 
-    figure(3)
-    imagesc(RI_map.*mask) ;
-    colormap(cmap') ; 
-    colorbar
-    axis square
-
-    title('Arterial resistivity index map')
-
-    
-
     
     %%
 
     [Nx, Ny, ~,num_frames] = size(M0);
     M0 = squeeze(mean(M0,4)) ; 
-    sat = abs(RI_map);
-    tol = [0.6, 0.999];
+    sat = abs(RI_map.*mask);
+    tol = [0.1, 0.999];
     sat = 0.7 * imadjustn(sat, stretchlim(sat(:), tol));
-    disp('size sat') ; 
-    disp(size(sat)) ; 
     M0 = imadjustn(M0, stretchlim(M0(:), [0.02, 0.998]));
 
     img = zeros(Nx, Ny, 3, 'single');

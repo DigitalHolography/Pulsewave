@@ -53,10 +53,16 @@ classdef OneCycleClass
                     writeVideo(w,one_cycle_video(:,:,j)) ;
                 end
                 close(w);
+                disp(fullfile('./',strcat(name,'.mat'))) ; 
+                cache_exists = exist(fullfile('./',strcat(name,'.mat'))) ; 
                 if add_infos
-                    SegmentationAV(one_cycle_video,one_cycle_dir, name) ; 
+                    SegmentationAV(one_cycle_video,one_cycle_dir, name,cache_exists,sys_index_list_cell{n}) ; 
                 end 
+                
             end
+
+
+
         end
     end
 end

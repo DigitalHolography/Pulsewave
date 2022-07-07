@@ -28,7 +28,9 @@
 %     C = squeeze(mean(C, 3));
 %     mask = C > max(C(:))*0.2;
 
-    mask = createArteryMask(video) ; 
+    mask = createArteryMask(video) ;
+    figure(11)
+    imagesc(mask);
 
     pulse = squeeze(mean(video .* mask, [1 2]));
 
@@ -36,6 +38,9 @@
 
     pulse_init = detrend(pulse_init);
 
+    figure(22)
+    plot(pulse_init) ; 
+    title('pulse init');
     diff_signal = diff(pulse_init);
 
 %     spectrum_signal = fft(diff_signal);

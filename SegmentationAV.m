@@ -1,4 +1,4 @@
-function arteries = SegmentationAV(one_pulse_video, directory, filename)
+function arteries = SegmentationAV(one_pulse_video, one_cycle_dir, filename, cache_exists, sys_index_list)
 
 %     videoObject = VideoReader(one_pulse_video);
 %     h=videoObject.height;
@@ -48,21 +48,23 @@ function arteries = SegmentationAV(one_pulse_video, directory, filename)
     [max_C_3, id_max] = max(C, [], 3);
     figure(1);
     imagesc(id_max);
+    figure(33);
+    imagesc(max_C_3)
     colorbar ; 
     toc
     imwrite(id_max,'segmentationAV.png')
-    print('-f1','-dpng',fullfile(directory,strcat(filename,'segmentationAV_fig.png'))) ; 
+    print('-f1','-dpng',fullfile(one_cycle_dir,strcat(filename,'segmentationAV_fig.png'))) ; 
     
 
     % pulses 
     nb_frame = size(one_pulse_video,3) ;
     arteries = zeros(size(id_max)); 
-    arteries (id_max >0.95*nb_frame) = 1 ; 
+    arteries (or(id_max < 0.1*nb_frame, id_max > 0.9 * nb_frame)) = 1 ; 
     figure(10)
     imagesc(arteries) ;
     imwrite(mat2gray(arteries),'arteries_mask.png') ; 
     veins = zeros(size(id_max)) ; 
-    veins(and(id_max>0.15*nb_frame,id_max<0.3*nb_frame)) = 1 ;  
+    veins(and(id_max>0.1*nb_frame,id_max<0.3*nb_frame)) = 1 ;  
     figure(11)
     imagesc(veins) ; 
 
@@ -79,9 +81,27 @@ function arteries = SegmentationAV(one_pulse_video, directory, filename)
     hold on 
     plot(pulse_veins,'b') ; 
     hold off
-    legend('Arteries','Veins') ; 
-    
-    print('-f2','-dpng',fullfile(directory,strcat(filename,'_pulse_veins.png'))) ; 
+    legend('Arteries','Veins') ;
+
+    print('-f2','-dpng',fullfile(one_cycle_dir,strcat(filename,'_pulse_veins.png'))) ;
+
+    current_directory = pwd ;
+    cd(one_cycle_dir) ;
+    cd .. ;
+    if cache_exists
+        load(fulfile('./',strcat(name,'.mat'))) ;
+        cd(one_cycle_dir) ;
+        fileID = fopen(fullfile(one_cycle_dir,'plop.txt')) ;
+        mean_length_syst = 0 ; 
+        for i = 2:length(sys_index_list) 
+            mean_length_syst = mean_length_syst + (sys_index_list(i)-sys_index_list(i-1)) ; 
+        end 
+        mean_length_syst = mean_length_syst / (length(sys_index_list)-1) ;
+        T = 1:mean_length_syst * (cache.batch_stride / cache.Fs) / 64 ; 
+        fwrite(fileID,[T;arteries],"double") ; 
+        fclose(fileID) ; 
+    end
+    cd(current_directory) ; 
 
 
 end
