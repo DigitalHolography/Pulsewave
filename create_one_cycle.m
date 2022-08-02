@@ -25,7 +25,7 @@ function one_cycle_video = create_one_cycle(video, mask, sys_index_list, Ninterp
     one_cycle_video = (squeeze(mean(one_cycle_video, 4)));
 
 %     shift = floor(size(one_cycle_video, 3) / 32) 
-% FIXME
+% FIXME test
 %     mask = createArteryMask(one_cycle_video) ;
     signal = squeeze(sum(one_cycle_video .* mask,[1 2 ])./ nnz(mask));
    
