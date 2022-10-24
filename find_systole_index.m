@@ -1,47 +1,23 @@
- function sys_index_list = find_systole_index(video)
-    arguments
-        video 
-    end
-    %Video retrieval frame by frame
-    
+function [sys_index_list, mask, fullPulseWave] = find_systole_index(video)
+arguments
+    video
+end
 
-    for pp = 1:size(video, 3)
-        video(:,:,pp) = video(:,:,pp) ./ mean(video(:,:,pp), [1 2]);
-    end
+% create zero-mean signal
+video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
 
-%     mask = std(video, 0, 3);
-%     mask = imbinarize(im2gray(mask), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
-%     pulse = squeeze(mean(video .* mask, [1 2]));
-% 
-%     pulse_init = pulse - mean(pulse, "all");
-%     C = video;
-%     for kk = 1:size(video, 3)
-%         C(:,:,kk) = video(:,:,kk) - squeeze(mean(video, 3));
-%     end
-%     pulse_init_3d = zeros(size(video));
-%     for mm = 1:size(video, 1)
-%         for pp = 1:size(video, 2)
-%             pulse_init_3d(mm,pp,:) = pulse_init;
-%         end
-%     end
-%     C = C .* pulse_init_3d;
-%     C = squeeze(mean(C, 3));
-%     mask = C > max(C(:))*0.2;
+mask = createArteryMask(video);
 
-    mask = createArteryMask(video) ;
-    figure(11)
-    imagesc(mask);
+fullPulseWave = squeeze(sum(video .* mask, [1 2])/nnz(mask));
+pulse_init = detrend(fullPulseWave);
+pulse_init = pulse_init - mean(pulse_init, "all");
 
-    pulse = squeeze(mean(video .* mask, [1 2]));
+diff_signal = diff(pulse_init);
 
-    pulse_init = pulse - mean(pulse, "all");
-
-    pulse_init = detrend(pulse_init);
-
-    figure(22)
-    plot(pulse_init) ; 
-    title('pulse init');
-    diff_signal = diff(pulse_init);
+%     figure(3)
+%     plot(diff_signal);
+%     title('pulse init derivate');
+%     1;
 
 %     spectrum_signal = fft(diff_signal);
 %     w = 1:length(spectrum_signal);
@@ -59,7 +35,7 @@
 %     plot(w, real(tmp), w, diff_signal);
 %     pseudo_period = length(w) / omega1;
 %     distance_between_peaks = 0.7 * pseudo_period;
-% 
+%
 %     [~,index_list] = findpeaks(diff_signal,1:length(diff_signal),'MinPeakDistance',distance_between_peaks,'SortStr','descend');
 %     [~,index_list_tmp] = findpeaks(tmp,1:length(tmp),'MinPeakDistance',distance_between_peaks,'SortStr','descend');
 %     index_list = sort(index_list(1:length(index_list)));
@@ -71,5 +47,9 @@
 %         sys_index_list(ii) = index_list(new_index);
 %     end
 %     sys_index_list = sort(sys_index_list, 'ascend');
-    [~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * 0.7);
+
+[~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * 0.7);
+
+
+
 end

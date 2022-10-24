@@ -3,66 +3,80 @@ classdef OneCycleClass
         data (1,:) cell
         directory char
         filenames (1,:) cell
-        nbFiles {mustBeNumeric , mustBePositive}  
+        nbFiles {mustBeNumeric , mustBePositive}
     end
 
     methods
-        function obj = OneCycleClass(files,path)
+        function obj = OneCycleClass(files,path,refvideosize)
+            arguments
+                files
+                path
+                refvideosize = []
+            end
             obj.directory = path;
-            obj.filenames = files ;
-            obj.nbFiles = length(files) ; 
+            obj.filenames = files;
+            obj.nbFiles = length(files) ;
             obj.data = cell(1,obj.nbFiles) ;
-            for i = 1 : obj.nbFiles
-                V = VideoReader(fullfile(path,files{i}));
-                video = zeros(V.Height, V.Width, V.NumFrames);
-                for n = 1 : V.NumFrames
-                    video(:,:,n) = rgb2gray(read(V, n));
+            for ii = 1 : obj.nbFiles
+                currentFilePath = fullfile(obj.directory,obj.filenames{ii});
+                [filepath,name,ext] = fileparts(currentFilePath);
+                if (ext == '.avi')
+                    disp(['reading : ',fullfile(filepath,[name,ext])]);
+                    V = VideoReader(fullfile(path,files{ii}));
+                    video = zeros(V.Height, V.Width, V.NumFrames);
+                    for n = 1 : V.NumFrames
+                        video(:,:,n) = rgb2gray(read(V, n));
+                    end
+                    obj.data{ii} = video;
+                elseif (ext == '.raw')
+                    disp(['reading : ',fullfile(filepath,[name,ext])]);
+                    fileID = fopen(currentFilePath);
+                    video = fread(fileID,'float32');
+                    fclose(fileID);
+                    obj.data{ii} = reshape(video,refvideosize);
+                else
+                    disp([filepath,name,ext,' : non recognized video format']);
                 end
-                obj.data{i} = video;
-                
-%                 fd = fopen(fullfile(path, files{i}));
-%                 video = fread(fd, 512*512*64, 'int32');
-%                 obj.data{i} = reshape(video, [512 512 64]);
-%                 disp(size(obj.data{i}));
-%                 figure(2);
-%                 test = obj.data{i};
-%                 imagesc(mat2gray(test(:,:,1)));
             end
         end
 
-        function sys_index_list_cell = getSystole(obj)
+        function [sys_index_list_cell, mask_cell, fullPulseWave_cell] = getSystole(obj)
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
-                sys_index_list_cell{i} = find_systole_index(obj.data{i});
+                [sys_index_list_cell{i}, mask_cell{i}, fullPulseWave_cell{i}] = find_systole_index(obj.data{i});
             end
         end
 
-        function writeCut(obj,sys_index_list_cell, Ninterp, add_infos)
+        function onePulse(obj, fullPulseWave_cell, mask_cell, sys_index_list_cell, Ninterp, add_infos)
             idx = 0 ;
             while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
                 idx = idx + 1 ;
             end
-            one_cycle_dir = fullfile(obj.directory, sprintf("one_cycle_%d",idx)) ; 
+            one_cycle_dir = fullfile(obj.directory, sprintf("one_cycle_%d",idx)) ;
             mkdir(one_cycle_dir);
-            for n = 1 : obj.nbFiles
-                one_cycle_video = create_one_cycle(obj.data{n}, sys_index_list_cell{n}, Ninterp) ;
-                [~,name,ext]=fileparts(obj.filenames{n}) ;
+            for n = 1:obj.nbFiles
+                % FIXME maybe mask_cell{n} unnecessary. compute mask only once?
+                one_cycle_video = create_one_cycle(obj.data{n}, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
+                % FIXME : si l'image de depart est raw, sauver un .raw
+                one_cycle_video_to_save = mat2gray(one_cycle_video); %1st normalization
+                [~,name,ext] = fileparts(obj.filenames{n}) ;
                 w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_one_cycle',ext))) ;
                 open(w)
-                for j = 1:size(one_cycle_video,3)
-                    writeVideo(w,one_cycle_video(:,:,j)) ;
+                % FIXME flatfield correction does not work
+%                 for j = 1:size(one_cycle_video_to_save,3)
+%                     one_cycle_video_to_save(:,:,j) = ...
+%                         flat_field_correction(squeeze(one_cycle_video_to_save(:,:,j)),0.07,0.25);
+%                 end
+                one_cycle_video_to_save = mat2gray(one_cycle_video_to_save);% 2nd normalization
+                for j = 1:size(one_cycle_video_to_save,3)
+                    writeVideo(w,one_cycle_video_to_save(:,:,j)) ;
                 end
                 close(w);
-                disp(fullfile('./',strcat(name,'.mat'))) ; 
-                cache_exists = exist(fullfile('./',strcat(name,'.mat'))) ; 
                 if add_infos
-                    SegmentationAV(one_cycle_video,one_cycle_dir, name,cache_exists,sys_index_list_cell{n}) ; 
-                end 
-                
+                    pulseAnalysis(Ninterp,obj.data{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n});
+                end
             end
-
-
-
+            displaySuccessMsg(1);
         end
     end
 end
