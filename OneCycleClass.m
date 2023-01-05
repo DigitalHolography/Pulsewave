@@ -1,6 +1,7 @@
 classdef OneCycleClass
     properties
         data (1,:) cell
+        dataM1M0 (1,:) cell
         directory char
         filenames (1,:) cell
         nbFiles {mustBeNumeric , mustBePositive}
@@ -17,6 +18,7 @@ classdef OneCycleClass
             obj.filenames = files;
             obj.nbFiles = length(files) ;
             obj.data = cell(1,obj.nbFiles) ;
+            obj.dataM1M0 = cell(1,obj.nbFiles) ;
             for ii = 1 : obj.nbFiles
                 currentFilePath = fullfile(obj.directory,obj.filenames{ii});
                 [filepath,name,ext] = fileparts(currentFilePath);
@@ -29,11 +31,20 @@ classdef OneCycleClass
                     end
                     obj.data{ii} = video;
                 elseif (ext == '.raw')
+                    % sqrt M2/M0 : DopplerRMS
                     disp(['reading : ',fullfile(filepath,[name,ext])]);
                     fileID = fopen(currentFilePath);
                     video = fread(fileID,'float32');
                     fclose(fileID);
                     obj.data{ii} = reshape(video,refvideosize);
+                    % M1/M0 : DopplerAvg
+                    tmpname = name;
+                    tmpname(end-2:end) = 'AVG';
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    fileID = fopen(fullfile(filepath,[tmpname,ext]));
+                    videoM1M0 = fread(fileID,'float32');
+                    fclose(fileID);
+                    obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
                 else
                     disp([filepath,name,ext,' : non recognized video format']);
                 end
@@ -73,7 +84,7 @@ classdef OneCycleClass
                 end
                 close(w);
                 if add_infos
-                    pulseAnalysis(Ninterp,obj.data{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n});
+                    pulseAnalysis(Ninterp,obj.data{n},obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n});
                 end
             end
             displaySuccessMsg(1);

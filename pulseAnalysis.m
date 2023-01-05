@@ -1,4 +1,4 @@
-function pulseAnalysis(Ninterp,fullVideo, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArtery)
+function pulseAnalysis(Ninterp, fullVideo, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArtery)
 %
 % one_pulse_video :
 % one_cycle_dir :
@@ -8,6 +8,7 @@ function pulseAnalysis(Ninterp,fullVideo, one_pulse_video, one_cycle_dir, filena
 %% FIXME : const;
 borderAmount = 0; % for flatFieldCorrection() and createBorderMask
 dataCube = fullVideo;
+dataCubeM1M0 = fullVideoM1M0;
 
 %RMS freq to velocity
 theta = 0.15;
@@ -320,6 +321,7 @@ cmap = colormap(gray);
 cmap(:,2) = 0;
 cmap(:,3) = 0;
 colormap(cmap);
+% passer par le HSV pour faire la colormap blanc vers rouge?
 
 % export RImap
 imwrite(ARImapRGB,fullfile(one_cycle_dir,strcat(filename,'_ARI_map_img.png')),'png');
@@ -659,6 +661,101 @@ imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir,strcat(filename,
 scalingFactorVelocity
 
 displaySuccessMsg();
+
+
+figure(123)
+imagesc(squeeze(mean(dataCubeM1M0,3))) ;
+colormap gray
+title('raw AVG frequency map');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+axis off
+axis image
+c = colorbar('southoutside');
+c.Label.String = 'AVG Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+
+% dMap = squeeze(mean(fullVideo,3));
+% dMap = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33)
+% 
+% figure(124)
+% imagesc(dMap) ;
+% colormap gray
+% title('flattened RMS frequency map');
+% fontsize(gca,12,"points") ;
+% set(gca, 'LineWidth', 2);
+% axis off
+% axis image
+% c = colorbar('southoutside');
+% c.Label.String = 'RMS Doppler frequency (kHz)';
+% c.Label.FontSize = 12;
+% range0(1:2) = clim;
+% % range0 = [1.2*range0(1),0.8*range0(2)];
+% figure(23)
+% clim(range0);
+
+[maskCRA,maskCRV] = createCentralRetinalArteryVeinMask(dataCubeM1M0);
+
+% FIXME maskArtery : best computed from reference video
+% maskArtery = createArteryMask(fullVideo);
+figure(105)
+imagesc(maskCRA);
+title('segmented CRA');
+axis off
+axis equal
+colormap gray
+
+%
+figure(104)
+imagesc(maskCRV);
+title('segmented CRV');
+axis off
+axis equal
+colormap gray
+
+
+% png
+% print('-f2','-dpng',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.png'))) ;
+% print('-f8','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.png'))) ;
+% print('-f9','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.png'))) ;
+% print('-f22','-dpng',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.png'))) ;
+% print('-f6','-dpng',fullfile(one_cycle_dir,strcat(filename,'_derivative.png'))) ;
+% print('-f1','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.png'))) ;
+% print('-f80','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.png'))) ;
+% print('-f90','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.png'))) ;
+% print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.png'))) ;
+% print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.png'))) ;
+% print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
+print('-f123','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerAvgHeatMap.png'))) ;
+% print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
+% % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
+% % print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
+
+% eps
+% print('-f2','-depsc',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.eps'))) ;
+% print('-f8','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.eps'))) ;
+% print('-f9','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.eps'))) ;
+% print('-f22','-depsc',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.eps'))) ;
+% print('-f6','-depsc',fullfile(one_cycle_dir,strcat(filename,'_derivative.eps'))) ;
+% print('-f1','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.eps'))) ;
+% print('-f80','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.eps'))) ;
+% print('-f90','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.eps'))) ;
+% print('-f15','-depsc',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.eps'))) ;
+% print('-f45','-depsc',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.eps'))) ;
+% print('-f46','-depsc',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.eps'))) ;
+print('-f123','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerAvgHeatMap.eps'))) ;
+% print('-f24','-depsc',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
+% % print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
+% % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
+
+% masks
+imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir,strcat(filename,'_maskCRA.png')),'png') ;
+imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir,strcat(filename,'_maskCRV.png')),'png') ;
+% imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir,strcat(filename,'_maskBackground.png')),'png') ;
+
+
+displaySuccessMsg();
+
 return;
 
 end
