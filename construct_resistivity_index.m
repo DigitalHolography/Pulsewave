@@ -9,14 +9,14 @@ arterialPulse = arterialPulse/nnz(maskArtery);
 
 %% avg. arterial resistivity index
 
-[maxAP,maxAPidx] = max(arterialPulse(:))
-[minAP,minAPidx] = min(arterialPulse(:))
+[maxAP,maxAPidx] = max(arterialPulse(:));
+[minAP,minAPidx] = min(arterialPulse(:));
 
 ARI = (maxAP - minAP)/maxAP;
 
 %% arterial resistivity map values (no mask)
 % FIXME add time blur to video 
-ARImap = squeeze( (video(:,:,maxAPidx) - video(:,:,minAPidx)) ./ video(:,:,maxAPidx) )
+ARImap = squeeze( (video(:,:,maxAPidx) - video(:,:,minAPidx)) ./ video(:,:,maxAPidx) );
 
 
 

@@ -60,7 +60,7 @@ strXlabel = createXlabelTime(cache_exists);
 if cache_exists
     fullTime = linspace(0,size(fullVideo,3)*batch_stride/Fs,size(fullVideo,3));
 else
-    fullTime = 1:size(fullVideo,3)
+    fullTime = 1:size(fullVideo,3);
 end
 
 figure(2)
@@ -187,7 +187,7 @@ c.Label.String = 'RMS Doppler frequency (kHz)';
 c.Label.FontSize = 12;
 
 dMap = squeeze(mean(fullVideo,3));
-dMap = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33)
+dMap = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33);
 
 figure(24)
 imagesc(dMap) ;
@@ -317,9 +317,15 @@ fontsize(gca,12,"points") ;
 c = colorbar('southoutside');
 c.Label.String = 'arterial resistivity index';
 c.Label.FontSize = 12;
-cmap = colormap(gray);
-cmap(:,2) = 0;
-cmap(:,3) = 0;
+% cmap = colormap(gray);
+% cmap(:,2) = 0;
+% cmap(:,3) = 0;
+cmap = double(ones(size(256,3)));
+for i = 0 : 255
+    cmap(i+1, 1) = 1;
+    cmap(i+1, 2) = double(1 - i * 1/255);
+    cmap(i+1, 3) = double(1 - i * 1/255);
+end
 colormap(cmap);
 % passer par le HSV pour faire la colormap blanc vers rouge?
 
@@ -694,7 +700,7 @@ c.Label.FontSize = 12;
 % figure(23)
 % clim(range0);
 
-[maskCRA,maskCRV] = createCentralRetinalArteryVeinMask(dataCubeM1M0);
+[maskCRA,maskCRV,maskBackgroundM1M0] = createCentralRetinalArteryVeinMask(dataCubeM1M0);
 
 % FIXME maskArtery : best computed from reference video
 % maskArtery = createArteryMask(fullVideo);
@@ -713,10 +719,123 @@ axis off
 axis equal
 colormap gray
 
+figure(107)
+imagesc(maskBackgroundM1M0);
+title('segmented BackgroundAVG');
+axis off
+axis equal
+colormap gray
+
+%%
+%fig 102 108
+
+fullCRAPulse = dataCubeM1M0 .* maskCRA;
+fullCRAPulse = squeeze(sum(fullCRAPulse, [1 2]))/nnz(maskCRA);
+
+fullCRVPulse = dataCubeM1M0 .* maskCRV;
+fullCRVPulse = squeeze(sum(fullCRVPulse, [1 2]))/nnz(maskCRV);
+
+%
+fullBackgroundM1M0Signal = dataCubeM1M0 .* maskBackgroundM1M0;
+fullBackgroundM1M0Signal = squeeze(sum(fullBackgroundM1M0Signal, [1 2]))/nnz(maskBackgroundM1M0);
+
+
+figure(102)
+plot(fullTime,fullCRAPulse,'-k', fullTime,fullBackgroundM1M0Signal,':k','LineWidth',2) ;
+title('CRA pulse waveform and backgroundAVG signal'); % averaged outside of segmented vessels
+legend('CRA pulse','backgroundAVG') ;
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+figure(103)
+plot(fullTime,fullCRVPulse,'-k', fullTime,fullBackgroundM1M0Signal,':k','LineWidth',2) ;
+title('CRV pulse waveform and backgroundAVG signal'); % averaged outside of segmented vessels
+legend('CRV pulse','backgroundAVG') ;
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+% Renormalization to avoid bias
+fullCRAPulseMinusBackground = fullCRAPulse - fullBackgroundM1M0Signal;
+fullCRAPulse = fullCRAPulseMinusBackground;
+fullCRVPulseMinusBackground = fullCRVPulse - fullBackgroundM1M0Signal;
+fullCRVPulse = fullCRVPulseMinusBackground;
+
+% le plus simple fonctionne bien : soustraire le bkg.
+A = ones(size(dataCubeM1M0));
+% B = ones(size(dataCube));
+for pp = 1:size(dataCubeM1M0,3)
+%     A(:,:,pp) = A(:,:,pp) * fullBackgroundSignal(pp) * avgFullArterialPulse / avgFullBackgroundSignal;
+      A(:,:,pp) = A(:,:,pp) * fullBackgroundM1M0Signal(pp);
+%     B(:,:,pp) = B(:,:,pp) * fullBackgroundSignal(pp);    
+end
+dataCubeM1M0 = dataCubeM1M0 - A ;
+% dataCube = dataCube - A .* maskVessel;
+% dataCube = dataCube - B .* maskBackground;
+
+
+% remove outliers
+% 1st pass
+disp('remove outliers... 1st pass.');
+[idxOutPw,fullCRAPulseRmOut] = discardPulseWaveOutliers(fullCRAPulse,3);
+[idxOutBkg,fullBackgroundSignalRmOut] = discardPulseWaveOutliers(fullBackgroundM1M0Signal,3);
+dataReliabilityIndex1 = ceil(100*(1-0.5*(length(idxOutPw)/length(fullCRAPulse) + length(idxOutBkg)/length(fullBackgroundM1M0Signal))));
+disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
+
+[idxOutPw,fullCRVPulseRmOut] = discardPulseWaveOutliers(fullCRVPulse,3);
+[idxOutBkg,fullBackgroundSignalRmOut] = discardPulseWaveOutliers(fullBackgroundM1M0Signal,3);
+dataReliabilityIndex1 = ceil(100*(1-0.5*(length(idxOutPw)/length(fullCRVPulse) + length(idxOutBkg)/length(fullBackgroundM1M0Signal))));
+disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
+
+% smooth trendline data by iterative local linear regression.
+% fullArterialPulseClean = smoothdata(fullArterialPulse,'rloess');
+fullCRAPulseClean = smoothdata(fullCRAPulseRmOut,'lowess');
+fullCRVPulseClean = smoothdata(fullCRVPulseRmOut,'lowess');
+fullBackgroundSignalClean = smoothdata(fullBackgroundSignalRmOut,'lowess');
+
+
+
+
+
+figure(108)
+plot(fullTime,fullCRAPulse,':k', ...
+    fullTime,fullCRAPulseClean,'-k', ...
+    'LineWidth',2) ;
+title('CRA pulse minus backgroundAVG vs. filtered pulse');
+legend('<p(t)> - <b(t)>','local linear regression');
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+figure(110)
+plot(fullTime,fullCRVPulse,':k', ...
+    fullTime,fullCRVPulseClean,'-k', ...
+    'LineWidth',2) ;
+title('CRV pulse minus backgroundAVG vs. filtered pulse');
+legend('<p(t)> - <b(t)>','local linear regression');
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+%%
+% png
+
+filename(end-2:end) = 'AVG'; % Save of AVG files here
 
 % png
-% print('-f2','-dpng',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.png'))) ;
-% print('-f8','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.png'))) ;
+print('-f102','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRApulseVsBackground.png'))) ;
+print('-f103','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRVpulseVsBackground.png'))) ;
+print('-f108','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRAfilteredPulse.png'))) ;
+print('-f110','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRVfilteredPulse.png'))) ;
 % print('-f9','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.png'))) ;
 % print('-f22','-dpng',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.png'))) ;
 % print('-f6','-dpng',fullfile(one_cycle_dir,strcat(filename,'_derivative.png'))) ;
@@ -726,14 +845,16 @@ colormap gray
 % print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.png'))) ;
 % print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.png'))) ;
 % print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
-print('-f123','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerAvgHeatMap.png'))) ;
+print('-f123','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.png'))) ;
 % print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
 % % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
 % % print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
 
 % eps
-% print('-f2','-depsc',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.eps'))) ;
-% print('-f8','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.eps'))) ;
+print('-f102','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRApulseVsBackground.eps'))) ;
+print('-f103','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRVpulseVsBackground.eps'))) ;
+print('-f108','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRAfilteredPulse.eps'))) ;
+print('-f110','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRVfilteredPulse.eps'))) ;
 % print('-f9','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.eps'))) ;
 % print('-f22','-depsc',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.eps'))) ;
 % print('-f6','-depsc',fullfile(one_cycle_dir,strcat(filename,'_derivative.eps'))) ;
@@ -751,7 +872,7 @@ print('-f123','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerAvgHea
 % masks
 imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir,strcat(filename,'_maskCRA.png')),'png') ;
 imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir,strcat(filename,'_maskCRV.png')),'png') ;
-% imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir,strcat(filename,'_maskBackground.png')),'png') ;
+imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir,strcat(filename,'_maskBackground.png')),'png') ;
 
 
 displaySuccessMsg();
