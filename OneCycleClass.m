@@ -3,8 +3,16 @@ classdef OneCycleClass
         data (1,:) cell
         dataM1M0 (1,:) cell
         directory char
-        filenames (1,:) cell
         nbFiles {mustBeNumeric , mustBePositive}
+        filenames (1,:) cell
+        % For sectioning
+        directorySection char
+        filenamesSection char
+        pictureSection 
+        videoSection 
+        video_loaded
+
+
     end
 
     methods
@@ -30,6 +38,28 @@ classdef OneCycleClass
                         video(:,:,n) = rgb2gray(read(V, n));
                     end
                     obj.data{ii} = video;
+                    %% importation fichier M0 pour pulse section
+                    obj.directorySection = path;
+                    obj.directorySection(end-3:end) = 'avi\';
+                    obj.filenamesSection = files;
+
+                    obj.filenamesSection = obj.filenamesSection(1:end-14);
+                    obj.filenamesSection = strcat(obj.filenamesSection, 'DopplerRMS.avi');
+                    disp(['reading : ',strcat(obj.directorySection, obj.filenamesSection)]);
+                    
+                    V_section = VideoReader(strcat(obj.directorySection, obj.filenamesSection));
+                    if isempty(V_section)
+                        obj.video_loaded = false;
+                    else
+                        obj.video_loaded = true;
+                    end
+                    obj.videoSection = zeros(V_section.Height, V_section.Width, V_section.NumFrames);
+                    for n = 1 : V_section.NumFrames
+                        obj.videoSection(:,:,n) = rgb2gray(read(V_section, n));
+                    end
+                    obj.pictureSection = mean(mat2gray(obj.videoSection), 3);
+
+
                 elseif (ext == '.raw')
                     % sqrt M2/M0 : DopplerRMS
                     disp(['reading : ',fullfile(filepath,[name,ext])]);
@@ -37,14 +67,14 @@ classdef OneCycleClass
                     video = fread(fileID,'float32');
                     fclose(fileID);
                     obj.data{ii} = reshape(video,refvideosize);
-                    % M1/M0 : DopplerAvg
-                    tmpname = name;
-                    tmpname(end-2:end) = 'AVG';
-                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-                    fileID = fopen(fullfile(filepath,[tmpname,ext]));
-                    videoM1M0 = fread(fileID,'float32');
-                    fclose(fileID);
-                    obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
+%                     % M1/M0 : DopplerAvg
+%                     tmpname = name;
+%                     tmpname(end-2:end) = 'AVG';
+%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+%                     fileID = fopen(fullfile(filepath,[tmpname,ext]));
+%                     videoM1M0 = fread(fileID,'float32');
+%                     fclose(fileID);
+%                     obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
                 else
                     disp([filepath,name,ext,' : non recognized video format']);
                 end
