@@ -1,4 +1,4 @@
-function [ARImap, ARI, ARImapRGB, ARIvideoRGB] = construct_resistivity_index(video, maskArtery)
+function [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(video, maskArtery)
 % https://en.wikipedia.org/wiki/Arterial_resistivity_index
 % arterial resistivity
 
@@ -9,6 +9,14 @@ arterialPulse = arterialPulse/nnz(maskArtery);
 
 %% avg. arterial resistivity index
 
+for ii=1:size(video,1)
+    for kk=1:size(video,2)
+        if maskArtery(ii,kk)==1
+            video(ii,kk,:) = imgaussfilt(video(ii,kk,:),2);
+        end
+    end
+end
+
 [maxAP,maxAPidx] = max(arterialPulse(:));
 [minAP,minAPidx] = min(arterialPulse(:));
 
@@ -18,22 +26,50 @@ ARI = (maxAP - minAP)/maxAP;
 % FIXME add time blur to video 
 ARImap = squeeze( (video(:,:,maxAPidx) - video(:,:,minAPidx)) ./ video(:,:,maxAPidx) );
 
-
-
 %%
 % composite image parameters
 satAmp = 0.75; %MUST be in [0 1] 
 
 %% arterial resistivity map RGB
-sat = abs(ARImap .* maskArtery);
-sat = satAmp * sat;%imadjust(sat, stretchlim(sat, tolSat));
-hue = 1 * ones(size(video,1), size(video,2)); % pure red color
+% sat = abs(ARImap .* maskArtery);
+% sat = satAmp * sat;%imadjust(sat, stretchlim(sat, tolSat));
+
+% hue = 1 * ones(size(video,1), size(video,2)); % pure red color
+
+% val = flat_field_correction(mat2gray(squeeze(mean(video,3))), 0.07*size(video,1), 0);
+% val = mat2gray(val);
+% tolVal = [0.02, 0.98]; 
+% lowhigh = stretchlim(val, tolVal); % adjust contrast a bit 
+% val = imadjust(val, stretchlim(val, tolVal));
+
+% ARImapRGB = hsv2rgb(hue, sat, val);
+
+
 val = flat_field_correction(mat2gray(squeeze(mean(video,3))), 0.07*size(video,1), 0);
 val = mat2gray(val);
 tolVal = [0.02, 0.98]; 
 lowhigh = stretchlim(val, tolVal); % adjust contrast a bit 
-val = imadjust(val, stretchlim(val, tolVal));
-ARImapRGB = hsv2rgb(hue, sat, val);
+val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
+
+Artery_val = abs(ARImap .* maskArtery);
+maxArtery = max(Artery_val(:));
+minArtery = min(nonzeros(Artery_val));
+for ii=1:size(ARImap,1)
+    for kk=1:size(ARImap,2)
+        if Artery_val(ii,kk) ~= 0
+            Artery_val(ii,kk) = (Artery_val(ii,kk)-minArtery)./(maxArtery-minArtery);
+        end
+    end
+end
+
+Artery_val = Artery_val.*maskArtery;
+
+gamma = 0.8;
+ARImapRGB = ones(size(ARImap,1), size(ARImap,2), 3);
+ARImapRGB(:,:,1) = val - maskArtery.*val + ones(size(ARImap,1), size(ARImap,2)).*maskArtery;
+ARImapRGB(:,:,2) = val - maskArtery.*val + Artery_val.^gamma;
+ARImapRGB(:,:,3) = val - maskArtery.*val + Artery_val.^gamma;
+
 
 %% arterial resistivity video RGB
 video = mat2gray(video); % not quantitative anymore

@@ -9,7 +9,7 @@ end
 
 
 
-figure(1)
+figure(100)
 imshow(picture)
 log_label.Value = "Please choose a point to analyse";
 points_selected = 0;
@@ -83,14 +83,14 @@ for i=1:size(locs)
     text(cx(locs(i)),cy(locs(i)),num2str(i), "FontWeight", "bold", "Color", "white", "BackgroundColor", "blue");
 end
 
-figure(2)
+figure(101)
 plot(plot_values);
 findpeaks(plot_values,size(plot_values, 2),'MinPeakProminence',param_peak);
 text(locs,pks,num2str((1:numel(pks))'))
 title("Peaks of luminosity")
 pbaspect([1.618 1 1]);
 
-figure(3)
+figure(102)
 h = pcolor(new_picture);
 set(h, 'EdgeColor', 'none');
 yticks(locs);
@@ -100,5 +100,12 @@ pbaspect([1.618 1 1]);
 axis tight;
 log_label.Value = strcat("Plot printed !");
 plot_printed = true;
+
+for i=1:size(locs)
+    figure(i)
+    plot(new_picture(locs(i),:));
 end
+
+end
+
 
