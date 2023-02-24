@@ -64,7 +64,7 @@ end
 
 Artery_val = Artery_val.*maskArtery;
 
-gamma = 0.8;
+gamma = 0.5;
 ARImapRGB = ones(size(ARImap,1), size(ARImap,2), 3);
 ARImapRGB(:,:,1) = val - maskArtery.*val + ones(size(ARImap,1), size(ARImap,2)).*maskArtery;
 ARImapRGB(:,:,2) = val - maskArtery.*val + Artery_val.^gamma;

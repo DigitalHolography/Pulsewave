@@ -17,9 +17,10 @@ theta = 2.5/20;
 
 opticalIndex = 1.35;
 lambda = 852e-9;
-scalingFactorVelocity = 1000 * 1000 * lambda / (3 *opticalIndex * theta); % 1000 for kHz -> Hz and 1000 for m -> mm
+%scalingFactorVelocity = 1000 * 1000 * lambda / (3 *opticalIndex * theta); % 1000 for kHz -> Hz and 1000 for m -> mm
 scalingFactorVelocity2 = 1000 * 1000 * lambda / opticalIndex * (3/theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
-%scalingFactorVelocityCRA2  = 1000 * 1000 * lambda / ((pi*(theta+sin(2*theta)/2))^(1/2)); % 1000 for kHz -> Hz and 1000 for m -> mm
+scalingFactorVelocityCRA2_AVG  = 1000 * 1000 * lambda / opticalIndex * (theta/2); % 1000 for kHz -> Hz and 1000 for m -> mm
+scalingFactorVelocityCRA2_RMS  = 1000 * 1000 * lambda / opticalIndex * (1/(2+2*(theta^3)/3))^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
 
 % for robust rendering : 
 % 1-flat-field correction, 2-background substraction
@@ -179,36 +180,35 @@ disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 %     end
 % end
 
-% figure(23)
-% imagesc(squeeze(mean(fullVideo,3))) ;
-% colormap gray
-% title('raw RMS frequency map');
-% fontsize(gca,12,"points") ;
-% set(gca, 'LineWidth', 2);
-% axis off
-% axis image
-% c = colorbar('southoutside');
-% c.Label.String = 'RMS Doppler frequency (kHz)';
-% c.Label.FontSize = 12;
-% 
-% dMap = squeeze(mean(fullVideo,3));
-% dMap = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33);
-% 
-% figure(24)
-% imagesc(dMap) ;
-% colormap gray
-% title('flattened RMS frequency map');
-% fontsize(gca,12,"points") ;
-% set(gca, 'LineWidth', 2);
-% axis off
-% axis image
-% c = colorbar('southoutside');
-% c.Label.String = 'RMS Doppler frequency (kHz)';
-% c.Label.FontSize = 12;
-% range0(1:2) = clim;
-% % range0 = [1.2*range0(1),0.8*range0(2)];
-% figure(23)
-% clim(range0);
+figure(23)
+imagesc(squeeze(mean(fullVideo,3))) ;
+colormap gray
+title('raw RMS frequency map');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+axis off
+axis image
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+
+dMap = squeeze(mean(fullVideo,3));
+dMap = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33);
+
+figure(24)
+imagesc(dMap) ;
+colormap gray
+title('flattened RMS frequency map');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+axis off
+axis image
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+range0(1:2) = clim;
+figure(23)
+clim(range0);
 
 % FIXME : compute true regularied cube by replacing bad frames
 fullArterialPulseRegularized = squeeze(sum(dataCube .* maskArtery, [1 2])) / nnz(maskArtery);
@@ -253,14 +253,32 @@ axis tight;
 % 1- select reliable pulses
 % 2- get reliable bias measure
 
-[maskCRA, ~, ~] = createCentralRetinalArteryVeinMask(dataCubeM1M0);
+[maskCRA,maskCRV,maskBackgroundM1M0] = createCentralRetinalArteryVeinMask(dataCubeM1M0);
+maskCRA = maskCRA.*maskArtery;
+maskArteryInPlane = xor(logical(maskArtery),logical(maskCRA));
 
 figure(502)
-imagesc(maskArtery-maskCRA.*maskArtery)
+imagesc(maskArteryInPlane)
+title('segmented in-plane arteries');
+axis off
+axis equal
+colormap gray
 
-[onePulseVideo2, selectedPulseIdx] = create_one_cycle(dataCube, maskArtery-maskCRA.*maskArtery, sys_index_list, Ninterp);
-avgArterialPulse =  onePulseVideo2 .* (maskArtery-maskCRA.*maskArtery);
-avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery-maskCRA.*maskArtery);
+% Average Arterial Pulse for In-Plane arteries
+[onePulseVideo2, ~] = create_one_cycle(dataCube, maskArteryInPlane, sys_index_list, Ninterp);
+avgArterialPulse =  onePulseVideo2 .* maskArteryInPlane;
+avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArteryInPlane);
+
+%FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
+% % Average Arterial Pulse for Out-of-Plane arteries (CRA) with AVG video
+% [onePulseVideoCRA_AVG, ~] = create_one_cycle(dataCubeM1M0, maskCRA, sys_index_list, Ninterp);
+% avgArterialPulseCRA_AVG =  onePulseVideoCRA_AVG .* maskCRA;
+% avgArterialPulseCRA_AVG = squeeze(sum(avgArterialPulseCRA_AVG, [1 2]))/nnz(maskCRA);
+% 
+% % Average Arterial Pulse for Out-of-Plane arteries (CRA) with RMS video
+% [onePulseVideoCRA_RMS, ~] = create_one_cycle(dataCube, maskCRA, sys_index_list, Ninterp);
+% avgArterialPulseCRA_RMS =  onePulseVideoCRA_RMS .* maskCRA;
+% avgArterialPulseCRA_RMS = squeeze(sum(avgArterialPulseCRA_RMS, [1 2]))/nnz(maskCRA);
 
 
 
@@ -293,11 +311,10 @@ else % mat with cache from holowaves is not present, timeline cannot be computed
     T = 1:nb_frames;
 end
 
-avgArterialPulseVelocity = avgArterialPulse * scalingFactorVelocity;
+%avgArterialPulseVelocity = avgArterialPulse * scalingFactorVelocity;
 avgArterialPulseVelocity2 = avgArterialPulse * scalingFactorVelocity2;
-
-% avgArterialPulseVelocityCRA = avgArterialPulseCRA * scalingFactorVelocityCRA2;
-% avgArterialPulseVelocityCRA2 = avgArterialPulseCRA * scalingFactorVelocityCRA2;
+% avgArterialPulseVelocityCRA_AVG = avgArterialPulseCRA_AVG * scalingFactorVelocityCRA2_AVG;
+% avgArterialPulseVelocityCRA_RMS = avgArterialPulseCRA_RMS * scalingFactorVelocityCRA2_RMS;
 
 % figure(1)
 % plot( ...
@@ -316,7 +333,7 @@ figure(111)
 plot( ...
     T(1:length(avgArterialPulse)),avgArterialPulseVelocity2,'-k', ...
     'LineWidth',2) ;
-title('average blood flow velocity 2 estimate in retinal arteries');
+title('average blood flow velocity estimate in in-plane retinal arteries');
 legend(' arterial pulse');
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
@@ -325,11 +342,24 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
-% figure(301)
+% figure(222)
 % plot( ...
-%     T(1:length(avgArterialPulseCRA)),avgArterialPulseVelocityCRA,'-k', ...
+%     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_AVG,'-k', ...
 %     'LineWidth',2) ;
-% title('average blood flow velocity estimate in CRA');
+% title('average blood flow velocity estimate in out-of-plane retinal arteries (AVG)');
+% legend(' arterial pulse');
+% fontsize(gca,12,"points") ;
+% xlabel(strXlabel,'FontSize',14) ;
+% ylabel('blood flow velocity (mm/s)');
+% pbaspect([1.618 1 1]) ;
+% set(gca, 'LineWidth', 2);
+% axis tight;
+% 
+% figure(333)
+% plot( ...
+%     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_RMS,'-k', ...
+%     'LineWidth',2) ;
+% title('average blood flow velocity estimate in out-of-plane retinal arteries (RMS)');
 % legend(' arterial pulse');
 % fontsize(gca,12,"points") ;
 % xlabel(strXlabel,'FontSize',14) ;
@@ -338,21 +368,9 @@ axis tight;
 % set(gca, 'LineWidth', 2);
 % axis tight;
 
-% figure(311)
-% plot( ...
-%     T(1:length(avgArterialPulseCRA)),avgArterialPulseVelocityCRA2,'-k', ...
-%     'LineWidth',2) ;
-% title('average blood flow velocity 2 estimate in CRA');
-% legend(' arterial pulse');
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% ylabel('blood flow velocity (mm/s)');
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
 
 % save average arterial pulse wave velocity to txt file
-tmp = [T(1:length(avgArterialPulse))',avgArterialPulseVelocity];
+tmp = [T(1:length(avgArterialPulse))',avgArterialPulseVelocity2];
 %size(tmp)
 fileID = fopen(fullfile(one_cycle_dir, strcat(filename,'_avgPulse.txt')),'w') ;
 fprintf(fileID,'%f %f \r\n',tmp');
@@ -360,8 +378,8 @@ fclose(fileID);
 
 
 disp('arterial resistivity...');
-[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(onePulseVideo2, maskArtery);
-ARImap = ARImap.*maskArtery;
+[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(onePulseVideo2, maskArteryInPlane);
+ARImap = ARImap.*maskArteryInPlane;
 
 % export fig
 figure(15)
@@ -403,12 +421,12 @@ for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-widt
 end
 close(w);
 
-% figure(100)
-% imagesc(ARImapRGB);
-% figure(101)
-% imshow(squeeze(ARIvideoRGB(:,:,:,1)));
-% figure(102)
-% imagesc(ARImap);
+figure(100)
+imagesc(ARImapRGB);
+figure(101)
+imshow(squeeze(ARIvideoRGB(:,:,:,1)));
+figure(102)
+imagesc(ARImap);
 
 disp('done.');
 
@@ -448,7 +466,7 @@ disp('arterial pulse wave analysis...');
 % axis image
 
 
-% %% artery mask by lag-correlation with average pulse
+%% artery mask by lag-correlation with average pulse
 % arteries = zeros(size(id_max));
 % % arteries (or(id_max < 0.1*nb_frames, id_max > 0.9 * nb_frames)) = 1 ;
 % arteries (or(id_max <= ceil(0.01*nb_frames), id_max >= floor(0.95 * nb_frames))) = 1 ;
@@ -464,7 +482,7 @@ disp('arterial pulse wave analysis...');
 % axis off
 % axis image
 
-% %% vein mask by lag-correlation with average pulse
+%% vein mask by lag-correlation with average pulse
 % veins = zeros(size(id_max)) ;
 % veins(and(id_max>=ceil(0.1*nb_frames),id_max<=floor(0.3*nb_frames))) = 1 ;
 % %denoising
@@ -477,20 +495,6 @@ disp('arterial pulse wave analysis...');
 % set(gca, 'LineWidth', 2);
 % axis off
 % axis image
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 %% calculation of average pulse in arteries
@@ -513,7 +517,7 @@ I_arteries = one_pulse_video .* maskArtery;
 %% plot pulses in veins and arteries
 
 % find peak systole index
-sys_index_list_one_cycle = find_systole_index(onePulseVideo2);
+% sys_index_list_one_cycle = find_systole_index(onePulseVideo2);
 if cache_exists % .mat with cache from holowaves is present, timeline can be computed
     [~,idx_sys] = max(avgArterialPulse) ;
     T_syst = batch_stride/Fs*average_cycle_length * (idx_sys-1) / nb_frames ;
@@ -528,18 +532,18 @@ heatmap_dia = squeeze(mean(one_pulse_video(:,:,floor(0.9*nb_frames):nb_frames),3
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*nb_frames):nb_frames),3));
 heatmap_dia = flat_field_correction(heatmap_dia, ceil(.07*size(heatmap_dia,1)), .33);
-% figure(45)
-% imagesc(heatmap_dia) ;
-% colormap gray
-% title('bottom diastole RMS frequency map');
-% fontsize(gca,12,"points") ;
-% set(gca, 'LineWidth', 2);
-% c = colorbar('southoutside');
-% c.Label.String = 'RMS Doppler frequency (kHz)';
-% c.Label.FontSize = 12;
-% axis off
-% axis image
-% range(1:2) = clim;
+figure(45)
+imagesc(heatmap_dia) ;
+colormap gray
+title('bottom diastole RMS frequency map');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(1:2) = clim;
 
 %% systolic Doppler frequency heatmap : 10% of frames around peak systole
 a = max(ceil(idx_sys-0.05*nb_frames),1);
@@ -548,22 +552,22 @@ heatmap_sys = squeeze(mean(one_pulse_video(:,:,a:b),3));
 % onePulseVideo2 : no background correction 
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 heatmap_sys = flat_field_correction(heatmap_sys, ceil(.07*size(heatmap_sys,1)), .33);
-% figure(46)
-% imagesc(heatmap_sys) ;
-% colormap gray
-% title('peak systole RMS frequency map');
-% fontsize(gca,12,"points") ;
-% set(gca, 'LineWidth', 2);
-% c = colorbar('southoutside');
-% c.Label.String = 'RMS Doppler frequency (kHz)';
-% c.Label.FontSize = 12;
-% axis off
-% axis image
-% range(3:4) = clim;
-% % same color axis for systolic and diastolic Doppler heatmaps
-% clim([min(range),max(range)]);
-% figure(45)
-% clim([min(range),max(range)]);
+figure(46)
+imagesc(heatmap_sys) ;
+colormap gray
+title('peak systole RMS frequency map');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(3:4) = clim;
+% same color axis for systolic and diastolic Doppler heatmaps
+clim([min(range),max(range)]);
+figure(45)
+clim([min(range),max(range)]);
 
 
 % %vein mask
@@ -589,7 +593,7 @@ heatmap_sys = flat_field_correction(heatmap_sys, ceil(.07*size(heatmap_sys,1)), 
 % c.Label.FontSize = 12;
 % axis off
 % axis image
-% 
+
 % figure(70)
 % plot(T,avgArterialPulse,'k-',T,pulse_veins,'k--',LineWidth=2) ;
 % xline(T_syst,':',{''},LineWidth=2) ;
@@ -635,17 +639,17 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 title('average background-corrected RMS frequency in retinal arteries');
 
-% figure(90)
-% plot(T(1:end-1), diff_avgPulse,'k-', LineWidth=2);
-% x = 0;
-% yline(x,':',LineWidth=2) ;
-% fontsize(gca,12,"points") ;
-% xlabel('Time (s)','FontSize',14) ;
-% ylabel('time derivative (a.u.)','FontSize',14) ;
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% title('Derivative of average arterial pulse wave');
-% axis tight
+figure(90)
+plot(T(1:end-1), diff_avgPulse,'k-', LineWidth=2);
+x = 0;
+yline(x,':',LineWidth=2) ;
+fontsize(gca,12,"points") ;
+xlabel('Time (s)','FontSize',14) ;
+ylabel('time derivative (a.u.)','FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+title('Derivative of average arterial pulse wave');
+axis tight
 
 % computation of average arterial pulse wave parameters
 T_syst = T(idx_sys);
@@ -688,40 +692,41 @@ fclose(fileID) ;
 
 
 % png
-% print('-f2','-dpng',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.png'))) ;
-% print('-f8','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.png'))) ;
+print('-f2','-dpng',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.png'))) ;
+print('-f8','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.png'))) ;
 print('-f9','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.png'))) ;
 print('-f22','-dpng',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.png'))) ;
 print('-f6','-dpng',fullfile(one_cycle_dir,strcat(filename,'_derivative.png'))) ;
 print('-f111','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.png'))) ;
 print('-f80','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.png'))) ;
-% print('-f90','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.png'))) ;
-% print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.png'))) ;
-% print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.png'))) ;
-% print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
-% print('-f23','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.png'))) ;
-% print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
-% % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
-% % print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
+print('-f90','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.png'))) ;
+print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.png'))) ;
+print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.png'))) ;
+print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
+print('-f23','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.png'))) ;
+print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
+% print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
+% print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
 
 % eps
-% print('-f2','-depsc',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.eps'))) ;
-% print('-f8','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.eps'))) ;
+print('-f2','-depsc',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.eps'))) ;
+print('-f8','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.eps'))) ;
 print('-f9','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.eps'))) ;
 print('-f22','-depsc',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.eps'))) ;
 print('-f6','-depsc',fullfile(one_cycle_dir,strcat(filename,'_derivative.eps'))) ;
-print('-f111','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.eps'))) ;
+print('-f111','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.eps'))) ;figure(123)
 print('-f80','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.eps'))) ;
-% print('-f90','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.eps'))) ;
-% print('-f15','-depsc',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.eps'))) ;
-% print('-f45','-depsc',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.eps'))) ;
-% print('-f46','-depsc',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.eps'))) ;
-% print('-f23','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
-% print('-f24','-depsc',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
-% % print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
-% % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
+print('-f90','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.eps'))) ;
+print('-f15','-depsc',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.eps'))) ;
+print('-f45','-depsc',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.eps'))) ;
+print('-f46','-depsc',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.eps'))) ;
+print('-f23','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
+print('-f24','-depsc',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
+% print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
+% print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
 
 % masks
+imwrite(mat2gray(single(maskArteryInPlane)),fullfile(one_cycle_dir,strcat(filename,'_maskArteryInPlane.png')),'png') ;
 imwrite(mat2gray(single(maskArtery)),fullfile(one_cycle_dir,strcat(filename,'_maskArtery.png')),'png') ;
 imwrite(mat2gray(single(maskVessel)),fullfile(one_cycle_dir,strcat(filename,'_maskVessel.png')),'png') ;
 imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir,strcat(filename,'_maskBackground.png')),'png') ;
@@ -730,17 +735,17 @@ imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir,strcat(filename,
 displaySuccessMsg();
 
 %% AVG analysis (CRA & CRV pulse)
-% figure(123)
-% imagesc(squeeze(mean(dataCubeM1M0,3))) ;
-% colormap gray
-% title('raw AVG frequency map');
-% fontsize(gca,12,"points") ;
-% set(gca, 'LineWidth', 2);
-% axis off
-% axis image
-% c = colorbar('southoutside');
-% c.Label.String = 'AVG Doppler frequency (kHz)';
-% c.Label.FontSize = 12;
+figure(123)
+imagesc(squeeze(mean(dataCubeM1M0,3))) ;
+colormap gray
+title('raw AVG frequency map');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+axis off
+axis image
+c = colorbar('southoutside');
+c.Label.String = 'AVG Doppler frequency (kHz)';
+c.Label.FontSize = 12;
 % 
 % % dMap = squeeze(mean(fullVideo,3));
 % % dMap = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33)
@@ -765,27 +770,27 @@ displaySuccessMsg();
 % 
 % % FIXME maskArtery : best computed from reference video
 % % maskArtery = createArteryMask(fullVideo);
-% figure(105)
-% imagesc(maskCRA);
-% title('segmented CRA');
-% axis off
-% axis equal
-% colormap gray
+figure(105)
+imagesc(maskCRA);
+title('segmented CRA');
+axis off
+axis equal
+colormap gray
 % 
 % %
-% figure(104)
-% imagesc(maskCRV);
-% title('segmented CRV');
-% axis off
-% axis equal
-% colormap gray
+figure(104)
+imagesc(maskCRV);
+title('segmented CRV');
+axis off
+axis equal
+colormap gray
 % 
-% figure(107)
-% imagesc(maskBackgroundM1M0);
-% title('segmented BackgroundAVG');
-% axis off
-% axis equal
-% colormap gray
+figure(107)
+imagesc(maskBackgroundM1M0);
+title('segmented BackgroundAVG');
+axis off
+axis equal
+colormap gray
 
 % %fig 102 108
 % 
@@ -928,9 +933,9 @@ displaySuccessMsg();
 % % % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
 % 
 % % masks
-% imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir,strcat(filename,'_maskCRA.png')),'png') ;
-% imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir,strcat(filename,'_maskCRV.png')),'png') ;
-% imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir,strcat(filename,'_maskBackground.png')),'png') ;
+imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir,strcat(filename,'_maskCRA.png')),'png') ;
+imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir,strcat(filename,'_maskCRV.png')),'png') ;
+imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir,strcat(filename,'_maskBackgroundM1M0.png')),'png') ;
 % 
 % 
 % displaySuccessMsg();
