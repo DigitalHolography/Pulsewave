@@ -9,7 +9,11 @@ end
 
 
 
+<<<<<<< HEAD
 figure(100)
+=======
+figure(1)
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0
 imshow(picture)
 log_label.Value = "Please choose a point to analyse";
 points_selected = 0;
@@ -83,14 +87,22 @@ for i=1:size(locs)
     text(cx(locs(i)),cy(locs(i)),num2str(i), "FontWeight", "bold", "Color", "white", "BackgroundColor", "blue");
 end
 
+<<<<<<< HEAD
 figure(101)
+=======
+figure(2)
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0
 plot(plot_values);
 findpeaks(plot_values,size(plot_values, 2),'MinPeakProminence',param_peak);
 text(locs,pks,num2str((1:numel(pks))'))
 title("Peaks of luminosity")
 pbaspect([1.618 1 1]);
 
+<<<<<<< HEAD
 figure(102)
+=======
+figure(3)
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0
 h = pcolor(new_picture);
 set(h, 'EdgeColor', 'none');
 yticks(locs);
@@ -100,6 +112,7 @@ pbaspect([1.618 1 1]);
 axis tight;
 log_label.Value = strcat("Plot printed !");
 plot_printed = true;
+<<<<<<< HEAD
 
 for i=1:size(locs)
     figure(i)
@@ -109,3 +122,7 @@ end
 end
 
 
+=======
+end
+
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0

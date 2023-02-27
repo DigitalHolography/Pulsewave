@@ -6,9 +6,17 @@ classdef OneCycleClass
         nbFiles {mustBeNumeric , mustBePositive}
         filenames (1,:) cell
         % For sectioning
+<<<<<<< HEAD
         video_loaded
         pictureSection
         videoSection
+=======
+        directorySection char
+        filenamesSection char
+        pictureSection 
+        videoSection 
+        video_loaded
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0
 
 
     end
@@ -37,6 +45,7 @@ classdef OneCycleClass
                     end
                     obj.data{ii} = video;
                     %% importation fichier M0 pour pulse section
+<<<<<<< HEAD
                     directorySection = path;
                     directorySection(end-3:end) = 'avi\';
                     filenamesSection = files{ii};
@@ -46,6 +55,17 @@ classdef OneCycleClass
                     disp(['reading : ',strcat(directorySection, filenamesSection)]);
                     
                     V_section = VideoReader(strcat(directorySection, filenamesSection));
+=======
+                    obj.directorySection = path;
+                    obj.directorySection(end-3:end) = 'avi\';
+                    obj.filenamesSection = files;
+
+                    obj.filenamesSection = obj.filenamesSection(1:end-14);
+                    obj.filenamesSection = strcat(obj.filenamesSection, 'DopplerRMS.avi');
+                    disp(['reading : ',strcat(obj.directorySection, obj.filenamesSection)]);
+                    
+                    V_section = VideoReader(strcat(obj.directorySection, obj.filenamesSection));
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0
                     if isempty(V_section)
                         obj.video_loaded = false;
                     else
@@ -56,7 +76,10 @@ classdef OneCycleClass
                         obj.videoSection(:,:,n) = rgb2gray(read(V_section, n));
                     end
                     obj.pictureSection = mean(mat2gray(obj.videoSection), 3);
+<<<<<<< HEAD
                     
+=======
+>>>>>>> 03c83fcfd740c99fc55cc6bae0ee1a3c04bd84e0
 
 
                 elseif (ext == '.raw')
@@ -66,14 +89,14 @@ classdef OneCycleClass
                     video = fread(fileID,'float32');
                     fclose(fileID);
                     obj.data{ii} = reshape(video,refvideosize);
-                    % M1/M0 : DopplerAvg
-                    tmpname = name;
-                    tmpname(end-2:end) = 'AVG';
-                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-                    fileID = fopen(fullfile(filepath,[tmpname,ext]));
-                    videoM1M0 = fread(fileID,'float32');
-                    fclose(fileID);
-                    obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
+%                     % M1/M0 : DopplerAvg
+%                     tmpname = name;
+%                     tmpname(end-2:end) = 'AVG';
+%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+%                     fileID = fopen(fullfile(filepath,[tmpname,ext]));
+%                     videoM1M0 = fread(fileID,'float32');
+%                     fclose(fileID);
+%                     obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
                 else
                     disp([filepath,name,ext,' : non recognized video format']);
                 end
