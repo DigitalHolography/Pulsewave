@@ -8,6 +8,13 @@ video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
 
 mask = createArteryMask(video);
 
+% %FIXME seek artery_mask_3rdPass in C
+% for ii=1:size(C,2)
+%     if strcmp(C(1,ii),'artery_mask_3rdPass')==1
+%         mask = C(2,ii);
+%     end
+% end
+
 fullPulseWave = squeeze(sum(video .* mask, [1 2])/nnz(mask));
 pulse_init = detrend(fullPulseWave);
 pulse_init = pulse_init - mean(pulse_init, "all");

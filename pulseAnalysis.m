@@ -1,9 +1,10 @@
-function pulseAnalysis(Ninterp, fullVideo, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArtery)
+function [maskArtery, maskArteryInPlane, v_RMS] = pulseAnalysis(Ninterp, fullVideo, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArtery)
 %
 % one_pulse_video :
 % one_cycle_dir :
 % filename :
 % sys_index_list :
+% v_RMS : cube of one-cycle RMS velocity vs. time 
 
 %% FIXME : const;
 borderAmount = 0; % for flatFieldCorrection() and createBorderMask
@@ -315,6 +316,8 @@ end
 avgArterialPulseVelocity2 = avgArterialPulse * scalingFactorVelocity2;
 % avgArterialPulseVelocityCRA_AVG = avgArterialPulseCRA_AVG * scalingFactorVelocityCRA2_AVG;
 % avgArterialPulseVelocityCRA_RMS = avgArterialPulseCRA_RMS * scalingFactorVelocityCRA2_RMS;
+
+v_RMS = onePulseVideo2 * scalingFactorVelocity2;
 
 % figure(1)
 % plot( ...
@@ -940,6 +943,8 @@ imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir,strcat(filen
 % 
 % displaySuccessMsg();
 %%
+
+
 return;
 
 end

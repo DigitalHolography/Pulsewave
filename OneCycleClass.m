@@ -113,7 +113,8 @@ classdef OneCycleClass
                 end
                 close(w);
                 if add_infos
-                    pulseAnalysis(Ninterp,obj.data{n},obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n});
+                    [maskArtery, maskArteryInPlane, v_RMS] = pulseAnalysis(Ninterp,obj.data{n},obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n});
+                    [plot_printed] = flow_rate(maskArtery, maskArteryInPlane, v_RMS);
                 end
             end
             displaySuccessMsg(1);
