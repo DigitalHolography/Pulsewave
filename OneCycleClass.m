@@ -1,7 +1,10 @@
 classdef OneCycleClass
     properties
-        data (1,:) cell
-        dataM1M0 (1,:) cell
+        data (1,:) cell % RMS M2/M0
+        dataM1M0 (1,:) cell % AVG M1/M0
+        dataM0 (1,:) cell % M0 raw
+        dataM1 (1,:) cell % M1 raw
+        dataM2 (1,:) cell % M2 raw
         directory char
         nbFiles {mustBeNumeric , mustBePositive}
         filenames (1,:) cell
@@ -25,10 +28,14 @@ classdef OneCycleClass
             obj.nbFiles = length(files) ;
             obj.data = cell(1,obj.nbFiles) ;
             obj.dataM1M0 = cell(1,obj.nbFiles) ;
+            obj.dataM0 = cell(1,obj.nbFiles) ;
+            obj.dataM1 = cell(1,obj.nbFiles) ;
+            obj.dataM2 = cell(1,obj.nbFiles) ;
             for ii = 1 : obj.nbFiles
                 currentFilePath = fullfile(obj.directory,obj.filenames{ii});
                 [filepath,name,ext] = fileparts(currentFilePath);
                 if (ext == '.avi')
+                    % sqrt M2/M0 : DopplerRMS
                     disp(['reading : ',fullfile(filepath,[name,ext])]);
                     V = VideoReader(fullfile(path,files{ii}));
                     video = zeros(V.Height, V.Width, V.NumFrames);
@@ -36,11 +43,38 @@ classdef OneCycleClass
                         video(:,:,n) = rgb2gray(read(V, n));
                     end
                     obj.data{ii} = video;
-                    %% importation fichier M0 pour pulse section
+                    % Import Moment 0
+                    tmpname = strcat(name(1:end-10), 'moment0');
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    V = VideoReader(fullfile(filepath,[tmpname,ext]));
+                    videoM0 = zeros(V.Height, V.Width, V.NumFrames);
+                    for n = 1 : V.NumFrames
+                        videoM0(:,:,n) = rgb2gray(read(V, n));
+                    end
+                    obj.dataM0{ii} = videoM0;
+                    % Import Moment 1
+                    tmpname = strcat(name(1:end-10), 'moment1');
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    V = VideoReader(fullfile(filepath,[tmpname,ext]));
+                    videoM1 = zeros(V.Height, V.Width, V.NumFrames);
+                    for n = 1 : V.NumFrames
+                        videoM1(:,:,n) = rgb2gray(read(V, n));
+                    end
+                    obj.dataM1{ii} = videoM1;
+                    % Import Moment 2
+                    tmpname = strcat(name(1:end-10), 'moment2');
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    V = VideoReader(fullfile(filepath,[tmpname,ext]));
+                    videoM2 = zeros(V.Height, V.Width, V.NumFrames);
+                    for n = 1 : V.NumFrames
+                        videoM2(:,:,n) = rgb2gray(read(V, n));
+                    end
+                    obj.dataM2{ii} = videoM2;
+
+                    % M1/M0 : DopplerAvg
                     directorySection = path;
                     directorySection(end-3:end) = 'avi\';
                     filenamesSection = files{ii};
-
                     filenamesSection = filenamesSection(1:end-14);
                     filenamesSection = strcat(filenamesSection, 'DopplerRMS.avi');
                     disp(['reading : ',strcat(directorySection, filenamesSection)]);
@@ -74,20 +108,52 @@ classdef OneCycleClass
                     videoM1M0 = fread(fileID,'float32');
                     fclose(fileID);
                     obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
+                    % Import Moment 0
+                    tmpname = strcat(name(1:end-10), 'moment0');
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    fileID = fopen(fullfile(filepath,[tmpname,ext]));
+                    videoM0 = fread(fileID,'float32');
+                    fclose(fileID);
+                    obj.dataM0{ii} = reshape(videoM0,refvideosize);
+                    % Import Moment 1
+                    tmpname = strcat(name(1:end-10), 'moment1');
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    fileID = fopen(fullfile(filepath,[tmpname,ext]));
+                    videoM1 = fread(fileID,'float32');
+                    fclose(fileID);
+                    obj.dataM1{ii} = reshape(videoM1,refvideosize);
+                    % Import Moment 2
+                    tmpname = strcat(name(1:end-10), 'moment2');
+                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+                    fileID = fopen(fullfile(filepath,[tmpname,ext]));
+                    videoM2 = fread(fileID,'float32');
+                    fclose(fileID);
+                    obj.dataM2{ii} = reshape(videoM2,refvideosize);
                 else
                     disp([filepath,name,ext,' : non recognized video format']);
                 end
             end
         end
 
-        function [sys_index_list_cell, mask_cell, fullPulseWave_cell] = getSystole(obj)
-            sys_index_list_cell = cell(obj.nbFiles) ;
-            for i = 1:obj.nbFiles
-                [sys_index_list_cell{i}, mask_cell{i}, fullPulseWave_cell{i}] = find_systole_index(obj.data{i});
+        function normalize(obj)
+            for i = 1 : obj.nbFiles
+%                 avgM0 = squeeze(mean(obj.dataM0{i},[1 2]));
+                  avgM0 = obj.dataM0{i};
+                for j = 1 : size(obj.data{i}, 3)
+                    obj.data{i}(:,:,j) = sqrt(double(obj.data{i}(:,:,j))./avgM0(:,:,j));
+                end
             end
         end
 
-        function onePulse(obj, fullPulseWave_cell, mask_cell, sys_index_list_cell, Ninterp, add_infos)
+        function [sys_index_list_cell, mask_cell, maskArtery, fullPulseWave_cell] = getSystole(obj)
+            sys_index_list_cell = cell(obj.nbFiles) ;
+            for i = 1:obj.nbFiles
+                datacube = obj.data{i}; % choix du cube sur lequel travailler 
+                [sys_index_list_cell{i}, mask_cell{i}, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube);
+            end
+        end
+
+        function onePulse(obj, fullPulseWave_cell, mask_cell, maskArtery, sys_index_list_cell, Ninterp, add_infos)
             idx = 0 ;
             while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
                 idx = idx + 1 ;
@@ -96,7 +162,10 @@ classdef OneCycleClass
             mkdir(one_cycle_dir);
             for n = 1:obj.nbFiles
                 % FIXME maybe mask_cell{n} unnecessary. compute mask only once?
-                one_cycle_video = create_one_cycle(obj.data{n}, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
+                datacube = obj.data{n}; % choix du cube sur lequel travailler 
+%                 avgM0 = mean(obj.dataM0{n},[1 2]);
+%                 datacube = sqrt(obj.dataM2{n}/avgM0);
+                one_cycle_video = create_one_cycle(datacube, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
                 % FIXME : si l'image de depart est raw, sauver un .raw
                 one_cycle_video_to_save = mat2gray(one_cycle_video); %1st normalization
                 [~,name,ext] = fileparts(obj.filenames{n}) ;
@@ -112,9 +181,23 @@ classdef OneCycleClass
                     writeVideo(w,one_cycle_video_to_save(:,:,j)) ;
                 end
                 close(w);
+
                 if add_infos
-                    pulseAnalysis(Ninterp,obj.data{n},obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n});
-                end
+                    datacube = obj.data{n}; % choix du cube sur lequel travailler
+%                     avgM0 = mean(obj.dataM0{n},[1 2]);
+%                     datacube = sqrt(obj.dataM2{n}/avgM0);
+                    [maskVein, maskArteryInPlane, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, v_RMS, one_cycle_dir, name);
+
+                    w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_flowVideo',ext))) ;
+                    open(w)
+                    flow_video_to_save = mat2gray(flowVideoRGB);% 2nd normalization
+                    for jj = 1:size(flow_video_to_save,3)
+                        writeVideo(w,squeeze(flow_video_to_save(:,:,jj,:))) ;
+                    end
+                    close(w);
+
+                end % add_infos
             end
             displaySuccessMsg(1);
         end

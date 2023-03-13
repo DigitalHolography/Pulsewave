@@ -1,4 +1,4 @@
-function [sys_index_list, mask, fullPulseWave] = find_systole_index(video)
+function [sys_index_list, mask_artery_retina_choroid, mask_artery, fullPulseWave] = find_systole_index(video)
 arguments
     video
 end
@@ -6,9 +6,16 @@ end
 % create zero-mean signal
 video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
 
-mask = createArteryMask(video);
+[mask_artery_retina_choroid,mask_artery] = createArteryMask(video);
 
-fullPulseWave = squeeze(sum(video .* mask, [1 2])/nnz(mask));
+% %FIXME seek artery_mask_3rdPass in C
+% for ii=1:size(C,2)
+%     if strcmp(C(1,ii),'artery_mask_3rdPass')==1
+%         mask = C(2,ii);
+%     end
+% end
+
+fullPulseWave = squeeze(sum(video .* mask_artery_retina_choroid, [1 2])/nnz(mask_artery_retina_choroid));
 pulse_init = detrend(fullPulseWave);
 pulse_init = pulse_init - mean(pulse_init, "all");
 

@@ -70,11 +70,21 @@ ARImapRGB(:,:,1) = val - maskArtery.*val + ones(size(ARImap,1), size(ARImap,2)).
 ARImapRGB(:,:,2) = val - maskArtery.*val + Artery_val.^gamma;
 ARImapRGB(:,:,3) = val - maskArtery.*val + Artery_val.^gamma;
 
-
 %% arterial resistivity video RGB
 video = mat2gray(video); % not quantitative anymore
-sat = satAmp * abs(ARImap .* maskArtery);
+sat = satAmp * mat2gray(abs(ARImap)) .* maskArtery;
+% sat = satAmp * abs(ARImap .* maskArtery);
 hue = 1 * ones(size(video,1), size(video,2)); % pure red color
+
+%% FIXME : TO TEST
+% hue = mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskArtery;
+% sat = 0.75 * double(maskArtery);
+% val = squeeze(mean(v_RMS,3));
+% val = mat2gray(val);
+% tolVal = [0.02, 0.98]; 
+% lowhigh = stretchlim(val, tolVal); % adjust contrast a bit 
+% val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
+
 % for pp = 1:size(video,3)
 %     video(:,:,pp) = flat_field_correction(squeeze(video(:,:,pp)), 0.07*size(video,1), 0);
 % end

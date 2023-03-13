@@ -1,19 +1,26 @@
-function artery_mask = createArteryMask(video)
+function [mask_artery_retina_choroid,mask_artery] = createArteryMask(video)
 %FIXME : check the link with VesselMask (order between flat_field_correction and imbinarize)
 %FIXME : add threshold parameter
-mask = squeeze(std(video, 0, 3));
-mask = imbinarize(mat2gray(mask), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
 
-figure(203)
-imagesc(mask);
-title('segmented arteries');
-axis off
-axis equal
+mask_artery = squeeze(std(video, 0, 3));
+
+figure(307)
+imagesc(mask_artery)
 colormap gray
 
-imwrite(mat2gray(single(mask)),fullfile("C:\Users\Rakushka\Downloads",strcat("210218_GUN0323_OD_ONH_0_DopplerRMS",'_maskArtery_0.png')),'png') ;
+mask_artery = imbinarize(mat2gray(mask_artery), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
 
-pulse = squeeze(mean(video .* mask, [1 2]));
+% C = {};
+% C(1:2,1) = {'artery_mask_1stPass'; mask};
+
+% figure(202)
+% imagesc(mask);
+% title('segmented arteries');
+% axis off
+% axis equal
+% colormap gray
+
+pulse = squeeze(mean(video .* mask_artery, [1 2]));
 % zero-mean initial average pulse estimate : pulse_init
 pulse_init = pulse - mean(pulse, "all");
 C = video;
@@ -33,27 +40,10 @@ end
 C = C .* pulse_init_3d;
 C = squeeze(mean(C, 3));
 % find max. values of the correlation
-artery_mask = C > (max(C(:)) * 0.2);
+mask_artery_retina_choroid = C > (max(C(:)) * 0.2);
+mask_artery = mask_artery_retina_choroid;
 
 figure(204)
-imagesc(artery_mask);
-title('segmented arteries');
-axis off
-axis equal
-colormap gray
+imagesc(mask_artery_retina_choroid);
 
-imwrite(mat2gray(single(artery_mask)),fullfile("C:\Users\Rakushka\Downloads",strcat("210218_GUN0323_OD_ONH_0_DopplerRMS",'_maskArtery_1.png')),'png') ;
-
-%Magicwand to delete choroid signal
-artery_mask = magicwand(artery_mask, 0.4, 8);
-
-figure(205)
-imagesc(artery_mask);
-title('segmented arteries');
-axis off
-axis equal
-colormap gray
-
-imwrite(mat2gray(single(artery_mask)),fullfile("C:\Users\Rakushka\Downloads",strcat("210218_GUN0323_OD_ONH_0_DopplerRMS",'_maskArtery_2.png')),'png') ;
-
-end
+mask_artery = magicwand(mask_artery, 0.2, 8, 2);
