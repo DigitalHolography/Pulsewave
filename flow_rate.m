@@ -169,6 +169,7 @@ for ii=1:size(locs_Vein)
     text(cx(locs_Vein(ii)),cy(locs_Vein(ii))+15, strcat('V',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
+    num = string(ii);
     text(cx(locs_Artery(ii)),cy(locs_Artery(ii))+15, strcat('A',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 % png
@@ -180,10 +181,10 @@ print('-f121','-depsc',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.e
 figure(120)
 imshow(maskRGB)
 for ii=1:size(locs_Vein)
-    text(cx(locs_Vein(ii))+20,cy(locs_Vein(ii))+30,string(round(avg_blood_rate_vein(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(cx(locs_Vein(ii)),cy(locs_Vein(ii))+15,string(round(avg_blood_rate_vein(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
-    text(cx(locs_Artery(ii))+20,cy(locs_Artery(ii))+30,string(round(avg_blood_rate_artery(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(cx(locs_Artery(ii)),cy(locs_Artery(ii))+15,string(round(avg_blood_rate_artery(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 title(['Total blood volume rate : ' num2str(total_blood_rate_artery_muLmin) ' µL/min (arteries) - ' num2str(total_blood_rate_vein_muLmin) ' µL/min (veins)']);
 % png

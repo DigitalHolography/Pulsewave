@@ -135,12 +135,12 @@ classdef OneCycleClass
             end
         end
 
-        function normalize(obj)
-            for i = 1 : obj.nbFiles
-%                 avgM0 = squeeze(mean(obj.dataM0{i},[1 2]));
-                  avgM0 = obj.dataM0{i};
-                for j = 1 : size(obj.data{i}, 3)
-                    obj.data{i}(:,:,j) = sqrt(double(obj.data{i}(:,:,j))./avgM0(:,:,j));
+        function obj = normalize(obj)
+            for ii = 1 : obj.nbFiles
+                avgM0 = mean(obj.dataM0{ii},[1 2]);
+                for jj = 1 : size(obj.data{ii}, 3)
+%                     obj.data{ii}(:,:,jj) = sqrt((obj.dataM2{ii}(:,:,jj))./avgM0(:,:,jj)); 
+                      obj.data{ii}(:,:,jj) = obj.data{ii}(:,:,jj);
                 end
             end
         end
