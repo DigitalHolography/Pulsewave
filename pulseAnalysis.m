@@ -1,4 +1,4 @@
-function [maskVein, maskArteryInPlane, v_RMS] = pulseAnalysis(Ninterp, fullVideo, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery)
+function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, fullVideo, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery)
 %
 % create additional masks
 % maskArtery : Arteries

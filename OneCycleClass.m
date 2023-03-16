@@ -44,7 +44,7 @@ classdef OneCycleClass
                     end
                     obj.data{ii} = video;
                     % Import Moment 0
-                    tmpname = strcat(name(1:end-10), 'moment0');
+                    tmpname = strcat(name(1:end-2), 'moment0');
                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
                     videoM0 = zeros(V.Height, V.Width, V.NumFrames);
@@ -53,7 +53,7 @@ classdef OneCycleClass
                     end
                     obj.dataM0{ii} = videoM0;
                     % Import Moment 1
-                    tmpname = strcat(name(1:end-10), 'moment1');
+                    tmpname = strcat(name(1:end-2), 'moment1');
                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
                     videoM1 = zeros(V.Height, V.Width, V.NumFrames);
@@ -62,7 +62,7 @@ classdef OneCycleClass
                     end
                     obj.dataM1{ii} = videoM1;
                     % Import Moment 2
-                    tmpname = strcat(name(1:end-10), 'moment2');
+                    tmpname = strcat(name(1:end-2), 'moment2');
                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
                     videoM2 = zeros(V.Height, V.Width, V.NumFrames);
@@ -75,7 +75,7 @@ classdef OneCycleClass
                     directorySection = path;
                     directorySection(end-3:end) = 'avi\';
                     filenamesSection = files{ii};
-                    filenamesSection = filenamesSection(1:end-14);
+                    filenamesSection = filenamesSection(1:end-6);
                     filenamesSection = strcat(filenamesSection, 'DopplerRMS.avi');
                     disp(['reading : ',strcat(directorySection, filenamesSection)]);
                     
@@ -186,8 +186,8 @@ classdef OneCycleClass
                     datacube = obj.data{n}; % choix du cube sur lequel travailler
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
-                    [maskVein, maskArteryInPlane, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
-                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, v_RMS, one_cycle_dir, name);
+                    [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name);
 
                     w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_flowVideo',ext))) ;
                     open(w)

@@ -1,4 +1,4 @@
-function [flowVideoRGB] = flow_rate(maskArtery, maskVein, v_RMS, one_cycle_dir, filename)
+function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename)
 %SECTION_PLOT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,7 +10,7 @@ nb_sides = 120;
 %FIXME : radius_ratio as an entry param
 radius_ratio = round(0.15 * size(v_RMS,1));
 %FIXME : anamorphic image
-blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskArtery+maskVein)),round(size(maskArtery,1)/4),'Padding',0);
+blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',0);
 [~,x_center] = findpeaks(sum(blurred_mask,1));
 [~,y_center] = findpeaks(sum(blurred_mask,2));
 
@@ -104,11 +104,12 @@ slice_half_thickness = 10; % size of the rectangle area for velocity averaging (
 %% pour chaque veine jj detectee
 [avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein] = ...
     cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness);
+avg_blood_rate_vein_muLmin = avg_blood_rate_vein*60;
 
 %% pour chaque artere ii detectee
 [avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery] = ...
     cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness);
-
+avg_blood_rate_artery_muLmin = avg_blood_rate_artery*60;
 %% Display final blood volume rate image
 total_blood_rate_artery = sum(avg_blood_rate_artery(:));
 total_cross_section_artery = sum(cross_section_area_artery(:));
@@ -181,10 +182,10 @@ print('-f121','-depsc',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.e
 figure(120)
 imshow(maskRGB)
 for ii=1:size(locs_Vein)
-    text(cx(locs_Vein(ii)),cy(locs_Vein(ii))+15,string(round(avg_blood_rate_vein(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(cx(locs_Vein(ii)),cy(locs_Vein(ii))+15,string(round(avg_blood_rate_vein_muLmin(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
-    text(cx(locs_Artery(ii)),cy(locs_Artery(ii))+15,string(round(avg_blood_rate_artery(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(cx(locs_Artery(ii)),cy(locs_Artery(ii))+15,string(round(avg_blood_rate_artery_muLmin(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 title(['Total blood volume rate : ' num2str(total_blood_rate_artery_muLmin) ' µL/min (arteries) - ' num2str(total_blood_rate_vein_muLmin) ' µL/min (veins)']);
 % png
