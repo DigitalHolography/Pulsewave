@@ -1,4 +1,4 @@
-function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness)
+function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness, k)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
@@ -83,7 +83,7 @@ for ii = 1:size(locs)
     tmp = tmp.*mask_current_slice;
 
     avg_blood_velocity(ii) = sum(tmp(:))/nnz(tmp(:));
-    cross_section_area(ii) = pi*(width_cross_section(ii)/2*0.0102)^2; % 0.0102mm = size 1 pixel
+    cross_section_area(ii) = pi*(width_cross_section(ii)/2*0.0102/2^k)^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     avg_blood_rate(ii) = avg_blood_velocity(ii)*cross_section_area(ii); % mm^3/s
 
 %     figure(101)

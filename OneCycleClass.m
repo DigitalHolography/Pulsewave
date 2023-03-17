@@ -2,6 +2,8 @@ classdef OneCycleClass
     properties
         data (1,:) cell % RMS M2/M0
         dataM1M0 (1,:) cell % AVG M1/M0
+        data_interp (1,:) cell % RMS M2/M0
+        dataM1M0_interp (1,:) cell % AVG M1/M0
         dataM0 (1,:) cell % M0 raw
         dataM1 (1,:) cell % M1 raw
         dataM2 (1,:) cell % M2 raw
@@ -28,6 +30,8 @@ classdef OneCycleClass
             obj.nbFiles = length(files) ;
             obj.data = cell(1,obj.nbFiles) ;
             obj.dataM1M0 = cell(1,obj.nbFiles) ;
+            obj.data_interp = cell(1,obj.nbFiles) ;
+            obj.dataM1M0_interp = cell(1,obj.nbFiles) ;
             obj.dataM0 = cell(1,obj.nbFiles) ;
             obj.dataM1 = cell(1,obj.nbFiles) ;
             obj.dataM2 = cell(1,obj.nbFiles) ;
@@ -35,6 +39,9 @@ classdef OneCycleClass
                 currentFilePath = fullfile(obj.directory,obj.filenames{ii});
                 [filepath,name,ext] = fileparts(currentFilePath);
                 if (ext == '.avi')
+                    %FIXME : refvideosize & double appel de obj.data{i}
+                    % dans la boucle avi et raw
+                    
                     % sqrt M2/M0 : DopplerRMS
                     disp(['reading : ',fullfile(filepath,[name,ext])]);
                     V = VideoReader(fullfile(path,files{ii}));
@@ -76,20 +83,9 @@ classdef OneCycleClass
                     directorySection(end-3:end) = 'avi\';
                     filenamesSection = files{ii};
                     filenamesSection = filenamesSection(1:end-6);
-                    filenamesSection = strcat(filenamesSection, 'DopplerRMS.avi');
+                    filenamesSection = strcat(filenamesSection, 'DopplerAVG.avi');
                     disp(['reading : ',strcat(directorySection, filenamesSection)]);
                     
-                    V_section = VideoReader(strcat(directorySection, filenamesSection));
-                    if isempty(V_section)
-                        obj.video_loaded = false;
-                    else
-                        obj.video_loaded = true;
-                    end
-                    obj.videoSection = zeros(V_section.Height, V_section.Width, V_section.NumFrames);
-                    for n = 1 : V_section.NumFrames
-                        obj.videoSection(:,:,n) = rgb2gray(read(V_section, n));
-                    end
-                    obj.pictureSection = mean(mat2gray(obj.videoSection), 3);
                     
 
 
@@ -138,23 +134,33 @@ classdef OneCycleClass
         function obj = MomentNormalize(obj)
             for ii = 1 : obj.nbFiles
                 avgM0 = mean(obj.dataM0{ii},[1 2]);
+
+                %donnée temporaire
+                tmp_data = obj.data{ii};
+                tmp_M2 = obj.dataM2{ii};
+                tmp_M1 = obj.dataM1{ii};
+                tmp_M1M0 = obj.dataM1M0{ii};
+
                 for jj = 1 : size(obj.data{ii}, 3)
-                    obj.data{ii}(:,:,jj) = sqrt((obj.dataM2{ii}(:,:,jj))./avgM0(:,:,jj));
-                 %   obj.dataM1M0{ii}(:,:,jj) = ((obj.dataM1{ii}(:,:,jj))./avgM0(:,:,jj)); 
+                    tmp_data(:,:,jj) = sqrt((tmp_M2(:,:,jj))./avgM0(:,:,jj));
+                    tmp_M1M0(:,:,jj) = (tmp_M1(:,:,jj))./avgM0(:,:,jj);
 %                       obj.data{ii}(:,:,jj) = obj.data{ii}(:,:,jj);
                 end
+                obj.data{ii} = tmp_data;
+                obj.dataM1M0{ii} = tmp_M1M0;
             end
         end
 
         function [sys_index_list_cell, mask_cell, maskArtery, fullPulseWave_cell] = getSystole(obj)
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
-                datacube = obj.data{i}; % choix du cube sur lequel travailler 
+                datacube = obj.data_interp{i}; % choix du cube sur lequel travailler 
                 [sys_index_list_cell{i}, mask_cell{i}, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube);
             end
         end
 
-        function onePulse(obj, fullPulseWave_cell, mask_cell, maskArtery, sys_index_list_cell, Ninterp, add_infos)
+        function onePulse(obj, fullPulseWave_cell, mask_cell, maskArtery, sys_index_list_cell, Ninterp, add_infos, k)
+            % k corresponds to interpolation 2^k-1
             idx = 0 ;
             while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
                 idx = idx + 1 ;
@@ -163,7 +169,7 @@ classdef OneCycleClass
             mkdir(one_cycle_dir);
             for n = 1:obj.nbFiles
                 % FIXME maybe mask_cell{n} unnecessary. compute mask only once?
-                datacube = obj.data{n}; % choix du cube sur lequel travailler 
+                datacube = obj.data_interp{n}; % choix du cube sur lequel travailler 
 %                 avgM0 = mean(obj.dataM0{n},[1 2]);
 %                 datacube = sqrt(obj.dataM2{n}/avgM0);
                 one_cycle_video = create_one_cycle(datacube, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
@@ -184,11 +190,11 @@ classdef OneCycleClass
                 close(w);
 
                 if add_infos
-                    datacube = obj.data{n}; % choix du cube sur lequel travailler
+                    datacube = obj.data_interp{n}; % choix du cube sur lequel travailler
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
-                    [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
-                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name);
+                    [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
 
                     w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_flowVideo',ext))) ;
                     open(w)

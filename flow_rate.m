@@ -1,6 +1,7 @@
-function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename)
+function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename, k)
 %SECTION_PLOT Summary of this function goes here
 %   Detailed explanation goes here
+% k = interpolation 2^k-1 (for size pixel for section calculation)
 
 type_of_selection = "Automatic";
 nb_sides = 120;
@@ -103,12 +104,12 @@ slice_half_thickness = 10; % size of the rectangle area for velocity averaging (
 
 %% pour chaque veine jj detectee
 [avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein] = ...
-    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness);
+    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k);
 avg_blood_rate_vein_muLmin = avg_blood_rate_vein*60;
 
 %% pour chaque artere ii detectee
 [avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery] = ...
-    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness);
+    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k);
 avg_blood_rate_artery_muLmin = avg_blood_rate_artery*60;
 %% Display final blood volume rate image
 total_blood_rate_artery = sum(avg_blood_rate_artery(:));
@@ -211,9 +212,6 @@ fprintf(fileID,[...
     total_cross_section_vein);
 fclose(fileID) ;
 
-[avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein] = ...
-    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness);
-
 for ii=1:length(avg_blood_rate_artery)
     fileID = fopen(fullfile(one_cycle_dir,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
     fprintf(fileID,[...
@@ -251,5 +249,3 @@ for ii=1:length(avg_blood_rate_vein)
 end
 
 end
-
-
