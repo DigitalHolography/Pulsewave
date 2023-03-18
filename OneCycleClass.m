@@ -1,8 +1,8 @@
 classdef OneCycleClass
     properties
-        data (1,:) cell % RMS M2/M0
+        dataM2M0 (1,:) cell % RMS M2/M0
         dataM1M0 (1,:) cell % AVG M1/M0
-        data_interp (1,:) cell % RMS M2/M0
+        dataM2M0_interp (1,:) cell % RMS M2/M0
         dataM1M0_interp (1,:) cell % AVG M1/M0
         dataM0 (1,:) cell % M0 raw
         dataM1 (1,:) cell % M1 raw
@@ -28,9 +28,9 @@ classdef OneCycleClass
             obj.directory = path;
             obj.filenames = files;
             obj.nbFiles = length(files) ;
-            obj.data = cell(1,obj.nbFiles) ;
+            obj.dataM2M0 = cell(1,obj.nbFiles) ;
             obj.dataM1M0 = cell(1,obj.nbFiles) ;
-            obj.data_interp = cell(1,obj.nbFiles) ;
+            obj.dataM2M0_interp = cell(1,obj.nbFiles) ;
             obj.dataM1M0_interp = cell(1,obj.nbFiles) ;
             obj.dataM0 = cell(1,obj.nbFiles) ;
             obj.dataM1 = cell(1,obj.nbFiles) ;
@@ -49,7 +49,7 @@ classdef OneCycleClass
                     for n = 1 : V.NumFrames
                         video(:,:,n) = rgb2gray(read(V, n));
                     end
-                    obj.data{ii} = video;
+                    obj.dataM2M0{ii} = video;
                     % Import Moment 0
                     tmpname = strcat(name(1:end-2), 'moment0');
                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
@@ -95,7 +95,7 @@ classdef OneCycleClass
                     fileID = fopen(currentFilePath);
                     video = fread(fileID,'float32');
                     fclose(fileID);
-                    obj.data{ii} = reshape(video,refvideosize);
+                    obj.dataM2M0{ii} = reshape(video,refvideosize);
                     % M1/M0 : DopplerAvg
                     tmpname = name;
                     tmpname(end-2:end) = 'AVG';
@@ -136,17 +136,17 @@ classdef OneCycleClass
                 avgM0 = mean(obj.dataM0{ii},[1 2]);
 
                 %donnée temporaire
-                tmp_data = obj.data{ii};
+                tmp_data = obj.dataM2M0{ii};
                 tmp_M2 = obj.dataM2{ii};
                 tmp_M1 = obj.dataM1{ii};
                 tmp_M1M0 = obj.dataM1M0{ii};
 
-                for jj = 1 : size(obj.data{ii}, 3)
+                for jj = 1 : size(obj.dataM2M0{ii}, 3)
                     tmp_data(:,:,jj) = sqrt((tmp_M2(:,:,jj))./avgM0(:,:,jj));
                     tmp_M1M0(:,:,jj) = (tmp_M1(:,:,jj))./avgM0(:,:,jj);
 %                       obj.data{ii}(:,:,jj) = obj.data{ii}(:,:,jj);
                 end
-                obj.data{ii} = tmp_data;
+                obj.dataM2M0{ii} = tmp_data;
                 obj.dataM1M0{ii} = tmp_M1M0;
             end
         end
@@ -154,7 +154,7 @@ classdef OneCycleClass
         function [sys_index_list_cell, mask_cell, maskArtery, fullPulseWave_cell] = getSystole(obj)
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
-                datacube = obj.data_interp{i}; % choix du cube sur lequel travailler 
+                datacube = obj.dataM2M0_interp{i}; % choix du cube sur lequel travailler 
                 [sys_index_list_cell{i}, mask_cell{i}, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube);
             end
         end
@@ -169,7 +169,7 @@ classdef OneCycleClass
             mkdir(one_cycle_dir);
             for n = 1:obj.nbFiles
                 % FIXME maybe mask_cell{n} unnecessary. compute mask only once?
-                datacube = obj.data_interp{n}; % choix du cube sur lequel travailler 
+                datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler 
 %                 avgM0 = mean(obj.dataM0{n},[1 2]);
 %                 datacube = sqrt(obj.dataM2{n}/avgM0);
                 one_cycle_video = create_one_cycle(datacube, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
@@ -190,7 +190,7 @@ classdef OneCycleClass
                 close(w);
 
                 if add_infos
-                    datacube = obj.data_interp{n}; % choix du cube sur lequel travailler
+                    datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
                     [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);

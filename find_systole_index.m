@@ -4,16 +4,10 @@ arguments
 end
 
 % create zero-mean signal
+%FIXME redondant
 video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
 
 [mask_artery_retina_choroid,mask_artery] = createArteryMask(video);
-
-% %FIXME seek artery_mask_3rdPass in C
-% for ii=1:size(C,2)
-%     if strcmp(C(1,ii),'artery_mask_3rdPass')==1
-%         mask = C(2,ii);
-%     end
-% end
 
 fullPulseWave = squeeze(sum(video .* mask_artery_retina_choroid, [1 2])/nnz(mask_artery_retina_choroid));
 pulse_init = detrend(fullPulseWave);

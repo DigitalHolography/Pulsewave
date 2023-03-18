@@ -46,4 +46,4 @@ mask_artery = mask_artery_retina_choroid;
 figure(204)
 imagesc(mask_artery_retina_choroid);
 
-mask_artery = magicwand(mask_artery, 0.2, 8, 2);
+mask_artery = magicwand(mask_artery, 0.2, 8, 4);
