@@ -168,31 +168,52 @@ for ii = 1:nb_sides
 end
 for ii=1:size(locs_Vein)
     num = string(ii);
-    text(cx(locs_Vein(ii)),cy(locs_Vein(ii))+15, strcat('V',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
+    new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
+    text(new_x, new_y, strcat('V',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
     num = string(ii);
-    text(cx(locs_Artery(ii)),cy(locs_Artery(ii))+15, strcat('A',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
+    new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
+    text(new_x, new_y, strcat('A',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 % png
-print('-f121','-dpng',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png'))) ;
-% eps
-print('-f121','-depsc',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.eps'))) ;
+% print('-f121','-dpng',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png'))) ;
+drawnow
+ax = gca;
+ax.Units = 'pixels';
+marg = 30;
+pos = ax.Position;
+rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
+F = getframe(ax,rect);
+imwrite(F.cdata, fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png')));
 
 
 figure(120)
 imshow(maskRGB)
 for ii=1:size(locs_Vein)
-    text(cx(locs_Vein(ii)),cy(locs_Vein(ii))+15,string(round(avg_blood_rate_vein_muLmin(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
+    new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
+    text(new_x, new_y, string(round(avg_blood_rate_vein_muLmin(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
-    text(cx(locs_Artery(ii)),cy(locs_Artery(ii))+15,string(round(avg_blood_rate_artery_muLmin(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
+    new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
+    text(new_x, new_y, string(round(avg_blood_rate_artery_muLmin(ii),3)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
 end
+
 title(['Total blood volume rate : ' num2str(total_blood_rate_artery_muLmin) ' µL/min (arteries) - ' num2str(total_blood_rate_vein_muLmin) ' µL/min (veins)']);
 % png
-print('-f120','-dpng',fullfile(one_cycle_dir,strcat(filename,'_Total_blood_volume_rate.png'))) ;
-% eps
-print('-f120','-depsc',fullfile(one_cycle_dir,strcat(filename,'_Total_blood_volume_rate.eps'))) ;
+% print('-f120','-dpng',fullfile(one_cycle_dir,strcat(filename,'_Total_blood_volume_rate.png'))) ;
+drawnow
+ax = gca;
+ax.Units = 'pixels';
+marg = 30;
+pos = ax.Position;
+rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
+F = getframe(ax,rect);
+imwrite(F.cdata, fullfile(one_cycle_dir,strcat(filename,'_Total_blood_volume_rate.png')));
 
 
 % txt file output with measured pulse wave parameters
