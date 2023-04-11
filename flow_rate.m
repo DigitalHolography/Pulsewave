@@ -9,7 +9,7 @@ nb_sides = 120;
 %% Define a section (circle)
 
 %FIXME : radius_ratio as an entry param
-radius_ratio = round(0.15 * size(v_RMS,1));
+radius_ratio = round(0.15* size(v_RMS,1));
 %FIXME : anamorphic image
 blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',0);
 [~,x_center] = findpeaks(sum(blurred_mask,1));

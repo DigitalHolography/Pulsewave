@@ -22,6 +22,6 @@ else
     flag = 0;
     stride = 0;
     Fs = 0;
-end;
+end
 end
 

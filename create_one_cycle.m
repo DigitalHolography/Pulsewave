@@ -71,7 +71,7 @@ selectedPulseIdx = 0;
 
 
 one_cycle_video = tmp; % average all detected cycles
-oneP = squeeze(sum(one_cycle_video .* mask,[1 2 ]) / nnz(mask));
+oneP = squeeze(sum(one_cycle_video .* mask,[1 2]) / nnz(mask));
 [min_val,shift] = min(oneP); % find bottom systole
 one_cycle_video = circshift(one_cycle_video, -shift, 3); % shift pulse to start & end with bottom diastole
 

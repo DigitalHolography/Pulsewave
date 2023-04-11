@@ -50,41 +50,41 @@ classdef OneCycleClass
                         video(:,:,n) = rgb2gray(read(V, n));
                     end
                     obj.dataM2M0{ii} = video;
-                    % Import Moment 0
-                    tmpname = strcat(name(1:end-2), 'moment0');
-                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-                    V = VideoReader(fullfile(filepath,[tmpname,ext]));
-                    videoM0 = zeros(V.Height, V.Width, V.NumFrames);
-                    for n = 1 : V.NumFrames
-                        videoM0(:,:,n) = rgb2gray(read(V, n));
-                    end
-                    obj.dataM0{ii} = videoM0;
-                    % Import Moment 1
-                    tmpname = strcat(name(1:end-2), 'moment1');
-                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-                    V = VideoReader(fullfile(filepath,[tmpname,ext]));
-                    videoM1 = zeros(V.Height, V.Width, V.NumFrames);
-                    for n = 1 : V.NumFrames
-                        videoM1(:,:,n) = rgb2gray(read(V, n));
-                    end
-                    obj.dataM1{ii} = videoM1;
-                    % Import Moment 2
-                    tmpname = strcat(name(1:end-2), 'moment2');
-                    disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-                    V = VideoReader(fullfile(filepath,[tmpname,ext]));
-                    videoM2 = zeros(V.Height, V.Width, V.NumFrames);
-                    for n = 1 : V.NumFrames
-                        videoM2(:,:,n) = rgb2gray(read(V, n));
-                    end
-                    obj.dataM2{ii} = videoM2;
+%                     % Import Moment 0
+%                     tmpname = strcat(name(1:end-2), 'moment0');
+%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+%                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
+%                     videoM0 = zeros(V.Height, V.Width, V.NumFrames);
+%                     for n = 1 : V.NumFrames
+%                         videoM0(:,:,n) = rgb2gray(read(V, n));
+%                     end
+%                     obj.dataM0{ii} = videoM0;
+%                     % Import Moment 1
+%                     tmpname = strcat(name(1:end-2), 'moment1');
+%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+%                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
+%                     videoM1 = zeros(V.Height, V.Width, V.NumFrames);
+%                     for n = 1 : V.NumFrames
+%                         videoM1(:,:,n) = rgb2gray(read(V, n));
+%                     end
+%                     obj.dataM1{ii} = videoM1;
+%                     % Import Moment 2
+%                     tmpname = strcat(name(1:end-2), 'moment2');
+%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
+%                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
+%                     videoM2 = zeros(V.Height, V.Width, V.NumFrames);
+%                     for n = 1 : V.NumFrames
+%                         videoM2(:,:,n) = rgb2gray(read(V, n));
+%                     end
+%                     obj.dataM2{ii} = videoM2;
 
                     % M1/M0 : DopplerAvg
-                    directorySection = path;
-                    directorySection(end-3:end) = 'avi\';
-                    filenamesSection = files{ii};
-                    filenamesSection = filenamesSection(1:end-6);
-                    filenamesSection = strcat(filenamesSection, 'DopplerAVG.avi');
-                    disp(['reading : ',strcat(directorySection, filenamesSection)]);
+%                     directorySection = path;
+%                     directorySection(end-3:end) = 'avi\';
+%                     filenamesSection = files{ii};
+%                     filenamesSection = filenamesSection(1:end-6);
+%                     filenamesSection = strcat(filenamesSection, 'DopplerAVG.avi');
+%                     disp(['reading : ',strcat(directorySection, filenamesSection)]);
                     
                     
 

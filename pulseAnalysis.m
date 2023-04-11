@@ -62,8 +62,7 @@ colormap gray
 maskVessel = createVesselMask(fullVideo);
 maskVein = double(maskVessel) - double(maskArteryRetinaChoroid); 
 maskVein = maskVein > 0; 
-maskVein = magicwand(maskVein, 0.2, 8, 6);
-
+maskVein = magicwand(maskVein, 0.2, 8, 15);
 
 % maskArtery; a ret
 % 
@@ -76,15 +75,14 @@ axis off
 axis equal
 colormap gray
 
-
 % maskArteryInPlane = maskArtery; % to delete (just for debug mask)
 % v_RMS = dataCube; % to delete (just for debug mask)
 % displaySuccessMsg();
 % return;
 
-
 %% calculate raw signals of arteries, background and veins
 
+size(maskArtery)
 fullArterialPulse = fullVideo .* maskArtery;
 fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
 
@@ -319,9 +317,9 @@ axis equal
 colormap gray
 
 % Average Arterial Pulse for In-Plane arteries
-[onePulseVideo2, ~] = create_one_cycle(dataCube, maskArteryInPlane, sys_index_list, Ninterp);
-avgArterialPulse =  onePulseVideo2 .* maskArteryInPlane;
-avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArteryInPlane);
+[onePulseVideo2, ~] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp);
+avgArterialPulse =  onePulseVideo2 .* maskArtery;
+avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery);
 
 %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 % % Average Arterial Pulse for Out-of-Plane arteries (CRA) with AVG video
@@ -434,8 +432,8 @@ fclose(fileID);
 
 
 disp('arterial resistivity...');
-[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(onePulseVideo2, maskArteryInPlane);
-ARImap = ARImap.*maskArteryInPlane;
+[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(onePulseVideo2, maskArtery);
+ARImap = ARImap.*maskArtery;
 
 % export fig
 figure(15)
