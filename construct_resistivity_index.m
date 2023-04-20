@@ -12,7 +12,7 @@ arterialPulse = arterialPulse/nnz(maskArtery);
 for ii=1:size(video,1)
     for kk=1:size(video,2)
         if maskArtery(ii,kk)==1
-            video(ii,kk,:) = imgaussfilt(video(ii,kk,:),2);
+            video(ii,kk,:) = imgaussfilt(video(ii,kk,:),3);
         end
     end
 end
@@ -25,6 +25,8 @@ ARI = (maxAP - minAP)/maxAP;
 %% arterial resistivity map values (no mask)
 % FIXME add time blur to video 
 ARImap = squeeze( (video(:,:,maxAPidx) - video(:,:,minAPidx)) ./ video(:,:,maxAPidx) );
+tmp_M = ARImap.*maskArtery>0;
+ARImap = ARImap.*tmp_M;
 
 %%
 % composite image parameters
@@ -52,27 +54,27 @@ lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
 val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
 
 Artery_val = abs(ARImap .* maskArtery);
-maxArtery = max(Artery_val(:));
-minArtery = min(nonzeros(Artery_val));
-for ii=1:size(ARImap,1)
-    for kk=1:size(ARImap,2)
-        if Artery_val(ii,kk) ~= 0
-            Artery_val(ii,kk) = (Artery_val(ii,kk)-minArtery)./(maxArtery-minArtery);
-        end
-    end
-end
+% maxArtery = max(Artery_val(:));
+% minArtery = min(nonzeros(Artery_val));
+% for ii=1:size(ARImap,1)
+%     for kk=1:size(ARImap,2)
+%         if Artery_val(ii,kk) ~= 0
+%             Artery_val(ii,kk) = (Artery_val(ii,kk)-minArtery)./(maxArtery-minArtery);
+%         end
+%     end
+% end
+% 
+% Artery_val = Artery_val.*maskArtery;
 
-Artery_val = Artery_val.*maskArtery;
-
-gamma = 0.5;
+gamma = 0.7;
 ARImapRGB = ones(size(ARImap,1), size(ARImap,2), 3);
 ARImapRGB(:,:,1) = val - maskArtery.*val + ones(size(ARImap,1), size(ARImap,2)).*maskArtery;
-ARImapRGB(:,:,2) = val - maskArtery.*val + Artery_val.^gamma;
-ARImapRGB(:,:,3) = val - maskArtery.*val + Artery_val.^gamma;
+ARImapRGB(:,:,2) = val - maskArtery.*val + maskArtery - Artery_val.^gamma;
+ARImapRGB(:,:,3) = val - maskArtery.*val + maskArtery - Artery_val.^gamma;
 
 %% arterial resistivity video RGB
 video = mat2gray(video); % not quantitative anymore
-sat = satAmp * mat2gray(abs(ARImap)) .* maskArtery;
+sat = satAmp * mat2gray(abs(ARImap).* maskArtery) ;
 % sat = satAmp * abs(ARImap .* maskArtery);
 hue = 1 * ones(size(video,1), size(video,2)); % pure red color
 

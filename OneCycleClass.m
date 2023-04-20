@@ -194,6 +194,7 @@ classdef OneCycleClass
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
                     [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+%                     detectElasticWave(datacube, maskArtery, maskCRA);
                     [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
 
                     w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_flowVideo',ext))) ;
