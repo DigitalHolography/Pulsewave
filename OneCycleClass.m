@@ -162,11 +162,20 @@ classdef OneCycleClass
         function onePulse(obj, fullPulseWave_cell, mask_cell, maskArtery, sys_index_list_cell, Ninterp, add_infos, k)
             % k corresponds to interpolation 2^k-1
             idx = 0 ;
-            while (exist(fullfile(obj.directory, sprintf("one_cycle_%d",idx)), 'dir'))
+            [~,file_name,~] = fileparts(obj.filenames{1});
+            file_name = file_name(1:end-11);
+            folder_name = strcat( file_name, '_one_cycle');
+            while (exist(fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)), 'dir'))
                 idx = idx + 1 ;
             end
-            one_cycle_dir = fullfile(obj.directory, sprintf("one_cycle_%d",idx)) ;
+
+
+            one_cycle_dir = fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)) ;
             mkdir(one_cycle_dir);
+        
+
+
+
             for n = 1:obj.nbFiles
                 % FIXME maybe mask_cell{n} unnecessary. compute mask only once?
                 datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler 
