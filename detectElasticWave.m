@@ -1,7 +1,7 @@
 function detectElasticWave(video, mask_artery, maskCRA)
 % choose a number of dominant frequencies to analyse
 n_freq = 2;
-pixel_size = 6/1023;
+pixel_size = 6/1535;
 video_arteries = video .* mask_artery;
 
 %% find dominant frequencies
@@ -19,8 +19,8 @@ blurred_mask = imgaussfilt(double(mean(video,3).*double(maskCRA)),round(size(mas
 [~,x_center] = findpeaks(sum(blurred_mask,1));
 [~,y_center] = findpeaks(sum(blurred_mask,2));
 
-video = circshift(video, -(ceil(size(video, 1)/2) - x_center), 1);
-video = circshift(video, -(ceil(size(video, 2)/2) - y_center), 2);
+% video = circshift(video, -(ceil(size(video, 1)/2) - x_center), 1);
+% video = circshift(video, -(ceil(size(video, 2)/2) - y_center), 2);
 
 %r = 100; % radius
 %x = linspace(-r, r, size(video, 1)); % x values
@@ -28,7 +28,7 @@ x = 1:size(video, 1);
 y = 1:size(video, 2);
 %y = linspace(-r, r, size(video, 2)); % y values
 [X, Y] = meshgrid(x, y);
-D = sqrt((X).^2 + (Y).^2);
+D = sqrt((X - floor(length(x)/2)).^2 + (Y - floor(length(x)/2)).^2);
 
 meanZ = zeros((floor(length(x)/2) - 1), n_freq);
 ring_size = zeros((floor(length(x)/2) - 1), n_freq);
@@ -46,6 +46,7 @@ for jj = 1 : n_freq
     fft_arteries_pos_filt = fft_arteries_pos .* H;
 
     signal_artery = ifft(fft_arteries_pos_filt, [], 3);
+%     signal_artery = ifft(fft_arteries_pos, [], 3);
 
     %% find correlations in filtered signal
     SFFT_signal_artery = (fft2(signal_artery));
@@ -71,7 +72,10 @@ end
 
 [x, y] = convertk2lambda(meanZ(:,1), pixel_size);
 
+
+figure(1)
 plot(x, y);
+1;
 
 
 
