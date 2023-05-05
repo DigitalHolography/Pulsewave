@@ -163,8 +163,8 @@ classdef OneCycleClass
             % k corresponds to interpolation 2^k-1
             idx = 0 ;
             [~,file_name,~] = fileparts(obj.filenames{1});
-            file_name = file_name(1:end-11);
-            folder_name = strcat( file_name, '_one_cycle');
+            file_name_2= file_name(1:end-11);
+            folder_name = strcat( file_name_2, '_one_cycle');
             while (exist(fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)), 'dir'))
                 idx = idx + 1 ;
             end

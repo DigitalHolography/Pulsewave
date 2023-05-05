@@ -1,4 +1,4 @@
-function video = viscosity(mask_cell , velocity_cell, angle_list)
+function video = viscosity(mask_cell , velocity_cell, angle_list, one_cycle_dir, filename)
 
 num_vessels = size(mask_cell, 2);
 n_interp = 100;
@@ -58,7 +58,7 @@ end% ii (artery #)
 
 average_velocity_profile = squeeze(mean(velocity_profiles, 3));
 
-v = VideoWriter('C:\Users\Mikhalkino\Videos\velocity_profile.avi');
+v = VideoWriter(fullfile(one_cycle_dir, strcat(filename,'_velocity_profile.avi')));
 open(v);
 mimin = min(average_velocity_profile(:));
 mamax = max(average_velocity_profile(:));
@@ -80,5 +80,7 @@ for tt = 1 : size(velocity_cell{1}, 3)
 end
 close(v)
 video = subVideo;
+
+
 
 end

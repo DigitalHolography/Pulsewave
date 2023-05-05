@@ -113,7 +113,7 @@ for ii = 1:size(locs)
 end % ii
 
 if strcmp(vessel_type,'artery')
-    viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list);
+    viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, one_cycle_dir, filename);
 end
 
 end
