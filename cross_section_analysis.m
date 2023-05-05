@@ -1,24 +1,33 @@
-function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness, k)
+function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, vessel_type)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
-img_v_artery = squeeze(mean(v_RMS,3)) .* mask;
+img_v_artery = squeeze(mean(v_RMS,3)).* mask;
 width_cross_section = zeros(length(locs),1);
 avg_blood_rate = zeros(length(locs),1);
 cross_section_area = zeros(length(locs),1);
 avg_blood_velocity = zeros(length(locs),1);
 cross_section_mask = zeros(size(mask));
 
+% %% VARIABLES FOR VELOCITY PROFILE VIDEO
+subImg_cell = cell(1,length(locs));
+subVideo_cell = cell(1,length(locs));
+tilt_angle_list = zeros(1,length(locs));
+
 for ii = 1:size(locs)
     subImgHW = round(width(ii)*3);
     %FIXME bords d IMG, 
-    xRange = round((-subImgHW/2:1:subImgHW/2) + cx(locs(ii)));
-    yRange = round((-subImgHW/2:1:subImgHW/2) + cy(locs(ii)));
-    subImg = img_v_artery(yRange,xRange);
+
+    xRange = round(-subImgHW/2) + cx(locs(ii)) : round(subImgHW/2) + cx(locs(ii));
+    yRange = round(-subImgHW/2) + cy(locs(ii)) : round(subImgHW/2) + cy(locs(ii));
+    subImg = img_v_artery(yRange ,xRange);
 
     %make disk mask
     %FIXME img anamorphique
     subImg = cropCircle(subImg);
+
+    subImg_cell{ii} = subImg;
+    subVideo_cell{ii} = cropCircle(v_RMS(yRange, xRange, :));
 
     theta = linspace(0,180,181);
     projx = zeros(size(subImg,1),length(theta));
@@ -35,15 +44,21 @@ for ii = 1:size(locs)
     imagesc(projy)
 
 
-    [max_projx,tilt_idx] = max(projx(:),[],'all','linear');
-    [row,col] = ind2sub(size(squeeze(projx)),tilt_idx);
-    tilt_angle = col;
+    % [max_projx,tilt_idx] = max(projx(:),[],'all','linear');
+    % [row,col] = ind2sub(size(squeeze(projx)),tilt_idx);
+    % tilt_angle{ii} = col;
 %     [~,tilt_angle] = find(projx == max_projx); %x_max angle de rotation pour une coupe normale au vaisseau
-    subImg = imrotate(subImg,tilt_angle,'bilinear','crop');
-    section_cut = projx(:,tilt_angle);
+    
+    projx_bin = (projx == 0);
+    list_x = squeeze(sum(projx_bin, 1));
+    [~, idc] = max(list_x);
+    tilt_angle_list(ii) = idc(1);
+    subImg = imrotate(subImg,tilt_angle_list(ii),'bilinear','crop');
+    section_cut = projx(:,tilt_angle_list(ii));
 
     figure(1013)
     plot(section_cut);
+
 %     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1),'MinPeakProminence',std(section_cut));
     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(0.004*size(mask,1)));
     % if tmp contains more than 1 element, we select the first one
@@ -60,7 +75,7 @@ for ii = 1:size(locs)
 
     slice_half_thickness_tmp = min(slice_half_thickness,floor(subImgHW/2));
     mask_slice_subImg((slice_center - slice_half_thickness_tmp):(slice_center + slice_half_thickness_tmp),:) = true;
-    mask_slice_subImg = imrotate(double(mask_slice_subImg),-tilt_angle,'bilinear','crop');
+    mask_slice_subImg = imrotate(double(mask_slice_subImg),-tilt_angle_list(ii),'bilinear','crop');
     mask_slice_subImg = mask_slice_subImg>0.01;
 
     %% Average the blood flow calculation over a circle before dividing by the section
@@ -94,6 +109,11 @@ for ii = 1:size(locs)
 %     title("Peaks of luminosity")
 %     pbaspect([1.618 1 1]);
 
+
 end % ii
+
+if strcmp(vessel_type,'artery')
+    viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list);
+end
 
 end

@@ -104,12 +104,12 @@ slice_half_thickness = 10; % size of the rectangle area for velocity averaging (
 
 %% pour chaque veine jj detectee
 [avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein] = ...
-    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k);
+    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'vein');
 avg_blood_rate_vein_muLmin = avg_blood_rate_vein*60;
 
 %% pour chaque artere ii detectee
 [avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery] = ...
-    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k);
+    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'artery');
 avg_blood_rate_artery_muLmin = avg_blood_rate_artery*60;
 %% Display final blood volume rate image
 total_blood_rate_artery = sum(avg_blood_rate_artery(:));
@@ -191,7 +191,7 @@ imwrite(F.cdata, fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png')))
 
 
 figure(120)
-imshow(maskRGB)
+imshow(maskRGB);
 for ii=1:size(locs_Vein)
     new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);

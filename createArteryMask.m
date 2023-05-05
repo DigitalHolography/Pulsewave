@@ -48,6 +48,5 @@ imagesc(mask_artery_retina_choroid);
 
 mask_artery = magicwand(mask_artery, 0.2, 8, 8);
 
-% mask_artery = imread('E:\230222_MAO0581_OS_ONH_1_1\230222_MAO0581_OS_ONH_1_1_DopplerRMS_maskArtery.png');
-% mask_artery = imread('E:\230316_ANJ0618\230316_ANJ0618_OS12_ONH_1_0\230316_ANJ0618_OS12_ONH_1_0_DopplerRMS_maskArtery.png');
+% mask_artery = imread('E:\data Laureline\200721_DEY0244\200721_DEY0244_OD_ONH_0\200721_DEY0244_OD_ONH_0_DopplerRMS_maskArtery.png');
 % mask_artery = double(imbinarize(mask_artery));
