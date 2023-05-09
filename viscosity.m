@@ -123,4 +123,7 @@ xlabel('Frame','FontSize',14);
 ylabel('Viscosity (cP)','FontSize',14); 
 set(gca, 'LineWidth', 2);
 axis tight;
+
+print('-f666','-depsc',fullfile(one_cycle_dir,strcat(filename,'_viscosity_in_time.eps'))) ;
+print('-f666','-dpng',fullfile(one_cycle_dir,strcat(filename,'_viscosity_in_time.png'))) ;
 end
