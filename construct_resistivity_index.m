@@ -1,4 +1,4 @@
-function [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(video, maskArtery)
+function [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, val] = construct_resistivity_index(video, maskArtery)
 % https://en.wikipedia.org/wiki/Arterial_resistivity_index
 % arterial resistivity
 

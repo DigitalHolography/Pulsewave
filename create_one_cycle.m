@@ -1,4 +1,4 @@
-function [one_cycle_video,selectedPulseIdx] = create_one_cycle(video, mask, sys_index_list, Ninterp)
+function [one_cycle_video,selectedPulseIdx, signal_one_cycle] = create_one_cycle(video, mask, sys_index_list, Ninterp)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 arguments
@@ -44,6 +44,24 @@ end
 % S(1,1) = s1;
 % pulseMatrixFiltered = U * S * V';
 % [row col] = find(S>.3*max(S(:)))
+
+signal_one_cycle = squeeze(sum(one_cycle_video .* mask, [1 2])/nnz(mask));
+
+% figure(1111)
+% for ii = 1 : size(one_cycle_video, 4)
+%     plot( ...
+%         (1:Ninterp),signal_one_cycle(:, ii),'-k', ...
+%         'LineWidth',2) ;
+%     hold on
+% end
+% title('average blood flow velocity estimate in in-plane retinal arteries');
+% legend(' arterial pulse');
+% fontsize(gca,12,"points") ;
+% ylabel('blood flow velocity (mm/s)');
+% pbaspect([1.618 1 1]) ;
+% set(gca, 'LineWidth', 2);
+% axis tight;
+% hold off
 
 tmp = zeros(size(video,1), size(video,2), Ninterp);
 ctr = 0;

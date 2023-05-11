@@ -23,6 +23,7 @@ iris_to_retina_distance = 20; %mm
 theta = 0.05;
 % theta = 38 * pi / 180;
 % theta = 0.03;
+strYlabel = 'frequency (kHz)';
 
 opticalIndex = 1.35;
 lambda = 852e-9;
@@ -65,8 +66,8 @@ maskVein = maskVein > 0;
 maskVein = magicwand(maskVein, 0.2, 8, 15);
 
 % maskVein = imread('E:\230222_MAO0581_OS_ONH_1_1\230222_MAO0581_OS_ONH_1_1_DopplerRMS_maskVein.png');
-% maskVein = imread('E:\data Laureline\200721_DEY0244\200721_DEY0244_OD_ONH_0\200721_DEY0244_OD_ONH_0_DopplerRMS_maskVein.png');
-% maskVein = double(imbinarize(maskVein));
+maskVein = imread('E:\data Laureline\200721_DEY0244\200721_DEY0244_OD_ONH_0\200721_DEY0244_OD_ONH_0_DopplerRMS_maskVein.png');
+maskVein = double(imbinarize(maskVein));
 
 % maskArtery; a ret
 % 
@@ -115,6 +116,7 @@ title('arterial pulse waveform and background signal'); % averaged outside of se
 legend('arterial pulse','background', 'venous signal') ;
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
+ylabel(strYlabel,'FontSize',14) ;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
@@ -170,6 +172,7 @@ title('arterial pulse minus background vs. filtered pulse');
 legend('<p(t)> - <b(t)>','local linear regression');
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
+ylabel(strYlabel,'FontSize',14) ;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
@@ -182,6 +185,7 @@ title('venous signal minus background vs. filtered pulse');
 legend('<p(t)> - <b(t)>','local linear regression');
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
+ylabel(strYlabel,'FontSize',14) ;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
@@ -202,6 +206,7 @@ title('derivative of the arterial pulse waveform');
 legend('\delta <p(t)> - <b(t)>','from smoothed data');
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
+ylabel('A.U.','FontSize',14) ;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
@@ -321,7 +326,7 @@ axis equal
 colormap gray
 
 % Average Arterial Pulse for In-Plane arteries
-[onePulseVideo2, ~] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp);
+[onePulseVideo2, ~, signal_one_cycle] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp);
 avgArterialPulse =  onePulseVideo2 .* maskArtery;
 avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery);
 
@@ -400,6 +405,22 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
+figure(1111)
+for ii = 1 : size(signal_one_cycle, 2)
+    plot( ...
+        T(1:length(avgArterialPulse)),signal_one_cycle(:, ii) * scalingFactorVelocity2,'-k', ...
+        'LineWidth',2) ;
+    hold on
+end
+title('arterial blood flow velocity for different cycles');
+legend('arterial pulse');
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+ylabel('blood flow velocity (mm/s)');
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
 % figure(222)
 % plot( ...
 %     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_AVG,'-k', ...
@@ -436,7 +457,7 @@ fclose(fileID);
 
 
 disp('arterial resistivity...');
-[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma] = construct_resistivity_index(onePulseVideo2, maskArtery);
+[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo2, maskArtery);
 ARImap = ARImap.*maskArtery;
 
 % export fig
@@ -470,6 +491,20 @@ colormap(cmap);
 % export RImap
 imwrite(ARImapRGB,fullfile(one_cycle_dir,strcat(filename,'_ARI_map_img.png')),'png');
 print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_ARI_map.png')));
+
+% Save colorbar
+colorfig = figure(113);
+colorfig.Units = 'normalized';
+colormap(cmap)
+hCB = colorbar('north');
+set(gca,'Visible',false)
+set(gca,'LineWidth', 3);
+hCB.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca,15,"points") ;
+
+print('-f113','-dpng',fullfile(one_cycle_dir,strcat(filename,'_ARI_map_colorbar.png')));
+
 
 w = VideoWriter(fullfile(one_cycle_dir,strcat(filename,'_ARIvideoRGB.avi')));
 open(w)
@@ -750,6 +785,12 @@ fprintf(fileID,[...
     ARI);
 fclose(fileID) ;
 
+segmentation_map = zeros(size(img_avg,1), size(img_avg,2), 3);
+segmentation_map(:,:, 1) = img_avg - (maskArtery+maskVein).*img_avg + maskArtery;
+segmentation_map(:,:, 2) = img_avg - (maskArtery+maskVein).*img_avg;
+segmentation_map(:,:, 3) = img_avg - (maskArtery+maskVein).*img_avg + maskVein;
+imwrite(segmentation_map,fullfile(one_cycle_dir,strcat(filename,'_artery_vein_segmentation.png')),'png') ;
+
 
 
 % png
@@ -766,6 +807,7 @@ print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.pn
 print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
 print('-f23','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.png'))) ;
 print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
+print('-f1111','-dpng',fullfile(one_cycle_dir,strcat(filename,'_all_cycles.png'))) ;
 % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
 % print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
 
@@ -783,6 +825,7 @@ print('-f45','-depsc',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.e
 print('-f46','-depsc',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.eps'))) ;
 print('-f23','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
 print('-f24','-depsc',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
+print('-f1111','-depsc',fullfile(one_cycle_dir,strcat(filename,'_all_cycles.eps'))) ;
 % print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
 % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
 

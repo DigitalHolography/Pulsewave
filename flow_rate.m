@@ -59,6 +59,8 @@ imshow(double(maskArtery))
 [pks_Artery, locs_Artery, width_Artery] = find_cross_section(maskArtery, v_RMS, cx, cy, jj);
 
 %% Images HSV Artery-Vein Retina
+eta_sat = 0.1;
+eta_val = 0.1;
 img_v_artery = squeeze(mean(v_RMS,3)) .* maskArtery;
 hue = mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
 hue = hue + abs(-mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
@@ -73,23 +75,112 @@ flowMapRGB =  hsv2rgb(hue, sat, val);
 %% Video HSV Artery-Vein Retina. Velocity & blood volume rate video
 flowVideoRGB = zeros(size(v_RMS,1),size(v_RMS,2),size(v_RMS,3),3);
 v_RMS_n = mat2gray(v_RMS);
+img_backg = squeeze(mean(v_RMS,3));
+img_backg = mat2gray(img_backg);
+img_backg = imadjust(img_backg, stretchlim(img_backg, tolVal));
+v_artery = sum(v_RMS.*maskArtery, [1 2])/nnz(maskArtery);
+v_vein = sum(v_RMS.*maskVein, [1 2])/nnz(maskVein);
+Vmax_Arteries = max(v_artery(:));
+Vmax_Veins = max(v_vein(:));
+Vmin_Arteries = min(v_artery(:));
+Vmin_Veins = min(v_vein(:));
+
+
+adjustedVideo = mat2gray(v_RMS_n);
+avgAdjustedVideo = squeeze(mean(adjustedVideo,3));
+tolVal = [0.1, 0.99]; 
+lowhighVal = stretchlim(avgAdjustedVideo, tolVal); % adjust video contrast a bit 
 for ii = 1:size(v_RMS_n,3)
     v = squeeze(v_RMS_n(:,:,ii));
     img_v_artery = v .* maskArtery;
     hue = v * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
     hue = hue + abs(-v*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-    sat = 1.0 * double(or(maskArtery,maskVein)) .* v;
-    val = v;
+    sat = (1.0 * double(or(maskArtery,maskVein)) .* v).^eta_sat;
+    val = (1.0 * double(or(maskArtery,maskVein)) .* (v)).^eta_val;
     tolVal = [0.02, 0.98];
     lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
-    val = imadjust(val, stretchlim(val, tolVal));
+    % val = imadjust(val, stretchlim(val, tolVal));
     tmp = hsv2rgb(hue, sat, val);
-    flowVideoRGB(:,:,ii,1) = tmp(:,:,1);
-    flowVideoRGB(:,:,ii,2) = tmp(:,:,2);
-    flowVideoRGB(:,:,ii,3) = tmp(:,:,3);
+    v = imadjust(v, lowhighVal);
+    background = v .* (~(maskArtery+maskVein));
+    flowVideoRGB(:,:,ii,1) = tmp(:,:,1) + background;
+    flowVideoRGB(:,:,ii,2) = tmp(:,:,2) + background;
+    flowVideoRGB(:,:,ii,3) = tmp(:,:,3) + background;
 end
+% save video
+w = VideoWriter(fullfile(one_cycle_dir,strcat(filename,'_flowVideo'))) ;
+open(w)
+flow_video_to_save = mat2gray(flowVideoRGB);% 2nd normalization
+for jj = 1:size(flow_video_to_save,3)
+    writeVideo(w,squeeze(flow_video_to_save(:,:,jj,:))) ;
+end
+close(w);
+
+v_m = squeeze(mean(v_artery));
+flow_image = zeros(size(v_RMS,1),size(v_RMS,2),3);
+v = squeeze(mean(v_RMS_n,3));
+hue = v * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
+hue = hue + abs(-v*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
+sat = (1.0 * double(or(maskArtery,maskVein)) .* v).^eta_sat;
+val = (1.0 * double(or(maskArtery,maskVein)) .* (v)).^eta_val;
+tolVal = [0.02, 0.98];
+% val = imadjust(val, stretchlim(val, tolVal));
+tmp = hsv2rgb(hue, sat, val);
+background = img_backg .* (~(maskArtery+maskVein));
+flow_image(:,:,1) = tmp(:,:,1) + background;
+flow_image(:,:,2) = tmp(:,:,2) + background;
+flow_image(:,:,3) = tmp(:,:,3) + background;
+
+figure(321)
+imshow(flow_image);
+imwrite(flow_image, fullfile(one_cycle_dir,strcat(filename,'_flow_image.png')));
 
 
+
+% Save colorbar flow image
+
+list = linspace(0.18,0,256);
+hue = list;
+sat = linspace(0,1,256).^eta_sat;
+val = linspace(1,0,256).^eta_val;
+% val = linspace(0.5,1,256);
+% val = imadjust(val, stretchlim(val, tolVal));
+cmap_arteries = squeeze(hsv2rgb(hue,sat,val));
+
+list = linspace(0.68,0.5,256);
+hue = list;
+sat = linspace(1,0,256).^eta_sat;
+val = linspace(0,1,256).^eta_val;
+% val = linspace(0.5,1,256);
+% val = imadjust(val, stretchlim(val, tolVal));
+cmap_veins = squeeze(hsv2rgb(hue,sat,val));
+cmap = cat(1, cmap_arteries, cmap_veins);
+
+colorfig = figure(3210);
+colorfig.Units = 'normalized';
+colormap(cmap)
+hCB = colorbar('north','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmax_Arteries,1)),'0',string(round(Vmax_Veins,1))});
+set(gca,'Visible',false)
+set(gca,'LineWidth', 3);
+hCB.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca,15,"points");
+colorTitleHandle = get(hCB,'Title');
+titleString = 'Arterial & Venous blood flow velocity (mm/s)';
+set(colorTitleHandle ,'String',titleString);
+
+print('-f3210','-dpng',fullfile(one_cycle_dir,strcat(filename,'_blood_flow_colorbar.png')));
+
+figure(3211)
+imagesc(flow_image);
+colormap(cmap)
+hCB = colorbar('north','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmax_Arteries,1)),'0',string(round(Vmax_Veins,1))});
+axis tight
+axis off
+hCB.Location = "southoutside";
+title('Arterial & Venous blood flow velocity (mm/s)')
+
+print('-f3211','-dpng',fullfile(one_cycle_dir,strcat(filename,'_blood_flow_img_colorbar.png')));
 
 % Average the blood flow calculation over a rectangle before dividing by the section for blood volume rate
 avg_blood_velocity_artery = zeros(length(width_Artery),1);
@@ -170,13 +261,13 @@ for ii=1:size(locs_Vein)
     num = string(ii);
     new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
-    text(new_x, new_y, strcat('V',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, strcat('V',num), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
     num = string(ii);
     new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
-    text(new_x, new_y, strcat('A',num), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, strcat('A',num), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
 end
 % png
 % print('-f121','-dpng',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png'))) ;
@@ -195,12 +286,12 @@ imshow(maskRGB);
 for ii=1:size(locs_Vein)
     new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
-    text(new_x, new_y, string(round(avg_blood_rate_vein_muLmin(ii),1)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, string(round(avg_blood_rate_vein_muLmin(ii),1)), "FontWeight", "bold", "FontSize", 20,  "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
     new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
-    text(new_x, new_y, string(round(avg_blood_rate_artery_muLmin(ii),1)), "FontWeight", "bold", "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, string(round(avg_blood_rate_artery_muLmin(ii),1)), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
 end
 
 title(['Total blood volume rate : ' num2str(round(total_blood_rate_artery_muLmin,1)) ' µL/min (arteries) - ' num2str(round(total_blood_rate_vein_muLmin,1)) ' µL/min (veins)']);

@@ -206,14 +206,6 @@ classdef OneCycleClass
 %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
 
-                    w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_flowVideo',ext))) ;
-                    open(w)
-                    flow_video_to_save = mat2gray(flowVideoRGB);% 2nd normalization
-                    for jj = 1:size(flow_video_to_save,3)
-                        writeVideo(w,squeeze(flow_video_to_save(:,:,jj,:))) ;
-                    end
-                    close(w);
-
                 end % add_infos
             end
             displaySuccessMsg(1);
