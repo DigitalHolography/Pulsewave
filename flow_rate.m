@@ -172,12 +172,15 @@ set(colorTitleHandle ,'String',titleString);
 print('-f3210','-dpng',fullfile(one_cycle_dir,strcat(filename,'_blood_flow_colorbar.png')));
 
 figure(3211)
-imagesc(flow_image);
+imshow(flow_image);
 colormap(cmap)
-hCB = colorbar('north','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmax_Arteries,1)),'0',string(round(Vmax_Veins,1))});
-axis tight
+c = colorbar('southoutside','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmax_Arteries,1)),'0',string(round(Vmax_Veins,1))});
+axis image
 axis off
-hCB.Location = "southoutside";
+set(gca,'LineWidth', 2);
+fontsize(gca,12,"points") ;
+c.Label.String = 'blood flow velocity (mm/s)';
+c.Label.FontSize = 12;
 title('Arterial & Venous blood flow velocity (mm/s)')
 
 print('-f3211','-dpng',fullfile(one_cycle_dir,strcat(filename,'_blood_flow_img_colorbar.png')));
