@@ -65,10 +65,6 @@ maskVein = double(maskVessel) - double(maskArteryRetinaChoroid);
 maskVein = maskVein > 0; 
 maskVein = magicwand(maskVein, 0.2, 8, 15);
 
-% maskVein = imread('E:\230222_MAO0581_OS_ONH_1_1\230222_MAO0581_OS_ONH_1_1_DopplerRMS_maskVein.png');
-% maskVein = imread('E:\data Laureline\200721_DEY0244\200721_DEY0244_OD_ONH_0\200721_DEY0244_OD_ONH_0_DopplerRMS_maskVein.png');
-% maskVein = double(imbinarize(maskVein));
-
 % maskArtery; a ret
 % 
 % maskArtery2; choro + a ret 
