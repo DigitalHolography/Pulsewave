@@ -63,7 +63,8 @@ average_velocity_profile = squeeze(mean(velocity_profiles, 3));
 v = VideoWriter(fullfile(one_cycle_dir, strcat(filename,'_velocity_profile.avi')));
 open(v);
 mimin = min(average_velocity_profile(:));
-mamax = max(average_velocity_profile(:));
+[mamax, idx_mamax] = max(average_velocity_profile(:));
+[~,idx_syst] = ind2sub(size(average_velocity_profile),idx_mamax);
 % x for normalize wall length for fiting
 x = linspace(-1,1,length(average_velocity_profile(:,1)));
 
@@ -72,6 +73,9 @@ alpha_list = zeros(num_frames,1);
 beta_list = zeros(num_frames,1);
 eta_list = zeros(num_frames,1);
 viscosity_list = zeros(num_frames,1);
+
+average_velocity_profile_systole = average_velocity_profile(:,idx_syst);
+average_velocity_profile_diastole = average_velocity_profile(:,end);
 
 for tt = 1 : num_frames
     tmp_velocity_profile = squeeze(average_velocity_profile(:,tt));
@@ -116,6 +120,33 @@ for tt = 1 : num_frames
 end
 close(v)
 video = subVideo;
+
+% Systole/Diastole velocity profile
+
+x_section = linspace(-0.7,0.7,length(squeeze(average_velocity_profile_systole)));
+fit_velocity_profile_systole = Vmax_list(idx_syst)*(1-(1-alpha_list(idx_syst)).*abs(x_section).^beta_list(idx_syst));
+fit_velocity_profile_diastole = Vmax_list(end)*(1-(1-alpha_list(end)).*abs(x_section).^beta_list(end));
+figure(668)
+plot(x_section,average_velocity_profile_systole,'-k',...
+x_section,average_velocity_profile_diastole,'-k',...
+    x_section,fit_velocity_profile_systole,'-r',...
+    x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
+title('Systole and diastole arterial velocity profile');
+fontsize(gca,12,"points") ;
+% xticks(x);
+xticklabels({'section'});
+xlabel('section','FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+ylim([0.9*mimin 1.1*mamax]);
+ylabel('velocity (mm/s)','FontSize',14) ;
+
+print('-f668','-depsc',fullfile(one_cycle_dir,strcat(filename,'_velocity_cross_section.eps'))) ;
+print('-f668','-dpng',fullfile(one_cycle_dir,strcat(filename,'_velocity_cross_section.png'))) ;
+
+
+
 figure(666)
 plot(viscosity_list)
 pbaspect([1.618 1 1]);
