@@ -14,10 +14,14 @@ disp('over one cardiac cycle...');
 
 M = length(sys_index_list)-1; % M : pulse #
 one_cycle_video = zeros(size(video,1), size(video,2), Ninterp, M);
+
+Nx = size(video,1);
+Ny = size(video,2);
+
 for ii = 1:M % for each detected pulse, loop
     interp_range = linspace(sys_index_list(ii),sys_index_list(ii+1)-1,Ninterp);
-    for id_x = 1 : size(video,1)
-        for id_y = 1 : size(video,2)
+    for id_x = 1 : Nx
+        for id_y = 1 : Ny
             one_cycle_video(id_x,id_y,:,ii) = interp1((sys_index_list(ii):sys_index_list(ii+1)-1),squeeze(video(id_x, id_y,sys_index_list(ii):sys_index_list(ii+1)-1)),interp_range);
         end
     end

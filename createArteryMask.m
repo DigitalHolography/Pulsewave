@@ -1,7 +1,6 @@
 function [mask_artery_retina_choroid,mask_artery] = createArteryMask(video)
 %FIXME : check the link with VesselMask (order between flat_field_correction and imbinarize)
 %FIXME : add threshold parameter
-
 mask_artery = squeeze(std(video, 0, 3));
 
 figure(307)
@@ -47,3 +46,10 @@ figure(204)
 imagesc(mask_artery_retina_choroid);
 
 mask_artery = magicwand(mask_artery, 0.2, 8, 8);
+
+list_fig_close = [307,204];
+for ii=1:length(list_fig_close)
+    close(list_fig_close(ii));
+end
+
+end

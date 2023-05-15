@@ -172,8 +172,14 @@ classdef OneCycleClass
 
             one_cycle_dir = fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)) ;
             mkdir(one_cycle_dir);
-        
-
+            mkdir(fullfile(one_cycle_dir, 'png'));
+            mkdir(fullfile(one_cycle_dir, 'eps'));
+            mkdir(fullfile(one_cycle_dir, 'avi'));
+            mkdir(fullfile(one_cycle_dir, 'txt'));
+            one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
+            one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
+            one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
+            one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
 
 
             for n = 1:obj.nbFiles
@@ -184,8 +190,8 @@ classdef OneCycleClass
                 one_cycle_video = create_one_cycle(datacube, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
                 % FIXME : si l'image de depart est raw, sauver un .raw
                 one_cycle_video_to_save = mat2gray(one_cycle_video); %1st normalization
-                [~,name,ext] = fileparts(obj.filenames{n}) ;
-                w = VideoWriter(fullfile(one_cycle_dir,strcat(name,'_one_cycle',ext))) ;
+                [~,name,~] = fileparts(obj.filenames{n}) ;
+                w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(name,'_one_cycle'))) ;
                 open(w)
                 % FIXME flatfield correction does not work
 %                 for j = 1:size(one_cycle_video_to_save,3)
@@ -202,9 +208,13 @@ classdef OneCycleClass
                     datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
+                    tic
                     [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+                    toc
 %                     detectElasticWave(datacube, maskArtery, maskCRA);
+                    tic
                     [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
+                    toc
 
                 end % add_infos
             end

@@ -51,6 +51,4 @@ diff_signal = diff(pulse_init);
 
 [~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * 0.7);
 
-
-
 end

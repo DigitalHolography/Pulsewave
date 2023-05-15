@@ -116,4 +116,9 @@ if strcmp(vessel_type,'artery')
     viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, one_cycle_dir, filename);
 end
 
+list_fig_close = [3001,3002,1013];
+for ii=1:length(list_fig_close)
+    close(list_fig_close(ii));
+end
+
 end

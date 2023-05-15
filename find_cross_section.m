@@ -46,4 +46,9 @@ title("Luminosity evolution");
 pbaspect([1.618 1 1]);
 axis tight;
 
+list_fig_close = [102];
+for ii=1:length(list_fig_close)
+    close(list_fig_close(ii));
+end
+
 end

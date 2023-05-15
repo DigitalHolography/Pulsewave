@@ -1,5 +1,10 @@
 function video = viscosity(mask_cell , velocity_cell, angle_list, one_cycle_dir, filename)
 
+one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
+one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
+one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
+one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
+
 num_vessels = size(mask_cell, 2);
 num_frames = size(velocity_cell{1}, 3);
 n_interp = 100;
@@ -60,7 +65,7 @@ end% ii (artery #)
 
 average_velocity_profile = squeeze(mean(velocity_profiles, 3));
 
-v = VideoWriter(fullfile(one_cycle_dir, strcat(filename,'_velocity_profile.avi')));
+v = VideoWriter(fullfile(one_cycle_dir_avi, strcat(filename,'_velocity_profile.avi')));
 open(v);
 mimin = min(average_velocity_profile(:));
 [mamax, idx_mamax] = max(average_velocity_profile(:));
@@ -142,10 +147,6 @@ axis tight;
 ylim([0.9*mimin 1.1*mamax]);
 ylabel('velocity (mm/s)','FontSize',14) ;
 
-print('-f668','-depsc',fullfile(one_cycle_dir,strcat(filename,'_velocity_cross_section.eps'))) ;
-print('-f668','-dpng',fullfile(one_cycle_dir,strcat(filename,'_velocity_cross_section.png'))) ;
-
-
 
 figure(666)
 plot(viscosity_list)
@@ -155,6 +156,16 @@ ylabel('Viscosity (cP)','FontSize',14);
 set(gca, 'LineWidth', 2);
 axis tight;
 
-print('-f666','-depsc',fullfile(one_cycle_dir,strcat(filename,'_viscosity_in_time.eps'))) ;
-print('-f666','-dpng',fullfile(one_cycle_dir,strcat(filename,'_viscosity_in_time.png'))) ;
+% png
+print('-f668','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_velocity_cross_section.png'))) ;
+print('-f666','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_viscosity_in_time.png'))) ;
+% eps
+print('-f668','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_velocity_cross_section.eps'))) ;
+print('-f666','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_viscosity_in_time.eps'))) ;
+
+list_fig_close = [666, 899];
+for ii=1:length(list_fig_close)
+    close(list_fig_close(ii));
+end
+
 end

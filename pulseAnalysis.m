@@ -9,6 +9,11 @@ function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, 
 % sys_index_list :
 % v_RMS : cube of one-cycle RMS velocity vs. time 
 
+one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
+one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
+one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
+one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
+
 %% FIXME : const;
 borderAmount = 0; % for flatFieldCorrection() and createBorderMask
 dataCube = fullVideo;
@@ -464,7 +469,7 @@ axis tight;
 % save average arterial pulse wave velocity to txt file
 tmp = [T(1:length(avgArterialPulse))',avgArterialPulseVelocity2];
 %size(tmp)
-fileID = fopen(fullfile(one_cycle_dir, strcat(filename,'_avgPulse.txt')),'w') ;
+fileID = fopen(fullfile(one_cycle_dir_txt, strcat(filename,'_avgPulse.txt')),'w') ;
 fprintf(fileID,'%f %f \r\n',tmp');
 fclose(fileID);
 
@@ -501,9 +506,6 @@ end
 colormap(cmap);
 
 
-% export RImap
-imwrite(ARImapRGB,fullfile(one_cycle_dir,strcat(filename,'_ARI_map_img.png')),'png');
-print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_ARI_map.png')));
 
 % Save colorbar
 colorfig = figure(113);
@@ -516,10 +518,10 @@ hCB.Position = [0.10 0.3 0.81 0.35];
 colorfig.Position(4) = 0.1000;
 fontsize(gca,15,"points") ;
 
-print('-f113','-dpng',fullfile(one_cycle_dir,strcat(filename,'_ARI_map_colorbar.png')));
 
 
-w = VideoWriter(fullfile(one_cycle_dir,strcat(filename,'_ARIvideoRGB.avi')));
+
+w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(filename,'_ARIvideoRGB.avi')));
 open(w)
 ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
 for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
@@ -775,7 +777,7 @@ end
 title(strcat('Arterial resistivity. avg. index value : ', num2str(ARI)));
 
 % txt file output with measured pulse wave parameters
-fileID = fopen(fullfile(one_cycle_dir,strcat(filename,'_pulseWaveParameters.txt')),'w') ;
+fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'w') ;
 fprintf(fileID,[...
     'Value of pulse derivative at the maximum systolic increase :\n%d\n' ...
     'Maximal acceleration (m/s^(-2)) :\n%d\n' ...
@@ -802,65 +804,10 @@ segmentation_map = zeros(size(img_avg,1), size(img_avg,2), 3);
 segmentation_map(:,:, 1) = img_avg - (maskArtery+maskVein).*img_avg + maskArtery;
 segmentation_map(:,:, 2) = img_avg - (maskArtery+maskVein).*img_avg;
 segmentation_map(:,:, 3) = img_avg - (maskArtery+maskVein).*img_avg + maskVein;
-imwrite(segmentation_map,fullfile(one_cycle_dir,strcat(filename,'_artery_vein_segmentation.png')),'png') ;
 
 
 
-% png
-print('-f2','-dpng',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.png'))) ;
-print('-f8','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.png'))) ;
-print('-f9','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.png'))) ;
-print('-f22','-dpng',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.png'))) ;
-print('-f6','-dpng',fullfile(one_cycle_dir,strcat(filename,'_derivative.png'))) ;
-print('-f111','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.png'))) ;
-print('-f80','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.png'))) ;
-print('-f90','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.png'))) ;
-print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.png'))) ;
-print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.png'))) ;
-print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
-print('-f23','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.png'))) ;
-print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
-print('-f1111','-dpng',fullfile(one_cycle_dir,strcat(filename,'_all_cycles.png'))) ;
-print('-f2410','-dpng',fullfile(one_cycle_dir,strcat(filename,'_RMS_frequency_colorbar.png')));
-print('-f123','-dpng',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.png'))) ;
 
-% print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
-% print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
-
-% eps
-print('-f2','-depsc',fullfile(one_cycle_dir,strcat(filename,'_pulseVsBackground.eps'))) ;
-print('-f8','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulse.eps'))) ;
-print('-f9','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.eps'))) ;
-print('-f22','-depsc',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.eps'))) ;
-print('-f6','-depsc',fullfile(one_cycle_dir,strcat(filename,'_derivative.eps'))) ;
-print('-f111','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.eps'))) ;figure(123)
-print('-f80','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.eps'))) ;
-print('-f90','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.eps'))) ;
-print('-f15','-depsc',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.eps'))) ;
-print('-f45','-depsc',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.eps'))) ;
-print('-f46','-depsc',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.eps'))) ;
-print('-f23','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
-print('-f24','-depsc',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
-print('-f1111','-depsc',fullfile(one_cycle_dir,strcat(filename,'_all_cycles.eps'))) ;
-print('-f2410','-depsc',fullfile(one_cycle_dir,strcat(filename,'_RMS_frequency_colorbar.eps')));
-print('-f123','-depsc',fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
-
-% print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
-% print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
-
-% masks
-imwrite(mat2gray(dMap),fullfile(one_cycle_dir,strcat(filename,'_rawDopplerHeatMap_image.png')),'png') ;
-imwrite(mat2gray(dMap_flat),fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap_image.png')),'png') ;
-imwrite(mat2gray(dMap_flat),fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap_image.png')),'png') ;
-imwrite(mat2gray(single(maskArteryInPlane)),fullfile(one_cycle_dir,strcat(filename,'_maskArteryInPlane.png')),'png') ;
-imwrite(mat2gray(single(maskArtery)),fullfile(one_cycle_dir,strcat(filename,'_maskArtery.png')),'png') ;
-imwrite(mat2gray(single(maskVein)),fullfile(one_cycle_dir,strcat(filename,'_maskVein.png')),'png') ;
-imwrite(mat2gray(single(maskVessel)),fullfile(one_cycle_dir,strcat(filename,'_maskVessel.png')),'png') ;
-imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir,strcat(filename,'_maskBackground.png')),'png') ;
-imwrite(mat2gray(single(maskArteryRetinaChoroid)),fullfile(one_cycle_dir,strcat(filename,'_maskArteryRetinaChoroid.png')),'png') ;
-imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir,strcat(filename,'_maskCRA.png')),'png') ;
-imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir,strcat(filename,'_maskCRV.png')),'png') ;
-imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir,strcat(filename,'_maskBackgroundM1M0.png')),'png') ;
 
 
 %displaySuccessMsg();
@@ -896,10 +843,6 @@ fontsize(gca,15,"points");
 colorTitleHandle = get(hCB,'Title');
 titleString = 'AVG Doppler frequency (kHz)';
 set(colorTitleHandle ,'String',titleString);
-
-print('-f1230','-depsc',fullfile(one_cycle_dir,strcat(filename,'_AVG_frequency_colorbar.eps')));
-print('-f1230','-dpng',fullfile(one_cycle_dir,strcat(filename,'_AVG_frequency_colorbar.png')));
-imwrite(mat2gray(dMap_AVG),fullfile(one_cycle_dir,strcat(filename,'_AVG_Doppler_image.png')),'png') ;
 
 % 
 % % dMap = squeeze(mean(fullVideo,3));
@@ -1054,41 +997,84 @@ colormap gray
 % print('-f103','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRVpulseVsBackground.png'))) ;
 % print('-f108','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRAfilteredPulse.png'))) ;
 % print('-f110','-dpng',fullfile(one_cycle_dir,strcat(filename,'_CRVfilteredPulse.png'))) ;
-% % print('-f9','-dpng',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.png'))) ;
-% % print('-f22','-dpng',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.png'))) ;
-% % print('-f6','-dpng',fullfile(one_cycle_dir,strcat(filename,'_derivative.png'))) ;
-% % print('-f1','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.png'))) ;
-% % print('-f80','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.png'))) ;
-% % print('-f90','-dpng',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.png'))) ;
-% % print('-f15','-dpng',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.png'))) ;
-% % print('-f45','-dpng',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.png'))) ;
-% % print('-f46','-dpng',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.png'))) ;
 % print('-f24','-dpng',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
-% % % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
-% % % print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
+% print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
+% print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
 % 
 % % eps
 % print('-f102','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRApulseVsBackground.eps'))) ;
 % print('-f103','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRVpulseVsBackground.eps'))) ;
 % print('-f108','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRAfilteredPulse.eps'))) ;
 % print('-f110','-depsc',fullfile(one_cycle_dir,strcat(filename,'_CRVfilteredPulse.eps'))) ;
-% % print('-f9','-depsc',fullfile(one_cycle_dir,strcat(filename,'_filteredPulseVsResidual.eps'))) ;
-% % print('-f22','-depsc',fullfile(one_cycle_dir,strcat(filename,'_regularizedPulse.eps'))) ;
-% % print('-f6','-depsc',fullfile(one_cycle_dir,strcat(filename,'_derivative.eps'))) ;
-% % print('-f1','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWave.eps'))) ;
-% % print('-f80','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveLabeled.eps'))) ;
-% % print('-f90','-depsc',fullfile(one_cycle_dir,strcat(filename,'_avgPulseWaveDerivative.eps'))) ;
-% % print('-f15','-depsc',fullfile(one_cycle_dir,strcat(filename,'_resistivityMap.eps'))) ;
-% % print('-f45','-depsc',fullfile(one_cycle_dir,strcat(filename,'_diastoleHeatMap.eps'))) ;
-% % print('-f46','-depsc',fullfile(one_cycle_dir,strcat(filename,'_systoleHeatMap.eps'))) ;
-% % print('-f24','-depsc',fullfile(one_cycle_dir,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
-% % % print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
-% % % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
-% 
-% 
-% displaySuccessMsg();
-%%
+% print('-f77','-depsc',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.eps'))) ;
+% print('-f99','-depsc',fullfile(one_cycle_dir,strcat(filename,'_timeLags.eps'))) ;
 
+% png
+print('-f2','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_pulseVsBackground.png'))) ;
+print('-f8','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_filteredPulse.png'))) ;
+print('-f9','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_filteredPulseVsResidual.png'))) ;
+print('-f22','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_regularizedPulse.png'))) ;
+print('-f6','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_derivative.png'))) ;
+print('-f111','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_avgPulseWave.png'))) ;
+print('-f80','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_avgPulseWaveLabeled.png'))) ;
+print('-f90','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_avgPulseWaveDerivative.png'))) ;
+print('-f15','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_resistivityMap.png'))) ; % open
+print('-f45','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_diastoleHeatMap.png'))) ;
+print('-f46','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_systoleHeatMap.png'))) ;
+print('-f23','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_rawDopplerHeatMap.png'))) ;
+print('-f24','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_flattenedDopplerHeatMap.png'))) ;
+print('-f1111','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_all_cycles.png'))) ;
+print('-f2410','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_RMS_frequency_colorbar.png')));
+print('-f123','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_raw_AVG_DopplerHeatMap.png'))) ;
+print('-f1230','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_AVG_frequency_colorbar.png')));
+print('-f113','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_ARI_map_colorbar.png')));
+print('-f15','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_ARI_map.png')));
+
+
+% print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
+% print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
+
+% eps
+print('-f2','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_pulseVsBackground.eps'))) ;
+print('-f8','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_filteredPulse.eps'))) ;
+print('-f9','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_filteredPulseVsResidual.eps'))) ;
+print('-f22','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_regularizedPulse.eps'))) ;
+print('-f6','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_derivative.eps'))) ;
+print('-f111','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_avgPulseWave.eps'))) ;
+print('-f80','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_avgPulseWaveLabeled.eps'))) ;
+print('-f90','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_avgPulseWaveDerivative.eps'))) ;
+print('-f15','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_resistivityMap.eps'))) ;
+print('-f45','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_diastoleHeatMap.eps'))) ;
+print('-f46','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_systoleHeatMap.eps'))) ;
+print('-f23','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
+print('-f24','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
+print('-f1111','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_all_cycles.eps'))) ;
+print('-f2410','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_RMS_frequency_colorbar.eps')));1111
+print('-f123','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_raw_AVG_DopplerHeatMap.eps'))) ;
+print('-f1230','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_AVG_frequency_colorbar.eps')));
+
+
+% masks
+imwrite(mat2gray(dMap_AVG),fullfile(one_cycle_dir_png,strcat(filename,'_AVG_Doppler_image.png')),'png') ;
+imwrite(ARImapRGB,fullfile(one_cycle_dir_png,strcat(filename,'_ARI_map_img.png')),'png');
+imwrite(mat2gray(dMap),fullfile(one_cycle_dir_png,strcat(filename,'_rawDopplerHeatMap_image.png')),'png') ;
+imwrite(mat2gray(dMap_flat),fullfile(one_cycle_dir_png,strcat(filename,'_flattenedDopplerHeatMap_image.png')),'png') ;
+imwrite(mat2gray(single(maskArteryInPlane)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArteryInPlane.png')),'png') ;
+imwrite(mat2gray(single(maskArtery)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArtery.png')),'png') ;
+imwrite(mat2gray(single(maskVein)),fullfile(one_cycle_dir_png,strcat(filename,'_maskVein.png')),'png') ;
+imwrite(mat2gray(single(maskVessel)),fullfile(one_cycle_dir_png,strcat(filename,'_maskVessel.png')),'png') ;
+imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir_png,strcat(filename,'_maskBackground.png')),'png') ;
+imwrite(mat2gray(single(maskArteryRetinaChoroid)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArteryRetinaChoroid.png')),'png') ;
+imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir_png,strcat(filename,'_maskCRA.png')),'png') ;
+imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir_png,strcat(filename,'_maskCRV.png')),'png') ;
+imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir_png,strcat(filename,'_maskBackgroundM1M0.png')),'png') ;
+imwrite(segmentation_map,fullfile(one_cycle_dir_png,strcat(filename,'_artery_vein_segmentation.png')),'png') ;
+
+list_fig_close = [2,8,9,22,6,111,80,90,45,46,...
+    23,2410,123,1230,101,5,4,4444,88,502,1111,104,105,107,113];
+for ii=1:length(list_fig_close)
+    close(list_fig_close(ii));
+end
 
 return;
 

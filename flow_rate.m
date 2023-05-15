@@ -3,7 +3,11 @@ function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cy
 %   Detailed explanation goes here
 % k = interpolation 2^k-1 (for size pixel for section calculation)
 
-type_of_selection = "Automatic";
+one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
+one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
+one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
+one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
+
 nb_sides = 120;
 
 %% Define a section (circle)
@@ -108,7 +112,7 @@ for ii = 1:size(v_RMS_n,3)
     flowVideoRGB(:,:,ii,3) = tmp(:,:,3) + background;
 end
 % save video
-w = VideoWriter(fullfile(one_cycle_dir,strcat(filename,'_flowVideo'))) ;
+w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(filename,'_flowVideo'))) ;
 open(w)
 flow_video_to_save = mat2gray(flowVideoRGB);% 2nd normalization
 for jj = 1:size(flow_video_to_save,3)
@@ -133,7 +137,7 @@ flow_image(:,:,3) = tmp(:,:,3) + background;
 
 figure(321)
 imshow(flow_image);
-imwrite(flow_image, fullfile(one_cycle_dir,strcat(filename,'_flow_image.png')));
+
 
 
 
@@ -169,7 +173,7 @@ colorTitleHandle = get(hCB,'Title');
 titleString = 'Arterial & Venous blood flow velocity (mm/s)';
 set(colorTitleHandle ,'String',titleString);
 
-print('-f3210','-dpng',fullfile(one_cycle_dir,strcat(filename,'_blood_flow_colorbar.png')));
+
 
 figure(3211)
 imshow(flow_image);
@@ -183,7 +187,7 @@ c.Label.String = 'blood flow velocity (mm/s)';
 c.Label.FontSize = 12;
 title('Arterial & Venous blood flow velocity (mm/s)')
 
-print('-f3211','-dpng',fullfile(one_cycle_dir,strcat(filename,'_blood_flow_img_colorbar.png')));
+
 
 % Average the blood flow calculation over a rectangle before dividing by the section for blood volume rate
 avg_blood_velocity_artery = zeros(length(width_Artery),1);
@@ -280,8 +284,8 @@ ax.Units = 'pixels';
 marg = 30;
 pos = ax.Position;
 rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
-F = getframe(ax,rect);
-imwrite(F.cdata, fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png')));
+F_MaskTopology = getframe(ax,rect);
+
 
 
 figure(120)
@@ -306,12 +310,37 @@ ax.Units = 'pixels';
 marg = 30;
 pos = ax.Position;
 rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
-F = getframe(ax,rect);
-imwrite(F.cdata, fullfile(one_cycle_dir,strcat(filename,'_Total_blood_volume_rate.png')));
+F_Total_blood_volume_rate = getframe(ax,rect);
+
+
+figure(115)
+imshow(maskRGB);
+for ii=1:size(locs_Vein)
+    new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
+    new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
+    text(new_x, new_y, string(round(avg_blood_velocity_vein(ii),1)), "FontWeight", "bold", "FontSize", 20,  "Color", "white", "BackgroundColor", "black");
+end
+for ii=1:size(locs_Artery)
+    new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
+    new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
+    text(new_x, new_y, string(round(avg_blood_velocity_artery(ii),1)), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
+end
+
+title('Velocity map in venous & arterial vessels');
+% png
+% print('-f120','-dpng',fullfile(one_cycle_dir,strcat(filename,'_Total_blood_volume_rate.png'))) ;
+drawnow
+ax = gca;
+ax.Units = 'pixels';
+marg = 30;
+pos = ax.Position;
+rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
+F_total_blood_flow = getframe(ax,rect);
 
 
 % txt file output with measured pulse wave parameters
-fileID = fopen(fullfile(one_cycle_dir,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
+
+fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
 fprintf(fileID,[...
     'Value of total arterial blood volume rate (µL/min) :\n%d\n' ...
     'Value of total arterial blood volume rate (mm^3/s) :\n%d\n' ...
@@ -328,7 +357,7 @@ fprintf(fileID,[...
 fclose(fileID) ;
 
 for ii=1:length(avg_blood_rate_artery)
-    fileID = fopen(fullfile(one_cycle_dir,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
+    fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
     fprintf(fileID,[...
         'Artery n°%d : cross_section (mm^2) : \n %d \n ' ...
         'Artery n°%d : vessel diameter (µm) : \n %d \n ' ...
@@ -346,7 +375,7 @@ for ii=1:length(avg_blood_rate_artery)
 end
 
 for ii=1:length(avg_blood_rate_vein)
-    fileID = fopen(fullfile(one_cycle_dir,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
+    fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
     fprintf(fileID,[...
         'Vein n°%d : cross_section (mm^2) : \n %d \n ' ...
         'Vein n°%d : vessel diameter (µm) : \n %d \n ' ...
@@ -361,6 +390,23 @@ for ii=1:length(avg_blood_rate_vein)
         ii, ...
         avg_blood_rate_vein(ii)*60);% mm^3/s -> µL/min 
     fclose(fileID) ;
+end
+
+% png
+print('-f3210','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_colorbar.png')));
+print('-f3211','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_img_colorbar.png')));
+% eps
+print('-f3210','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_colorbar.eps')));
+print('-f3211','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_img_colorbar.eps')));
+
+imwrite(flow_image, fullfile(one_cycle_dir_png,strcat(filename,'_flow_image.png')));
+imwrite(F_total_blood_flow.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_Total_blood_flow.png')));
+imwrite(F_MaskTopology.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_MaskTopologyAV.png')));
+imwrite(F_Total_blood_volume_rate.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_Total_blood_volume_rate.png')));
+
+list_fig_close = [3210,3211,118,119,121,154,100];
+for ii=1:length(list_fig_close)
+    close(list_fig_close(ii));
 end
 
 end
