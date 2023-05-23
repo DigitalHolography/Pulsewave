@@ -92,7 +92,7 @@ for tt = 1 : num_frames
     % tmp_fittype = fittype('Vmax .* (1-(1-0.13).* (abs(x).^beta))',...
     % 'dependent',{'tmp_velocity_profile'},'independent',{'x'},...
     % 'coefficients',{'Vmax','beta'});
-    [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [15 0.7 2],'Lower', [5 0.1 1], 'Upper', [30 0.95 3]);
+    [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [15 0.7 2],'Lower', [1 0.1 1], 'Upper', [30 0.95 3]);
     R2_tmp_fit = R2_tmp_fit.rsquare;
     
     fifig = figure(899);

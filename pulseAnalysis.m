@@ -42,9 +42,8 @@ scalingFactorVelocityCRA2_RMS  = 1000 * 1000 * lambda / opticalIndex * (1/(2+2*(
 for pp = 1:size(dataCube,3)
     dataCube(:,:,pp) = flat_field_correction(squeeze(dataCube(:,:,pp)), 0.07*size(dataCube,1), 0.25);
 end
-%
 
-%%
+%
 
 % FIXME maskArtery : best computed from reference video
 % maskArtery = createArteryMask(fullVideo);
@@ -58,21 +57,17 @@ colormap gray
 %% create additional masks
 
 maskVessel = createVesselMask(fullVideo);
+maskBackground = not(maskVessel);
+maskVein = double(maskVessel) - double(maskArteryRetinaChoroid); 
+maskVein = maskVein > 0; 
+maskVein = magicwand(maskVein, 0.2, 8, 15);
+
 figure(4)
 imagesc(maskVessel);
 title('segmented vessels');
 axis off
 axis equal
 colormap gray
-
-maskVessel = createVesselMask(fullVideo);
-maskVein = double(maskVessel) - double(maskArteryRetinaChoroid); 
-maskVein = maskVein > 0; 
-maskVein = magicwand(maskVein, 0.2, 8, 15);
-
-% maskArtery; a ret
-% 
-% maskArtery2; choro + a ret 
 
 figure(4444)
 imagesc(maskVein);
@@ -81,10 +76,6 @@ axis off
 axis equal
 colormap gray
 
-% maskArteryInPlane = maskArtery; % to delete (just for debug mask)
-% v_RMS = dataCube; % to delete (just for debug mask)
-% displaySuccessMsg();
-% return;
 
 %% calculate raw signals of arteries, background and veins
 
@@ -94,9 +85,7 @@ fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
 
 % maskBorder = createBorderMask(maskVessel,borderAmount);
 % maskBackground = not(maskVessel) .* maskBorder;
-maskBackground = not(maskVessel);
 
-%
 fullBackgroundSignal = fullVideo .* maskBackground;
 fullBackgroundSignal = squeeze(sum(fullBackgroundSignal, [1 2]))/nnz(maskBackground);
 
@@ -348,6 +337,14 @@ colormap gray
 avgArterialPulse =  onePulseVideo2 .* maskArtery;
 avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery);
 
+w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(filename,'_one_cycle.avi')));
+tmp = mat2gray(onePulseVideo2);
+open(w)
+for j = 1:size(onePulseVideo2,3)
+    writeVideo(w,tmp(:,:,j)) ;
+end
+close(w);
+
 %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 % % Average Arterial Pulse for Out-of-Plane arteries (CRA) with AVG video
 % [onePulseVideoCRA_AVG, ~] = create_one_cycle(dataCubeM1M0, maskCRA, sys_index_list, Ninterp);
@@ -371,7 +368,7 @@ nb_frames = size(onePulseVideo2,3) ;
 blur_time_sys = ceil(nb_frames/100);
 blur_time_dia = ceil(nb_frames/100);
 
-%
+
 if cache_exists % .mat with cache from holowaves is present, timeline can be computed
     average_cycle_length = 0;
     nb_of_averaged_cycles = 0;
@@ -606,7 +603,7 @@ disp('arterial pulse wave analysis...');
 
 
 %% calculation of average pulse in arteries
-I_arteries = one_pulse_video .* maskArtery;
+% I_arteries = one_pulse_video .* maskArtery;
 % avgArterialPulse = squeeze(sum(I_arteries, [1 2]))/nnz(maskArtery);
 % avgArterialPulse = avgArterialPulse - min(avgArterialPulse) ;
 % [~,idx] = min(avgArterialPulse,[],1) ;
@@ -636,7 +633,7 @@ else % no .mat present, hence no timeline, T == frames instead of time in s.
 end
 
 %% diastolic Doppler frequency heatmap : 10% of frames before minimum of diastole
-heatmap_dia = squeeze(mean(one_pulse_video(:,:,floor(0.9*nb_frames):nb_frames),3));
+heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*nb_frames):nb_frames),3));
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*nb_frames):nb_frames),3));
 heatmap_dia = flat_field_correction(heatmap_dia, ceil(.07*size(heatmap_dia,1)), .33);
@@ -656,7 +653,7 @@ range(1:2) = clim;
 %% systolic Doppler frequency heatmap : 10% of frames around peak systole
 a = max(ceil(idx_sys-0.05*nb_frames),1);
 b = min(ceil(idx_sys+0.05*nb_frames),nb_frames);
-heatmap_sys = squeeze(mean(one_pulse_video(:,:,a:b),3));
+heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 % onePulseVideo2 : no background correction 
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 heatmap_sys = flat_field_correction(heatmap_sys, ceil(.07*size(heatmap_sys,1)), .33);
@@ -1049,7 +1046,7 @@ print('-f46','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_systoleHeatMa
 print('-f23','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_rawDopplerHeatMap.eps'))) ;
 print('-f24','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_flattenedDopplerHeatMap.eps'))) ;
 print('-f1111','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_all_cycles.eps'))) ;
-print('-f2410','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_RMS_frequency_colorbar.eps')));1111
+print('-f2410','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_RMS_frequency_colorbar.eps')));
 print('-f123','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_raw_AVG_DopplerHeatMap.eps'))) ;
 print('-f1230','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_AVG_frequency_colorbar.eps')));
 
@@ -1072,9 +1069,7 @@ imwrite(segmentation_map,fullfile(one_cycle_dir_png,strcat(filename,'_artery_vei
 
 list_fig_close = [2,8,9,22,6,111,80,90,45,46,...
     23,2410,123,1230,101,5,4,4444,88,502,1111,104,105,107,113];
-for ii=1:length(list_fig_close)
-    close(list_fig_close(ii));
-end
+close(list_fig_close);
 
 return;
 

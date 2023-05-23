@@ -187,30 +187,29 @@ classdef OneCycleClass
                 datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler 
 %                 avgM0 = mean(obj.dataM0{n},[1 2]);
 %                 datacube = sqrt(obj.dataM2{n}/avgM0);
-                one_cycle_video = create_one_cycle(datacube, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
-                % FIXME : si l'image de depart est raw, sauver un .raw
-                one_cycle_video_to_save = mat2gray(one_cycle_video); %1st normalization
+%                 one_cycle_video = create_one_cycle(datacube, mask_cell{n}, sys_index_list_cell{n}, Ninterp) ;
+%                 % FIXME : si l'image de depart est raw, sauver un .raw
+%                 one_cycle_video_to_save = mat2gray(one_cycle_video); %1st normalization
                 [~,name,~] = fileparts(obj.filenames{n}) ;
-                w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(name,'_one_cycle'))) ;
-                open(w)
-                % FIXME flatfield correction does not work
+%                 w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(name,'_one_cycle'))) ;
+%                 open(w)
+%                 % FIXME flatfield correction does not work
+% %                 for j = 1:size(one_cycle_video_to_save,3)
+% %                     one_cycle_video_to_save(:,:,j) = ...
+% %                         flat_field_correction(squeeze(one_cycle_video_to_save(:,:,j)),0.07,0.25);
+% %                 end
+%                 one_cycle_video_to_save = mat2gray(one_cycle_video_to_save);% 2nd normalization
 %                 for j = 1:size(one_cycle_video_to_save,3)
-%                     one_cycle_video_to_save(:,:,j) = ...
-%                         flat_field_correction(squeeze(one_cycle_video_to_save(:,:,j)),0.07,0.25);
+%                     writeVideo(w,one_cycle_video_to_save(:,:,j)) ;
 %                 end
-                one_cycle_video_to_save = mat2gray(one_cycle_video_to_save);% 2nd normalization
-                for j = 1:size(one_cycle_video_to_save,3)
-                    writeVideo(w,one_cycle_video_to_save(:,:,j)) ;
-                end
-                close(w);
+%                 close(w);
 
                 if add_infos
                     datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
-                    tic
-                    [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
-                    toc
+%                      [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+                        [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},[],one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
 %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
                     [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
