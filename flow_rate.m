@@ -13,7 +13,7 @@ nb_sides = 120;
 %% Define a section (circle)
 
 %FIXME : radius_ratio as an entry param
-radius_ratio = round(0.27* size(v_RMS,1));
+radius_ratio = round(0.23* size(v_RMS,1));
 %FIXME : anamorphic image
 blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',0);
 [~,x_center] = findpeaks(sum(blurred_mask,1));
@@ -98,28 +98,12 @@ for ii = 1:size(v_RMS_n,3)
     v = squeeze(v_RMS(:,:,ii));
     hue = mat2gray(v) * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
     hue = hue + abs(-mat2gray(v)*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-    sat = 1.0 * double(or(maskArtery,maskVein)) .* mat2gray(v);
+    sat = (1.0 - abs(0.5 * mat2gray(v))) .* double(or(maskArtery,maskVein)) ;
     val = mat2gray(v);
     tolVal = [0.02, 0.98];
     lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
     val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
     flowVideoRGB(:,:,:,ii) = hsv2rgb(hue, sat, val);
-%     v = squeeze(v_RMS_n(:,:,ii));
-%     img_v_artery = v .* maskArtery;
-%     hue = v * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
-%     hue = hue + abs(-v*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-%     sat = (1.0 * double(or(maskArtery,maskVein)) .* v).^eta_sat;
-%     val = (1.0 * double(or(maskArtery,maskVein)) .* (v)).^eta_val;
-%     tolVal = [0.02, 0.98];
-%     lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
-%     % val = imadjust(val, stretchlim(val, tolVal));
-%     tmp = hsv2rgb(hue, sat, val);
-%     v = imadjust(v, lowhighVal);
-%     background = v .* (~(maskArtery+maskVein));
-%     flowVideoRGB(:,:,ii,1) = tmp(:,:,1) + background;
-%     flowVideoRGB(:,:,ii,2) = tmp(:,:,2) + background;
-%     flowVideoRGB(:,:,ii,3) = tmp(:,:,3) + background;
-1;
 end
 % save video
 w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(filename,'_flowVideo'))) ;
@@ -132,139 +116,87 @@ close(w);
 
 val_image = val;
 
-% v_m = squeeze(mean(v_artery));
-% flow_image = zeros(size(v_RMS,1),size(v_RMS,2),3);
-% v = squeeze(mean(v_RMS_n,3));
-% hue = v * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
-% hue = hue + abs(-v*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-% sat = (1.0 * double(or(maskArtery,maskVein)) .* v).^eta_sat;
-% val = (1.0 * double(or(maskArtery,maskVein)) .* (v)).^eta_val;
-% tolVal = [0.02, 0.98];
-% % val = imadjust(val, stretchlim(val, tolVal));
-% tmp = hsv2rgb(hue, sat, val);
-% background = img_backg .* (~(maskArtery+maskVein));
-% flow_image(:,:,1) = tmp(:,:,1) + background;
-% flow_image(:,:,2) = tmp(:,:,2) + background;
-% flow_image(:,:,3) = tmp(:,:,3) + background;
-
-% vec = linspace(0.25, max(nonzeros(mat2gray(v).*maskArtery), [], 'all'), 256);
-% maskVec = squeeze(ones(256, 1)');
 
 v = squeeze(mean(v_RMS, 3));
 hue = mat2gray(v) * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
 hue = hue + abs(-mat2gray(v)*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-sat = 1.0 * double(or(maskArtery,maskVein)) .* mat2gray(v);
+% sat = 1.0 * double(or(maskArtery,maskVein)) .* mat2gray(v);
+sat = (1.0 - abs(0.5 * mat2gray(v))) .* double(or(maskArtery,maskVein)) ;
 val = mat2gray(v);
 tolVal = [0.02, 0.98];
 lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
 val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
 flowImageRGB = hsv2rgb(hue, sat, val);
 
-% hueVec = mat2gray(vec) * 0.18 .* maskVec; % 0.18 for orange-yellow range in HSV
-% % hueVec = hueVec + abs(-mat2gray(vec)*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-% satVec = 1.0 * double(or(maskVec,maskVec)) .* mat2gray(vec);
-% valVec = mat2gray(vec);
-% tolVal = [0.02, 0.98];
-% lowhigh = stretchlim(valVec, tolVal); % adjust contrast a bit
-% valVec = mat2gray(imadjust(valVec, stretchlim(valVec, tolVal)));
-% flowVec = hsv2rgb(hueVec, satVec, valVec);
-
 
 figure(321)
 imshow(flowImageRGB);
 
 % Save colorbar flow image
-
-% v_min_artery_sat = min(nonzeros(mat2gray(v).*maskArtery), [], 'all');
-% v_max_artery_sat = max(nonzeros(mat2gray(v).*maskArtery), [], 'all');
+color_bounds = [0.1 0.98];
 % Reshape the image into a vector
-tmp = nonzeros(mat2gray(v).*maskArtery);
-image_vector = tmp(:);
-tmp = nonzeros(val_image.*maskArtery);
-image_vector_val = tmp(:);
-% Sort the pixel values in ascending order
-sorted_values = sort(image_vector);
-sorted_values_val = sort(image_vector_val);
+tmp = nonzeros(mat2gray(v).*or(maskArtery,maskVein));
+tmp = stretchlim(tmp, color_bounds);
+min_sat = min(tmp, [], 'all');
+max_sat = max(tmp, [], 'all');
 
-% Calculate the threshold value for arteries
-threshold_index_min = ceil(0.2 * numel(sorted_values));
-threshold_min = sorted_values(threshold_index_min);
-threshold_index_max = ceil(0.98 * numel(sorted_values));
-threshold_max = sorted_values(threshold_index_max);
+tmp = nonzeros(val_image.*or(maskArtery,maskVein));
+tmp = stretchlim(tmp, color_bounds);
+min_val = min(tmp, [], 'all');
+max_val = max(tmp, [], 'all');
 
-threshold_index_min_val = ceil(0.2 * numel(sorted_values_val));
-threshold_min_val = sorted_values_val(threshold_index_min_val);
-threshold_index_max_val = ceil(0.98 * numel(sorted_values_val));
-threshold_max_val = sorted_values_val(threshold_index_max_val);
+% tmp = nonzeros(mat2gray(v).*maskVein);
+% tmp = stretchlim(tmp, color_bounds);
+% vein_min_sat = min(tmp, [], 'all');
+% vein_max_sat = max(tmp, [], 'all');
+% 
+% tmp = nonzeros(val_image.*maskVein);
+% tmp = stretchlim(tmp, color_bounds);
+% vein_min_val = min(tmp, [], 'all');
+% vein_max_val = max(tmp, [], 'all');
 
-list = linspace(0.18 * threshold_max, 0.18 * threshold_min ,256);
+
+
+list = linspace(0.18 * max_sat, 0.18 * min_sat ,256);
 hue = list;
-% sat = linspace(0,1,256).^eta_sat;
-% val = linspace(1,0,256).^eta_val;
-sat = linspace(threshold_max, threshold_min , 256);
-val = linspace(threshold_max_val, threshold_min_val , 256);
-% val = linspace(0.5,1,256);
-% val = imadjust(val, stretchlim(val, tolVal));
+sat = linspace(1.0 - 0.5*(max_sat), 1.0 - 0.5*(min_sat) , 256);
+val = linspace(max_val, min_val , 256);
+
 cmap_arteries = squeeze(hsv2rgb(hue,sat,val));
 
-% Reshape the image into a vector
-tmp = nonzeros(mat2gray(v).*maskVein);
-image_vector = tmp(:);
-tmp = nonzeros(val_image.*maskVein);
-image_vector_val = tmp(:);
-% Sort the pixel values in ascending order
-sorted_values = sort(image_vector);
-sorted_values_val = sort(image_vector_val);
-
-% Calculate the threshold value for veins
-threshold_index_min = ceil(0.2 * numel(sorted_values));
-threshold_min = sorted_values(threshold_index_min);
-threshold_index_max = ceil(0.98 * numel(sorted_values));
-threshold_max = sorted_values(threshold_index_max);
-
-threshold_index_min_val = ceil(0.2 * numel(sorted_values_val));
-threshold_min_val = sorted_values_val(threshold_index_min_val);
-threshold_index_max_val = ceil(0.98 * numel(sorted_values_val));
-threshold_max_val = sorted_values_val(threshold_index_max_val);
-
-list = linspace(0.18*threshold_max + 0.5, 0.18*threshold_min + 0.5,256);
+list = linspace(0.18*max_sat + 0.5, 0.18*min_sat + 0.5,256);
 hue = list;
-sat = linspace(threshold_min, threshold_max, 256);
-val = linspace(threshold_min_val, threshold_max_val, 256);
-% sat = linspace(1,0,256).^eta_sat;
-% val = linspace(0,1,256).^eta_val;
-% val = linspace(0.5,1,256);
-% val = imadjust(val, stretchlim(val, tolVal));
+sat = linspace(1.0 - 0.5*min_sat, 1.0 - 0.5*max_sat, 256);
+val = linspace(min_val, max_val, 256);
 cmap_veins = squeeze(hsv2rgb(hue,sat,val));
-cmap = cat(1, cmap_arteries, cmap_veins);
 
 colorfig = figure(3210);
+%colorbar arteries
 colorfig.Units = 'normalized';
-colormap(cmap)
-hCB = colorbar('north','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmax_Arteries,1)),'0',string(round(Vmax_Veins,1))});
+colormap(flip(cmap_arteries))
+hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmin_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
 set(gca,'Visible',false)
 set(gca,'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
+hCB.Position = [0.1 0.3 0.81 0.35];
+colorfig.Position(4) = 0.100;
 fontsize(gca,15,"points");
 colorTitleHandle = get(hCB,'Title');
-titleString = 'Arterial & Venous blood flow velocity (mm/s)';
+titleString = 'Arterial velocity (mm/s)';
 set(colorTitleHandle ,'String',titleString);
 
-
-
-figure(3211)
-imshow(flowImageRGB);
-colormap(cmap)
-c = colorbar('southoutside','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmax_Arteries,1)),'0',string(round(Vmax_Veins,1))});
-axis image
-axis off
-set(gca,'LineWidth', 2);
-fontsize(gca,12,"points") ;
-c.Label.String = 'blood flow velocity (mm/s)';
-c.Label.FontSize = 12;
-title('Arterial & Venous blood flow velocity (mm/s)')
-
+colorfig2 = figure(3209);
+%colorbar veins
+colorfig2.Units = 'normalized';
+colormap(cmap_veins)
+hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmin_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
+set(gca,'Visible',false)
+set(gca,'LineWidth', 3);
+hCB.Position = [0.1 0.3 0.81 0.35];
+colorfig2.Position(4) = 0.100;
+fontsize(gca,15,"points");
+colorTitleHandle = get(hCB,'Title');
+titleString = 'Venous velocity (mm/s)';
+set(colorTitleHandle ,'String',titleString);
 
 
 % Average the blood flow calculation over a rectangle before dividing by the section for blood volume rate
@@ -318,13 +250,6 @@ for ii=1:size(locs_Vein)
 end
 title(['Total blood volume rate : ' num2str(round(total_blood_rate_vein,1)) ' (mm^3/s)' num2str(round(total_blood_rate_vein_muLmin,1)) ' (µL/min)']);
 
-% maskRGB_artery = zeros(size(maskArtery,1), size(maskArtery,2), 3);
-% maskRGB_artery(:,:,:) = maskArtery;
-% maskRGB_artery(:,:,2:3) = ~cross_section_mask_artery;
-% maskRGB_artery = maskRGB_artery .* maskArtery;
-% 
-% maskRGB_vein(:,:,3) = cross_section_mask_vein;
-% maskRGB_vein = zeros(size(maskVein,1), size(maskVein,2), 3);
 
 maskRGB = ones(size(maskArtery,1), size(maskArtery,2), 3);
 maskRGB = maskRGB .* (maskArtery+maskVein);
@@ -471,17 +396,17 @@ for ii=1:length(avg_blood_rate_vein)
 end
 
 % png
-print('-f3210','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_colorbar.png')));
-print('-f3211','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_img_colorbar.png')));
+print('-f3209','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_venous_colorbar.png')));
+print('-f3210','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_arterial_colorbar.png')));
 % eps
-print('-f3210','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_colorbar.eps')));
-print('-f3211','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_img_colorbar.eps')));
+print('-f3209','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_venous_colorbar.eps')));
+print('-f3210','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_arterial_colorbar.eps')));
 
 imwrite(flowImageRGB, fullfile(one_cycle_dir_png,strcat(filename,'_flow_image.png')));
 imwrite(F_total_blood_flow.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_Total_blood_flow.png')));
 imwrite(F_MaskTopology.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_MaskTopologyAV.png')));
 imwrite(F_Total_blood_volume_rate.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_Total_blood_volume_rate.png')));
-list_fig_close = [3210,3211,118,119,121,154,100];
+list_fig_close = [118,119,121,154,100];
 for ii=1:length(list_fig_close)
     close(list_fig_close(ii));
 end
