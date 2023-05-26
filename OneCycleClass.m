@@ -226,7 +226,7 @@ classdef OneCycleClass
                     tic
                     [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
                     toc
-                    %[SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, k);
+                    [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, k);
 
                 end % add_infos
             end

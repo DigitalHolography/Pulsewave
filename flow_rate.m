@@ -66,6 +66,8 @@ imshow(double(maskArtery))
 eta_sat = 0.1;
 eta_val = 0.1;
 img_v_artery = squeeze(mean(v_RMS,3)) .* maskArtery;
+
+
 hue = mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
 hue = hue + abs(-mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
 sat = 1.0 * double(or(maskArtery,maskVein)).* squeeze(mean(v_RMS,3));
