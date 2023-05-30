@@ -4,7 +4,7 @@ function [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, SH, one
 
 [flag,~, fs] = getTimelineParamsFromCache(one_cycle_dir);
 [flag,~, f1, f2, ~, ~] = getTimeTransformParamsFromCache(one_cycle_dir);
-
+fs = fs/1000;
 
 one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
 SH_arteries = SH.*maskArtery;
