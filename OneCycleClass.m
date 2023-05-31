@@ -12,6 +12,7 @@ classdef OneCycleClass
         directory char
         nbFiles {mustBeNumeric , mustBePositive}
         filenames (1,:) cell
+        k double %interpolaton parameter
         % For sectioning
         video_loaded
         pictureSection
@@ -39,6 +40,8 @@ classdef OneCycleClass
             obj.dataM2 = cell(1,obj.nbFiles) ;
             obj.dataSH = cell(1,obj.nbFiles) ;
             obj.dataSH_interp = cell(1,obj.nbFiles) ;
+            obj.k = 0; 
+
             for ii = 1 : obj.nbFiles
                 currentFilePath = fullfile(obj.directory,obj.filenames{ii});
                 [filepath,name,ext] = fileparts(currentFilePath);
@@ -54,45 +57,10 @@ classdef OneCycleClass
                         video(:,:,n) = rgb2gray(read(V, n));
                     end
                     obj.dataM2M0{ii} = video;
-%                     % Import Moment 0
-%                     tmpname = strcat(name(1:end-2), 'moment0');
-%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-%                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
-%                     videoM0 = zeros(V.Height, V.Width, V.NumFrames);
-%                     for n = 1 : V.NumFrames
-%                         videoM0(:,:,n) = rgb2gray(read(V, n));
-%                     end
-%                     obj.dataM0{ii} = videoM0;
-%                     % Import Moment 1
-%                     tmpname = strcat(name(1:end-2), 'moment1');
-%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-%                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
-%                     videoM1 = zeros(V.Height, V.Width, V.NumFrames);
-%                     for n = 1 : V.NumFrames
-%                         videoM1(:,:,n) = rgb2gray(read(V, n));
-%                     end
-%                     obj.dataM1{ii} = videoM1;
-%                     % Import Moment 2
-%                     tmpname = strcat(name(1:end-2), 'moment2');
-%                     disp(['reading : ',fullfile(filepath,[tmpname,ext])]);
-%                     V = VideoReader(fullfile(filepath,[tmpname,ext]));
-%                     videoM2 = zeros(V.Height, V.Width, V.NumFrames);
-%                     for n = 1 : V.NumFrames
-%                         videoM2(:,:,n) = rgb2gray(read(V, n));
-%                     end
-%                     obj.dataM2{ii} = videoM2;
-
-                    % M1/M0 : DopplerAvg
-%                     directorySection = path;
-%                     directorySection(end-3:end) = 'avi\';
-%                     filenamesSection = files{ii};
-%                     filenamesSection = filenamesSection(1:end-6);
-%                     filenamesSection = strcat(filenamesSection, 'DopplerAVG.avi');
-%                     disp(['reading : ',strcat(directorySection, filenamesSection)]);
+                    %obj.k = 1;
+                    [~,obj.k] =  getPulsewaveParamsFromTxt(path);
                     
                     
-
-
                 elseif (ext == '.raw')
                     % sqrt M2/M0 : DopplerRMS
                     disp(['reading : ',fullfile(filepath,[name,ext])]);
@@ -136,6 +104,12 @@ classdef OneCycleClass
                     videoSH = fread(fileID,'float32');
                     fclose(fileID);
                     obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
+
+                    %obj.k = 1;
+                    [~,obj.k] =  getPulsewaveParamsFromTxt(path);
+
+
+%                     obj.k = getPulsewaveParamsFromTxt(path);
                 else
                     disp([filepath,name,ext,' : non recognized video format']);
                 end
@@ -162,6 +136,45 @@ classdef OneCycleClass
             end
         end
 
+        function obj = Interpolate(obj,height,width,ref) %ref = TRUE indicates the object is the reference
+            
+            num_frames = size(obj.dataM2M0{1}, 3);
+            k_interp = obj.k;
+            height = (height-1)*(2^k_interp-1)+height;
+            width = (width-1)*(2^k_interp-1)+width;
+
+            if ref 
+                tmp_ref = zeros(height,width, size(obj.dataM2M0{1}, 3));
+                tmp_calc_ref = obj.dataM2M0{1};
+                
+                for i = 1 : num_frames % loop over frames
+                    tmp_ref(:,:,i) = interp2( tmp_calc_ref(:,:,i), k_interp);
+                end
+                obj.dataM2M0_interp{1} = tmp_ref;
+
+
+            else
+                tmp_dataM2M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+                tmp_data_M1M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+                tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
+                tmp_calc_data = obj.dataM2M0{1};
+                tmp_calc_data_M1M0 = obj.dataM1M0{1};
+                tmp_calc_data_SH = obj.dataSH{1};
+                parfor i = 1 : num_frames % loop over frames
+                    tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
+                    tmp_data_M1M0(:,:,i) = interp2(tmp_calc_data_M1M0(:,:,i), k_interp);
+                end
+                for i = 1 : size(obj.dataSH{1}, 3)
+                    tmp_data_SH(:,:,i) = interp2(tmp_calc_data_SH(:,:,i), k_interp);
+                end
+                obj.dataM2M0_interp{1} = tmp_dataM2M0;
+                obj.dataM1M0_interp{1} = tmp_data_M1M0;
+                obj.dataSH_interp{1} = tmp_data_SH;
+
+            end
+            
+        end
+
         function [sys_index_list_cell, mask_cell, maskArtery, fullPulseWave_cell] = getSystole(obj)
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
@@ -180,7 +193,8 @@ classdef OneCycleClass
                 idx = idx + 1 ;
             end
 
-
+            %FIXME Remplacer One_cycle_dir par une cell qui contient les
+            %chemin ves tous les dossiers
             one_cycle_dir = fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)) ;
             mkdir(one_cycle_dir);
             mkdir(fullfile(one_cycle_dir, 'png'));
@@ -216,6 +230,7 @@ classdef OneCycleClass
 %                 close(w);
 
                 if add_infos
+                    close all
                     datacube = obj.dataM2M0_interp{n}; % choix du cube sur lequel travailler
                     datacube_freq = obj.dataSH{n};
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
@@ -224,9 +239,9 @@ classdef OneCycleClass
                         [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},[],one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
 %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
-                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, k);
+                    [flowVideoRGB] = flow_rate(obj.directory,maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, obj.k);
                     toc
-                    [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, k);
+                    [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, obj.k);
 
                 end % add_infos
             end

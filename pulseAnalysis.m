@@ -738,7 +738,7 @@ text(T(idx_sys + idx_list_threshold_dia(1)),min(pulse_arteries_blurred_dia(:))+0
 legend('arterial pulse','smoothed line') ;
 fontsize(gca,12,"points") ;
 xlabel('Time (s)','FontSize',14) ;
-ylabel('background-corrected RMS frequency (kHz)','FontSize',14) ;
+ylabel('frequency (kHz)','FontSize',14) ;
 axis tight;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);

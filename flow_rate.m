@@ -1,4 +1,4 @@
-function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename, k)
+function [flowVideoRGB] = flow_rate(path,maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename, k)
 %SECTION_PLOT Summary of this function goes here
 %   Detailed explanation goes here
 % k = interpolation 2^k-1 (for size pixel for section calculation)
@@ -13,13 +13,14 @@ nb_sides = 120;
 %% Define a section (circle)
 
 %FIXME : radius_ratio as an entry param
-radius_ratio = round(0.23* size(v_RMS,1));
+[~,~,radius_ratio] = getPulsewaveParamsFromTxt(path);
+radius = round(radius_ratio* size(v_RMS,1));
 %FIXME : anamorphic image
 blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',0);
 [~,x_center] = findpeaks(sum(blurred_mask,1));
 [~,y_center] = findpeaks(sum(blurred_mask,2));
 
-polygon = nsidedpoly(nb_sides, 'Center', [x_center, y_center], 'Radius', radius_ratio);
+polygon = nsidedpoly(nb_sides, 'Center', [x_center, y_center], 'Radius', radius);
 points_x = polygon.Vertices(:,1);
 points_x(end + 1) = points_x(1);
 points_y = polygon.Vertices(:,2);

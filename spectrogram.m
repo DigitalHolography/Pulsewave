@@ -1,4 +1,4 @@
-function [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, SH, one_cycle_dir, filename, k)
+function [Spectrogram] = spectrogram(maskArtery, maskVein, maskCRA, SH, one_cycle_dir, filename, k)
 % threshhold = round(0.18*size(SH,3));
 % SH = SH(:,:,threshhold:(end-threshhold));
 
@@ -25,6 +25,7 @@ ArterySpectrum = circshift(ArterySpectrum,round(size(ArterySpectrum)/2));
 BgSpectrum = circshift(BgSpectrum,round(size(BgSpectrum)/2));
 DeltaSpectrum = ArterySpectrum - BgSpectrum;
 
+Spectrogram = ArterySpectrum;
 
 mamax = 1.1*max (ArterySpectrum);
 mimin = 0.9*min(DeltaSpectrum(1:round(0.25*size(DeltaSpectrum,2))));
