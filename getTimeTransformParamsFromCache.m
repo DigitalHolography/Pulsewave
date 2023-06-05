@@ -26,6 +26,17 @@ if cache_exists % .mat with cache from holowaves is present, timeline can be com
     flag = 1;
     
     disp('done.')
+elseif exist(myNewPath)
+    disp('reading cache parameters'); 
+    load(myNewPath,'cache') ; 
+    stride = cache.batch_stride ;
+    type = cache.time_transform.type;
+    F1 = cache.time_transform.f1;
+    F2 = cache.time_transform.f2;
+    minPCA = cache.time_transform.min_PCA;
+    maxPCA = cache.time_transform.max_PCA;
+    flag = 1;
+
 else
     flag = 0;
     type = 'None';

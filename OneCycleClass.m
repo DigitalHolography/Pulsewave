@@ -58,7 +58,8 @@ classdef OneCycleClass
                     end
                     obj.dataM2M0{ii} = video;
                     %obj.k = 1;
-                    [~,obj.k] =  getPulsewaveParamsFromTxt(path);
+                    checkPulsewaveParamsFromTxt(path);
+                    [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
                     
                     
                 elseif (ext == '.raw')
@@ -106,7 +107,9 @@ classdef OneCycleClass
                     obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
 
                     %obj.k = 1;
-                    [~,obj.k] =  getPulsewaveParamsFromTxt(path);
+                    checkPulsewaveParamsFromTxt(path);
+                    [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
+                  
 
 
 %                     obj.k = getPulsewaveParamsFromTxt(path);

@@ -1,4 +1,4 @@
-function [flag,k,radius_ratio] =  getPulsewaveParamsFromTxt(path)
+function [] =  checkPulsewaveParamsFromTxt(path)
 
 myPath = split(path,'\');
 myWritePath = {myPath{1},myPath{2},'txt'};
@@ -9,24 +9,10 @@ txt_exists = exist(fullfile(myWritePath{1},filename_txt));
 
 
 if txt_exists
-    fileID = fopen(fullfile(myWritePath{1}, filename_txt),'r');
-    while ~feof(fileID)
-        line = fgetl(fileID);
-        if strcmp('Value of the interpolation parameter :', line)
-            line = fgetl(fileID);
-            k = str2double(line);
-            flag = 1;
-        end
-        if strcmp('Radius ratio :', line)
-            line = fgetl(fileID);
-            radius_ratio = str2double(line);
-            flag = 2;
-        end
-    end
-    fclose(fileID) ;
+    disp("Parameter file already exists")
 
 else
-    flag = 0;
+    disp("Parameter file does not exist, writing in process")
     k = 1;
     radius_ratio = 0.18;
     mkdir(myWritePath{1});

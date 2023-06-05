@@ -13,7 +13,7 @@ nb_sides = 120;
 %% Define a section (circle)
 
 %FIXME : radius_ratio as an entry param
-[~,~,radius_ratio] = getPulsewaveParamsFromTxt(path);
+[~,radius_ratio] = getPulsewaveParamFromTxt(path,'Radius ratio :');
 radius = round(radius_ratio* size(v_RMS,1));
 %FIXME : anamorphic image
 blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',0);
@@ -117,9 +117,6 @@ for jj = 1:size(flowVideoRGB,4)
 end
 close(w);
 
-val_image = val;
-
-
 v = squeeze(mean(v_RMS, 3));
 hue = mat2gray(v) * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
 hue = hue + abs(-mat2gray(v)*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
@@ -131,52 +128,40 @@ lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
 val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
 flowImageRGB = hsv2rgb(hue, sat, val);
 
-
 figure(321)
 imshow(flowImageRGB);
 
 % Save colorbar flow image
-color_bounds = [0.1 0.98];
-% Reshape the image into a vector
-tmp = nonzeros(mat2gray(v).*or(maskArtery,maskVein));
-tmp = stretchlim(tmp, color_bounds);
-min_sat = min(tmp, [], 'all');
-max_sat = max(tmp, [], 'all');
+color_bounds = [0.1 0.99];
+tmp = nonzeros(mat2gray(v).*double(maskArtery));
+sat_min_max = stretchlim(tmp, color_bounds);
+min_sat = sat_min_max(1);
+max_sat = sat_min_max(2);
 
-tmp = nonzeros(val_image.*or(maskArtery,maskVein));
-tmp = stretchlim(tmp, color_bounds);
-min_val = min(tmp, [], 'all');
-max_val = max(tmp, [], 'all');
-
-% tmp = nonzeros(mat2gray(v).*maskVein);
-% tmp = stretchlim(tmp, color_bounds);
-% vein_min_sat = min(tmp, [], 'all');
-% vein_max_sat = max(tmp, [], 'all');
-% 
-% tmp = nonzeros(val_image.*maskVein);
-% tmp = stretchlim(tmp, color_bounds);
-% vein_min_val = min(tmp, [], 'all');
-% vein_max_val = max(tmp, [], 'all');
-
-
-
-list = linspace(0.18 * max_sat, 0.18 * min_sat ,256);
-hue = list;
-sat = linspace(1.0 - 0.5*(max_sat), 1.0 - 0.5*(min_sat) , 256);
-val = linspace(max_val, min_val , 256);
-
+list = linspace(min_sat, max_sat ,256);
+hue = 0.18*list;
+sat = 1.0 - 0.5*list;
+val = zeros(1,256);
+idx = 1;
+for ii = list
+    if ii < lowhigh(1)
+        val(idx) = 0;
+    elseif ii > lowhigh(2)
+        val(idx) = 1;
+    else
+        val(idx) = (ii - lowhigh(1)) /(lowhigh(2)-lowhigh(1));
+    end
+    idx = idx + 1;
+end
 cmap_arteries = squeeze(hsv2rgb(hue,sat,val));
 
-list = linspace(0.18*max_sat + 0.5, 0.18*min_sat + 0.5,256);
-hue = list;
-sat = linspace(1.0 - 0.5*min_sat, 1.0 - 0.5*max_sat, 256);
-val = linspace(min_val, max_val, 256);
+hue = flip(list)*0.18 + 0.5;
 cmap_veins = squeeze(hsv2rgb(hue,sat,val));
 
 colorfig = figure(3210);
 %colorbar arteries
+colormap(cmap_arteries);
 colorfig.Units = 'normalized';
-colormap(flip(cmap_arteries))
 hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmin_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
 set(gca,'Visible',false)
 set(gca,'LineWidth', 3);
