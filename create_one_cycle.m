@@ -15,6 +15,8 @@ disp('over one cardiac cycle...');
 M = length(sys_index_list)-1; % M : pulse #
 one_cycle_video = zeros(size(video,1), size(video,2), Ninterp, M);
 
+Reliability_index_threshold = 50;
+
 Nx = size(video,1);
 Ny = size(video,2);
 
@@ -50,31 +52,34 @@ if M > 0 % we have detected at least two systoles
     % pulseMatrixFiltered = U * S * V';
     % [row col] = find(S>.3*max(S(:)))
 
-    signal_one_cycle = squeeze(sum(one_cycle_video .* mask, [1 2])/nnz(mask));
+    signal_one_cycle = zeros(size(one_cycle_video, 3),size(one_cycle_video,4),2);
+    signal_one_cycle(:,:,1) = squeeze(sum(one_cycle_video .* mask, [1 2])/nnz(mask));
 
-    % figure(1111)
-    % for ii = 1 : size(one_cycle_video, 4)
-    %     plot( ...
-    %         (1:Ninterp),signal_one_cycle(:, ii),'-k', ...
-    %         'LineWidth',2) ;
-    %     hold on
-    % end
-    % title('average blood flow velocity estimate in in-plane retinal arteries');
-    % legend(' arterial pulse');
-    % fontsize(gca,12,"points") ;
-    % ylabel('blood flow velocity (mm/s)');
-    % pbaspect([1.618 1 1]) ;
-    % set(gca, 'LineWidth', 2);
-    % axis tight;
-    % hold off
+%     figure(33)
+%     for ii = 1 : size(one_cycle_video, 4)
+%         plot( ...
+%             (1:Ninterp),signal_one_cycle(:, ii),'-k', ...
+%             'LineWidth',2) ;
+%         hold on
+%     end
+%     title('average blood flow velocity estimate in in-plane retinal arteries');
+%     legend(' arterial pulse');
+%     fontsize(gca,12,"points") ;
+%     ylabel('blood flow velocity (mm/s)');
+%     pbaspect([1.618 1 1]) ;
+%     set(gca, 'LineWidth', 2);
+%     axis tight;
+%     hold off
 
     tmp = zeros(size(video,1), size(video,2), Ninterp);
     ctr = 0;
     for ii = 1:M
 %         if (dataReliabilityIndex(ii) < 50)
-        if (dataReliabilityIndex(ii) > 50)
+        if (dataReliabilityIndex(ii) > Reliability_index_threshold)
             tmp = tmp + squeeze(one_cycle_video(:,:,:,ii)); % average selected cycles
             ctr = ctr + 1;
+            signal_one_cycle(:,ii,2) = ones(1,size(signal_one_cycle,1));
+
         end
     end
     % selectedPulseIdx = find(dataReliabilityIndex(ii) < 50);
@@ -100,8 +105,7 @@ selectedPulseIdx = 0;
 one_cycle_video = tmp; % average all detected cycles
 oneP = squeeze(sum(one_cycle_video .* mask,[1 2]) / nnz(mask));
 [min_val,shift] = min(oneP); % find bottom systole
-one_cycle_video = circshift(one_cycle_video, -shift, 3); % shift pulse to start & end with bottom diastole
+one_cycle_video = circshift(one_cycle_video, -shift, 3);
+signal_one_cycle = circshift(signal_one_cycle,-shift,1); % shift pulse to start & end with bottom diastole
 
 disp('done.');
-
-end

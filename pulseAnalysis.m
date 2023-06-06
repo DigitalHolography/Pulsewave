@@ -394,73 +394,7 @@ avgArterialPulseVelocity2 = avgArterialPulse * scalingFactorVelocity2;
 
 v_RMS = onePulseVideo2 * scalingFactorVelocity2;
 
-% figure(1)
-% plot( ...
-%     T(1:length(avgArterialPulse)),avgArterialPulseVelocity,'-k', ...
-%     'LineWidth',2) ;
-% title('average blood flow velocity estimate in retinal arteries');
-% legend(' arterial pulse');
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% ylabel('blood flow velocity (mm/s)');
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
 
-figure(111)
-plot( ...
-    T(1:length(avgArterialPulse)),avgArterialPulseVelocity2,'-k', ...
-    'LineWidth',2) ;
-title('average blood flow velocity estimate in in-plane retinal arteries');
-legend(' arterial pulse');
-fontsize(gca,12,"points") ;
-xlabel(strXlabel,'FontSize',14) ;
-ylabel('blood flow velocity (mm/s)');
-pbaspect([1.618 1 1]) ;
-set(gca, 'LineWidth', 2);
-axis tight;
-
-figure(1111)
-for ii = 1 : size(signal_one_cycle, 2)
-    plot( ...
-        T(1:length(avgArterialPulse)),signal_one_cycle(:, ii) * scalingFactorVelocity2,'-k', ...
-        'LineWidth',2) ;
-    hold on
-end
-title('arterial blood flow velocity for different cycles');
-legend('arterial pulse');
-fontsize(gca,12,"points") ;
-xlabel(strXlabel,'FontSize',14) ;
-ylabel('blood flow velocity (mm/s)');
-pbaspect([1.618 1 1]) ;
-set(gca, 'LineWidth', 2);
-axis tight;
-
-% figure(222)
-% plot( ...
-%     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_AVG,'-k', ...
-%     'LineWidth',2) ;
-% title('average blood flow velocity estimate in out-of-plane retinal arteries (AVG)');
-% legend(' arterial pulse');
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% ylabel('blood flow velocity (mm/s)');
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
-% 
-% figure(333)
-% plot( ...
-%     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_RMS,'-k', ...
-%     'LineWidth',2) ;
-% title('average blood flow velocity estimate in out-of-plane retinal arteries (RMS)');
-% legend(' arterial pulse');
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% ylabel('blood flow velocity (mm/s)');
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
 
 
 % save average arterial pulse wave velocity to txt file
@@ -716,12 +650,97 @@ pulse_arteries_blurred_sys = movavgvar(avgArterialPulse(1:idx_sys), blur_time_sy
 diff_pulse_sys = diff(pulse_arteries_blurred_sys) ;
 pulse_arteries_blurred_dia = movavgvar(avgArterialPulse(idx_sys:end), blur_time_dia);
 diff_pulse_dia = diff(pulse_arteries_blurred_dia) ;
-diff_avgPulse = diff(movavgvar(avgArterialPulse, blur_time_sys));
+diff_avgPulse = diff(movavgvar(avgArterialPulse, blur_time_sys)) * scalingFactorVelocity2*nb_frames/T(end);
 delta = max(pulse_arteries_blurred_dia(:))-min(pulse_arteries_blurred_dia(:));
 thr = max(pulse_arteries_blurred_dia(:))-delta./exp(1);
 idx_list_threshold_dia = find(pulse_arteries_blurred_dia(:) < thr);
 [max_diff_pulse,idx_T_diff_max] = max(diff_pulse_sys); %faire ca mieux
 acc = max_diff_pulse/(T(idx_T_diff_max)-T(idx_T_diff_max-1));
+
+
+% figure(1)
+% plot( ...
+%     T(1:length(avgArterialPulse)),avgArterialPulseVelocity,'-k', ...
+%     'LineWidth',2) ;
+% title('average blood flow velocity estimate in retinal arteries');
+% legend(' arterial pulse');
+% fontsize(gca,12,"points") ;
+% xlabel(strXlabel,'FontSize',14) ;
+% ylabel('blood flow velocity (mm/s)');
+% pbaspect([1.618 1 1]) ;
+% set(gca, 'LineWidth', 2);
+% axis tight;
+
+figure(111)
+plot( ...
+    T(1:length(avgArterialPulse)),avgArterialPulseVelocity2,'k-', ...
+    LineWidth=2) ;
+xline(T(idx_T_diff_max + 1),':',{},LineWidth=2)
+text(T(idx_T_diff_max + 1),min(avgArterialPulseVelocity2(:))+0.1*(max(avgArterialPulseVelocity2(:))-min(avgArterialPulseVelocity2(:))),' (1)','FontSize',14);%Display at minimum+x%
+xline(T_syst,':',{},LineWidth=2) ;
+text(T_syst,min(avgArterialPulseVelocity2(:))+0.1*(max(avgArterialPulseVelocity2(:))-min(avgArterialPulseVelocity2(:))),'  (2)','FontSize',14);
+xline(T(idx_sys + idx_list_threshold_dia(1)),':',{},LineWidth=2);
+text(T(idx_sys + idx_list_threshold_dia(1)),min(avgArterialPulseVelocity2(:))+0.1*(max(avgArterialPulseVelocity2(:))-min(avgArterialPulseVelocity2(:))),'  (3)','FontSize',14);
+legend(' arterial pulse');
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+ylabel('blood flow velocity (mm/s)','FontSize',14);
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+title('average blood flow velocity estimate in in-plane retinal arteries');
+
+
+
+figure(1111)
+for ii = 1 : size(signal_one_cycle, 2)
+    if signal_one_cycle(1,ii,2) == 1
+    plot( ...
+        T(1:length(avgArterialPulse)),movavgvar(signal_one_cycle(:, ii),blur_time_sys) * scalingFactorVelocity2,'k-', ...
+        'Color','black','LineWidth',1) ;
+    hold on
+    else
+    plot( ...
+        T(1:length(avgArterialPulse)),movavgvar(signal_one_cycle(:, ii),blur_time_sys) * scalingFactorVelocity2,'--', ...
+        'Color','black','LineWidth',1) ;
+    hold on 
+    end
+
+end
+title('arterial blood flow velocity for different cycles');
+legend('arterial pulse');
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+ylabel('blood flow velocity (mm/s)');
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+% figure(222)
+% plot( ...
+%     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_AVG,'-k', ...
+%     'LineWidth',2) ;
+% title('average blood flow velocity estimate in out-of-plane retinal arteries (AVG)');
+% legend(' arterial pulse');
+% fontsize(gca,12,"points") ;
+% xlabel(strXlabel,'FontSize',14) ;
+% ylabel('blood flow velocity (mm/s)');
+% pbaspect([1.618 1 1]) ;
+% set(gca, 'LineWidth', 2);
+% axis tight;
+% 
+% figure(333)
+% plot( ...
+%     T(1:length(avgArterialPulse)),avgArterialPulseVelocityCRA_RMS,'-k', ...
+%     'LineWidth',2) ;
+% title('average blood flow velocity estimate in out-of-plane retinal arteries (RMS)');
+% legend(' arterial pulse');
+% fontsize(gca,12,"points") ;
+% xlabel(strXlabel,'FontSize',14) ;
+% ylabel('blood flow velocity (mm/s)');
+% pbaspect([1.618 1 1]) ;
+% set(gca, 'LineWidth', 2);
+% axis tight;
 
 figure(80)
 plot(T,avgArterialPulse,'k.', ...
@@ -729,11 +748,11 @@ plot(T,avgArterialPulse,'k.', ...
     T(idx_sys:nb_frames),pulse_arteries_blurred_dia(1:(nb_frames-idx_sys+1)),'k-', ...
     LineWidth=2) ;
 xline(T(idx_T_diff_max + 1),':',{},LineWidth=2)
-text(T(idx_T_diff_max + 1),min(pulse_arteries_blurred_dia(:))+0.1,' (1)','FontSize',14);
+text(T(idx_T_diff_max + 1),min(pulse_arteries_blurred_dia(:))+0.1*(max(pulse_arteries_blurred_dia(:))-min(pulse_arteries_blurred_dia(:))),' (1)','FontSize',14);%Display at minimum+x%
 xline(T_syst,':',{},LineWidth=2) ;
-text(T_syst,min(pulse_arteries_blurred_dia(:))+0.1,'  (2)','FontSize',14);
+text(T_syst,min(pulse_arteries_blurred_dia(:))+0.1*(max(pulse_arteries_blurred_dia(:))-min(pulse_arteries_blurred_dia(:))),'  (2)','FontSize',14);
 xline(T(idx_sys + idx_list_threshold_dia(1)),':',{},LineWidth=2);
-text(T(idx_sys + idx_list_threshold_dia(1)),min(pulse_arteries_blurred_dia(:))+0.1,'  (3)','FontSize',14);
+text(T(idx_sys + idx_list_threshold_dia(1)),min(pulse_arteries_blurred_dia(:))+0.1*(max(pulse_arteries_blurred_dia(:))-min(pulse_arteries_blurred_dia(:))),'  (3)','FontSize',14);
 %                 yline(1/exp(1),':',LineWidth=2);
 legend('arterial pulse','smoothed line') ;
 fontsize(gca,12,"points") ;
@@ -748,9 +767,16 @@ figure(90)
 plot(T(1:end-1), diff_avgPulse,'k-', LineWidth=2);
 x = 0;
 yline(x,':',LineWidth=2) ;
+xline(T(idx_T_diff_max + 1),':',{},LineWidth=2)
+text(T(idx_T_diff_max + 1),min(diff_avgPulse(:))+0.1*(max(diff_avgPulse(:))-min(diff_avgPulse(:))),' (1)','FontSize',14);%Display at minimum+x%
+xline(T_syst,':',{},LineWidth=2) ;
+text(T_syst,min(diff_avgPulse(:))+0.1*(max(diff_avgPulse(:))-min(diff_avgPulse(:))),'  (2)','FontSize',14);
+xline(T(idx_sys + idx_list_threshold_dia(1)),':',{},LineWidth=2);
+text(T(idx_sys + idx_list_threshold_dia(1)),min(diff_avgPulse(:))+0.1*(max(diff_avgPulse(:))-min(diff_avgPulse(:))),'  (3)','FontSize',14);
+legend(' arterial pulse');
 fontsize(gca,12,"points") ;
 xlabel('Time (s)','FontSize',14) ;
-ylabel('time derivative (a.u.)','FontSize',14) ;
+ylabel('time derivative (mm.s^{-2})','FontSize',14) ;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 title('Derivative of average arterial pulse wave');
@@ -771,7 +797,7 @@ if (~exist("nb_of_averaged_cycles"))
 end
 
 
-title(strcat('Arterial resistivity. avg. index value : ', num2str(ARI)));
+%title(strcat('Arterial resistivity. avg. index value : ', num2str(ARI)));
 
 % txt file output with measured pulse wave parameters
 fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'w') ;
