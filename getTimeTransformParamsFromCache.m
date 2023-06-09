@@ -1,12 +1,15 @@
 function [flag,type, F1, F2, minPCA, maxPCA] = getTimeTransformParamsFromCache(one_cycle_dir)
 % find .mat with cache
 myFolders = split(one_cycle_dir,'\');
-myFolders{size(myFolders,1)+1} = '..';
-myFolders{size(myFolders,1)+1} = '..';
-myFolders{size(myFolders,1)+1} = myFolders{size(myFolders,1)-4};
+myFolders = myFolders(1:size(myFolders,1)-1);
+myFolders{size(myFolders,1)-1} = '..';
 
-myReadPath = {myFolders{1},myFolders{2},'mat'};
+
+myReadPath = myFolders;
+myReadPath{size(myReadPath,1)} = 'mat';
 myReadPath = join(myReadPath,'\');
+
+myFolders{size(myFolders,1)+1} = myFolders{size(myFolders,1)-3};
 
 myNewPath = join(myFolders,'\');
 myNewPath = [myNewPath{1},'.mat'];

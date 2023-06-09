@@ -1,23 +1,32 @@
 function [mask_artery_retina_choroid,mask_artery] = createArteryMask(video)
 %FIXME : check the link with VesselMask (order between flat_field_correction and imbinarize)
 %FIXME : add threshold parameter
-mask_artery = squeeze(std(video, 0, 3));
+
+mask_artery = squeeze(mean(video, 3));
+
+
+sigma = 3;
+beta = 0.8;
+mask_artery= vesselness_filter(mask_artery, sigma, beta);
+mask_artery = mask_artery > (max(mask_artery,[],'all') * 0.2);
+mask_artery = magicwand(mask_artery, 0.2, 8, 2);
+
+
+%mask_artery = imbinarize(mat2gray(mask_artery), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
 
 figure(307)
 imagesc(mask_artery)
 colormap gray
 
-mask_artery = imbinarize(mat2gray(mask_artery), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
+% for ii = 1:size(video,3)
+%     video(:,:,ii) = flat_field_correction(squeeze(video(:,:,ii)), ceil(size(video,1)*0.07), 0.25);
+% end
+% I  = std(video .* mask_artery, 0,3);
+% 
+% figure(3079)
+% imagesc(I)
 
-% C = {};
-% C(1:2,1) = {'artery_mask_1stPass'; mask};
 
-% figure(202)
-% imagesc(mask);
-% title('segmented arteries');
-% axis off
-% axis equal
-% colormap gray
 
 pulse = squeeze(mean(video .* mask_artery, [1 2]));
 % zero-mean initial average pulse estimate : pulse_init
@@ -29,6 +38,7 @@ for ii = 1:size(video,3)
 end
 % zero-mean local pulse : C
 C(:,:,:) = video(:,:,:) - squeeze(mean(video, 3));
+C = C.* mask_artery;
 pulse_init_3d = zeros(size(video));
 for mm = 1:size(video, 1)
     for pp = 1:size(video, 2)
@@ -38,14 +48,21 @@ end
 % compute local-to-average pulse wave zero-lag correlation 
 C = C .* pulse_init_3d;
 C = squeeze(mean(C, 3));
+figure(204)
+imagesc(C);
+
 % find max. values of the correlation
-mask_artery_retina_choroid = C > (max(C(:)) * 0.2);
+mask_artery_retina_choroid = C > (max(C(:)) * 0.1);
 mask_artery = mask_artery_retina_choroid;
 
 figure(204)
 imagesc(mask_artery_retina_choroid);
 
-mask_artery = magicwand(mask_artery, 0.2, 8, 8);
+mask_artery = magicwand(mask_artery, 0.2, 8, 4);
+
+
+figure(204)
+imagesc(mask_artery);
 
 list_fig_close = [307,204];
 for ii=1:length(list_fig_close)

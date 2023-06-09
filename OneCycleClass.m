@@ -5,6 +5,7 @@ classdef OneCycleClass
         dataM2M0_interp (1,:) cell % RMS M2/M0
         dataM1M0_interp (1,:) cell % AVG M1/M0
         dataM0 (1,:) cell % M0 raw
+        dataM0_interp (1,:) cell % M0 raw
         dataM1 (1,:) cell % M1 raw
         dataM2 (1,:) cell % M2 raw
         dataSH (1,:) cell % SH raw
@@ -36,6 +37,7 @@ classdef OneCycleClass
             obj.dataM2M0_interp = cell(1,obj.nbFiles) ;
             obj.dataM1M0_interp = cell(1,obj.nbFiles) ;
             obj.dataM0 = cell(1,obj.nbFiles) ;
+            obj.dataM0_interp = cell(1,obj.nbFiles) ;
             obj.dataM1 = cell(1,obj.nbFiles) ;
             obj.dataM2 = cell(1,obj.nbFiles) ;
             obj.dataSH = cell(1,obj.nbFiles) ;
@@ -123,6 +125,7 @@ classdef OneCycleClass
             for ii = 1 : obj.nbFiles
                 avgM0 = mean(obj.dataM0{ii},[1 2]);
 
+
                 %donnée temporaire
                 tmp_data = obj.dataM2M0{ii};
                 tmp_M2 = obj.dataM2{ii};
@@ -157,13 +160,16 @@ classdef OneCycleClass
 
 
             else
+                tmp_dataM0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
                 tmp_dataM2M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
                 tmp_data_M1M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
                 tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
                 tmp_calc_data = obj.dataM2M0{1};
+                tmp_calc_data_M0 = obj.dataM0{1};
                 tmp_calc_data_M1M0 = obj.dataM1M0{1};
                 tmp_calc_data_SH = obj.dataSH{1};
                 parfor i = 1 : num_frames % loop over frames
+                    tmp_dataM0(:,:,i) = interp2(tmp_calc_data_M0(:,:,i), k_interp);
                     tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
                     tmp_data_M1M0(:,:,i) = interp2(tmp_calc_data_M1M0(:,:,i), k_interp);
                 end
@@ -172,33 +178,44 @@ classdef OneCycleClass
                 end
                 obj.dataM2M0_interp{1} = tmp_dataM2M0;
                 obj.dataM1M0_interp{1} = tmp_data_M1M0;
+                obj.dataM0_interp{1} = tmp_dataM0;
                 obj.dataSH_interp{1} = tmp_data_SH;
 
             end
             
         end
 
-        function [sys_index_list_cell, mask_cell, maskArtery, fullPulseWave_cell] = getSystole(obj)
+        function [sys_index_list_cell, mask_cell,maskVessel, maskArtery, fullPulseWave_cell] = getSystole(obj)
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
                 datacube = obj.dataM2M0_interp{i}; % choix du cube sur lequel travailler 
-                [sys_index_list_cell{i}, mask_cell{i}, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube);
+                [sys_index_list_cell{i}, mask_cell{i},maskVessel, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube);
             end
         end
 
-        function onePulse(obj, fullPulseWave_cell, mask_cell, maskArtery, sys_index_list_cell, Ninterp, add_infos, k)
+        function onePulse(obj, fullPulseWave_cell, mask_cell, maskVessel, maskArtery, sys_index_list_cell, Ninterp, add_infos, k)
             % k corresponds to interpolation 2^k-1
             idx = 0 ;
+            myPath = fullfile(obj.directory,'..\');
             [~,file_name,~] = fileparts(obj.filenames{1});
             file_name_2= file_name(1:end-11);
-            folder_name = strcat( file_name_2, '_one_cycle');
+
+            myTxtDirPath = fullfile(myPath,'txt');
+            myTxtFilePath = fullfile(myTxtDirPath,strcat(file_name_2,'_PulsewaveParams.txt'));
+
+            myPath = fullfile(myPath,'pulsewave');
+
+            if ~exist(myPath,'dir')
+                mkdir(myPath);
+            end
+            folder_name = strcat( file_name_2, '_pulsewave');
             while (exist(fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)), 'dir'))
                 idx = idx + 1 ;
             end
 
             %FIXME Remplacer One_cycle_dir par une cell qui contient les
             %chemin ves tous les dossiers
-            one_cycle_dir = fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)) ;
+            one_cycle_dir = fullfile(myPath, sprintf('%s_%d', folder_name,idx)) ;
             mkdir(one_cycle_dir);
             mkdir(fullfile(one_cycle_dir, 'png'));
             mkdir(fullfile(one_cycle_dir, 'eps'));
@@ -208,6 +225,8 @@ classdef OneCycleClass
             one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
             one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
             one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
+
+            copyfile(myTxtFilePath,one_cycle_dir_txt );
 
 
             for n = 1:obj.nbFiles
@@ -239,7 +258,7 @@ classdef OneCycleClass
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
 %                      [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
-                        [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},[],one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
+                        [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM0_interp{n},obj.dataM1M0_interp{n},[],one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery,maskVessel);
 %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
                     [flowVideoRGB] = flow_rate(obj.directory,maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, obj.k);

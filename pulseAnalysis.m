@@ -1,4 +1,4 @@
-function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, fullVideo, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery)
+function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, fullVideo,fullVideoM0, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery,maskVessel)
 %
 % create additional masks
 % maskArtery : Arteries
@@ -56,11 +56,11 @@ colormap gray
 
 %% create additional masks
 
-maskVessel = createVesselMask(fullVideo);
+%maskVessel = createVesselMask(fullVideoM0);
 maskBackground = not(maskVessel);
 maskVein = double(maskVessel) - double(maskArteryRetinaChoroid); 
 maskVein = maskVein > 0; 
-maskVein = magicwand(maskVein, 0.2, 8, 15);
+%maskVein = magicwand(maskVein, 0.2, 8, 15);
 
 figure(4)
 imagesc(maskVessel);

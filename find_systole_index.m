@@ -1,6 +1,6 @@
-function [sys_index_list, mask_artery_retina_choroid, mask_artery, fullPulseWave] = find_systole_index(video)
+function [sys_index_list, mask_artery_retina_choroid, mask_vessel, mask_artery, fullPulseWave] = find_systole_index(video)
 arguments
-    video
+    video,
 end
 
 % create zero-mean signal
@@ -8,6 +8,7 @@ end
 video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
 
 [mask_artery_retina_choroid,mask_artery] = createArteryMask(video);
+mask_vessel = createVesselMask(video);
 
 fullPulseWave = squeeze(sum(video .* mask_artery_retina_choroid, [1 2])/nnz(mask_artery_retina_choroid));
 pulse_init = detrend(fullPulseWave);
