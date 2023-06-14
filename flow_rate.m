@@ -1,32 +1,33 @@
-function [flowVideoRGB] = flow_rate(path,maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename, k)
+function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename, k,path)
 %SECTION_PLOT Summary of this function goes here
 %   Detailed explanation goes here
 % k = interpolation 2^k-1 (for size pixel for section calculation)
+PW_params = Parameters(path);
 
 one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
 one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
 one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
 one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
 
-nb_sides = 120;
 
 %% Define a section (circle)
 
 %FIXME : radius_ratio as an entry param
-[~,radius_ratio] = getPulsewaveParamFromTxt(path,'Radius ratio :');
-radius = round(radius_ratio* size(v_RMS,1));
+%[~,radius_ratio] = getPulsewaveParamFromTxt(path,'Radius ratio :');
+
+radius = round(PW_params.radius_ratio* size(v_RMS,1));
 %FIXME : anamorphic image
-blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',0);
+blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',PW_params.flowRate_gaussFiltPadding);
 [~,x_center] = findpeaks(sum(blurred_mask,1));
 [~,y_center] = findpeaks(sum(blurred_mask,2));
 
-polygon = nsidedpoly(nb_sides, 'Center', [x_center, y_center], 'Radius', radius);
+polygon = nsidedpoly(PW_params.nbSides, 'Center', [x_center, y_center], 'Radius', radius);
 points_x = polygon.Vertices(:,1);
 points_x(end + 1) = points_x(1);
 points_y = polygon.Vertices(:,2);
 points_y(end + 1) = points_y(1);
 figure(121)
-for ii = 1:nb_sides
+for ii = 1:PW_params.nbSides
     l   = line([points_x(ii), points_x(ii + 1)], [points_y(ii), points_y(ii + 1)]);
     l.Color = 'red';
     l.LineWidth = 2;
@@ -196,16 +197,16 @@ avg_blood_velocity_vein = zeros(length(width_Vein),1);
 avg_blood_rate_vein = zeros(length(width_Vein),1);
 cross_section_area_vein = zeros(length(width_Vein),1);
 
-slice_half_thickness = 10; % size of the rectangle area for velocity averaging (in pixel)
+slice_half_thickness = PW_params.flowRate_sliceHalfThickness; % size of the rectangle area for velocity averaging (in pixel)
 
 %% pour chaque veine jj detectee
 [avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein] = ...
-    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'vein');
+    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'vein',path);
 avg_blood_rate_vein_muLmin = avg_blood_rate_vein*60;
 
 %% pour chaque artere ii detectee
 [avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery] = ...
-    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'artery');
+    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'artery',path);
 avg_blood_rate_artery_muLmin = avg_blood_rate_artery*60;
 %% Display final blood volume rate image
 total_blood_rate_artery = sum(avg_blood_rate_artery(:));
@@ -250,7 +251,7 @@ maskRGB(:,:,2) = maskRGB(:,:,2) - cross_section_mask_artery;
 
 figure(121)
 imshow(maskRGB)
-for ii = 1:nb_sides
+for ii = 1:PW_params.nbSides
     l   = line([points_x(ii), points_x(ii + 1)], [points_y(ii), points_y(ii + 1)]);
     l.Color = "#C8CDCD"; % gray line
     l.LineWidth = 2;

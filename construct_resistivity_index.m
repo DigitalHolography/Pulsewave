@@ -1,8 +1,10 @@
-function [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, val] = construct_resistivity_index(video, maskArtery)
+function [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, val] = construct_resistivity_index(video, maskArtery, path)
 % https://en.wikipedia.org/wiki/Arterial_resistivity_index
 % arterial resistivity
 
 video = double(video);
+PW_params = Parameters(path);
+
 
 arterialPulse = squeeze(sum(video .* maskArtery,[1 2]));
 arterialPulse = arterialPulse/nnz(maskArtery);
@@ -29,8 +31,7 @@ tmp_M = ARImap.*maskArtery>0;
 ARImap = ARImap.*tmp_M;
 
 %%
-% composite image parameters
-satAmp = 0.75; %MUST be in [0 1] 
+
 
 %% arterial resistivity map RGB
 % sat = abs(ARImap .* maskArtery);
@@ -65,16 +66,16 @@ Artery_val = abs(ARImap .* maskArtery);
 % end
 % 
 % Artery_val = Artery_val.*maskArtery;
-
-gamma = 0.7;
+gamma = PW_params.resistivity_gamma;
 ARImapRGB = ones(size(ARImap,1), size(ARImap,2), 3);
 ARImapRGB(:,:,1) = val - maskArtery.*val + ones(size(ARImap,1), size(ARImap,2)).*maskArtery;
-ARImapRGB(:,:,2) = val - maskArtery.*val + maskArtery - Artery_val.^gamma;
-ARImapRGB(:,:,3) = val - maskArtery.*val + maskArtery - Artery_val.^gamma;
+ARImapRGB(:,:,2) = val - maskArtery.*val + maskArtery - Artery_val.^PW_params.resistivity_gamma;
+ARImapRGB(:,:,3) = val - maskArtery.*val + maskArtery - Artery_val.^PW_params.resistivity_gamma;
+
 
 %% arterial resistivity video RGB
 video = mat2gray(video); % not quantitative anymore
-sat = satAmp * mat2gray(abs(ARImap).* maskArtery) ;
+sat = PW_params.resistivity_satAmp * mat2gray(abs(ARImap).* maskArtery) ; %resistivity_satAMP MUST be in [0 1] 
 % sat = satAmp * abs(ARImap .* maskArtery);
 hue = 1 * ones(size(video,1), size(video,2)); % pure red color
 

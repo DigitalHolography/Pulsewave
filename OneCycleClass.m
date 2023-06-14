@@ -11,6 +11,7 @@ classdef OneCycleClass
         dataSH (1,:) cell % SH raw
         dataSH_interp (1,:) cell % SH raw
         directory char
+        global_directory char
         nbFiles {mustBeNumeric , mustBePositive}
         filenames (1,:) cell
         k double %interpolaton parameter
@@ -44,9 +45,15 @@ classdef OneCycleClass
             obj.dataSH_interp = cell(1,obj.nbFiles) ;
             obj.k = 0; 
 
+            dir_path_cell = split(obj.directory,'\');
+            dir_path_cell = dir_path_cell(1:(size(dir_path_cell)-2));
+            dir_path_cell = join(dir_path_cell,'\');
+            obj.global_directory = dir_path_cell{1};
+
             for ii = 1 : obj.nbFiles
                 currentFilePath = fullfile(obj.directory,obj.filenames{ii});
                 [filepath,name,ext] = fileparts(currentFilePath);
+
                 if (ext == '.avi')
                     %FIXME : refvideosize & double appel de obj.data{i}
                     % dans la boucle avi et raw
@@ -60,8 +67,10 @@ classdef OneCycleClass
                     end
                     obj.dataM2M0{ii} = video;
                     %obj.k = 1;
-                    checkPulsewaveParamsFromTxt(path);
-                    [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
+                    checkPulsewaveParamsFromTxt(obj.global_directory);
+                    PW_params = Parameters(obj.global_directory);
+                    obj.k = PW_params.k;
+                   % [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
                     
                     
                 elseif (ext == '.raw')
@@ -108,13 +117,12 @@ classdef OneCycleClass
                     fclose(fileID);
                     obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
 
-                    %obj.k = 1;
-                    checkPulsewaveParamsFromTxt(path);
-                    [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
+                    checkPulsewaveParamsFromTxt(obj.global_directory);
+                    PW_params = Parameters(obj.global_directory);
+                    obj.k = PW_params.k;
+   %                 [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
                   
-
-
-%                     obj.k = getPulsewaveParamsFromTxt(path);
+   
                 else
                     disp([filepath,name,ext,' : non recognized video format']);
                 end
@@ -151,7 +159,7 @@ classdef OneCycleClass
 
             if ref 
                 tmp_ref = zeros(height,width, size(obj.dataM2M0{1}, 3));
-                tmp_calc_ref = obj.dataM2M0{1};
+                tmp_calc_ref = obj.dataM2M0{1}; 
                 
                 for i = 1 : num_frames % loop over frames
                     tmp_ref(:,:,i) = interp2( tmp_calc_ref(:,:,i), k_interp);
@@ -189,33 +197,31 @@ classdef OneCycleClass
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
                 datacube = obj.dataM2M0_interp{i}; % choix du cube sur lequel travailler 
-                [sys_index_list_cell{i}, mask_cell{i},maskVessel, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube);
+                [sys_index_list_cell{i}, mask_cell{i},maskVessel, maskArtery, fullPulseWave_cell{i}] = find_systole_index(datacube, obj.global_directory);
             end
         end
 
         function onePulse(obj, fullPulseWave_cell, mask_cell, maskVessel, maskArtery, sys_index_list_cell, Ninterp, add_infos, k)
             % k corresponds to interpolation 2^k-1
             idx = 0 ;
-            myPath = fullfile(obj.directory,'..\');
-            [~,file_name,~] = fileparts(obj.filenames{1});
-            file_name_2= file_name(1:end-11);
+            [~,file_name,~] = fileparts(obj.global_directory);
 
-            myTxtDirPath = fullfile(myPath,'txt');
-            myTxtFilePath = fullfile(myTxtDirPath,strcat(file_name_2,'_PulsewaveParams.txt'));
+            path_dir_txt = fullfile(obj.global_directory,'txt');
+            path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
 
-            myPath = fullfile(myPath,'pulsewave');
+            path_dir_pulswave = fullfile(obj.global_directory,'pulsewave');
 
-            if ~exist(myPath,'dir')
-                mkdir(myPath);
+            if ~exist(path_dir_pulswave,'dir')
+                mkdir(path_dir_pulswave);
             end
-            folder_name = strcat( file_name_2, '_pulsewave');
-            while (exist(fullfile(obj.directory, sprintf('%s_%d', folder_name,idx)), 'dir'))
+            folder_name = strcat( file_name, '_pulsewave');
+            while (exist(fullfile(path_dir_pulswave, sprintf('%s_%d', folder_name,idx)), 'dir'))
                 idx = idx + 1 ;
             end
 
             %FIXME Remplacer One_cycle_dir par une cell qui contient les
             %chemin ves tous les dossiers
-            one_cycle_dir = fullfile(myPath, sprintf('%s_%d', folder_name,idx)) ;
+            one_cycle_dir = fullfile(path_dir_pulswave, sprintf('%s_%d', folder_name,idx)) ;
             mkdir(one_cycle_dir);
             mkdir(fullfile(one_cycle_dir, 'png'));
             mkdir(fullfile(one_cycle_dir, 'eps'));
@@ -226,7 +232,17 @@ classdef OneCycleClass
             one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
             one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
 
-            copyfile(myTxtFilePath,one_cycle_dir_txt );
+            copyfile(path_file_txt_params,one_cycle_dir_txt );
+
+%             maskBackground = not(maskVessel);
+%             maskVein = double(maskVessel) - double(maskArtery); 
+%             maskVein = maskVein > 0; 
+% 
+% 
+%             imwrite(mat2gray(single(maskArtery)),fullfile(one_cycle_dir_png,'maskArtery.png'),'png') ;
+%             imwrite(mat2gray(single(maskVein)),fullfile(one_cycle_dir_png,'maskVein.png'),'png') ;
+%             imwrite(mat2gray(single(maskVessel)),fullfile(one_cycle_dir_png,'maskVessel.png'),'png') ;
+%             imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir_png,'maskBackground.png'),'png') ;
 
 
             for n = 1:obj.nbFiles
@@ -258,10 +274,10 @@ classdef OneCycleClass
 %                     avgM0 = mean(obj.dataM0{n},[1 2]);
 %                     datacube = sqrt(obj.dataM2{n}/avgM0);
 %                      [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM1M0_interp{n},one_cycle_video,one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery);
-                        [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM0_interp{n},obj.dataM1M0_interp{n},[],one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery,maskVessel);
+                       [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp,datacube,obj.dataM0_interp{n},obj.dataM1M0_interp{n},[],one_cycle_dir,name,sys_index_list_cell{n}, mask_cell{n},maskArtery,maskVessel,obj.global_directory);
 %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
-                    [flowVideoRGB] = flow_rate(obj.directory,maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, obj.k);
+                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, obj.k,obj.global_directory);
                     toc
                     [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, obj.k);
 

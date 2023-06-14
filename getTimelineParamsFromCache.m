@@ -1,15 +1,13 @@
 function [flag,stride, Fs] = getTimelineParamsFromCache(one_cycle_dir)
 % find .mat with cache
 myFolders = split(one_cycle_dir,'\');
-myFolders = myFolders(1:size(myFolders,1)-1);
-myFolders{size(myFolders,1)-1} = '..';
-
+myFolders = myFolders(1:size(myFolders,1)-2);
 
 myReadPath = myFolders;
-myReadPath{size(myReadPath,1)} = 'mat';
+myReadPath{size(myReadPath,1)+1} = 'mat';
 myReadPath = join(myReadPath,'\');
 
-myFolders{size(myFolders,1)+1} = myFolders{size(myFolders,1)-3};
+%myFolders{size(myFolders,1)+1} = myFolders{size(myFolders,1)-3};
 
 
 

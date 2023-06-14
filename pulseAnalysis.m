@@ -1,4 +1,4 @@
-function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, fullVideo,fullVideoM0, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery,maskVessel)
+function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, fullVideo,fullVideoM0, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery,maskVessel,path)
 %
 % create additional masks
 % maskArtery : Arteries
@@ -8,6 +8,8 @@ function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, 
 % filename :
 % sys_index_list :
 % v_RMS : cube of one-cycle RMS velocity vs. time 
+
+PW_params = Parameters(path);
 
 one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
 one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
@@ -20,18 +22,14 @@ dataCube = fullVideo;
 dataCubeM1M0 = fullVideoM1M0;
 
 %RMS freq to velocity
-radius_pupil = 2.0; % mm
-iris_to_retina_distance = 20; %mm
+radius_pupil = PW_params.pupilRadius; % mm
+iris_to_retina_distance = PW_params.iris2retinaDist; %mm
+theta = PW_params.theta; % theta = radius_pupil/iris_to_retina_distance;
+opticalIndex = PW_params.opticalIndex;
+lambda = PW_params.lambda;
 
-%FIXME : choix theta
-% theta = radius_pupil/iris_to_retina_distance;
-theta = 0.05;
-% theta = 38 * pi / 180;
-% theta = 0.03;
 strYlabel = 'frequency (kHz)';
 
-opticalIndex = 1.35;
-lambda = 852e-9;
 %scalingFactorVelocity = 1000 * 1000 * lambda / (3 *opticalIndex * theta); % 1000 for kHz -> Hz and 1000 for m -> mm
 scalingFactorVelocity2 = 1000 * 1000 * lambda / opticalIndex * (3/theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
 scalingFactorVelocityCRA2_AVG  = 1000 * 1000 * lambda / opticalIndex * (theta/2); % 1000 for kHz -> Hz and 1000 for m -> mm
@@ -40,7 +38,7 @@ scalingFactorVelocityCRA2_RMS  = 1000 * 1000 * lambda / opticalIndex * (1/(2+2*(
 % for robust rendering : 
 % 1-flat-field correction, 2-background substraction
 for pp = 1:size(dataCube,3)
-    dataCube(:,:,pp) = flat_field_correction(squeeze(dataCube(:,:,pp)), 0.07*size(dataCube,1), 0.25);
+    dataCube(:,:,pp) = flat_field_correction(squeeze(dataCube(:,:,pp)), PW_params.flatField_gwRatio*size(dataCube,1), PW_params.flatField_border);
 end
 
 %
@@ -60,7 +58,6 @@ colormap gray
 maskBackground = not(maskVessel);
 maskVein = double(maskVessel) - double(maskArteryRetinaChoroid); 
 maskVein = maskVein > 0; 
-%maskVein = magicwand(maskVein, 0.2, 8, 15);
 
 figure(4)
 imagesc(maskVessel);
@@ -145,7 +142,8 @@ disp('remove outliers... 1st pass.');
 [idxOutVn,fullVenousSignalRmOut] = discardPulseWaveOutliers(fullVenousSignalMinusBackground,3);
 [idxOutBkg,fullBackgroundSignalRmOut] = discardPulseWaveOutliers(fullBackgroundSignal,3);
 % FIXME
-dataReliabilityIndex1 = ceil(100*(1-0.5*(length(idxOutPw)/length(fullArterialPulse) + length(idxOutBkg)/length(fullBackgroundSignal))));
+
+dataReliabilityIndex1 = ceil(100*(1-PW_params.pulseAnal_dataReliabilityFactor*(length(idxOutPw)/length(fullArterialPulse) + length(idxOutBkg)/length(fullBackgroundSignal))));
 disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
 
 % smooth trendline data by iterative local linear regression.
@@ -204,7 +202,7 @@ axis tight;
 %create a function findSystoleIndexFromTrendline()
 [~, sys_index_list] = findpeaks(fullArterialPulseCleanDerivative, ...
     1:length(fullArterialPulseCleanDerivative), ...
-    'MinPeakHeight', max(fullArterialPulseCleanDerivative) * 0.7);
+    'MinPeakHeight', max(fullArterialPulseCleanDerivative) * PW_params.pulseAnal_peakHeightThreshold);
 
 %%
 % now cleanup dataCube to create_one_cycle()
@@ -212,7 +210,7 @@ axis tight;
 % find  noisy frames @ >3 std from zero-mean
 % replace them with cleaned data
 noise = sqrt(abs(abs(fullArterialPulseMinusBackground).^2 - abs(fullArterialPulseClean).^2));
-idxOutNoise = find(noise>4*std(noise));
+idxOutNoise = find(noise>PW_params.pulseAnal_outNoiseThreshold*std(noise));
 
 %
 dataReliabilityIndex2 = ceil(100*(1-(length(idxOutNoise)/length(fullArterialPulseClean) )));
@@ -245,7 +243,7 @@ c.Label.String = 'RMS Doppler frequency (kHz)';
 c.Label.FontSize = 12;
 
 
-dMap_flat = flat_field_correction(dMap, ceil(0.07*size(dMap,1)), .33);
+dMap_flat = flat_field_correction(dMap, ceil(PW_params.flatField_gwRatio.*size(dMap,1)), PW_params.flatField_borderDMap);
 
 figure(24)
 imagesc(dMap_flat);
@@ -332,8 +330,9 @@ axis off
 axis equal
 colormap gray
 
+
 % Average Arterial Pulse for In-Plane arteries
-[onePulseVideo2, ~, signal_one_cycle] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp);
+[onePulseVideo2, ~, signal_one_cycle] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp,path);
 avgArterialPulse =  onePulseVideo2 .* maskArtery;
 avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery);
 
@@ -365,8 +364,8 @@ close(w);
 % FIXME : use selectedPulseIdx in fig. 8 to highlight selected pulses
 
 nb_frames = size(onePulseVideo2,3) ;
-blur_time_sys = ceil(nb_frames/100);
-blur_time_dia = ceil(nb_frames/100);
+blur_time_sys = ceil(nb_frames/PW_params.pulseAnal_blurScaleFactor);
+blur_time_dia = ceil(nb_frames/PW_params.pulseAnal_blurScaleFactor);
 
 
 if cache_exists % .mat with cache from holowaves is present, timeline can be computed
@@ -406,7 +405,7 @@ fclose(fileID);
 
 
 disp('arterial resistivity...');
-[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo2, maskArtery);
+[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo2, maskArtery,path);
 ARImap = ARImap.*maskArtery;
 
 % export fig
@@ -570,7 +569,7 @@ end
 heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*nb_frames):nb_frames),3));
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*nb_frames):nb_frames),3));
-heatmap_dia = flat_field_correction(heatmap_dia, ceil(.07*size(heatmap_dia,1)), .33);
+heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
 figure(45)
 imagesc(heatmap_dia) ;
 colormap gray
@@ -590,7 +589,7 @@ b = min(ceil(idx_sys+0.05*nb_frames),nb_frames);
 heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 % onePulseVideo2 : no background correction 
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
-heatmap_sys = flat_field_correction(heatmap_sys, ceil(.07*size(heatmap_sys,1)), .33);
+heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)), PW_params.flatField_borderDMap);
 figure(46)
 imagesc(heatmap_sys) ;
 colormap gray

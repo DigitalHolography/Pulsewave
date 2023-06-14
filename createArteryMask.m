@@ -1,15 +1,14 @@
-function [mask_artery_retina_choroid,mask_artery] = createArteryMask(video)
+function [mask_artery_retina_choroid,mask_artery] = createArteryMask(video,path)
 %FIXME : check the link with VesselMask (order between flat_field_correction and imbinarize)
 %FIXME : add threshold parameter
+PW_params = Parameters(path);
 
 mask_artery = squeeze(mean(video, 3));
 
 
-sigma = 3;
-beta = 0.8;
-mask_artery= vesselness_filter(mask_artery, sigma, beta);
-mask_artery = mask_artery > (max(mask_artery,[],'all') * 0.2);
-mask_artery = magicwand(mask_artery, 0.2, 8, 2);
+mask_artery= vesselness_filter(mask_artery, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
+mask_artery = mask_artery > (max(mask_artery,[],'all') * PW_params.arteryMask_bin_threshold);
+mask_artery = magicwand(mask_artery, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 
 
 %mask_artery = imbinarize(mat2gray(mask_artery), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
@@ -52,13 +51,13 @@ figure(204)
 imagesc(C);
 
 % find max. values of the correlation
-mask_artery_retina_choroid = C > (max(C(:)) * 0.1);
+mask_artery_retina_choroid = C > (max(C(:)) * PW_params.arteryMask_choroidCorrThreshold);
 mask_artery = mask_artery_retina_choroid;
 
 figure(204)
 imagesc(mask_artery_retina_choroid);
 
-mask_artery = magicwand(mask_artery, 0.2, 8, 4);
+mask_artery = magicwand(mask_artery, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_artery);
 
 
 figure(204)

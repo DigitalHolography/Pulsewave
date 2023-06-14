@@ -1,14 +1,16 @@
-function [sys_index_list, mask_artery_retina_choroid, mask_vessel, mask_artery, fullPulseWave] = find_systole_index(video)
+function [sys_index_list, mask_artery_retina_choroid, mask_vessel, mask_artery, fullPulseWave] = find_systole_index(video,path)
 arguments
     video,
+    path,
 end
 
 % create zero-mean signal
 %FIXME redondant
 video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
+PW_params = Parameters(path);
 
-[mask_artery_retina_choroid,mask_artery] = createArteryMask(video);
-mask_vessel = createVesselMask(video);
+[mask_artery_retina_choroid,mask_artery] = createArteryMask(video,path);
+mask_vessel = createVesselMask(video,path);
 
 fullPulseWave = squeeze(sum(video .* mask_artery_retina_choroid, [1 2])/nnz(mask_artery_retina_choroid));
 pulse_init = detrend(fullPulseWave);
@@ -50,6 +52,6 @@ diff_signal = diff(pulse_init);
 %     end
 %     sys_index_list = sort(sys_index_list, 'ascend');
 
-[~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * 0.7);
+[~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * PW_params.systoleThreshold);
 
 end

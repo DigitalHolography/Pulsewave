@@ -1,6 +1,7 @@
-function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, vessel_type)
+function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, vessel_type,path)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
+PW_params = Parameters(path);
 
 img_v_artery = squeeze(mean(v_RMS,3)).* mask;
 width_cross_section = zeros(length(locs),1);
@@ -15,7 +16,7 @@ subVideo_cell = cell(1,length(locs));
 tilt_angle_list = zeros(1,length(locs));
 
 for ii = 1:size(locs)
-    subImgHW = round(width(ii)*3);
+    subImgHW = round(width(ii)*PW_params.cropSection_scaleFactorWidth);
     %FIXME bords d IMG, 
 
     xRange = round(-subImgHW/2) + cx(locs(ii)) : round(subImgHW/2) + cx(locs(ii));
@@ -60,7 +61,7 @@ for ii = 1:size(locs)
     plot(section_cut);
 
 %     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1),'MinPeakProminence',std(section_cut));
-    [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(0.004*size(mask,1)));
+    [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
     % if tmp contains more than 1 element, we select the first one
     % if tmp is empty, we select 0 as width because then it's a 1-2 pixel noise peak
     if isempty(tmp) 
@@ -76,7 +77,7 @@ for ii = 1:size(locs)
     slice_half_thickness_tmp = min(slice_half_thickness,floor(subImgHW/2));
     mask_slice_subImg((slice_center - slice_half_thickness_tmp):(slice_center + slice_half_thickness_tmp),:) = true;
     mask_slice_subImg = imrotate(double(mask_slice_subImg),-tilt_angle_list(ii),'bilinear','crop');
-    mask_slice_subImg = mask_slice_subImg>0.01;
+    mask_slice_subImg = mask_slice_subImg>PW_params.cropSection_maskThreshold;
 
     %% Average the blood flow calculation over a circle before dividing by the section
 
@@ -98,7 +99,7 @@ for ii = 1:size(locs)
     tmp = tmp.*mask_current_slice;
 
     avg_blood_velocity(ii) = sum(tmp(:))/nnz(tmp(:));
-    cross_section_area(ii) = pi*(width_cross_section(ii)/2*0.0102/2^k)^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+    cross_section_area(ii) = pi*(width_cross_section(ii)/2*PW_params.cropSection_pixelSize/2^k)^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     avg_blood_rate(ii) = avg_blood_velocity(ii)*cross_section_area(ii); % mm^3/s
 
 %     figure(101)

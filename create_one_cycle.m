@@ -1,12 +1,11 @@
-function [one_cycle_video,selectedPulseIdx, signal_one_cycle] = create_one_cycle(video, mask, sys_index_list, Ninterp)
+function [one_cycle_video,selectedPulseIdx, signal_one_cycle] = create_one_cycle(video, mask, sys_index_list, Ninterp,path)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
-arguments
-    video
-    mask
-    sys_index_list {mustBeNumeric, mustBeNonnegative} = []
-    Ninterp {mustBeNumeric, mustBePositive} = 64
-end
+%sys_index_list  = [];
+%Ninterp  = 64; 
+
+
+PW_params = Parameters(path);
 
 disp('interpolate, average, and shift');
 disp('arterial pulse waveforms');
@@ -40,7 +39,7 @@ if M > 0 % we have detected at least two systoles
         pulseMatrix(ii,:) = signal;
         %     cleanSignal = smoothdata(signal,'lowess');
         noise = sqrt(abs(abs(signal).^2 - abs(cleanSignal).^2));
-        idxOutNoise = find(noise>2*std(noise));
+        idxOutNoise = find(noise>PW_params.oneCycle_outNoiseThreshold*std(noise));
         dataReliabilityIndex(ii) = ceil(100*(1-(length(idxOutNoise)/length(noise))));
         disp(['data reliability index for pulse ', num2str(ii), ' : ', num2str(dataReliabilityIndex(ii)), ' %']);
     end
@@ -75,7 +74,7 @@ if M > 0 % we have detected at least two systoles
     ctr = 0;
     for ii = 1:M
 %         if (dataReliabilityIndex(ii) < 50)
-        if (dataReliabilityIndex(ii) > Reliability_index_threshold)
+        if (dataReliabilityIndex(ii) > PW_params.oneCycle_dataReliabilityThreshold)
             tmp = tmp + squeeze(one_cycle_video(:,:,:,ii)); % average selected cycles
             ctr = ctr + 1;
             signal_one_cycle(:,ii,2) = ones(1,size(signal_one_cycle,1));

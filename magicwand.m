@@ -14,6 +14,11 @@ for ii = 1:max(B(:))
     idxList = find(B==ii);
     area(ii) = length(idxList);
 end
+
+figure(111111)
+title('histogram magic wand')
+plot(area)
+
 for jj = 1:numLargestFeatsToKeep
     [~,idx] = sort(area,'descend');
     mask = mask + (B == idx(jj));
