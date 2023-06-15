@@ -234,6 +234,8 @@ classdef OneCycleClass
 
             copyfile(path_file_txt_params,one_cycle_dir_txt );
 
+            PW_params = Parameters(obj.global_directory);
+
 %             maskBackground = not(maskVessel);
 %             maskVein = double(maskVessel) - double(maskArtery); 
 %             maskVein = maskVein > 0; 

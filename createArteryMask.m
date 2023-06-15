@@ -3,15 +3,18 @@ function [mask_artery_retina_choroid,mask_artery] = createArteryMask(video,path)
 %FIXME : add threshold parameter
 PW_params = Parameters(path);
 
-mask_artery = squeeze(mean(video, 3));
+%mask_artery = squeeze(mean(video, 3));
+mask_artery = std(video,0,3);
+
+% 
+% mask_artery= vesselness_filter(mask_artery, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
+% mask_artery = mask_artery > (max(mask_artery,[],'all') * PW_params.arteryMask_bin_threshold);
+% mask_artery = magicwand(mask_artery, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 
 
-mask_artery= vesselness_filter(mask_artery, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
-mask_artery = mask_artery > (max(mask_artery,[],'all') * PW_params.arteryMask_bin_threshold);
-mask_artery = magicwand(mask_artery, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 
-
-%mask_artery = imbinarize(mat2gray(mask_artery), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
+mask_artery = imbinarize(mat2gray(mask_artery), 'adaptive', 'ForegroundPolarity', 'bright', 'Sensitivity', 0.2);
+mask_vessel = createVesselMask(video,path);
 
 figure(307)
 imagesc(mask_artery)
@@ -37,7 +40,7 @@ for ii = 1:size(video,3)
 end
 % zero-mean local pulse : C
 C(:,:,:) = video(:,:,:) - squeeze(mean(video, 3));
-C = C.* mask_artery;
+C = C.* mask_vessel ;
 pulse_init_3d = zeros(size(video));
 for mm = 1:size(video, 1)
     for pp = 1:size(video, 2)
