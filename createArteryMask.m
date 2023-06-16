@@ -5,6 +5,7 @@ PW_params = Parameters(path);
 
 %mask_artery = squeeze(mean(video, 3));
 mask_artery = std(video,0,3);
+meanIm = squeeze(mean(video, 3));
 
 % 
 % mask_artery= vesselness_filter(mask_artery, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
@@ -60,7 +61,7 @@ mask_artery = mask_artery_retina_choroid;
 figure(204)
 imagesc(mask_artery_retina_choroid);
 
-mask_artery = magicwand(mask_artery, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_artery);
+mask_artery = magicwand(mask_artery,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_artery);
 
 
 figure(204)
