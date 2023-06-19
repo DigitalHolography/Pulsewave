@@ -194,6 +194,7 @@ classdef OneCycleClass
         end
 
         function [sys_index_list_cell, mask_cell,maskVessel, maskArtery, fullPulseWave_cell] = getSystole(obj)
+            PW_params = Parameters(obj.global_directory);
             sys_index_list_cell = cell(obj.nbFiles) ;
             for i = 1:obj.nbFiles
                 datacube = obj.dataM2M0_interp{i}; % choix du cube sur lequel travailler 
@@ -281,7 +282,7 @@ classdef OneCycleClass
                     tic
                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, name, obj.k,obj.global_directory);
                     toc
-                  [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, obj.k);
+                 [SpectrogramVideo] = spectrogram(maskArtery, maskVein, maskCRA, obj.dataSH_interp{1}, one_cycle_dir, name, obj.k);
 
                 end % add_infos
             end

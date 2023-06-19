@@ -15,10 +15,10 @@ classdef Parameters
         oneCycle_dataReliabilityThreshold
         arteryMask_vesselness_sigma
         arteryMask_vesselness_beta
-        arteryMask_bin_threshold
+        arteryMask_vesselness_bin_threshold
         arteryMask_magicwand_nb_of_area_vessels
         arteryMask_magicwand_nb_of_area_artery
-        arteryMask_choroidCorrThreshold
+        arteryMask_ArteryCorrThreshold
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
         centralRetinal_backgndThreshold
@@ -105,10 +105,10 @@ classdef Parameters
                 obj.oneCycle_dataReliabilityThreshold = obj.extractValue(fileContent, 'Data reliability index treshold :');
                 obj.arteryMask_vesselness_sigma = obj.extractValue(fileContent, 'Vesselnes parameter sigma :');
                 obj.arteryMask_vesselness_beta = obj.extractValue(fileContent, 'Vesselnes parameter beta :');
-                obj.arteryMask_bin_threshold = obj.extractValue(fileContent, 'Binarization treshold :');
-                obj.arteryMask_magicwand_nb_of_area_vessels = obj.extractValue(fileContent, 'Number of segmented area detected for vessels :');
-                obj.arteryMask_magicwand_nb_of_area_artery = obj.extractValue(fileContent, 'Number of segmented area detected for artery :');
-                obj.arteryMask_choroidCorrThreshold = obj.extractValue(fileContent, 'Choroid correlation threshold :');
+                obj.arteryMask_vesselness_bin_threshold = obj.extractValue(fileContent, 'Vesselness Binarization treshold :');
+                obj.arteryMask_magicwand_nb_of_area_vessels = obj.extractValue(fileContent, 'MagicWand Number of segmented area detected for vessels :');
+                obj.arteryMask_magicwand_nb_of_area_artery = obj.extractValue(fileContent, 'MagicWand Number of segmented area detected for artery :');
+                obj.arteryMask_ArteryCorrThreshold = obj.extractValue(fileContent, 'Artery correlation threshold :');
                 obj.centralRetinal_arteryThreshold = obj.extractValue(fileContent, 'Central retina artery treshold :');
                 obj.centralRetinal_veinThreshold = obj.extractValue(fileContent, 'Central retina vein treshold :');
                 obj.centralRetinal_backgndThreshold = obj.extractValue(fileContent, 'Central retina background treshold :');

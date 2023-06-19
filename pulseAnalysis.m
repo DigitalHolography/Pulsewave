@@ -654,7 +654,11 @@ delta = max(pulse_arteries_blurred_dia(:))-min(pulse_arteries_blurred_dia(:));
 thr = max(pulse_arteries_blurred_dia(:))-delta./exp(1);
 idx_list_threshold_dia = find(pulse_arteries_blurred_dia(:) < thr);
 [max_diff_pulse,idx_T_diff_max] = max(diff_pulse_sys); %faire ca mieux
-acc = max_diff_pulse/(T(idx_T_diff_max)-T(idx_T_diff_max-1));
+if idx_T_diff_max == 1 
+    acc = abs(max_diff_pulse/(T(idx_T_diff_max)-T(idx_T_diff_max+1)));
+else
+    acc = max_diff_pulse/(T(idx_T_diff_max)-T(idx_T_diff_max-1));
+end
 
 
 % figure(1)
