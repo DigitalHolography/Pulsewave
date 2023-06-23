@@ -163,7 +163,8 @@ colorfig = figure(3210);
 %colorbar arteries
 colormap(cmap_arteries);
 colorfig.Units = 'normalized';
-hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmin_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
+% hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmin_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
+hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(Vmin_Arteries)), string(round(Vmax_Arteries))});
 set(gca,'Visible',false)
 set(gca,'LineWidth', 3);
 hCB.Position = [0.1 0.3 0.81 0.35];
@@ -177,7 +178,8 @@ colorfig2 = figure(3209);
 %colorbar veins
 colorfig2.Units = 'normalized';
 colormap(cmap_veins)
-hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmin_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
+% hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(min(Vmin_Arteries,Vmax_Veins),1)), string(round(max(Vmax_Arteries,Vmax_Veins),1))});
+hCB = colorbar('northoutside','Ticks',[0,1],'TickLabels',{string(round(Vmin_Veins)), string(round(Vmax_Veins))});
 set(gca,'Visible',false)
 set(gca,'LineWidth', 3);
 hCB.Position = [0.1 0.3 0.81 0.35];
@@ -260,13 +262,13 @@ for ii=1:size(locs_Vein)
     num = string(ii);
     new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
-    text(new_x, new_y, strcat('V',num), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, strcat('V',num), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
     num = string(ii);
-    new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
-    new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
-    text(new_x, new_y, strcat('A',num), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.5*(cx(locs_Artery(ii))-x_center);
+    new_y = y_center + 1.5*(cy(locs_Artery(ii))-y_center);
+    text(new_x, new_y, strcat('A',num), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
 end
 % png
 % print('-f121','-dpng',fullfile(one_cycle_dir,strcat(filename,'_MaskTopologyAV.png'))) ;
@@ -285,12 +287,12 @@ imshow(maskRGB);
 for ii=1:size(locs_Vein)
     new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
-    text(new_x, new_y, string(round(avg_blood_rate_vein_muLmin(ii),1)), "FontWeight", "bold", "FontSize", 20,  "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, string(round(avg_blood_rate_vein_muLmin(ii),1)), "FontWeight", "bold", "FontSize", 15,  "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
-    new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
-    new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
-    text(new_x, new_y, string(round(avg_blood_rate_artery_muLmin(ii),1)), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.5*(cx(locs_Artery(ii))-x_center);
+    new_y = y_center + 1.5*(cy(locs_Artery(ii))-y_center);
+    text(new_x, new_y, string(round(avg_blood_rate_artery_muLmin(ii),1)), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
 end
 
 title(['Total blood volume rate : ' num2str(round(total_blood_rate_artery_muLmin,1)) ' µL/min (arteries) - ' num2str(round(total_blood_rate_vein_muLmin,1)) ' µL/min (veins)']);
@@ -308,14 +310,14 @@ F_Total_blood_volume_rate = getframe(ax,rect);
 figure(115)
 imshow(maskRGB);
 for ii=1:size(locs_Vein)
-    new_x = x_center + 1.2*(cx(locs_Vein(ii))-x_center);
-    new_y = y_center + 1.2*(cy(locs_Vein(ii))-y_center);
-    text(new_x, new_y, string(round(avg_blood_velocity_vein(ii),1)), "FontWeight", "bold", "FontSize", 20,  "Color", "white", "BackgroundColor", "black");
+    new_x = x_center + 1.5*(cx(locs_Vein(ii))-x_center);
+    new_y = y_center + 1.5*(cy(locs_Vein(ii))-y_center);
+    text(new_x, new_y, string(round(avg_blood_velocity_vein(ii),1)), "FontWeight", "bold", "FontSize", 15,  "Color", "white", "BackgroundColor", "black");
 end
 for ii=1:size(locs_Artery)
     new_x = x_center + 1.2*(cx(locs_Artery(ii))-x_center);
     new_y = y_center + 1.2*(cy(locs_Artery(ii))-y_center);
-    text(new_x, new_y, string(round(avg_blood_velocity_artery(ii),1)), "FontWeight", "bold","FontSize", 20,   "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, string(round(avg_blood_velocity_artery(ii),1)), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
 end
 
 title('Velocity map in venous & arterial vessels');

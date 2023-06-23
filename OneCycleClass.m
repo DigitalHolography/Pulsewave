@@ -70,7 +70,6 @@ classdef OneCycleClass
                     checkPulsewaveParamsFromTxt(obj.global_directory);
                     PW_params = Parameters(obj.global_directory);
                     obj.k = PW_params.k;
-                   % [~,obj.k] =  getPulsewaveParamFromTxt(path,'Value of the interpolation parameter :');
                     
                     
                 elseif (ext == '.raw')

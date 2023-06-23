@@ -56,8 +56,11 @@ colormap gray
 
 %maskVessel = createVesselMask(fullVideoM0);
 maskBackground = not(maskVessel);
-maskVein = double(maskVessel) - double(maskArteryRetinaChoroid); 
+maskVein = double(maskVessel) - double(maskArtery); 
 maskVein = maskVein > 0; 
+se = strel('disk',3);
+maskVein = imerode(maskVein,se);
+maskVein = imdilate(maskVein,se);
 
 figure(4)
 imagesc(maskVessel);

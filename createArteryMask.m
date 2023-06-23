@@ -55,7 +55,7 @@ imagesc(mask_artery_retina_choroid);
 mask_artery = magicwand(mask_artery,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_artery);
 
 
-figure(204)
+figure(307)
 imagesc(mask_artery);
 
 list_fig_close = [307,204];

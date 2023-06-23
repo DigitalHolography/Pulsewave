@@ -16,7 +16,7 @@ imagesc(blurred_mask)
 
 [centroidY, centroidX] = find(blurred_mask == max(blurred_mask,[],'all'));
 
-radius = 0.13*size(A,1);
+radius = 0.1*size(A,1);
 mask = false(size(A));
 
 [rows, cols] = size(mask);

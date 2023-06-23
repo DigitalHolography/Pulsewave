@@ -7,16 +7,15 @@ PW_params = Parameters(path);
 
 mask= vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
 
-figure(307)
-imagesc(mask)
-colormap gray
 
 
 mask = mask > (max(mask,[],'all')* PW_params.arteryMask_vesselness_bin_threshold);
 
-% se = strel('disk',2);
+
+ se = strel('disk',2);
 % mask = imerode(mask,se);
 %mask = magicwand(mask,meanIm, 0.2, 8, 3);
+mask = imerode(mask,se);
 mask = magicwand(mask,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 se = strel('disk',2);
 mask = imdilate(mask,se);
