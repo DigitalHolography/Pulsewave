@@ -335,7 +335,7 @@ colormap gray
 
 
 % Average Arterial Pulse for In-Plane arteries
-[onePulseVideo2, ~, signal_one_cycle] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp,path);
+[onePulseVideo2, ~, cycles_signal] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp,path);
 avgArterialPulse =  onePulseVideo2 .* maskArtery;
 avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery);
 
@@ -343,7 +343,7 @@ w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(filename,'_one_cycle.avi')));
 tmp = mat2gray(onePulseVideo2);
 open(w)
 for j = 1:size(onePulseVideo2,3)
-    writeVideo(w,tmp(:,:,j)) ;
+    writeVideo(w,tmp(:,:,j)) ;  
 end
 close(w);
 
@@ -699,20 +699,23 @@ title('average blood flow velocity estimate in in-plane retinal arteries');
 
 
 figure(1111)
-for ii = 1 : size(signal_one_cycle, 2)
-    if signal_one_cycle(1,ii,2) == 1
-    plot( ...
-        T(1:length(avgArterialPulse)),movavgvar(signal_one_cycle(:, ii),blur_time_sys) * scalingFactorVelocity2,'k-', ...
-        'Color','black','LineWidth',1) ;
-    hold on
+for ii = 1 : size(cycles_signal, 1)
+    if ismember(ii, selectedPulseIdx)
+        plot( ...
+            movavgvar(cycles_signal(ii, :),5),'k-', ...
+            'LineWidth',1) ;
+        hold on
     else
-    plot( ...
-        T(1:length(avgArterialPulse)),movavgvar(signal_one_cycle(:, ii),blur_time_sys) * scalingFactorVelocity2,'--', ...
-        'Color','black','LineWidth',1) ;
-    hold on 
+        plot( ...
+            movavgvar(cycles_signal(ii, :),5),'k--', ...
+            'LineWidth',1) ;
+        hold on
     end
 
 end
+hold on
+plot(movavgvar(squeeze(mean(cycles_signal(:, :),1)),5),'-', ...
+        'LineWidth',2) 
 title('arterial blood flow velocity for different cycles');
 legend('arterial pulse');
 fontsize(gca,12,"points") ;
