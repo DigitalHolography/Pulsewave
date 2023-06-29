@@ -16,7 +16,7 @@ else
     disp("Parameter file does not exist, writing in process")
     %Initialisation
     videoStartFrameIndex = 1;
-    videoEndFrameIndex = 200;
+    videoEndFrameIndex = -1;
     k = 1;
     radius_ratio = 0.18;
     resistivity_gaussFiltSigma = 0.7;
@@ -25,7 +25,7 @@ else
     resistivity_maxTolVal = 0.98;
     resistivity_gamma = 0.7;
     oneCycle_Ninterp = 64;
-    oneCycle_outNoiseThreshold = 2;
+    oneCycle_outNoiseThreshold = 85;
     oneCycle_dataReliabilityThreshold = 50; %percent
     arteryMask_vesselness_sigma = 3;
     arteryMask_vesselness_beta = 0.8;

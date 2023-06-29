@@ -713,9 +713,6 @@ for ii = 1 : size(cycles_signal, 1)
     end
 
 end
-hold on
-plot(movavgvar(squeeze(mean(cycles_signal(:, :),1)),5),'-', ...
-        'LineWidth',2) 
 title('arterial blood flow velocity for different cycles');
 legend('arterial pulse');
 fontsize(gca,12,"points") ;

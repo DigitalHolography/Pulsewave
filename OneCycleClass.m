@@ -154,15 +154,24 @@ classdef OneCycleClass
             PW_params = Parameters(obj.global_directory);
             firstFrame = PW_params.videoStartFrameIndex;
             lastFrame = PW_params.videoEndFrameIndex;
-            
-            if ref
-                obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
+
+            if firstFrame > 0 && firstFrame < size(obj.dataM2M0{1},3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM2M0{1},3)
+                if ref
+                    obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
+                    disp('Ref cropped')
+                else
+                    obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
+                    obj.dataM1M0{1} = obj.dataM1M0{1}(:,:,firstFrame:lastFrame);
+                    obj.dataM0{1} = obj.dataM0{1}(:,:,firstFrame:lastFrame);
+                    obj.dataM1{1} = obj.dataM1{1}(:,:,firstFrame:lastFrame);
+                    obj.dataM2{1} = obj.dataM2{1}(:,:,firstFrame:lastFrame);
+                    disp('Data cropped')
+                end
+                disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM2M0{1},3))])
             else
-                obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
-                obj.dataM1M0{1} = obj.dataM1M0{1}(:,:,firstFrame:lastFrame);
-                obj.dataM0{1} = obj.dataM0{1}(:,:,firstFrame:lastFrame);
-                obj.dataM1{1} = obj.dataM1{1}(:,:,firstFrame:lastFrame);
-                obj.dataM2{1} = obj.dataM2{1}(:,:,firstFrame:lastFrame);
+                disp('Wrong value for the first frame. Set as 1')
+                disp('Wrong value for the last frame. Set as the end.')
+                disp(['Data cube frame: 1/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(size(obj.dataM2M0{1},3)), '/', num2str(size(obj.dataM2M0{1},3))])
             end
         end
 
