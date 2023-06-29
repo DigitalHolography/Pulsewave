@@ -3,6 +3,8 @@ classdef Parameters
     
     properties
         path
+        videoStartFrameIndex
+        videoEndFrameIndex
         k
         radius_ratio
         resistivity_gaussFiltSigma
@@ -93,6 +95,8 @@ classdef Parameters
                 fileContent = fileread(txtPath);
 
                 % Recherche de chaque paramètre
+                obj.videoStartFrameIndex = obj.extractValue(fileContent, 'Start frame :');
+                obj.videoEndFrameIndex = obj.extractValue(fileContent, 'End frame :');
                 obj.k = obj.extractValue(fileContent, 'Value of the interpolation parameter :');
                 obj.radius_ratio = obj.extractValue(fileContent, 'Radius ratio :');
                 obj.resistivity_gaussFiltSigma = obj.extractValue(fileContent, 'Gaussian filter sigma :');

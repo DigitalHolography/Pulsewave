@@ -335,7 +335,7 @@ colormap gray
 
 
 % Average Arterial Pulse for In-Plane arteries
-[onePulseVideo2, ~, cycles_signal] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp,path);
+[onePulseVideo2, selectedPulseIdx, cycles_signal] = create_one_cycle(dataCube, maskArtery, sys_index_list, Ninterp,path);
 avgArterialPulse =  onePulseVideo2 .* maskArtery;
 avgArterialPulse = squeeze(sum(avgArterialPulse, [1 2]))/nnz(maskArtery);
 

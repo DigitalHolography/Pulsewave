@@ -149,6 +149,23 @@ classdef OneCycleClass
             end
         end
 
+        function obj = cropAllVideo(obj, ref)
+            %Crop a video (matrix dim 3)
+            PW_params = Parameters(obj.global_directory);
+            firstFrame = PW_params.videoStartFrameIndex;
+            lastFrame = PW_params.videoEndFrameIndex;
+            
+            if ref
+                obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
+            else
+                obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
+                obj.dataM1M0{1} = obj.dataM1M0{1}(:,:,firstFrame:lastFrame);
+                obj.dataM0{1} = obj.dataM0{1}(:,:,firstFrame:lastFrame);
+                obj.dataM1{1} = obj.dataM1{1}(:,:,firstFrame:lastFrame);
+                obj.dataM2{1} = obj.dataM2{1}(:,:,firstFrame:lastFrame);
+            end
+        end
+
         function obj = Interpolate(obj,height,width,ref) %ref = TRUE indicates the object is the reference
             
             num_frames = size(obj.dataM2M0{1}, 3);
