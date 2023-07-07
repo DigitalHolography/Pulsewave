@@ -21,13 +21,16 @@ if M > 0 % we have detected at least two systoles
     %calculate the signal
     cycles_signal = zeros(M, Ninterp);
     %     signal = squeeze(mean(video * mask, [1 2]));
+    figure(33333)
+    hold on
     for ii = 1 : M
         interp_range = linspace(sys_index_list(ii),sys_index_list(ii+1)-1,Ninterp);
         frame_range = sys_index_list(ii):sys_index_list(ii+1)-1;
         tmp = squeeze(sum(video(:, :, frame_range) .* mask, [1 2])/nnz(mask));
         cycles_signal(ii, :) = interp1(frame_range, tmp, interp_range);
+        plot(cycles_signal(ii, :))
     end
-
+hold off
 
     %check pulse integrity
     pulseMatrix = zeros(M,Ninterp);
@@ -124,14 +127,14 @@ if M > 0 % we have detected at least two systoles
     selectedPulseIdx = find(cycles_accepted);
     %     parfor ii = 1:M % for each detected pulse, loop
     if ~isempty(selectedPulseIdx) %at least one cycle was accepted
-        parfor jj = length(selectedPulseIdx)
+        for jj = 1:length(selectedPulseIdx)
             ii = selectedPulseIdx(jj);
             interp_range = linspace(sys_index_list(ii),sys_index_list(ii+1)-1,Ninterp);
             frame_range = sys_index_list(ii):sys_index_list(ii+1)-1;
             for id_x = 1 : Nx
                 for id_y = 1 : Ny
                     %                 one_cycle_video(id_x,id_y,:,ii) = interp1((sys_index_list(ii):sys_index_list(ii+1)-1),squeeze(video(id_x, id_y,sys_index_list(ii):sys_index_list(ii+1)-1)),interp_range);
-                    single_cycles(id_x,id_y,:,jj) = interp1(frame_range, squeeze(video(id_x, id_y,frame_range)),interp_range);
+                    single_cycles(id_x,id_y,:,ii) = interp1(frame_range, squeeze(video(id_x, id_y,frame_range)),interp_range);
                 end
             end
         end
@@ -148,6 +151,24 @@ end
 
 
 one_cycle_video = tmp; % average all detected cycles
+% oneP = zeros(1,Ninterp);
+
+% figure(33343)
+%     hold on
+%     for ii = 1 : M
+%         plot(cycles_signal(ii, :))
+%     end
+% hold off
+
+
+% for jj = length(selectedPulseIdx)
+% 
+%     ii = selectedPulseIdx(jj);
+%     oneP = oneP+cycles_signal(ii,:);
+% end
+% 
+% oneP = oneP/length(selectedPulseIdx);
+
 oneP = squeeze(sum(one_cycle_video .* mask,[1 2]) / nnz(mask));
 [min_val,shift] = min(oneP); % find bottom systole
 one_cycle_video = circshift(one_cycle_video,-shift, 3);

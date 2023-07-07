@@ -1,43 +1,26 @@
-function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, one_cycle_dir, filename, k,path)
-%SECTION_PLOT Summary of this function goes here
-%   Detailed explanation goes here
-% k = interpolation 2^k-1 (for size pixel for section calculation)
+function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, k,path)
+
 PW_params = Parameters(path);
-
-one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
-one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
-one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
-one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
-
 
 %% Define a section (circle)
 
-%FIXME : radius_ratio as an entry param
-%[~,radius_ratio] = getPulsewaveParamFromTxt(path,'Radius ratio :');
-
 radius = round(PW_params.radius_ratio* size(v_RMS,1));
+x_center  = ToolBox.x_barycentre;
+y_center  = ToolBox.y_barycentre;
+
 %FIXME : anamorphic image
-blurred_mask = imgaussfilt(double(mean(v_RMS,3).*double(maskCRA)),round(size(maskCRA,1)/4),'Padding',PW_params.flowRate_gaussFiltPadding);
-[~,x_center] = findpeaks(sum(blurred_mask,1));
-[~,y_center] = findpeaks(sum(blurred_mask,2));
 
 polygon = nsidedpoly(PW_params.nbSides, 'Center', [x_center, y_center], 'Radius', radius);
 points_x = polygon.Vertices(:,1);
 points_x(end + 1) = points_x(1);
 points_y = polygon.Vertices(:,2);
 points_y(end + 1) = points_y(1);
-figure(121)
-for ii = 1:PW_params.nbSides
-    l   = line([points_x(ii), points_x(ii + 1)], [points_y(ii), points_y(ii + 1)]);
-    l.Color = 'red';
-    l.LineWidth = 2;
-end
 
 %Vertices, Edges
 [cx, cy, ~] = improfile(maskArtery+maskVein, points_x, points_y);
 
 jj = 0;
-% Delete all points which are not in the maskArtery
+% Delete all points which are not in the maskArtery %ça a l'air bizarre 
 for ii=1:size(cx, 1)
     ry = round(cy(ii));
     rx = round(cx(ii));
@@ -53,34 +36,15 @@ if (jj == 0) %If no points, no analysis.
 end
 
 %% Peak detection for maskVein
-figure(154)
-imshow(double(maskVein))
 
 [pks_Vein, locs_Vein, width_Vein] = find_cross_section(maskVein, v_RMS, cx, cy, jj);
 
 %% Peak detection for maskArtery
-figure(100)
-imshow(double(maskArtery))
 
 [pks_Artery, locs_Artery, width_Artery] = find_cross_section(maskArtery, v_RMS, cx, cy, jj);
 
-%% Images HSV Artery-Vein Retina
-eta_sat = 0.1;
-eta_val = 0.1;
-img_v_artery = squeeze(mean(v_RMS,3)) .* maskArtery;
-
-
-hue = mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
-hue = hue + abs(-mat2gray(squeeze(mean(v_RMS,3)))*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-sat = 1.0 * double(or(maskArtery,maskVein)).* squeeze(mean(v_RMS,3));
-val = squeeze(mean(v_RMS,3));
-val = mat2gray(val);
-tolVal = [0.02, 0.98];
-lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
-val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
-flowMapRGB =  hsv2rgb(hue, sat, val);
-
 %% Video HSV Artery-Vein Retina. Velocity & blood volume rate video
+tolVal = [0.02, 0.98];
 flowVideoRGB = zeros(size(v_RMS,1),size(v_RMS,2),3,size(v_RMS,3));
 v_RMS_n = mat2gray(v_RMS);
 img_backg = squeeze(mean(v_RMS,3));
@@ -97,40 +61,29 @@ Vmin_Veins = min(v_vein(:));
 adjustedVideo = mat2gray(v_RMS_n);
 avgAdjustedVideo = squeeze(mean(adjustedVideo,3));
 tolVal = [0.1, 0.99]; 
-lowhighVal = stretchlim(avgAdjustedVideo, tolVal); % adjust video contrast a bit 
+lowhigh = stretchlim(avgAdjustedVideo, tolVal); % adjust video contrast a bit 
 for ii = 1:size(v_RMS_n,3)
-    v = squeeze(v_RMS(:,:,ii));
-    hue = mat2gray(v) * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
-    hue = hue + abs(-mat2gray(v)*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-    sat = (1.0 - abs(0.5 * mat2gray(v))) .* double(or(maskArtery,maskVein)) ;
-    val = mat2gray(v);
-    tolVal = [0.02, 0.98];
-    lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
-    val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
-    flowVideoRGB(:,:,:,ii) = hsv2rgb(hue, sat, val);
+    v = mat2gray(squeeze(v_RMS(:,:,ii)));
+    [hue_artery,sat_artery,~] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
+    [hue_vein,sat_vein,val] = createHSVmap(v,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
+
+    flowVideoRGB(:,:,:,ii) =  hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
 end
 % save video
-w = VideoWriter(fullfile(one_cycle_dir_avi,strcat(filename,'_flowVideo'))) ;
+w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_flowVideo'))) ;
 open(w)
-% flow_video_to_save = mat2gray(flowVideoRGB);% 2nd normalization
 for jj = 1:size(flowVideoRGB,4)
     writeVideo(w,squeeze(flowVideoRGB(:,:,:,jj))) ;
 end
 close(w);
 
-v = squeeze(mean(v_RMS, 3));
-hue = mat2gray(v) * 0.18 .* maskArtery; % 0.18 for orange-yellow range in HSV
-hue = hue + abs(-mat2gray(v)*0.18 .* maskVein + 0.68 .* maskVein); % x0.18 + 0.5 for cyan-dark blue range in HSV
-% sat = 1.0 * double(or(maskArtery,maskVein)) .* mat2gray(v);
-sat = (1.0 - abs(0.5 * mat2gray(v))) .* double(or(maskArtery,maskVein)) ;
-val = mat2gray(v);
-tolVal = [0.02, 0.98];
-lowhigh = stretchlim(val, tolVal); % adjust contrast a bit
-val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
-flowImageRGB = hsv2rgb(hue, sat, val);
+Im = mat2gray(squeeze(mean(v_RMS,3)));
+[hue_artery,sat_artery,~] = createHSVmap(Im,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
+[hue_vein,sat_vein,val] = createHSVmap(Im,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
 
+flowImageRGB =  hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
 figure(321)
-imshow(flowImageRGB);
+imshow(flowImageRGB)
 
 % Save colorbar flow image
 color_bounds = [0.1 0.99];
@@ -203,12 +156,12 @@ slice_half_thickness = PW_params.flowRate_sliceHalfThickness; % size of the rect
 
 %% pour chaque veine jj detectee
 [avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein] = ...
-    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'vein',path);
+    cross_section_analysis(locs_Vein, width_Vein, maskVein, cx, cy, v_RMS, slice_half_thickness, k, ToolBox.PW_path_dir, ToolBox.main_foldername, 'vein',path);
 avg_blood_rate_vein_muLmin = avg_blood_rate_vein*60;
 
 %% pour chaque artere ii detectee
 [avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery] = ...
-    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, 'artery',path);
+    cross_section_analysis(locs_Artery, width_Artery, maskArtery, cx, cy, v_RMS, slice_half_thickness, k, ToolBox.PW_path_dir, ToolBox.main_foldername, 'artery',path);
 avg_blood_rate_artery_muLmin = avg_blood_rate_artery*60;
 %% Display final blood volume rate image
 total_blood_rate_artery = sum(avg_blood_rate_artery(:));
@@ -225,7 +178,7 @@ disp(['Total cross section of veins : ' num2str(total_cross_section_vein) ' mm^2
 disp(['Total blood volume rate in vein : ' num2str(total_blood_rate_vein) ' mm^3/s']);
 disp(['Total blood volume rate in vein : ' num2str(total_blood_rate_vein_muLmin) ' µL/min']);
 
-flowMapArteryRGB = flowMapRGB .* cross_section_mask_artery;
+flowMapArteryRGB = flowImageRGB .* cross_section_mask_artery;
 figure(118)
 imshow(flowMapArteryRGB)
 for ii=1:size(locs_Artery)
@@ -233,7 +186,7 @@ for ii=1:size(locs_Artery)
 end
 title(['Total blood volume rate : ' num2str(round(total_blood_rate_artery,1)) ' mm^3/s. '  num2str(round(total_blood_rate_artery_muLmin,1)) ' µL/min']);
 
-flowMapVeinRGB = flowMapRGB .* cross_section_mask_vein;
+flowMapVeinRGB = flowImageRGB .* cross_section_mask_vein;
 figure(119)
 imshow(flowMapVeinRGB)
 for ii=1:size(locs_Vein)
@@ -334,7 +287,7 @@ F_total_blood_flow = getframe(ax,rect);
 
 % txt file output with measured pulse wave parameters
 
-fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
+fileID = fopen(fullfile(ToolBox.PW_path_txt,strcat(ToolBox.main_foldername,'_pulseWaveParameters.txt')),'a') ;
 fprintf(fileID,[...
     'Value of total arterial blood volume rate (µL/min) :\n%d\n' ...
     'Value of total arterial blood volume rate (mm^3/s) :\n%d\n' ...
@@ -351,7 +304,7 @@ fprintf(fileID,[...
 fclose(fileID) ;
 
 for ii=1:length(avg_blood_rate_artery)
-    fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveOutputParameters.txt')),'a') ;
+    fileID = fopen(fullfile(ToolBox.PW_path_txt,strcat(ToolBox.main_foldername,'_pulseWaveOutputParameters.txt')),'a') ;
     fprintf(fileID,[...
         'Artery n°%d : cross_section (mm^2) : \n %d \n ' ...
         'Artery n°%d : vessel diameter (µm) : \n %d \n ' ...
@@ -369,7 +322,7 @@ for ii=1:length(avg_blood_rate_artery)
 end
 
 for ii=1:length(avg_blood_rate_vein)
-    fileID = fopen(fullfile(one_cycle_dir_txt,strcat(filename,'_pulseWaveParameters.txt')),'a') ;
+    fileID = fopen(fullfile(ToolBox.PW_path_txt,strcat(ToolBox.main_foldername,'_pulseWaveParameters.txt')),'a') ;
     fprintf(fileID,[...
         'Vein n°%d : cross_section (mm^2) : \n %d \n ' ...
         'Vein n°%d : vessel diameter (µm) : \n %d \n ' ...
@@ -387,19 +340,17 @@ for ii=1:length(avg_blood_rate_vein)
 end
 
 % png
-print('-f3209','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_venous_colorbar.png')));
-print('-f3210','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_blood_flow_arterial_colorbar.png')));
+print('-f3209','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_blood_flow_venous_colorbar.png')));
+print('-f3210','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_blood_flow_arterial_colorbar.png')));
 % eps
-print('-f3209','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_venous_colorbar.eps')));
-print('-f3210','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_blood_flow_arterial_colorbar.eps')));
+print('-f3209','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_blood_flow_venous_colorbar.eps')));
+print('-f3210','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_blood_flow_arterial_colorbar.eps')));
 
-imwrite(flowImageRGB, fullfile(one_cycle_dir_png,strcat(filename,'_flow_image.png')));
-imwrite(F_total_blood_flow.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_Total_blood_flow.png')));
-imwrite(F_MaskTopology.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_MaskTopologyAV.png')));
-imwrite(F_Total_blood_volume_rate.cdata, fullfile(one_cycle_dir_png,strcat(filename,'_Total_blood_volume_rate.png')));
-list_fig_close = [118,119,121,154,100];
-for ii=1:length(list_fig_close)
-    close(list_fig_close(ii));
-end
+imwrite(flowImageRGB, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_flow_image.png')));
+imwrite(F_total_blood_flow.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Total_blood_flow.png')));
+imwrite(F_MaskTopology.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_MaskTopologyAV.png')));
+imwrite(F_Total_blood_volume_rate.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Total_blood_volume_rate.png')));
+
+close all
 
 end

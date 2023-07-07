@@ -2,12 +2,7 @@ function mask = createVesselMask(video,path)
 
 meanIm = squeeze(mean(video, 3));
 PW_params = Parameters(path);
-
-
-
-mask= vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
-
-
+mask = vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
 
 mask = mask > (max(mask,[],'all')* PW_params.arteryMask_vesselness_bin_threshold);
 

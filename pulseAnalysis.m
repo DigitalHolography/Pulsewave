@@ -1,5 +1,5 @@
-function [maskVein, maskArteryInPlane, maskCRA, v_RMS] = pulseAnalysis(Ninterp, fullVideo,fullVideoM0, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery,maskVessel,path)
-%
+function [v_RMS] = pulseAnalysis(Ninterp, fullVideo,fullVideoM0, fullVideoM1M0, one_pulse_video, one_cycle_dir, filename, sys_index_list, maskArteryRetinaChoroid, maskArtery,maskVessel,path)
+
 % create additional masks
 % maskArtery : Arteries
 % maskArtery2 : Arteries + choroid
@@ -1060,6 +1060,8 @@ print('-f113','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_ARI_map_color
 print('-f15','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_ARI_map.png')));
 
 
+
+
 % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(filename,'_zeroLagXcorr.png'))) ;
 % print('-f99','-dpng',fullfile(one_cycle_dir,strcat(filename,'_timeLags.png'))) ;
 
@@ -1088,12 +1090,12 @@ imwrite(mat2gray(dMap_AVG),fullfile(one_cycle_dir_png,strcat(filename,'_AVG_Dopp
 imwrite(ARImapRGB,fullfile(one_cycle_dir_png,strcat(filename,'_ARI_map_img.png')),'png');
 imwrite(mat2gray(dMap),fullfile(one_cycle_dir_png,strcat(filename,'_rawDopplerHeatMap_image.png')),'png') ;
 imwrite(mat2gray(dMap_flat),fullfile(one_cycle_dir_png,strcat(filename,'_flattenedDopplerHeatMap_image.png')),'png') ;
-imwrite(mat2gray(single(maskArteryInPlane)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArteryInPlane.png')),'png') ;
-imwrite(mat2gray(single(maskArtery)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArtery.png')),'png') ;
-imwrite(mat2gray(single(maskVein)),fullfile(one_cycle_dir_png,strcat(filename,'_maskVein.png')),'png') ;
-imwrite(mat2gray(single(maskVessel)),fullfile(one_cycle_dir_png,strcat(filename,'_maskVessel.png')),'png') ;
-imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir_png,strcat(filename,'_maskBackground.png')),'png') ;
-imwrite(mat2gray(single(maskArteryRetinaChoroid)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArteryRetinaChoroid.png')),'png') ;
+% imwrite(mat2gray(single(maskArteryInPlane)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArteryInPlane.png')),'png') ;
+% imwrite(mat2gray(single(maskArtery)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArtery.png')),'png') ;
+% imwrite(mat2gray(single(maskVein)),fullfile(one_cycle_dir_png,strcat(filename,'_maskVein.png')),'png') ;
+% imwrite(mat2gray(single(maskVessel)),fullfile(one_cycle_dir_png,strcat(filename,'_maskVessel.png')),'png') ;
+% imwrite(mat2gray(single(maskBackground)),fullfile(one_cycle_dir_png,strcat(filename,'_maskBackground.png')),'png') ;
+% imwrite(mat2gray(single(maskArteryRetinaChoroid)),fullfile(one_cycle_dir_png,strcat(filename,'_maskArteryRetinaChoroid.png')),'png') ;
 imwrite(mat2gray(single(maskCRA)),fullfile(one_cycle_dir_png,strcat(filename,'_maskCRA.png')),'png') ;
 imwrite(mat2gray(single(maskCRV)),fullfile(one_cycle_dir_png,strcat(filename,'_maskCRV.png')),'png') ;
 imwrite(mat2gray(single(maskBackgroundM1M0)),fullfile(one_cycle_dir_png,strcat(filename,'_maskBackgroundM1M0.png')),'png') ;
@@ -1104,5 +1106,6 @@ list_fig_close = [2,8,9,22,6,111,80,90,45,46,...
 close(list_fig_close);
 
 return;
+
 
 end
