@@ -151,23 +151,6 @@ end
 
 
 one_cycle_video = tmp; % average all detected cycles
-% oneP = zeros(1,Ninterp);
-
-% figure(33343)
-%     hold on
-%     for ii = 1 : M
-%         plot(cycles_signal(ii, :))
-%     end
-% hold off
-
-
-% for jj = length(selectedPulseIdx)
-% 
-%     ii = selectedPulseIdx(jj);
-%     oneP = oneP+cycles_signal(ii,:);
-% end
-% 
-% oneP = oneP/length(selectedPulseIdx);
 
 oneP = squeeze(sum(one_cycle_video .* mask,[1 2]) / nnz(mask));
 [min_val,shift] = min(oneP); % find bottom systole
