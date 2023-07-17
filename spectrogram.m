@@ -54,7 +54,14 @@ xline(ToolBox.f1,'--','HandleVisibility','off')
 xline(ToolBox.f2,'--','HandleVisibility','off')
 xline(-ToolBox.f1,'--','HandleVisibility','off')
 xline(-ToolBox.f2,'--','HandleVisibility','off')
-xticks([-ToolBox.fs/2 -ToolBox.f2 -ToolBox.f1 ToolBox.f1 ToolBox.f2 ToolBox.fs/2])
+
+if ToolBox.fs/2 == ToolBox.f2
+    xticks([-ToolBox.fs/2 -ToolBox.f1 ToolBox.f1  ToolBox.fs/2])
+    xticklabels({'-f_s/2 -f_2','-f_1','f_1','f_s/2 f_2'})
+else
+    xticks([-ToolBox.fs/2 -ToolBox.f2 -ToolBox.f1 ToolBox.f1 ToolBox.f2 ToolBox.fs/2])
+    xticklabels({'-f_s/2','-f_2','-f_1','f_1','f_2','f_s/2'})
+end
 xticklabels({'-f_s/2','-f_2','-f_1','f_1','f_2','f_s/2'})
 title('Average spectrum')
 

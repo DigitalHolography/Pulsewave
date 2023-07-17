@@ -1,8 +1,7 @@
 function [idxOut,pulseWaveOutput] = discardPulseWaveOutliers(pulseWave,filterSize)
 
 [~,outliers] = rmoutliers(pulseWave,'movmedian',filterSize);
-% [~,outliers] = rmoutliers(pulseWave,'movmean',filterSize);
-% [~,outliers] = rmoutliers(pulseWave,'grubbs');
+
 idxOut = find(outliers);
 if isempty(idxOut)
 else

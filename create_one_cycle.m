@@ -1,9 +1,6 @@
 function [one_cycle_video, selectedPulseIdx, cycles_signal] = create_one_cycle(video, mask, sys_index_list, Ninterp,path)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
-%sys_index_list  = [];
-%Ninterp  = 64;
-
 
 PW_params = Parameters(path);
 
@@ -20,17 +17,14 @@ Ny = size(video,2);
 if M > 0 % we have detected at least two systoles
     %calculate the signal
     cycles_signal = zeros(M, Ninterp);
-    %     signal = squeeze(mean(video * mask, [1 2]));
-    figure(33333)
-    hold on
     for ii = 1 : M
         interp_range = linspace(sys_index_list(ii),sys_index_list(ii+1)-1,Ninterp);
         frame_range = sys_index_list(ii):sys_index_list(ii+1)-1;
         tmp = squeeze(sum(video(:, :, frame_range) .* mask, [1 2])/nnz(mask));
         cycles_signal(ii, :) = interp1(frame_range, tmp, interp_range);
-        plot(cycles_signal(ii, :))
+
     end
-hold off
+
 
     %check pulse integrity
     pulseMatrix = zeros(M,Ninterp);

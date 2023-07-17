@@ -248,7 +248,6 @@ classdef OneCycleClass
                 close all
 
                 sys_index_list_cell = cell(obj.nbFiles) ;
-                mask_cell = cell(obj.nbFiles) ;
                 fullPulseWave_cell = cell(obj.nbFiles) ;
                 for n = 1:obj.nbFiles
                     tic
@@ -261,12 +260,13 @@ classdef OneCycleClass
                     % %                         flat_field_correction(squeeze(one_cycle_video_to_save(:,:,j)),0.07,0.25);
                     % %                 end
                     tic
-                    [v_RMS] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM0_interp{n},obj.dataM1M0_interp{n},[],ToolBox.PW_path_dir,ToolBox.main_foldername,sys_index_list_cell{n}, mask_cell{n},maskArtery,maskVessel,obj.directory);
+                    [v_RMS] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
                     toc
+                    %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
-                    [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
+                    flow_rate(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
                     disp('FlowRate timing :')
                     toc
 
