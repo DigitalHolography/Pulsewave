@@ -157,11 +157,12 @@ fullArterialPulseRegularized = squeeze(sum(dataCubeM2M0 .* maskArtery, [1 2])) /
 [onePulseVideo, selectedPulseIdx, cycles_signal] = create_one_cycle(dataCubeM2M0, maskArtery, sys_index_list, Ninterp,path);
 
 avgArterialPulseHz = squeeze(sum(onePulseVideo .* maskArtery, [1 2]))/nnz(maskArtery);
-% avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
-avgArterialPulseVelocityInPlane = avgArterialPulseHz * 15;
+avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
+
 
 
 v_RMS = onePulseVideo * ToolBox.ScalingFactorVelocityInPlane;
+
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_one_cycle.avi')));
 tmp = mat2gray(onePulseVideo);
@@ -735,11 +736,11 @@ for ii = 1 : size(cycles_signal, 1)
     end
 
 end
-title('arterial blood flow velocity for different cycles');
+title('arterial Doppler signal ');
 legend('arterial pulse');
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
-ylabel('blood flow velocity (mm/s)');
+ylabel('Doppler signal (kHz)');
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
