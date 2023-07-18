@@ -99,7 +99,7 @@ for ii = 1:size(locs)
     tmp = tmp.*mask_current_slice;
 
     avg_blood_velocity(ii) = sum(tmp(:))/nnz(tmp(:));
-    cross_section_area(ii) = pi*(width_cross_section(ii)/2*PW_params.cropSection_pixelSize/2^k)^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+    cross_section_area(ii) = pi*((width_cross_section(ii)/2)*(PW_params.cropSection_pixelSize/2^k))^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     avg_blood_rate(ii) = avg_blood_velocity(ii)*cross_section_area(ii); % mm^3/s
 
 %     figure(101)
@@ -113,13 +113,9 @@ for ii = 1:size(locs)
 
 end % ii
 
-if strcmp(vessel_type,'artery')
-    viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, one_cycle_dir, filename);
-end
+% if strcmp(vessel_type,'artery')
+%     viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, one_cycle_dir, filename);
+% end
 
-list_fig_close = [3001,3002,1013];
-for ii=1:length(list_fig_close)
-    close(list_fig_close(ii));
-end
 
 end

@@ -105,6 +105,7 @@ if M > 0 % we have detected at least two systoles
     tmp = zeros(size(video,1), size(video,2), Ninterp);
 %     ctr = 0;
     cycles_accepted = (dataReliabilityIndex > PW_params.oneCycle_outNoiseThreshold);
+    %cycles_accepted = [1 ;1 ;0;0];
     %     for ii = 1:M
     % %         if (dataReliabilityIndex(ii) < 50)
     %         if (dataReliabilityIndex(ii) > PW_params.oneCycle_dataReliabilityThreshold)

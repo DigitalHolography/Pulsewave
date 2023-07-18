@@ -494,7 +494,7 @@ segmentation_map(:,:, 3) = img_avg - (maskArtery+maskVein).*img_avg + maskVein;
 
 
 %% Display images and figures
-strXlabel = createXlabelTime(1);
+strXlabel = 'Time(ms)' %createXlabelTime(1);
 strYlabel = 'frequency (kHz)';
 range0(1:2) = clim;
 fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs,size(fullVideoM2M0,3));
@@ -725,19 +725,19 @@ figure(101)
 for ii = 1 : size(cycles_signal, 1)
     if ismember(ii, selectedPulseIdx)
         plot( ...
-            movavgvar(cycles_signal(ii, :),5),'k-', ...
+             T,movavgvar(cycles_signal(ii, :),5),'k-', ...
             'LineWidth',1) ;
         hold on
-    else
-        plot( ...
-            movavgvar(cycles_signal(ii, :),5),'k--', ...
-            'LineWidth',1) ;
-        hold on
+%     else
+%         plot( ...
+%             T,movavgvar(cycles_signal(ii, :),5),'k--', ...
+%             'LineWidth',1) ;
+%         hold on
     end
 
 end
 title('arterial Doppler signal ');
-legend('arterial pulse');
+legend('arterial signal ');
 fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
 ylabel('Doppler signal (kHz)');
