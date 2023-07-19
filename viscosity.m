@@ -4,6 +4,7 @@ one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
 one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
 one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
 one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
+one_cycle_dir_mp4 = fullfile(one_cycle_dir, 'mp4');
 
 num_vessels = size(mask_cell, 2);
 num_frames = size(velocity_cell{1}, 3);
@@ -65,8 +66,10 @@ end% ii (artery #)
 
 average_velocity_profile = squeeze(mean(velocity_profiles, 3));
 
-v = VideoWriter(fullfile(one_cycle_dir_avi, strcat(filename,'_velocity_profile.avi')));
+v = VideoWriter(fullfile(one_cycle_dir_avi, strcat(filename,'_velocity_profile.avi')));% avi
+vMP4 = VideoWriter(fullfile(one_cycle_dir_mp4, strcat(filename,'_velocity_profile.mp4')),'MPEG-4');% mp4
 open(v);
+open(vMP4);
 mimin = min(average_velocity_profile(:));
 [mamax, idx_mamax] = max(average_velocity_profile(:));
 [~,idx_syst] = ind2sub(size(average_velocity_profile),idx_mamax);
@@ -113,6 +116,7 @@ for tt = 1 : num_frames
     ylabel('quantitative velocity mm/s','FontSize',14) ;
     hold off
     writeVideo(v, getframe(fifig));
+    writeVideo(vmp4, getframe(fifig));
 
 
     Vmax_list(tt) = tmp_fit.Vmax;
@@ -124,6 +128,7 @@ for tt = 1 : num_frames
 
 end
 close(v)
+close(vmp4)
 video = subVideo;
 
 % Systole/Diastole velocity profile

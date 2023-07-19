@@ -163,8 +163,16 @@ avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelo
 
 v_RMS = onePulseVideo * ToolBox.ScalingFactorVelocityInPlane;
 
-
+% avi
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_one_cycle.avi')));
+tmp = mat2gray(onePulseVideo);
+open(w)
+for j = 1:size(onePulseVideo,3)
+    writeVideo(w,tmp(:,:,j)) ;  
+end
+close(w);
+% mp4
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_one_cycle.mp4')),'MPEG-4');
 tmp = mat2gray(onePulseVideo);
 open(w)
 for j = 1:size(onePulseVideo,3)
@@ -207,7 +215,17 @@ disp('arterial resistivity...');
 [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo, maskArtery,path);
 ARImap = ARImap.*maskArtery;
 
+% avi
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ARIvideoRGB.avi')));
+open(w)
+ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
+for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
+    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+end
+close(w);
+
+% mp4
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_ARIvideoRGB.mp4')),'MPEG-4');
 open(w)
 ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
 for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
@@ -494,7 +512,7 @@ segmentation_map(:,:, 3) = img_avg - (maskArtery+maskVein).*img_avg + maskVein;
 
 
 %% Display images and figures
-strXlabel = 'Time(ms)' %createXlabelTime(1);
+strXlabel = 'Time(ms)'; %createXlabelTime(1)
 strYlabel = 'frequency (kHz)';
 range0(1:2) = clim;
 fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs,size(fullVideoM2M0,3));

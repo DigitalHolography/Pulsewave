@@ -70,7 +70,15 @@ for ii = 1:size(v_RMS_n,3)
     flowVideoRGB(:,:,:,ii) =  hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
 end
 % save video
+% avi
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_flowVideo'))) ;
+open(w)
+for jj = 1:size(flowVideoRGB,4)
+    writeVideo(w,squeeze(flowVideoRGB(:,:,:,jj))) ;
+end
+close(w);
+% mp4
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_flowVideo')),'MPEG-4') ;
 open(w)
 for jj = 1:size(flowVideoRGB,4)
     writeVideo(w,squeeze(flowVideoRGB(:,:,:,jj))) ;
