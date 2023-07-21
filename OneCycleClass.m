@@ -233,6 +233,7 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_eps);
             mkdir(ToolBox.PW_path_txt);
             mkdir(ToolBox.PW_path_avi);
+            mkdir(ToolBox.PW_path_mp4);
  
             path_dir_txt = fullfile(obj.directory,'txt');
             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');

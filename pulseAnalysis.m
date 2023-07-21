@@ -111,8 +111,16 @@ avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelo
 
 v_RMS = onePulseVideo * ToolBox.ScalingFactorVelocityInPlane;
 
-
+% avi
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_one_cycle.avi')));
+tmp = mat2gray(onePulseVideo);
+open(w)
+for j = 1:size(onePulseVideo,3)
+    writeVideo(w,tmp(:,:,j)) ;  
+end
+close(w);
+% mp4
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_one_cycle.mp4')),'MPEG-4');
 tmp = mat2gray(onePulseVideo);
 open(w)
 for j = 1:size(onePulseVideo,3)
@@ -150,9 +158,131 @@ fprintf(fileID,'%f %f \r\n',tmp');
 fclose(fileID);
 
 
+<<<<<<< HEAD
 meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
 tolVal = [0.02, 0.98]; 
 meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
+=======
+%% Arterial resistivity calculation
+disp('arterial resistivity...');
+[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo, maskArtery,path);
+ARImap = ARImap.*maskArtery;
+
+% avi
+w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ARIvideoRGB.avi')));
+open(w)
+ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
+for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
+    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+end
+close(w);
+
+% mp4
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_ARIvideoRGB.mp4')),'MPEG-4');
+open(w)
+ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
+for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
+    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+end
+close(w);
+
+disp('done.');
+
+
+%%
+disp('arterial pulse wave analysis...');
+
+
+%%
+%zero-mean local-to-average arterial pulse cross-correlation
+% reference video : average arterial pulse everywhere
+% avgArterialPulse_3d = zeros(size(one_pulse_video));
+% for mm = 1:size(one_pulse_video, 1)
+%     for pp = 1:size(one_pulse_video, 2)
+%         avgArterialPulse_3d(mm,pp,:) = avgArterialPulse;
+%     end
+% end
+% [max_C_3, id_max] = zmXCorrVideos(one_pulse_video,avgArterialPulse_3d);
+
+
+%%
+
+% %     Time lags from cross-correlation between the average arterial pulse and local pulse waveforms
+% figure(99);
+% imagesc(id_max);
+% title('local-to-average arterial pulse lag');
+% colormap default
+% colorbar;
+% axis image
+% axis off
+
+% %     cross-correlation value between the average arterial pulse and local pulse waveforms
+% figure(77)
+% imagesc(log(abs(max_C_3)))
+% title('local-to-average arterial pulse maximum cross-correlation value');
+% colormap gray;
+% colorbar ;
+% fontsize(gca,12,"points") ;
+% set(gca, 'LineWidth', 2);
+% axis off
+% axis image
+
+
+%% artery mask by lag-correlation with average pulse
+% arteries = zeros(size(id_max));
+% % arteries (or(id_max < 0.1*Ninterp, id_max > 0.9 * Ninterp)) = 1 ;
+% arteries (or(id_max <= ceil(0.01*Ninterp), id_max >= floor(0.95 * Ninterp))) = 1 ;
+% %     arteries = createArteryMask(one_pulse_video) ;
+% figure(10)
+% %denoising
+% %arteries = medfilt2(arteries,[3 3]);
+% imagesc(arteries) ;
+% colormap gray
+% title('segmented arteries by lag-correlation with average pulse');
+% fontsize(gca,12,"points") ;
+% set(gca, 'LineWidth', 2);
+% axis off
+% axis image
+
+
+%% vein mask by lag-correlation with average pulse
+% veins = zeros(size(id_max)) ;
+% veins(and(id_max>=ceil(0.1*Ninterp),id_max<=floor(0.3*Ninterp))) = 1 ;
+% %denoising
+% %veins = medfilt2(veins,[3 3]);
+% figure(11)
+% imagesc(veins) ;
+% colormap gray
+% title('segmented veins by cross-correlation with average arterial pulse');
+% fontsize(gca,12,"points") ;
+% set(gca, 'LineWidth', 2);
+% axis off
+% axis image
+
+
+%% calculation of average pulse in arteries
+% I_arteries = one_pulse_video .* maskArtery;
+% avgArterialPulse = squeeze(sum(I_arteries, [1 2]))/nnz(maskArtery);
+% avgArterialPulse = avgArterialPulse - min(avgArterialPulse) ;
+% [~,idx] = min(avgArterialPulse,[],1) ;
+% avgArterialPulse = circshift(avgArterialPulse,-idx);
+
+% %% calculation of pulse wave in veins
+% I_veins = one_pulse_video .* veins ;
+% pulse_veins = squeeze(sum(I_veins, [1 2]))/nnz(veins);
+% pulse_veins = pulse_veins - min(pulse_veins) ;
+% pulse_veins = circshift(pulse_veins,-idx) ;
+% 
+% max_plot = max(max(avgArterialPulse(:)),max(pulse_veins(:))) ;
+% avgArterialPulse = avgArterialPulse ./ max_plot ;
+% pulse_veins = pulse_veins ./ max_plot ;
+
+
+%% plot pulses in veins and arteries
+
+% find peak systole index
+% sys_index_list_one_cycle = find_systole_index(onePulseVideo2);
+>>>>>>> 09984893e24d0e40f6cd744529583ac45f31b4d6
 
 [~,idx_sys] = max(avgArterialPulseHz) ;
 
@@ -236,6 +366,7 @@ segmentation_map(:,:, 3) = meanIm - (maskArtery+maskVein).*meanIm + maskVein;
 
 %% Display images and figures
 strXlabel = 'Time(ms)' ;%createXlabelTime(1);
+
 strYlabel = 'frequency (kHz)';
 range0(1:2) = clim;
 fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs,size(fullVideoM2M0,3));
