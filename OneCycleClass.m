@@ -260,8 +260,13 @@ classdef OneCycleClass
                     % %                         flat_field_correction(squeeze(one_cycle_video_to_save(:,:,j)),0.07,0.25);
                     % %                 end
                     tic
-                    [v_RMS] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
+                    [v_RMS] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
+                    toc
+                    
+                    tic
+                    ArterialResistivityIndex(v_RMS,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
+                    disp('ArterialResistivityIndex timing :')
                     toc
                     %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);

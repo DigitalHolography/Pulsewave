@@ -21,6 +21,14 @@ classdef ToolBoxClass
         ScalingFactorVelocityInPlane double
         ScalingFactorVelocityCRA_AVG double
         ScalingFactorVelocityCRA_RMS double
+        ARI_hue_max double
+        ARI_hue_min double
+        ARI_inflexion_point_hue double
+        ARI_slope_hue double
+        ARI_val_max double
+        ARI_val_min double
+        ARI_inflexion_point_val double
+        ARI_slope_val double
 
      end
 
@@ -96,7 +104,16 @@ classdef ToolBoxClass
             obj.ScalingFactorVelocityInPlane = 60;
             obj.ScalingFactorVelocityCRA_AVG  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (PW_params.theta/2); % 1000 for kHz -> Hz and 1000 for m -> mm
             obj.ScalingFactorVelocityCRA_RMS  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (1/(2+2*(PW_params.theta^3)/3))^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
-            
+            %% Parameters the color maps 
+
+            obj.ARI_hue_max = 0;
+            obj.ARI_hue_min = 0.15;
+            obj.ARI_inflexion_point_hue = 0.7;
+            obj.ARI_slope_hue = 10;
+            obj.ARI_val_max = 0.4;
+            obj.ARI_val_min = 1;
+            obj.ARI_inflexion_point_val = 1;
+            obj.ARI_slope_val = 10;
          end
         
 
