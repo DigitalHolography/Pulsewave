@@ -19,6 +19,7 @@ disp('done.');
 % [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo, maskArtery,path);
 % ARImap = ARImap.*maskArtery;
 % 
+% % avi
 % w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ARIvideoRGB.avi')));
 % open(w)
 % ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
@@ -26,6 +27,14 @@ disp('done.');
 %     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
 % end
 % close(w);
+% 
+% % mp4
+% w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_ARIvideoRGB.mp4')),'MPEG-4');
+% open(w)
+% ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
+% for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
+%     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+% end
 % 
 % disp('done.');
 
@@ -67,5 +76,6 @@ print('-f70','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername
 print('-f70','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_resistivityMap.eps'))) ;
 
 imwrite(ARImapRGB,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_ARI_map_img.png')),'png');
+
 
 close all 

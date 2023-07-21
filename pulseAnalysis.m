@@ -157,37 +157,9 @@ fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername,'_av
 fprintf(fileID,'%f %f \r\n',tmp');
 fclose(fileID);
 
-
-<<<<<<< HEAD
 meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
 tolVal = [0.02, 0.98]; 
 meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
-=======
-%% Arterial resistivity calculation
-disp('arterial resistivity...');
-[ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo, maskArtery,path);
-ARImap = ARImap.*maskArtery;
-
-% avi
-w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ARIvideoRGB.avi')));
-open(w)
-ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
-for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
-    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
-end
-close(w);
-
-% mp4
-w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_ARIvideoRGB.mp4')),'MPEG-4');
-open(w)
-ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
-for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
-    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
-end
-close(w);
-
-disp('done.');
-
 
 %%
 disp('arterial pulse wave analysis...');
@@ -281,8 +253,7 @@ disp('arterial pulse wave analysis...');
 %% plot pulses in veins and arteries
 
 % find peak systole index
-% sys_index_list_one_cycle = find_systole_index(onePulseVideo2);
->>>>>>> 09984893e24d0e40f6cd744529583ac45f31b4d6
+% sys_index_list_one_cycle = find_systole_index(onePulseVideo2)
 
 [~,idx_sys] = max(avgArterialPulseHz) ;
 
