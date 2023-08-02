@@ -640,7 +640,7 @@ print('-f1230','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldern
 
 imwrite(segmentation_map,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_artery_vein_segmentation.png')),'png') ;
 
-close all
+%close all
 
 return;
 

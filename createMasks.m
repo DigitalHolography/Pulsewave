@@ -6,16 +6,22 @@ stdIm = std(videoM0,0,3);
 meanIm = squeeze(mean(videoM0, 3));
 meanM1M0 = squeeze(mean(videoM1M0, 3));
 
+
 %% Creat Vessel Mask
 
 maskVessel = vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
+
+
 maskVessel = maskVessel > (max(maskVessel,[],'all')* PW_params.arteryMask_vesselness_bin_threshold);
 
-se = strel('disk',2);
+maskCorr = maskVessel;
+
+se = strel('disk',1);
 maskVessel = imerode(maskVessel,se);
 maskVessel = magicwand(maskVessel,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 se = strel('disk',2);
 maskVessel = imdilate(maskVessel,se);
+
 
 
 %% Creat Artery Mask
@@ -33,8 +39,8 @@ for ii = 1:size(videoM0,3)
 end
 
 % zero-mean local pulse : C
-C(:,:,:) = videoM0(:,:,:) - squeeze(mean(videoM0, 3));
-C = C.* maskVessel ;
+C(:,:,:) = videoM0(:,:,:) - meanIm;
+C = C.* maskCorr  ;
 pulse_init_3d = zeros(size(videoM0));
 for mm = 1:size(videoM0, 1)
     for pp = 1:size(videoM0, 2)
@@ -47,6 +53,7 @@ C = squeeze(mean(C, 3));
 
 maskArtery = C > (max(C(:)) * PW_params.arteryMask_ArteryCorrThreshold);
 maskArtery = magicwand(maskArtery,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_artery);
+
 
 %% Create Vein Mask 
 
@@ -71,6 +78,7 @@ imwrite(mat2gray(single(maskArtery)),fullfile(ToolBox.PW_path_png,[foldername,'_
 imwrite(mat2gray(single(maskVein)),fullfile(ToolBox.PW_path_png,[foldername,'_maskVein.png']),'png') ;
 imwrite(mat2gray(single(maskVessel)),fullfile(ToolBox.PW_path_png,[foldername,'_maskVessel.png']),'png') ;
 imwrite(mat2gray(single(maskBackground)),fullfile(ToolBox.PW_path_png,[foldername,'_maskBackground.png']),'png') ;
+
 
 
 end

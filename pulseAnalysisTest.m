@@ -15,20 +15,20 @@ end
 
 %% calculate raw signals of arteries, background and veins
 
-fullArterialPulse = fullVideoM2M0 .* maskArtery;
-fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
+% fullArterialPulse = fullVideoM2M0 .* maskArtery;
+% fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
+% 
+% fullBackgroundSignal = fullVideoM2M0 .* maskBackground;
+% fullBackgroundSignal = squeeze(sum(fullBackgroundSignal, [1 2]))/nnz(maskBackground);
+% 
+% fullVenousSignal = fullVideoM2M0 .* maskVein;
+% fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
+% 
+% fullArterialPulseMinusBackground = fullArterialPulse - fullBackgroundSignal;
 
-fullBackgroundSignal = fullVideoM2M0 .* maskBackground;
-fullBackgroundSignal = squeeze(sum(fullBackgroundSignal, [1 2]))/nnz(maskBackground);
-
-fullVenousSignal = fullVideoM2M0 .* maskVein;
-fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
-
-fullArterialPulseMinusBackground = fullArterialPulse - fullBackgroundSignal;
-
-figure(122)
-plot(fullArterialPulseMinusBackground)
-title('Pulse-background before flatfield');
+% figure(122)
+% plot(fullArterialPulseMinusBackground)
+% title('Pulse-background before flatfield');
 
 ArterialPulse = dataCubeM2M0 .* maskArtery;
 ArterialPulse = squeeze(sum(ArterialPulse, [1 2]))/nnz(maskArtery);
@@ -46,18 +46,18 @@ plot(ArterialPulseMinusBackground)
 title('Pulse-background after flatfield');
 
 mask = imdilate(maskArtery,strel('disk',15));
-LocaclBGK = zeros(size(dataCubeM2M0));
-for n = 1:size(dataCubeM2M0,3)
-    LocaclBGK(:,:,n) = regionfill(fullVideoM2M0(:,:,n),mask);
-end
-LocaclBGK = LocaclBGK.*maskArtery;
-LocaclBGK = squeeze(sum(LocaclBGK, [1 2]))/nnz(maskArtery);
+% LocaclBGK = zeros(size(dataCubeM2M0));
+% for n = 1:size(dataCubeM2M0,3)
+%     LocaclBGK(:,:,n) = regionfill(fullVideoM2M0(:,:,n),mask);
+% end
+% LocaclBGK = LocaclBGK.*maskArtery;
+% LocaclBGK = squeeze(sum(LocaclBGK, [1 2]))/nnz(maskArtery);
+% 
+% figure(124)
+% plot(fullArterialPulse-LocaclBGK)
+% title('Pulse-background local before flatfield');
 
-figure(124)
-plot(fullArterialPulse-LocaclBGK)
-title('Pulse-background local before flatfield');
-
-
+LocaclBGK2 = zeros(size(dataCubeM2M0));
 for n = 1:size(dataCubeM2M0,3)
     LocaclBGK2(:,:,n) = regionfill(dataCubeM2M0(:,:,n),mask);
 end
@@ -68,14 +68,26 @@ figure(125)
 plot(ArterialPulse-LocaclBGK2)
 title('Pulse-background local after flatfield');
 
-figure(126)
-plot(ArterialPulse-fullBackgroundSignal)
-title('OLD');
-v_RMS = zeros(size(fullVideoM2M0));
-print('-f122','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseMinBackground_BeforeFF.png'))) ;
-print('-f123','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseMinBackground_AfterFF.png'))) ;
-print('-f124','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalpulseMinBackground_BeforeFF.png'))) ;
-print('-f125','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalpulseMinBackground_AfterFF.png'))) ;
-print('-f126','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseMinBackgroundOLD.png'))) ;
+% figure(126)
+% plot(ArterialPulse-fullBackgroundSignal)
+% title('OLD');
+A = ones(size(dataCubeM2M0));
+
+for pp = 1:size(dataCubeM2M0,3)
+      A(:,:,pp) = A(:,:,pp) *LocaclBGK2(pp);
+end
+dataCubeM2M0 = dataCubeM2M0 - A ; 
+[onePulseVideo, selectedPulseIdx, cycles_signal] = create_one_cycle(dataCubeM2M0, maskArtery, sys_index_list, Ninterp,path);
+
+
+
+v_RMS = onePulseVideo * ToolBox.ScalingFactorVelocityInPlane;
+% 
+% 
+% print('-f122','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseMinBackground_BeforeFF.png'))) ;
+% print('-f123','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseMinBackground_AfterFF.png'))) ;
+% print('-f124','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalpulseMinBackground_BeforeFF.png'))) ;
+% print('-f125','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalpulseMinBackground_AfterFF.png'))) ;
+% print('-f126','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseMinBackgroundOLD.png'))) ;
 
 end

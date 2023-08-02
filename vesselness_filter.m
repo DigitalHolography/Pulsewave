@@ -119,7 +119,8 @@ clear A B C D E F R_blob beta c_temp lambda_1
 lambda_2_logical=zeros(rows,cols);
 % Convert all corresponding values of lambda_2_logical to 1, where lambda_2
 % is equal to or less than zero
-lambda_2_logical(lambda_2<=0)=1;
+lambda_2_logical(lambda_2<=-0.005)=1;
+%lambda_2_logical(lambda_2<=0)=1;
 clear lambda_2 rows cols
 %Multiply the resulting matrix of ones and zeros element wise by If
 If = If.*lambda_2_logical;

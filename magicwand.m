@@ -11,12 +11,12 @@ A = logical(inputMask);
 
 blurred_mask = imgaussfilt(double(refImage),0.05*size(refImage,1),'Padding',0);
 % 
-figure(1111)
-imagesc(blurred_mask)
+% figure(1111)
+% imagesc(blurred_mask)
 
 [centroidY, centroidX] = find(blurred_mask == max(blurred_mask,[],'all'));
 
-radius = 0.1*size(A,1);
+radius = 0.05*size(A,1);
 mask = false(size(A));
 
 [rows, cols] = size(mask);
@@ -40,7 +40,7 @@ end
 finalMask = finalMask - mask;
 finalMask = finalMask + (A & mask);
 
-figure, imagesc(outputImage)
+% figure, imagesc(outputImage)
 
 
 

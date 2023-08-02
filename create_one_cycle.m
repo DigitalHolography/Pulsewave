@@ -21,6 +21,8 @@ if M > 0 % we have detected at least two systoles
         interp_range = linspace(sys_index_list(ii),sys_index_list(ii+1)-1,Ninterp);
         frame_range = sys_index_list(ii):sys_index_list(ii+1)-1;
         tmp = squeeze(sum(video(:, :, frame_range) .* mask, [1 2])/nnz(mask));
+%        [idxOutPw, tmp] = discardPulseWaveOutliers( tmp,3);
+ %       tmp= smoothdata( tmp,'lowess');
         cycles_signal(ii, :) = interp1(frame_range, tmp, interp_range);
 
     end

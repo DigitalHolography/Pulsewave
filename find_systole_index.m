@@ -7,7 +7,10 @@ fullPulseWave = squeeze(sum(video .*maskArtery, [1 2])/nnz(maskArtery));
 pulse_init = detrend(fullPulseWave);
 pulse_init = pulse_init - mean(pulse_init, "all");
 
-diff_signal = diff(pulse_init);
+[~,fullArterialPulseRmOut] = discardPulseWaveOutliers(pulse_init,3);
+fullArterialPulseClean = smoothdata(fullArterialPulseRmOut,'lowess');
+
+diff_signal = diff(fullArterialPulseClean);
 [~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * PW_params.systoleThreshold);
 
 %     figure(3)

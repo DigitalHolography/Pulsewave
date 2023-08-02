@@ -24,7 +24,15 @@ classdef Parameters
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
         centralRetinal_backgndThreshold
-        vesselMask_stdBinTreshold
+        vesselMask_BinTreshold
+        masks_radius
+        masks_minSize
+        masks_cleaningCoroid
+        masks_showIntermediateFigures
+        RG_FloorThreshold
+        RG_veinConditionThreshold
+        CRACRV_Threshold
+        RG_alpha
         cropSection_scaleFactorWidth
         cropSection_scaleFactorSize
         cropSection_maskThreshold
@@ -116,7 +124,15 @@ classdef Parameters
                 obj.centralRetinal_arteryThreshold = obj.extractValue(fileContent, 'Central retina artery treshold :');
                 obj.centralRetinal_veinThreshold = obj.extractValue(fileContent, 'Central retina vein treshold :');
                 obj.centralRetinal_backgndThreshold = obj.extractValue(fileContent, 'Central retina background treshold :');
-                obj.vesselMask_stdBinTreshold = obj.extractValue(fileContent, 'Standard binarization treshold :');
+                obj.vesselMask_BinTreshold = obj.extractValue(fileContent, 'Standard binarization treshold :');
+                obj.masks_radius = obj.extractValue(fileContent, 'Crop coroid radius :');
+                obj.masks_minSize = obj.extractValue(fileContent, 'Minimum seed area size :');
+                obj.masks_cleaningCoroid = obj.extractValue(fileContent, 'Cleaning Coroid or not :');
+                obj.masks_showIntermediateFigures = obj.extractValue(fileContent, 'Showing intermediate figures in the process :');
+                obj.RG_FloorThreshold = obj.extractValue(fileContent, 'Region growing floor threshold :');
+                obj.RG_veinConditionThreshold = obj.extractValue(fileContent, 'Region growing vein condition threshold :');
+                obj.CRACRV_Threshold = obj.extractValue(fileContent, 'Central Retina Vein/Artery threshold :');
+                obj.RG_alpha = obj.extractValue(fileContent, 'Region growing threshold :');
                 obj.cropSection_scaleFactorWidth = obj.extractValue(fileContent, 'Scale factor width :');
                 obj.cropSection_scaleFactorSize = obj.extractValue(fileContent, 'Scale factor size :');
                 obj.cropSection_maskThreshold = obj.extractValue(fileContent, 'Mask slice treshold :');

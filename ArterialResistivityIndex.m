@@ -1,6 +1,9 @@
 function [] = ArterialResistivityIndex(onePulseVideo,dataCubeM2M0, maskArtery,  ToolBox)
-
+PW_params = Parameters(path);
 disp('arterial resistivity...');
+for pp = 1:size(dataCubeM2M0,3)
+    dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
+end
 
 meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
 tolVal = [0.02, 0.98]; 
