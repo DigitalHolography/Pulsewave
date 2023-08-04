@@ -267,7 +267,8 @@ classdef OneCycleClass
                 fullPulseWave_cell = cell(obj.nbFiles) ;
                 for n = 1:obj.nbFiles
                     tic
-                    [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_norm_interp{n}, obj.directory,maskArtery);
+                    % [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_norm_interp{n}, obj.directory,maskArtery);
+                    [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_interp{n}, obj.directory,maskArtery);
                     disp('FindSystoleIndex timing :')
                     toc
                     %                 % FIXME flatfield correction does not work

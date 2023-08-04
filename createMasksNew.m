@@ -33,7 +33,9 @@ correlationMatrix_artery = squeeze(mean((videoM0_zero .* pulse_init_3d), 3)).*(v
 
 % Create first artery mask
 firstMaskArtery = (correlationMatrix_artery > 1.5*mean2(correlationMatrix_artery(correlationMatrix_artery>0)));
-firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercle_mask,1,4);
+if PW_params.masks_cleaningCoroid 
+    firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercle_mask,1,4);
+end
 firstMaskArtery = bwareaopen(firstMaskArtery,PW_params.masks_minSize);
 
 if PW_params.masks_showIntermediateFigures
@@ -64,8 +66,6 @@ meanVideoM0 = zeros(N,M,L);
 for ll = 1:L
     meanVideoM0(:,:,L) = meanIm;
 end
-correlationMatrix_coroid = squeeze(mean((videoM0.* meanVideoM0), 3));
-mask_coroid = correlationMatrix_coroid > 80;
 
 % Create correlation matrix to segment vein and arteries
 correlationMatrix_artery = CorrelationMatrix./max(CorrelationMatrix,[],'all');
@@ -78,9 +78,6 @@ if PW_params.masks_showIntermediateFigures
     colorbar('southoutside');
     figure(21), imagesc(correlationMatrix_vein);
     title('Vein correlation map');
-    colorbar('southoutside');
-    figure(22), imagesc(correlationMatrix_coroid);
-    title('mean correlation map');
     colorbar('southoutside');
 end
 
@@ -116,7 +113,7 @@ condition_vein = vesselness_vein > PW_params.RG_veinConditionThreshold*mean2(ves
 % Cleaning condition
 condition_artery = condition_artery & bwareafilt(condition_artery | condition_vein |cercle_mask,1,4);
 condition_artery = bwareaopen(condition_artery,PW_params.masks_minSize);
-condition_vein = condition_vein & ~(condition_artery | mask_coroid);
+condition_vein = condition_vein & ~condition_artery;
 condition_vein = bwareaopen(condition_vein,PW_params.masks_minSize);
 
 % Cleaning seeds
@@ -126,55 +123,54 @@ seeds_vein = seeds_vein & condition_vein;
 % Compute region growing to segment vein and arteries
 %[mask_artery,RG_video_artery] = region_growing_for_vessel(vesselness_artery, seeds_artery, condition_artery,path);
 %[mask_vein,RG_video_vein]  = region_growing_for_vessel(vesselness_vein, seeds_vein, condition_vein, path);
-[mask_vessel,RG_video_vessel] = region_growing_for_vessel(vesselness_artery, seeds_artery+seeds_vein, mat2gray(vesselnessIm)>PW_params.vesselMask_BinTreshold,path);
+[mask_vessel,RG_video_vessel] = region_growing_for_vessel(vesselnessIm, seeds_artery | seeds_vein, condition_vein | condition_artery,path);
 
 mask_artery = mask_vessel.*correlationMatrix_artery;
 mask_artery = mask_artery>PW_params.arteryMask_ArteryCorrThreshold;
-mask_artery = imopen(mask_artery,strel('disk',2));
+mask_artery = bwareaopen(mask_artery,PW_params.masks_minSize);
 mask_artery = imdilate(mask_artery,strel('disk',2));
 
 mask_vein = mask_vessel.*correlationMatrix_vein;
-mask_vein = mask_vein>PW_params.arteryMask_ArteryCorrThreshold;
-mask_vein = imopen(mask_vein,strel('disk',2));
+mask_vein = mask_vein>0;
+mask_vein = bwareaopen(mask_vein,PW_params.masks_minSize);
 mask_vein = imdilate(mask_vein,strel('disk',2));
 
-
-
-% if PW_params.masks_showIntermediateFigures
-%     figure(30), imagesc(vesselness_artery);
-%     title('Artery Vesselness map');
-%     colorbar('southoutside');
-%     figure(31), imagesc(vesselness_vein);
-%     title('Vein Vesselness map');
-%     colorbar('southoutside');
-%     figure(32), imagesc( uint8( cat( 3,uint8(meanIm) + uint8(seeds_artery)*255, uint8(meanIm) , uint8(meanIm) + uint8(seeds_vein)*255 )));
-%     title('Artery/Vein initialisation for region growing');
-%     figure(33), imagesc( uint8( cat( 3, uint8(meanIm) + uint8(condition_artery)*255, uint8(meanIm)  , uint8(meanIm) + uint8(condition_vein)*255 )));
-%     title('Artery/Vein condition for region growing')
-%     figure(34), imagesc(uint8( cat( 3, uint8(meanIm)+ uint8(mask_artery)*255, uint8(meanIm) , uint8(meanIm) + uint8(mask_vein)*255 )));
-%     title('Artery/Vein region growing segmentation');
-% end
+if PW_params.masks_showIntermediateFigures
+    figure(30), imagesc(vesselness_artery);
+    title('Artery Vesselness map');
+    colorbar('southoutside');
+    figure(31), imagesc(vesselness_vein);
+    title('Vein Vesselness map');
+    colorbar('southoutside');
+    figure(32), imagesc( uint8( cat( 3,uint8(meanIm) + uint8(seeds_artery)*255, uint8(meanIm) , uint8(meanIm) + uint8(seeds_vein)*255 )));
+    title('Artery/Vein initialisation for region growing');
+    figure(33), imagesc( uint8( cat( 3, uint8(meanIm) + uint8(condition_artery)*255, uint8(meanIm)  , uint8(meanIm) + uint8(condition_vein)*255 )));
+    title('Artery/Vein condition for region growing')
+    figure(34), imagesc(uint8( cat( 3, uint8(meanIm)+ uint8(mask_artery)*255, uint8(meanIm) , uint8(meanIm) + uint8(mask_vein)*255 )));
+    title('Artery/Vein region growing segmentation');
+    figure(35), imshow(mask_vessel);
+end
 
 clear vesselness_vein vesselness_artery floor_vein floor_artery level_vein level_artery seeds_vein seeds_artery ;
-% %% Cleaning coroid from masks
-% 
-% if PW_params.masks_cleaningCoroid 
-% 
-%     mask_artery = mask_artery & bwareafilt(mask_artery | mask_vein | cercle_mask,1,4);
-%     mask_artery = imclose(mask_artery,strel('disk',5));
-% 
-%     mask_vein = mask_vein & bwareafilt(mask_artery | mask_vein | cercle_mask,1,4);
-%     mask_vein = imclose(mask_vein,strel('disk',5));
-% 
-%     mask_vessel = mask_artery | mask_vein;
-% 
-%     if PW_params.masks_showIntermediateFigures
-%     figure(40), imagesc(uint8( cat( 3, uint8(meanIm)+ uint8(mask_artery)*255, uint8(meanIm) + uint8(cercle_mask) , uint8(meanIm) + uint8(mask_vein)*255 )));
-%     title('Artery/Vein cleaned segmentation');
-%     end
-% 
-%     clear x y cercle_mask;
-% end
+%% Cleaning coroid from masks
+
+if PW_params.masks_cleaningCoroid 
+
+    mask_artery = mask_artery & bwareafilt(mask_artery | mask_vein | cercle_mask,1,4);
+    mask_artery = imclose(mask_artery,strel('disk',5));
+
+    mask_vein = mask_vein & bwareafilt(mask_artery | mask_vein | cercle_mask,1,4);
+    mask_vein = imclose(mask_vein,strel('disk',5));
+
+    mask_vessel = mask_artery | mask_vein;
+
+    if PW_params.masks_showIntermediateFigures
+    figure(40), imagesc(uint8( cat( 3, uint8(meanIm)+ uint8(mask_artery)*255, uint8(meanIm) + uint8(cercle_mask) , uint8(meanIm) + uint8(mask_vein)*255 )));
+    title('Artery/Vein cleaned segmentation');
+    end
+
+    clear cercle_mask;
+end
 %% Create CRA and CRV Mask
 
 stdM1M0 = std2(meanM1M0);
@@ -189,20 +185,14 @@ maskBackground = not(mask_vessel);
 
 ecart = 0.01;
 
-radius1 = round((PW_params.radius_ratio-ecart)* size(meanIm,1));
-radius2 = round((PW_params.radius_ratio+ecart)* size(meanIm,2));
-y_center  = ToolBox.x_barycentre;
-x_center  = ToolBox.y_barycentre;
+radius1 = (PW_params.radius_ratio-ecart)* (M+N)/2;
+radius2 = (PW_params.radius_ratio+ecart)* (M+N)/2;
 
-maskSectionArtery = zeros(size(mask_artery,1),size(mask_artery,2));
+cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
+cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
 
-for i = 1:size(mask_artery,1)
-    for j = 1:size(mask_artery,1)
-        if sqrt((i-x_center)^2+(j-y_center)^2)> radius1 && sqrt((i-x_center)^2+(j-y_center)^2)< radius2
-            maskSectionArtery(i,j) = 1;
-        end
-    end
-end 
+maskSectionArtery = xor(cercle_mask1,cercle_mask2);
+
 
 %% Create Colormap ARtery/Vein 
 meanIm = mat2gray(meanIm);

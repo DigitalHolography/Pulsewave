@@ -9,6 +9,7 @@ dataCubeM1M0 = fullVideoM1M0;
 % 1-flat-field correction, 2-background substraction
 for pp = 1:size(dataCubeM2M0,3)
     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
+    % dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1));
 end
 
 
@@ -34,14 +35,14 @@ fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
 
 
 
-ArterialPulse = dataCubeM2M0 .* maskArtery;
-ArterialPulse = squeeze(sum(ArterialPulse, [1 2]))/nnz(maskArtery);
-
-BackgroundSignal = dataCubeM2M0 .* maskBackground;
-BackgroundSignal = squeeze(sum(BackgroundSignal, [1 2]))/nnz(maskBackground);
-
-VenousSignal = dataCubeM2M0 .* maskVein;
-VenousSignal = squeeze(sum(VenousSignal, [1 2]))/nnz(maskVein);
+% ArterialPulse = dataCubeM2M0 .* maskArtery;
+% ArterialPulse = squeeze(sum(ArterialPulse, [1 2]))/nnz(maskArtery);
+% 
+% BackgroundSignal = dataCubeM2M0 .* maskBackground;
+% BackgroundSignal = squeeze(sum(BackgroundSignal, [1 2]))/nnz(maskBackground);
+% 
+% VenousSignal = dataCubeM2M0 .* maskVein;
+% VenousSignal = squeeze(sum(VenousSignal, [1 2]))/nnz(maskVein);
 
 
 %% cleaning signals
@@ -59,7 +60,7 @@ fullVenousSignalMinusBackground = fullVenousSignal - fullBackgroundSignal;
 A = ones(size(dataCubeM2M0));
 
 for pp = 1:size(dataCubeM2M0,3)
-      A(:,:,pp) = A(:,:,pp) * BackgroundSignal(pp);
+      A(:,:,pp) = A(:,:,pp) * fullBackgroundSignal(pp);
 end
 dataCubeM2M0 = dataCubeM2M0 - A ; 
 
@@ -261,7 +262,8 @@ disp('arterial pulse wave analysis...');
 heatmap_dia = squeeze(mean(onePulseVideo(:,:,floor(0.9*Ninterp):Ninterp),3));
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*Ninterp):Ninterp),3));
-heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
+% heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
+heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)));
 
 
 %% systolic Doppler frequency heatmap : 10% of frames around peak systole
@@ -271,6 +273,8 @@ heatmap_sys = squeeze(mean(onePulseVideo(:,:,a:b),3));
 % onePulseVideo2 : no background correction 
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)), PW_params.flatField_borderDMap);
+% heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)));
+
 
 %%
 % FIXME : replace sys + dia blur by homogenous blur ? 
