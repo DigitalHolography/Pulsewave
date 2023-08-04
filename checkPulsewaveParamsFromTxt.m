@@ -56,7 +56,7 @@ else
     elasWave_butterFiltBand = 3 ;
     systoleThreshold = 0.7 ;
     flatField_gwRatio = 0.07 ;
-    flatField_border = 0.25 ;
+    flatField_border = 0.15 ;
     flatField_borderDMap = 0.33 ;
     flatField_borderPulseAnal = 0 ;
     flowRate_gaussFiltPadding = 0 ;

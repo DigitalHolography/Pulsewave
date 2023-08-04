@@ -3,6 +3,7 @@ PW_params = Parameters(path);
 disp('arterial resistivity...');
 for pp = 1:size(dataCubeM2M0,3)
     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
+    % dataCubeM2M0(:,:,pp) = imflatfield(dataCubeM2M0(:,:,pp),PW_params.flatField_gwRatio*size(dataCubeM2M0,1)/2);
 end
 
 meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));

@@ -43,6 +43,7 @@ ms = sum(image(a:b,c:d), [1 2]);
 
 % Apply flat field correction
 blurred_image = imgaussfilt(image, gw);
+blurred_image(blurred_image < 1e-3) = 1e-3;
 normalized_image = image ./ blurred_image;
 ms2 = sum(normalized_image(a:b,c:d), [1 2]);
 correction_factor = ms ./ ms2;
