@@ -6,6 +6,8 @@ function corrected_image = flat_field_correction(image, gw, borderAmount)
 
 % typical blur parameter : gw = 0.07*size(image,1)
 
+
+
 if (borderAmount == 0)
     a = 1;
     b = size(image,1);
@@ -22,5 +24,7 @@ ms = sum(image(a:b,c:d), [1 2]);
 image = image ./ imgaussfilt(image, gw);
 ms2 = sum(image(a:b,c:d), [1 2]);
 corrected_image = (ms / ms2) .* image;
+
+
 
 end

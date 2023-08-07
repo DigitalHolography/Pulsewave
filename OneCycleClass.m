@@ -298,7 +298,7 @@ classdef OneCycleClass
 %                     end
 
                     tic
-                    spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
+                   % spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
                     disp('Spectrogram timing :')
                     toc
                     % add_infos

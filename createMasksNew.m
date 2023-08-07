@@ -216,6 +216,8 @@ imwrite(mat2gray(single(mask_vessel)),fullfile(ToolBox.PW_path_png,[foldername,'
 imwrite(mat2gray(single(maskBackground)),fullfile(ToolBox.PW_path_png,[foldername,'_maskBackground_New.png']),'png') ;
 %vesselMap = uint8( cat( 3, uint8(meanIm)+ uint8(mask_artery)*255, uint8(meanIm) , uint8(meanIm) + uint8(mask_vein)*255 ));
 imwrite(VesselImageRGB,fullfile(ToolBox.PW_path_png,[foldername,'_vesselMap.png']),'png') ;
+imwrite(mat2gray(maskCRA),fullfile(ToolBox.PW_path_png,[foldername,'_maskCRA.png']),'png') ;
+imwrite(mat2gray(maskCRA),fullfile(ToolBox.PW_path_png,[foldername,'_maskCRV.png']),'png') ;
 
 %% Saving AVI
 

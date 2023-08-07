@@ -2,27 +2,22 @@ function [v_RMS] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index
 PW_params = Parameters(path);
 
 dataCubeM2M0 = fullVideoM2M0;
+dataCubeM2M02 = fullVideoM2M0;
 dataCubeM1M0 = fullVideoM1M0;
 
 
 % for robust rendering : 
 % 1-flat-field correction, 2-background substraction
+
 for pp = 1:size(dataCubeM2M0,3)
     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
-    % dataCubeM2M0(:,:,pp) = imflatfield(dataCubeM2M0(:,:,pp),PW_params.flatField_gwRatio*size(dataCubeM2M0,1)/2);
+    %dataCubeM2M02(:,:,pp) = flat_field_correction_old(squeeze(dataCubeM2M02(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
 end
 
 
 %% calculate raw signals of arteries, background and veins
 
-% fullArterialPulse = fullVideoM2M0 .* maskArtery;
-% fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
-% 
-% fullBackgroundSignal = fullVideoM2M0 .* maskBackground;
-% fullBackgroundSignal = squeeze(sum(fullBackgroundSignal, [1 2]))/nnz(maskBackground);
-% 
-% fullVenousSignal = fullVideoM2M0 .* maskVein;
-% fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
+
 
 fullArterialPulse = dataCubeM2M0 .* maskArtery;
 fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
@@ -35,14 +30,15 @@ fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
 
 
 
-% ArterialPulse = dataCubeM2M0 .* maskArtery;
+% ArterialPulse = dataCubeM2M02 .* maskArtery;
 % ArterialPulse = squeeze(sum(ArterialPulse, [1 2]))/nnz(maskArtery);
 % 
-% BackgroundSignal = dataCubeM2M0 .* maskBackground;
+% BackgroundSignal = dataCubeM2M02 .* maskBackground;
 % BackgroundSignal = squeeze(sum(BackgroundSignal, [1 2]))/nnz(maskBackground);
 % 
-% VenousSignal = dataCubeM2M0 .* maskVein;
+% VenousSignal = dataCubeM2M02 .* maskVein;
 % VenousSignal = squeeze(sum(VenousSignal, [1 2]))/nnz(maskVein);
+
 
 
 %% cleaning signals
@@ -54,7 +50,21 @@ fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
 % fullArterialPulseMinusBackground = fullArterialPulse - fullBackgroundSignal * avgFullArterialPulse / avgFullBackgroundSignal;
 fullArterialPulseMinusBackground = fullArterialPulse - fullBackgroundSignal;
 fullVenousSignalMinusBackground = fullVenousSignal - fullBackgroundSignal;
+% ArterialPulseMinusBackground = ArterialPulse - BackgroundSignal;
+% VenousSignalMinusBackground = VenousSignal -BackgroundSignal;
 %fullArterialPulse = fullArterialPulseMinusBackground;
+
+% figure(1) 
+% imagesc(mean(dataCubeM2M0,3));
+% 
+% figure(2) 
+% imagesc(mean(dataCubeM2M02,3));
+% 
+% figure(3)
+% plot(fullArterialPulseMinusBackground)
+% hold on 
+% plot(ArterialPulseMinusBackground)
+
 
 % le plus simple fonctionne bien : soustraire le bkg.
 A = ones(size(dataCubeM2M0));
@@ -147,7 +157,7 @@ else
     end
     average_cycle_length = average_cycle_length / (length(sys_index_list)-1);
 end
-T = linspace(0,ToolBox.stride/ToolBox.fs*average_cycle_length,Ninterp);
+T = linspace(0,(ToolBox.stride/ToolBox.fs*average_cycle_length)/1000,Ninterp); % /1000 to get time in s
 
 
 
@@ -263,7 +273,7 @@ heatmap_dia = squeeze(mean(onePulseVideo(:,:,floor(0.9*Ninterp):Ninterp),3));
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*Ninterp):Ninterp),3));
 % heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
-heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)));
+heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)),PW_params.flatField_border);
 % heatmap_dia = imflatfield(heatmap_dia,PW_params.flatField_gwRatio*size(heatmap_dia,1)/2);
 
 
@@ -274,7 +284,7 @@ heatmap_sys = squeeze(mean(onePulseVideo(:,:,a:b),3));
 % onePulseVideo2 : no background correction 
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 % heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)), PW_params.flatField_borderDMap);
-heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)));
+heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)),PW_params.flatField_border);
 % heatmap_sys = imflatfield(heatmap_sys,PW_params.flatField_gwRatio*size(heatmap_sys,1)/2);
 
 %%
@@ -341,7 +351,7 @@ segmentation_map(:,:, 3) = meanIm - (maskArtery+maskVein).*meanIm + maskVein;
 
 
 %% Display images and figures
-strXlabel = 'Time(ms)' ;%createXlabelTime(1);
+strXlabel = 'Time(s)' ;%createXlabelTime(1);
 
 strYlabel = 'frequency (kHz)';
 range0(1:2) = clim;
