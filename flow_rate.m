@@ -1,20 +1,13 @@
-function [flowVideoRGB] = flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS, ToolBox, k,path)
+function [] = flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS, ToolBox, k,path)
 
 PW_params = Parameters(path);
 
 %maskArtery = imdilate(maskArtery,strel('disk',5));
 %FIXME function velocity map
+
 v_RMS_AVG = mean(v_RMS,3);
 
-Im = mat2gray(squeeze(mean(v_RMS,3)));
-
-
-[hue_artery,sat_artery,~,cmap_artery] = createHSVmap(Im,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
-[hue_vein,sat_vein,val,cmap_vein] = createHSVmap(Im,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
-
-flowImageRGB =  hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
-figure(321)
-imshow(flowImageRGB)
+%%Find the locations of the sections
 
 maskSectionArtery = maskSectionArtery.*maskArtery;
 
@@ -47,9 +40,9 @@ end
 locs = zeros(nb_section,2);
 width = zeros(nb_section,1);
 for ii = 1:nb_section
-    skel = bwskel(logical(masksSections(:,:,ii)));
-    [row,col] = find(skel);
-
+%     skel = bwskel(logical(masksSections(:,:,ii)));
+%     [row,col] = find(skel);
+    [row,col] = find(masksSections(:,:,ii));
     locs(ii,1) = round(mean(row));
     locs(ii,2) = round(mean(col));
     width(ii) = max(abs(row(1)-row(end)),abs(col(1)-col(end)));
@@ -57,7 +50,7 @@ end
 
 %mask_artery = imdilate(maskArtery,strel('disk',5));
 mask_artery = maskArtery;
-[avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis_new(locs, width, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,path);
+[avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis_new(locs, width, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path);
 
 %VelocityInArterySections = zeros(size(maskArtery,1),size(maskArtery,2),nb_section);
 
@@ -151,43 +144,17 @@ pos = ax.Position;
 rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
 F_total_blood_flow = getframe(ax,rect);
 
-    % Save colorbar
-colorfig = figure(116);
-colorfig.Units = 'normalized';
-colormap(cmap_artery)
-hCB = colorbar('north');
-set(gca,'Visible',false)
-set(gca,'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca,15,"points") ;
-
-
-    % Save colorbar
-colorfig = figure(117);
-colorfig.Units = 'normalized';
-colormap(cmap_vein)
-hCB = colorbar('north');
-set(gca,'Visible',false)
-set(gca,'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca,15,"points") ;
-
-
 
 
 
 
 print('-f111222','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Artery_Sections.png'))) ;
-print('-f116','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_arteries.png'))) ;
-print('-f117','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_veins.png'))) ;
+
 %print('-f115','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_Velocity_in_arteriy_sections.png'))) ;
 %print('-f120','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Total_blood_volume_rate_in_arteries.png'))) ;
-imwrite(flowImageRGB, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_flow_image.png')));
 
 imwrite(F_total_blood_flow.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_Velocity_in_arteriy_sections.png')));
 imwrite(F_Total_blood_volume_rate.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Total_blood_volume_rate_in_arteries.png')));
 
-close all 
+%close all 
 end

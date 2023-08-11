@@ -31,6 +31,7 @@ classdef Parameters
         masks_showIntermediateFigures
         RG_FloorThreshold
         RG_veinConditionThreshold
+        RG_ArteryConditionThreshold
         CRACRV_Threshold
         RG_alpha
         cropSection_scaleFactorWidth
@@ -131,6 +132,7 @@ classdef Parameters
                 obj.masks_showIntermediateFigures = obj.extractValue(fileContent, 'Showing intermediate figures in the process :');
                 obj.RG_FloorThreshold = obj.extractValue(fileContent, 'Region growing floor threshold :');
                 obj.RG_veinConditionThreshold = obj.extractValue(fileContent, 'Region growing vein condition threshold :');
+                obj.RG_ArteryConditionThreshold = obj.extractValue(fileContent, 'Region growing artery condition threshold :');
                 obj.CRACRV_Threshold = obj.extractValue(fileContent, 'Central Retina Vein/Artery threshold :');
                 obj.RG_alpha = obj.extractValue(fileContent, 'Region growing threshold :');
                 obj.cropSection_scaleFactorWidth = obj.extractValue(fileContent, 'Scale factor width :');

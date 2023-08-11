@@ -22,6 +22,7 @@ classdef OneCycleClass
         video_loaded
         pictureSection
         videoSection
+        flag_SH 
 
 
     end
@@ -32,6 +33,7 @@ classdef OneCycleClass
             arguments
                 path
             end
+            
             obj.directory = path;
 
             tmp_idx = regexp(path, '\');
@@ -50,9 +52,10 @@ classdef OneCycleClass
             obj.dataM2 = cell(1,obj.nbFiles) ;
             obj.dataSH = cell(1,obj.nbFiles) ;
             obj.dataSH_interp = cell(1,obj.nbFiles) ;
-            obj.k = 0; 
+            obj.k = 0;
+            obj.flag_SH = 1;
 
-            try 
+            try
                 checkPulsewaveParamsFromTxt(obj.directory);
                 PW_params = Parameters(obj.directory);
             catch
@@ -62,7 +65,7 @@ classdef OneCycleClass
                 PW_params = Parameters(obj.directory);
             end
 
-            
+
             obj.k = PW_params.k;
 
             for ii = 1 : obj.nbFiles
@@ -160,6 +163,33 @@ classdef OneCycleClass
             end
         end
 
+        function obj = MomentFlatField(obj)
+            PW_params = Parameters(obj.directory);
+            for ii = 1 : obj.nbFiles
+                height = size(obj.dataM2M0_interp{1}, 1);
+                width = size(obj.dataM2M0_interp{1}, 2);
+                length = size(obj.dataM2M0_interp{1}, 3);
+                num_frames = size(obj.reference{1}, 3);
+                gwRatio = PW_params.flatField_gwRatio;
+                flatField_border = PW_params.flatField_border;
+
+
+                tmp_dataM0 = zeros(height, width, length);
+                tmp_dataM2M0 = zeros(height, width, length);
+                tmp_calc_data = obj.dataM2M0_interp{1};
+                tmp_calc_data_M0 = obj.dataM0_interp{1};
+                parfor i = 1 : num_frames % loop over frames
+                    tmp_dataM0(:,:,i) =  flat_field_correction_old(tmp_calc_data_M0(:,:,i), gwRatio*height, flatField_border);
+                    tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
+
+                end
+
+                obj.dataM2M0_interp{1} = tmp_dataM2M0;
+                obj.dataM0_interp{1} = tmp_dataM0;
+
+            end
+        end
+
         function obj = cropAllVideo(obj)
             %Crop a video (matrix dim 3)
             PW_params = Parameters(obj.directory);
@@ -167,8 +197,8 @@ classdef OneCycleClass
             lastFrame = PW_params.videoEndFrameIndex;
 
             if firstFrame > 0 && firstFrame < size(obj.dataM2M0{1},3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM2M0{1},3)
-                
-                
+
+
                 obj.reference{1} = obj.reference{1}(:,:,firstFrame:lastFrame);
                 obj.reference_norm{1} = obj.reference{1}(:,:,firstFrame:lastFrame);
                 obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
@@ -176,7 +206,7 @@ classdef OneCycleClass
                 obj.dataM0{1} = obj.dataM0{1}(:,:,firstFrame:lastFrame);
                 obj.dataM1{1} = obj.dataM1{1}(:,:,firstFrame:lastFrame);
                 obj.dataM2{1} = obj.dataM2{1}(:,:,firstFrame:lastFrame);
-                
+
 
                 disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM2M0{1},3))])
             else
@@ -194,44 +224,51 @@ classdef OneCycleClass
             height = (height-1)*(2^k_interp-1)+height;
             width = (width-1)*(2^k_interp-1)+width;
 
-      
-                tmp_ref = zeros(height,width, size(obj.dataM2M0{1}, 3)); 
-                tmp_ref_norm = zeros(height,width, size(obj.dataM2M0{1}, 3)); 
-                tmp_dataM0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
-                tmp_dataM2M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
-                tmp_data_M1M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+
+            tmp_ref = zeros(height,width, size(obj.dataM2M0{1}, 3));
+            tmp_ref_norm = zeros(height,width, size(obj.dataM2M0{1}, 3));
+            tmp_dataM0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+            tmp_dataM2M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+            tmp_data_M1M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+
+            tmp_calc_ref = obj.reference{1};
+            tmp_calc_ref_norm = obj.reference_norm{1};
+            tmp_calc_data = obj.dataM2M0{1};
+            tmp_calc_data_M0 = obj.dataM0{1};
+            tmp_calc_data_M1M0 = obj.dataM1M0{1};
+
+            parfor i = 1 : num_frames % loop over frames
+                tmp_dataM0(:,:,i) = interp2(tmp_calc_data_M0(:,:,i), k_interp);
+                tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
+                tmp_data_M1M0(:,:,i) = interp2(tmp_calc_data_M1M0(:,:,i), k_interp);
+                tmp_ref(:,:,i) = interp2( tmp_calc_ref(:,:,i), k_interp);
+                tmp_ref_norm(:,:,i) = interp2(tmp_calc_ref_norm(:,:,i), k_interp);
+            end
+
+            obj.reference_interp{1} = tmp_ref;
+            obj.reference_norm_interp{1} = tmp_ref_norm;
+            obj.dataM2M0_interp{1} = tmp_dataM2M0;
+            obj.dataM1M0_interp{1} = tmp_data_M1M0;
+            obj.dataM0_interp{1} = tmp_dataM0;
+
+            if obj.flag_SH == 1
                 tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
-                tmp_calc_ref = obj.reference{1};
-                tmp_calc_ref_norm = obj.reference_norm{1};
-                tmp_calc_data = obj.dataM2M0{1};
-                tmp_calc_data_M0 = obj.dataM0{1};
-                tmp_calc_data_M1M0 = obj.dataM1M0{1};
                 tmp_calc_data_SH = obj.dataSH{1};
-                parfor i = 1 : num_frames % loop over frames
-                    tmp_dataM0(:,:,i) = interp2(tmp_calc_data_M0(:,:,i), k_interp);
-                    tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
-                    tmp_data_M1M0(:,:,i) = interp2(tmp_calc_data_M1M0(:,:,i), k_interp);
-                    tmp_ref(:,:,i) = interp2( tmp_calc_ref(:,:,i), k_interp);
-                    tmp_ref_norm(:,:,i) = interp2(tmp_calc_ref_norm(:,:,i), k_interp);
-                end
                 for i = 1 : size(obj.dataSH{1}, 3)
                     tmp_data_SH(:,:,i) = interp2(tmp_calc_data_SH(:,:,i), k_interp);
                 end
-                obj.reference_interp{1} = tmp_ref;
-                obj.reference_norm_interp{1} = tmp_ref_norm;
-                obj.dataM2M0_interp{1} = tmp_dataM2M0;
-                obj.dataM1M0_interp{1} = tmp_data_M1M0;
-                obj.dataM0_interp{1} = tmp_dataM0;
                 obj.dataSH_interp{1} = tmp_data_SH;
 
+            end
 
-            
+
+
         end
 
         function onePulse(obj, Ninterp, add_infos)
             PW_params = Parameters(obj.directory);
             ToolBox = ToolBoxClass(obj.directory);
-          
+
             meanIm = squeeze(mean(obj.reference_interp{1}, 3));
             blurred_mask = imgaussfilt(double(meanIm),0.05*size(meanIm,1),'Padding',0);
             [ToolBox.y_barycentre,ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask,[],'all'));
@@ -242,21 +279,21 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_txt);
             mkdir(ToolBox.PW_path_avi);
             mkdir(ToolBox.PW_path_mp4);
- 
+
             path_dir_txt = fullfile(obj.directory,'txt');
             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
             copyfile(path_file_txt_params,ToolBox.PW_path_txt );
 
 
             tic
-          %  [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            %[maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             toc
 
             tic
             [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-           % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-            
+            % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+
             disp('CreatMasks New timing :')
             toc
 
@@ -271,16 +308,16 @@ classdef OneCycleClass
                     [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_interp{n}, obj.directory,maskArtery);
                     disp('FindSystoleIndex timing :')
                     toc
-                    %                 % FIXME flatfield correction does not work
-                    % %                 for j = 1:size(one_cycle_video_to_save,3)
-                    % %                     one_cycle_video_to_save(:,:,j) = ...
-                    % %                         flat_field_correction(squeeze(one_cycle_video_to_save(:,:,j)),0.07,0.25);
-                    % %                 end
-                    tic
+
                     [v_RMS] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
                     toc
-                    
+
+                    tic
+                    velocity_map(maskArtery, maskVein, v_RMS, ToolBox);
+                    disp('Velocity map timing :')
+                    toc
+
                     tic
                     ArterialResistivityIndex(v_RMS,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
@@ -292,16 +329,24 @@ classdef OneCycleClass
                     flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS, ToolBox, obj.k,obj.directory);
                     disp('FlowRate timing :')
                     toc
-%                     try
-%                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
-%                     catch
-%                     end
+                    %                     try
+                    %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
+                    %                     catch
+                    %                     end
 
-                    tic
-                   % spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
-                    disp('Spectrogram timing :')
-                    toc
-                    % add_infos
+                    if obj.flag_SH == 1
+                        tic
+                        spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
+                        disp('Spectrogram timing :')
+                        toc
+                    else
+
+                        tic
+                        spectrogram_new(maskArtery,maskBackground ,obj.directory ,ToolBox);
+                        disp('Spectrogram timing :')
+                        toc
+                    end
+
                 end
             end
             displaySuccessMsg(1);

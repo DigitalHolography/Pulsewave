@@ -53,8 +53,8 @@ function [mask,RG_video] = region_growing_for_vessel(img, seed_map,conditionMask
                     neighbour_value = img(x,y); %value of neighbour
                     d = seed_value-neighbour_value;
                     
-                    %if ( d > 0 && neighbour_value > floor) || (d > alpha && conditionMask(x,y) == 1 ) %Serves as Predicate for growing the region
-                   if  (d > alpha*4 && conditionMask(x,y) == 1 ) %Serves as Predicate for growing the region
+                    if ( d > 0 && neighbour_value > floor) || (d > alpha && conditionMask(x,y) == 1 ) %Serves as Predicate for growing the region
+                   %if  (abs(d) > abs(alpha/8) && conditionMask(x,y) == 1 ) %Serves as Predicate for growing the region
 
                         mask(x,y) = 1; %Marking the pixel as visited
                         seeds_position = cat(1, seeds_position, new_coord(1,:)); %Adding the pixels to seeds

@@ -2,17 +2,16 @@ function [v_RMS] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index
 PW_params = Parameters(path);
 
 dataCubeM2M0 = fullVideoM2M0;
-dataCubeM2M02 = fullVideoM2M0;
 dataCubeM1M0 = fullVideoM1M0;
 
 
 % for robust rendering : 
 % 1-flat-field correction, 2-background substraction
 
-for pp = 1:size(dataCubeM2M0,3)
-    dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
-    %dataCubeM2M02(:,:,pp) = flat_field_correction_old(squeeze(dataCubeM2M02(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
-end
+% for pp = 1:size(dataCubeM2M0,3)
+%     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
+%     %dataCubeM2M0(:,:,pp) = flat_field_correction_old(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
+% end
 
 
 %% calculate raw signals of arteries, background and veins
@@ -66,13 +65,7 @@ fullVenousSignalMinusBackground = fullVenousSignal - fullBackgroundSignal;
 % plot(ArterialPulseMinusBackground)
 
 
-% le plus simple fonctionne bien : soustraire le bkg.
-A = ones(size(dataCubeM2M0));
 
-for pp = 1:size(dataCubeM2M0,3)
-      A(:,:,pp) = A(:,:,pp) * fullBackgroundSignal(pp);
-end
-dataCubeM2M0 = dataCubeM2M0 - A ; 
 
 % remove outliers
 % 1st pass
@@ -89,8 +82,36 @@ disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
 
 fullArterialPulseClean = smoothdata(fullArterialPulseRmOut,'lowess');
 fullVenousSignalClean = smoothdata(fullVenousSignalRmOut, 'lowess');
-% fullBackgroundSignalClean = smoothdata(fullBackgroundSignalRmOut,'lowess');
+fullBackgroundSignalClean = smoothdata(fullBackgroundSignalRmOut,'lowess');
 
+figure(2)
+plot(fullBackgroundSignal)
+hold on 
+plot(fullArterialPulse)
+hold on 
+plot(fullBackgroundSignalClean)
+hold off 
+legend
+%% Try Local BCK
+
+mask = imdilate(maskArtery+maskVein,strel('disk',15));
+LocaclBGK2 = zeros(size(dataCubeM2M0));
+for n = 1:size(dataCubeM2M0,3)
+    LocaclBGK2(:,:,n) = regionfill(dataCubeM2M0(:,:,n),mask);
+end
+%LocaclBGK2 = LocaclBGK2.*(maskArtery+maskVein);
+
+dataCubeM2M0 = dataCubeM2M0 - LocaclBGK2 ; 
+
+% % le plus simple fonctionne bien : soustraire le bkg.
+% A = ones(size(dataCubeM2M0));
+% 
+% 
+% %% 
+% for pp = 1:size(dataCubeM2M0,3)
+%       A(:,:,pp) = A(:,:,pp) * fullBackgroundSignal(pp);
+% end
+% dataCubeM2M0 = dataCubeM2M0 - A ; 
 
 %% calculate the pulse derivative and finding/cleaning pulses
 
@@ -268,23 +289,27 @@ disp('arterial pulse wave analysis...');
 
 [~,idx_sys] = max(avgArterialPulseHz) ;
 
+%% Doppler AVG frequency heatmap 
+heatmap_AVG_raw = squeeze(mean(fullVideoM1M0,3));
+
+
 %% diastolic Doppler frequency heatmap : 10% of frames before minimum of diastole
-heatmap_dia = squeeze(mean(onePulseVideo(:,:,floor(0.9*Ninterp):Ninterp),3));
+heatmap_dia_raw = squeeze(mean(onePulseVideo(:,:,floor(0.9*Ninterp):Ninterp),3));
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*Ninterp):Ninterp),3));
 % heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
-heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)),PW_params.flatField_border);
+heatmap_dia = flat_field_correction(heatmap_dia_raw, ceil(PW_params.flatField_gwRatio*size(heatmap_dia_raw,1)),PW_params.flatField_border);
 % heatmap_dia = imflatfield(heatmap_dia,PW_params.flatField_gwRatio*size(heatmap_dia,1)/2);
 
 
 %% systolic Doppler frequency heatmap : 10% of frames around peak systole
 a = max(ceil(idx_sys-0.05*Ninterp),1);
 b = min(ceil(idx_sys+0.05*Ninterp),Ninterp);
-heatmap_sys = squeeze(mean(onePulseVideo(:,:,a:b),3));
+heatmap_sys_raw = squeeze(mean(onePulseVideo(:,:,a:b),3));
 % onePulseVideo2 : no background correction 
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
 % heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)), PW_params.flatField_borderDMap);
-heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)),PW_params.flatField_border);
+heatmap_sys = flat_field_correction(heatmap_sys_raw, ceil(PW_params.flatField_gwRatio*size(heatmap_sys_raw,1)),PW_params.flatField_border);
 % heatmap_sys = imflatfield(heatmap_sys,PW_params.flatField_gwRatio*size(heatmap_sys,1)/2);
 
 %%
@@ -355,7 +380,7 @@ strXlabel = 'Time(s)' ;%createXlabelTime(1);
 
 strYlabel = 'frequency (kHz)';
 range0(1:2) = clim;
-fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs,size(fullVideoM2M0,3));
+fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs/1000,size(fullVideoM2M0,3));
 
 % calculate raw signals of arteries, background and veins
 
@@ -480,12 +505,40 @@ colorTitleHandle = get(hCB,'Title');
 titleString = 'AVG Doppler frequency (kHz)';
 set(colorTitleHandle ,'String',titleString);
 
+%  Doppler AVG frequency heatmap
+figure(78)
+imagesc(heatmap_AVG_raw) ;
+colormap gray
+title('AVG frequency map RAW');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(1:2) = clim;
+
+% diastolic Doppler frequency heatmap
+figure(79)
+imagesc(heatmap_dia_raw) ;
+colormap gray
+title('bottom diastole RMS frequency map RAW');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(1:2) = clim;
+
 
 % diastolic Doppler frequency heatmap
 figure(80)
 imagesc(heatmap_dia) ;
 colormap gray
-title('bottom diastole RMS frequency map');
+title('bottom diastole RMS frequency map flatfield');
 fontsize(gca,12,"points") ;
 set(gca, 'LineWidth', 2);
 c = colorbar('southoutside');
@@ -496,10 +549,29 @@ axis image
 range(1:2) = clim;
 
 % systolic Doppler frequency heatmap
+figure(89)
+imagesc(heatmap_sys_raw) ;
+colormap gray
+title('peak systole RMS frequency map RAW');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(3:4) = clim;
+    % same color axis for systolic and diastolic Doppler heatmaps
+clim([min(range),max(range)]);
+figure(85)
+clim([min(range),max(range)]);
+
+
+% systolic Doppler frequency heatmap
 figure(90)
 imagesc(heatmap_sys) ;
 colormap gray
-title('peak systole RMS frequency map');
+title('peak systole RMS frequency map flatfield');
 fontsize(gca,12,"points") ;
 set(gca, 'LineWidth', 2);
 c = colorbar('southoutside');
@@ -628,6 +700,8 @@ print('-f102','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldernam
 print('-f103','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_avgPulseWaveDerivative.png'))) ;
 print('-f80','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMap.png'))) ;
 print('-f90','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMap.png'))) ;
+print('-f79','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMapRAW.png'))) ;
+print('-f89','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMapRAW.png'))) ;
 print('-f101','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_all_cycles.png'))) ;
 print('-f2410','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_RMS_frequency_colorbar.png')));
 print('-f1230','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_frequency_colorbar.png')));
@@ -648,6 +722,8 @@ print('-f102','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_folderna
 print('-f103','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_avgPulseWaveDerivative.eps'))) ;
 print('-f80','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_diastoleHeatMap.eps'))) ;
 print('-f90','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_systoleHeatMap.eps'))) ;
+print('-f79','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_diastoleHeatMapRAW.eps'))) ;
+print('-f89','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_systoleHeatMapRAW.eps'))) ;
 print('-f101','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_all_cycles.eps'))) ;
 print('-f2410','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_RMS_frequency_colorbar.eps')));
 print('-f1230','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_AVG_frequency_colorbar.eps')));

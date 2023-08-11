@@ -1,10 +1,11 @@
 function [] = ArterialResistivityIndex(onePulseVideo,dataCubeM2M0, maskArtery,  ToolBox)
 PW_params = Parameters(path);
 disp('arterial resistivity...');
-for pp = 1:size(dataCubeM2M0,3)
-    dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
-    % dataCubeM2M0(:,:,pp) = imflatfield(dataCubeM2M0(:,:,pp),PW_params.flatField_gwRatio*size(dataCubeM2M0,1)/2);
-end
+
+% for pp = 1:size(dataCubeM2M0,3)
+%     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
+%     
+% end
 
 meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
 tolVal = [0.02, 0.98]; 
@@ -16,6 +17,30 @@ meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
 [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,meanIm,maskArtery,ToolBox);
 % arterial resistivity map RGB
 ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+
+ARIvideoRGB = zeros(size(onePulseVideo,1),size(onePulseVideo,2),3,size(onePulseVideo,3));
+
+for ii = 1:size(onePulseVideo,3)
+    v = mat2gray(squeeze(onePulseVideo(:,:,ii)));
+    [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,v,maskArtery,ToolBox);
+    ARIvideoRGB(:,:,:,ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+end
+
+% save video
+% avi
+w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_flowVideo'))) ;
+open(w)
+for jj = 1:size(ARIvideoRGB,4)
+    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+end
+close(w);
+% mp4
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_flowVideo')),'MPEG-4') ;
+open(w)
+for jj = 1:size(ARIvideoRGB,4)
+    writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+end
+close(w);
 
 disp('done.');
 
@@ -51,7 +76,7 @@ axis image
 axis off
 set(gca,'LineWidth', 2);
 fontsize(gca,12,"points") ;
-c = colorbar('southoutside','Ticks',linspace(0,1,11));
+c = colorbar('southoutside','Ticks',linspace(0,1,6));
 c.Label.String = 'Arterial resistivity index';
 c.Label.FontSize = 12;
 
@@ -82,4 +107,4 @@ print('-f70','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldernam
 imwrite(ARImapRGB,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_ARI_map_img.png')),'png');
 
 
-close all 
+%close all 

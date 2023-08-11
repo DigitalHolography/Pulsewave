@@ -18,6 +18,8 @@ for ii = 1:size(video, 1)
         end
     end
 end
+figure(549)
+plot(arterialPulse)
 
 [maxAP,maxAPidx] = max(arterialPulse(:));
 [minAP,minAPidx] = min(arterialPulse(:));

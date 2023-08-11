@@ -95,7 +95,7 @@ for tt = 1 : num_frames
     % tmp_fittype = fittype('Vmax .* (1-(1-0.13).* (abs(x).^beta))',...
     % 'dependent',{'tmp_velocity_profile'},'independent',{'x'},...
     % 'coefficients',{'Vmax','beta'});
-    [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [15 0.7 2],'Lower', [1 0.1 1], 'Upper', [30 0.95 3]);
+    [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2],'Lower', [10 -5 0], 'Upper', [80 3 6]);
     R2_tmp_fit = R2_tmp_fit.rsquare;
     
     fifig = figure(899);
@@ -116,7 +116,7 @@ for tt = 1 : num_frames
     ylabel('quantitative velocity mm/s','FontSize',14) ;
     hold off
     writeVideo(v, getframe(fifig));
-    writeVideo(vmp4, getframe(fifig));
+    writeVideo(vMP4, getframe(fifig));
 
 
     Vmax_list(tt) = tmp_fit.Vmax;
@@ -128,7 +128,7 @@ for tt = 1 : num_frames
 
 end
 close(v)
-close(vmp4)
+close(vMP4)
 video = subVideo;
 
 % Systole/Diastole velocity profile

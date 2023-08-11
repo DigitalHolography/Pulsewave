@@ -1,4 +1,4 @@
-function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,path)
+function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,ToolBox, path)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 PW_params = Parameters(path);
@@ -114,9 +114,8 @@ for ii = 1:size(locs)
     end
 end % ii
 
-% if strcmp(vessel_type,'artery')
-%     viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, one_cycle_dir, filename);
-% end
+viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+
 
 
 end
