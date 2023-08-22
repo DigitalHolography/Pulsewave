@@ -1,7 +1,8 @@
-function [] = spectrogram_new(maskArtery,maskBackground ,path,ToolBox)
+function [] = spectrogram_new(maskArtery,maskBackground ,SH_cube, ToolBox)
 %% Variables
-cubeSize = 256 ;
-cubeFreqLength = 32 ;
+cubeSize = size(SH_cube,1) ;
+cubeFreqLength = size(SH_cube,3) ;
+cubeFrameLength = size(SH_cube,4);
 f1 = ToolBox.f1;
 f2 = ToolBox.f2;
 fs = ToolBox.fs;
@@ -10,15 +11,8 @@ batchStride = ToolBox.stride; %convert Hz to s
 k_int=4;
 minimumTreshold = 10000; % for the log plotting, we change all smallest value to greater one. In order to avoid log(0).
 
-%% Import SH
-tmpname  = strcat(ToolBox.main_foldername, '_SH');
-ext = '.raw';
-disp(['reading : ',fullfile(path,'raw',[tmpname,ext])]);
-fileID = fopen(fullfile(path,'raw',[tmpname,ext]));
-videoSH = fread(fileID,'float32');
-fclose(fileID);
-SH_cube=  reshape(videoSH,cubeSize,cubeSize,cubeFreqLength,[]);
-cubeFrameLength = size(SH_cube,4);
+
+
 
 
 

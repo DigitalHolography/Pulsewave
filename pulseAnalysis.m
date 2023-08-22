@@ -99,7 +99,7 @@ LocaclBGK2 = zeros(size(dataCubeM2M0));
 for n = 1:size(dataCubeM2M0,3)
     LocaclBGK2(:,:,n) = regionfill(dataCubeM2M0(:,:,n),mask);
 end
-%LocaclBGK2 = LocaclBGK2.*(maskArtery+maskVein);
+LocaclBGK2 = LocaclBGK2.*(maskArtery+maskVein);
 
 dataCubeM2M0 = dataCubeM2M0 - LocaclBGK2 ; 
 

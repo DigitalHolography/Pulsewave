@@ -22,7 +22,12 @@ classdef OneCycleClass
         video_loaded
         pictureSection
         videoSection
-        flag_SH 
+        flag_FlatField
+        flag_SH_analysis
+        flag_PulseWave_analysis
+        
+
+
 
 
     end
@@ -53,7 +58,7 @@ classdef OneCycleClass
             obj.dataSH = cell(1,obj.nbFiles) ;
             obj.dataSH_interp = cell(1,obj.nbFiles) ;
             obj.k = 0;
-            obj.flag_SH = 1;
+
 
             try
                 checkPulsewaveParamsFromTxt(obj.directory);
@@ -126,13 +131,15 @@ classdef OneCycleClass
                 videoM2 = fread(fileID,'float32');
                 fclose(fileID);
                 obj.dataM2{ii} = reshape(videoM2,refvideosize);
-                % Import SH
-                tmpname = strcat(NameRawFile(1:end-10), 'SH');
-                disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
-                videoSH = fread(fileID,'float32');
-                fclose(fileID);
-                obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
+%                 % Import SH
+% 
+%                 tmpname = strcat(NameRawFile(1:end-10), 'SH');
+%                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
+%                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
+%                 videoSH = fread(fileID,'float32');
+%                 fclose(fileID);
+%                 obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
+%   
 
 
             end
@@ -251,21 +258,21 @@ classdef OneCycleClass
             obj.dataM1M0_interp{1} = tmp_data_M1M0;
             obj.dataM0_interp{1} = tmp_dataM0;
 
-            if obj.flag_SH == 1
-                tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
-                tmp_calc_data_SH = obj.dataSH{1};
-                for i = 1 : size(obj.dataSH{1}, 3)
-                    tmp_data_SH(:,:,i) = interp2(tmp_calc_data_SH(:,:,i), k_interp);
-                end
-                obj.dataSH_interp{1} = tmp_data_SH;
-
-            end
+%             if obj.flag_SH == 1
+%                 tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
+%                 tmp_calc_data_SH = obj.dataSH{1};
+%                 for i = 1 : size(obj.dataSH{1}, 3)
+%                     tmp_data_SH(:,:,i) = interp2(tmp_calc_data_SH(:,:,i), k_interp);
+%                 end
+%                 obj.dataSH_interp{1} = tmp_data_SH;
+% 
+%             end
 
 
 
         end
 
-        function onePulse(obj, Ninterp, add_infos)
+        function onePulse(obj, Ninterp)
             PW_params = Parameters(obj.directory);
             ToolBox = ToolBoxClass(obj.directory);
 
@@ -284,9 +291,41 @@ classdef OneCycleClass
             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
             copyfile(path_file_txt_params,ToolBox.PW_path_txt );
 
+            %% FlatField 
+
+            if obj.flag_FlatField
+                disp("Correcting data with flat field")
+                for ii = 1 : obj.nbFiles
+                height = size(obj.dataM2M0_interp{1}, 1);
+                width = size(obj.dataM2M0_interp{1}, 2);
+                length = size(obj.dataM2M0_interp{1}, 3);
+                num_frames = size(obj.reference{1}, 3);
+                gwRatio = PW_params.flatField_gwRatio;
+                flatField_border = PW_params.flatField_border;
+
+
+                tmp_dataM0 = zeros(height, width, length);
+                tmp_dataM2M0 = zeros(height, width, length);
+                tmp_calc_data = obj.dataM2M0_interp{1};
+                tmp_calc_data_M0 = obj.dataM0_interp{1};
+                parfor i = 1 : num_frames % loop over frames
+                    tmp_dataM0(:,:,i) =  flat_field_correction_old(tmp_calc_data_M0(:,:,i), gwRatio*height, flatField_border);
+                    tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
+
+                end
+
+                obj.dataM2M0_interp{1} = tmp_dataM2M0;
+                obj.dataM0_interp{1} = tmp_dataM0;
+
+                end
+            else 
+                disp("no flatfield applied")
+            end
+
+            %% Creating Masks
 
             tic
-            %[maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+           % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             toc
 
@@ -297,7 +336,9 @@ classdef OneCycleClass
             disp('CreatMasks New timing :')
             toc
 
-            if add_infos
+            %% PulseWave Analysis 
+
+            if obj.flag_PulseWave_analysis
                 close all
 
                 sys_index_list_cell = cell(obj.nbFiles) ;
@@ -334,20 +375,42 @@ classdef OneCycleClass
                     %                     catch
                     %                     end
 
-                    if obj.flag_SH == 1
-                        tic
-                        spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
-                        disp('Spectrogram timing :')
-                        toc
-                    else
+                   
 
-                        tic
-                        spectrogram_new(maskArtery,maskBackground ,obj.directory ,ToolBox);
-                        disp('Spectrogram timing :')
-                        toc
-                    end
+%                         tic
+%                         spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
+%                         disp('Spectrogram timing :')
+%                         toc
+%                     else
+
 
                 end
+            end
+
+            %% Spectrum Analysis
+
+            if obj.flag_SH_analysis
+
+                %% Import SH
+                cubeSize = 256 ;
+                cubeFreqLength = 32 ;
+                tmpname  = strcat(ToolBox.main_foldername, '_SH');
+                ext = '.raw';
+                disp(['reading : ',fullfile(obj.directory,'raw',[tmpname,ext])]);
+                fileID = fopen(fullfile(obj.directory,'raw',[tmpname,ext]));
+                videoSH = fread(fileID,'float32');
+                fclose(fileID);
+                SH_cube=  reshape(videoSH,cubeSize,cubeSize,cubeFreqLength,[]);
+
+                tic
+                spectrum_analysis(maskArtery,maskBackground ,SH_cube ,ToolBox);
+                disp('Spectrum analysis :')
+                toc
+
+                tic
+                spectrogram_new(maskArtery,maskBackground ,SH_cube ,ToolBox);
+                disp('Spectrogram timing :')
+                toc
             end
             displaySuccessMsg(1);
         end

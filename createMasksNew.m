@@ -116,7 +116,7 @@ condition_artery = imbinarize(correlationMatrix_arteryCondition,level_artery./PW
 correlationMatrix_veinCondition = correlationMatrix_vein.*rescale(vesselnessIm);
 
 level_vein = graythresh(correlationMatrix_veinCondition);
-seeds_vein = imbinarize(correlationMatrix_veinCondition, level_vein)  | (vesselness_vein > 0.5*max(vesselness_vein,[],'all'));
+seeds_vein = imbinarize(correlationMatrix_veinCondition, level_vein) | (vesselness_vein > 0.5*max(vesselness_vein,[],'all'));
 seeds_vein = bwareaopen(seeds_vein,PW_params.masks_minSize);
 
 condition_vein = vesselness_vein > PW_params.RG_veinConditionThreshold*mean2(vesselness_vein(seeds_vein)); 
@@ -140,9 +140,9 @@ mask_artery = mask_vessel.*correlationMatrix_artery;
 mask_artery = mask_artery>PW_params.arteryMask_ArteryCorrThreshold;
 
 
-mask_vein = mask_vessel & ~mask_artery;
-% mask_vein = mask_vessel.*correlationMatrix_vein;
-% mask_vein = mask_vein > 0;
+%mask_vein = mask_vessel & ~mask_artery;
+mask_vein = mask_vessel.*correlationMatrix_vein;
+mask_vein = mask_vein > 0;
 
 
 if PW_params.masks_showIntermediateFigures
