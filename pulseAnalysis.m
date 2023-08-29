@@ -4,6 +4,10 @@ PW_params = Parameters(path);
 dataCubeM2M0 = fullVideoM2M0;
 dataCubeM1M0 = fullVideoM1M0;
 
+meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
+tolVal = [0.02, 0.98]; 
+meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
+
 
 % for robust rendering : 
 % 1-flat-field correction, 2-background substraction
@@ -92,6 +96,8 @@ hold on
 plot(fullBackgroundSignalClean)
 hold off 
 legend
+
+% 
 %% Try Local BCK
 
 mask = imdilate(maskArtery+maskVein,strel('disk',15));
@@ -99,8 +105,7 @@ LocaclBGK2 = zeros(size(dataCubeM2M0));
 for n = 1:size(dataCubeM2M0,3)
     LocaclBGK2(:,:,n) = regionfill(dataCubeM2M0(:,:,n),mask);
 end
-LocaclBGK2 = LocaclBGK2.*(maskArtery+maskVein);
-
+%LocaclBGK2 = LocaclBGK2.*(maskArtery+maskVein)+A.*not(maskArtery+maskVein);
 dataCubeM2M0 = dataCubeM2M0 - LocaclBGK2 ; 
 
 % % le plus simple fonctionne bien : soustraire le bkg.
@@ -189,9 +194,7 @@ fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername,'_av
 fprintf(fileID,'%f %f \r\n',tmp');
 fclose(fileID);
 
-meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
-tolVal = [0.02, 0.98]; 
-meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
+
 
 %%
 disp('arterial pulse wave analysis...');
@@ -367,6 +370,7 @@ fprintf(fileID,[...
     diastole_area);
 fclose(fileID) ;
 
+%FIX ME utiliser la data brute  
 segmentation_map = zeros(size(meanIm,1), size(meanIm,2), 3);
 segmentation_map(:,:, 1) = meanIm - (maskArtery+maskVein).*meanIm + maskArtery;
 segmentation_map(:,:, 2) = meanIm - (maskArtery+maskVein).*meanIm;
@@ -383,6 +387,20 @@ range0(1:2) = clim;
 fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs/1000,size(fullVideoM2M0,3));
 
 % calculate raw signals of arteries, background and veins
+
+
+figure(19)
+imagesc(mean(LocaclBGK2,3).*mask+ones(size(LocaclBGK2,1))*mean(LocaclBGK2,'all').*~mask) ;
+colormap gray
+title('Local Background in arteries');
+fontsize(gca,12,"points") ;
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(1:2) = clim;
 
 figure(20)
 plot(fullTime,fullArterialPulse,'-k', fullTime,fullBackgroundSignal,':k', fullTime, fullVenousSignal, '-.k', 'LineWidth',2) ;
@@ -690,6 +708,7 @@ axis tight
 % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_timeLags.eps'))) ;
 
 % png
+print('-f19','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_arteries.png'))) ;
 print('-f20','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseVsBackground.png'))) ;
 print('-f30','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_filteredPulse.png'))) ;
 print('-f44','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_filteredPulseVsResidual.png'))) ;

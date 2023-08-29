@@ -403,7 +403,7 @@ classdef OneCycleClass
                 SH_cube=  reshape(videoSH,cubeSize,cubeSize,cubeFreqLength,[]);
 
                 tic
-                spectrum_analysis(maskArtery,maskBackground ,SH_cube ,ToolBox);
+                spectrum_analysis(maskArtery,maskBackground ,SH_cube ,ToolBox,obj.dataM0_interp{1});
                 disp('Spectrum analysis :')
                 toc
 
@@ -413,6 +413,7 @@ classdef OneCycleClass
                 toc
             end
             displaySuccessMsg(1);
+            close all 
         end
     end
 end

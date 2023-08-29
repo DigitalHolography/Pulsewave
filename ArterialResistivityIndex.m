@@ -8,11 +8,11 @@ disp('arterial resistivity...');
 % end
 
 meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
-tolVal = [0.02, 0.98]; 
-meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
+% tolVal = [0.02, 0.98]; 
+% meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
 
 [ARI, ARImap] = construct_resistivity_index(onePulseVideo, maskArtery);
-
+ARImap(isnan(ARImap))=0;
 
 [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,meanIm,maskArtery,ToolBox);
 % arterial resistivity map RGB
@@ -23,19 +23,20 @@ ARIvideoRGB = zeros(size(onePulseVideo,1),size(onePulseVideo,2),3,size(onePulseV
 for ii = 1:size(onePulseVideo,3)
     v = mat2gray(squeeze(onePulseVideo(:,:,ii)));
     [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,v,maskArtery,ToolBox);
+    %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
     ARIvideoRGB(:,:,:,ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
 end
 
 % save video
 % avi
-w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_flowVideo'))) ;
+w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ARIVideo'))) ;
 open(w)
 for jj = 1:size(ARIvideoRGB,4)
     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
 end
 close(w);
 % mp4
-w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_flowVideo')),'MPEG-4') ;
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_ARIVideo')),'MPEG-4') ;
 open(w)
 for jj = 1:size(ARIvideoRGB,4)
     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;

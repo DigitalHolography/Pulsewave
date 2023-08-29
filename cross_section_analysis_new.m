@@ -57,9 +57,16 @@ for ii = 1:size(locs)
     tilt_angle_list(ii) = idc(1);
     subImg = imrotate(subImg,tilt_angle_list(ii),'bilinear','crop');
     section_cut = projx(:,tilt_angle_list(ii));
+    tmp_section = (section_cut./max(section_cut))*size(section_cut,1);
 
-    figure(1013)
-    plot(section_cut);
+
+%     figure(1013)
+%     plot(section_cut);
+
+
+
+
+
 
 %     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1),'MinPeakProminence',std(section_cut));
     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
@@ -71,6 +78,25 @@ for ii = 1:size(locs)
         width_cross_section(ii) = tmp(1);
     end
 
+
+    figure(70+ii)
+xAx = linspace(0,size(section_cut,1),size(subImg,1));
+    imagesc(subImg)
+    colormap("gray")
+    axis image 
+    hold on 
+    p = plot(xAx, tmp_section);
+    p.LineWidth = 2;
+    p.Color = 'red';
+    p.LineStyle = ':';
+    set(gca,'PlotBoxAspectRatio',  [1,1,1]);
+    x = [round(size(subImg,1)/2)-round(width_cross_section(ii)/2) round(size(subImg,1)/2)+round(width_cross_section(ii)/2)];
+    y = [round(size(subImg,1)/2) round(size(subImg,1)/2)];
+    line(x,y,'Color','red','LineWidth',3)
+
+
+
+
     
     mask_slice_subImg = false(size(subImg,1),size(subImg,2));
     slice_center = round(size(subImg,1)/2);
@@ -79,6 +105,7 @@ for ii = 1:size(locs)
     mask_slice_subImg((slice_center - slice_half_thickness_tmp):(slice_center + slice_half_thickness_tmp),:) = true;
     mask_slice_subImg = imrotate(double(mask_slice_subImg),-tilt_angle_list(ii),'bilinear','crop');
     mask_slice_subImg = mask_slice_subImg>PW_params.cropSection_maskThreshold;
+    
 
     %% Average the blood flow calculation over a circle before dividing by the section
 
@@ -114,7 +141,7 @@ for ii = 1:size(locs)
     end
 end % ii
 
-viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+%viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
 
 

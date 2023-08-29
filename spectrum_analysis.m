@@ -1,4 +1,4 @@
-function [] = spectrum_analysis(maskArtery,maskBackground ,SH_cube, ToolBox)
+function [] = spectrum_analysis(maskArtery,maskBackground ,SH_cube, ToolBox,data_M0)
 
 
 
@@ -10,7 +10,10 @@ fs = ToolBox.fs/2 ;
 cubeFrameLength = size(SH_cube,4);
 batch_size = size(SH_cube, 3);
 gw = 3 ;
-SH_ColorVideoRGB = zeros(size(SH_cube,1),size(SH_cube,2),3,size(SH_cube,4));
+SH_ColorVideoRGB = zeros(size(data_M0,1),size(data_M0,2),3,size(SH_cube,4));
+ImRef = mean(data_M0,3);
+
+%%
 
 %% integration intervals
 low_n1 = round(f1 * batch_size / fs) + 1;
@@ -26,7 +29,13 @@ MeanImHigh = mat2gray(squeeze(sum(abs(MeanFreqHigh), 3)));
 multiband_img = cat(3, MeanImLow, MeanImHigh);
 DCR_imgs = decorrstretch(multiband_img, 'tol', [0.002 0.999]);
 %imgAVG = imfuse(multiband_img(:,:,2), multiband_img(:,:,1), 'ColorChannels', 'red-cyan');
-imgAVG = imfuse(DCR_imgs(:,:,2), DCR_imgs(:,:,1), 'ColorChannels', 'red-cyan');
+%imgAVG = imfuse(DCR_imgs(:,:,2), DCR_imgs(:,:,1), 'ColorChannels', 'red-cyan');
+
+imgAVG = zeros(size(MeanImLow,1),size(MeanImLow,1),3);
+imgAVG(:,:,1) = DCR_imgs(:,:,2);
+imgAVG(:,:,2) = DCR_imgs(:,:,1);
+imgAVG(:,:,3) = DCR_imgs(:,:,1);
+
 low_high = stretchlim(imgAVG, [0, 1]);
 gamma_composite = 0.8;
 imgAVG = imadjust(imgAVG, low_high, low_high, gamma_composite);
@@ -34,7 +43,17 @@ imgAVG = imsharpen(imgAVG, 'Radius', 10, 'Amount', 0.6);
 
 
 figure(15)
-imshow(imgAVG)
+imagesc(imgAVG)
+
+ImHSV = rgb2hsv(imgAVG);
+ImHSVscaled = imresize(ImHSV,[size(data_M0,1) size(data_M0,1)],"nearest");
+figure(16)
+imshow(hsv2rgb(ImHSVscaled))
+
+ImHSVscaled(:,:,3) = mat2gray(ImRef);
+ImHSVscaled = hsv2rgb(ImHSVscaled);
+figure(17)
+imshow(ImHSVscaled)
 
 
 
@@ -69,6 +88,13 @@ for ii = 1:cubeFrameLength
     gamma_composite = 0.8;
     img = imadjust(img, low_high, low_high, gamma_composite);
     img = imsharpen(img, 'Radius', 10, 'Amount', 0.6);
+    ImHSV = rgb2hsv(img);
+    ImHSVscaled = imresize(ImHSV,[size(data_M0,1) size(data_M0,1)],"nearest");
+    ImHSVscaled(:,:,3) = mat2gray(ImRef);
+    ImHSVscaled = hsv2rgb(ImHSVscaled);
+
+
+   
 %     tmp = zeros(2 * size(img, 1) -1, 2 * size(img, 2) - 1, size(img, 3));
 %     for mm = 1:size(img, 3)
 %         tmp(:,:,mm) = interp2(single(img(:,:,mm)), 1);
@@ -76,14 +102,12 @@ for ii = 1:cubeFrameLength
 
 
 
-   figure(15)
-   imshow(img)
 
    if mod(ii,20)==0
-        disp(['Frame : ',num2str(ii) , '/',cubeFrameLength])
+        disp(['Frame : ',num2str(ii) , '/',num2str(cubeFrameLength)])
    end
 
-   SH_ColorVideoRGB(:,:,:,ii) = mat2gray(img);
+   SH_ColorVideoRGB(:,:,:,ii) = mat2gray(ImHSVscaled);
    
 
 
@@ -98,7 +122,7 @@ for jj = 1:size(SH_ColorVideoRGB,4)
 end
 close(w);
 
-imwrite(imgAVG,fullfile(ToolBox.PW_path_png,[foldername,'_ColorDoppler.png']),'png') ;
+imwrite(ImHSVscaled,fullfile(ToolBox.PW_path_png,[ToolBox.main_foldername,'_ColorDoppler.png']),'png') ;
 
 
 

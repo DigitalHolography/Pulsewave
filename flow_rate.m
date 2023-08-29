@@ -45,7 +45,8 @@ for ii = 1:nb_section
     [row,col] = find(masksSections(:,:,ii));
     locs(ii,1) = round(mean(row));
     locs(ii,2) = round(mean(col));
-    width(ii) = max(abs(row(1)-row(end)),abs(col(1)-col(end)));
+    width(ii) = 0.01*size(maskArtery,1);
+    %width(ii) = max(abs(row(1)-row(end)),abs(col(1)-col(end)));
 end
 
 %mask_artery = imdilate(maskArtery,strel('disk',5));

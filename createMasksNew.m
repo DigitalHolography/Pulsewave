@@ -201,7 +201,7 @@ maskBackground = not(mask_vessel);
 
 %% Create Mask Section 
 
-ecart = 0.01;
+ecart = ToolBox.ecart;
 
 radius1 = (PW_params.radius_ratio-ecart)* (M+N)/2;
 radius2 = (PW_params.radius_ratio+ecart)* (M+N)/2;
