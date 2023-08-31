@@ -19,7 +19,6 @@ classdef ToolBoxClass
         maxPCA double
         x_barycentre double
         y_barycentre double
-        ecart double
         ScalingFactorVelocityInPlane double
         ScalingFactorVelocityCRA_AVG double
         ScalingFactorVelocityCRA_RMS double
@@ -118,9 +117,6 @@ classdef ToolBoxClass
             obj.ARI_inflexion_point_val = 1;
             obj.ARI_slope_val = 10;
 
-            %% Parameters of Section
-
-            obj.ecart = 0.01;
          end
         
 

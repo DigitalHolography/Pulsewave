@@ -7,6 +7,7 @@ classdef Parameters
         videoEndFrameIndex
         k
         radius_ratio
+        radius_gap
         resistivity_gaussFiltSigma
         resistivity_satAmp
         resistivity_minTolVal
@@ -15,6 +16,7 @@ classdef Parameters
         oneCycle_Ninterp
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
+        local_background_width
         arteryMask_vesselness_sigma
         arteryMask_vesselness_beta
         arteryMask_vesselness_bin_threshold
@@ -108,6 +110,7 @@ classdef Parameters
                 obj.videoEndFrameIndex = obj.extractValue(fileContent, 'End frame :');
                 obj.k = obj.extractValue(fileContent, 'Value of the interpolation parameter :');
                 obj.radius_ratio = obj.extractValue(fileContent, 'Radius ratio :');
+                obj.radius_gap = obj.extractValue(fileContent, 'Radius gap :');
                 obj.resistivity_gaussFiltSigma = obj.extractValue(fileContent, 'Gaussian filter sigma :');
                 obj.resistivity_satAmp = obj.extractValue(fileContent, 'Amplitude saturation  ponderation :');
                 obj.resistivity_minTolVal = obj.extractValue(fileContent, 'Tolerante value minimum :');
@@ -116,6 +119,7 @@ classdef Parameters
                 obj.oneCycle_Ninterp = obj.extractValue(fileContent, 'Number of interpolation :');
                 obj.oneCycle_outNoiseThreshold = obj.extractValue(fileContent, 'Out of noise treshold :');
                 obj.oneCycle_dataReliabilityThreshold = obj.extractValue(fileContent, 'Data reliability index treshold :');
+                obj.local_background_width = obj.extractValue(fileContent, 'Local background width :');
                 obj.arteryMask_vesselness_sigma = obj.extractValue(fileContent, 'Vesselnes parameter sigma :');
                 obj.arteryMask_vesselness_beta = obj.extractValue(fileContent, 'Vesselnes parameter beta :');
                 obj.arteryMask_vesselness_bin_threshold = obj.extractValue(fileContent, 'Vesselness Binarization treshold :');

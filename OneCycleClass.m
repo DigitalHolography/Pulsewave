@@ -25,6 +25,7 @@ classdef OneCycleClass
         flag_FlatField
         flag_SH_analysis
         flag_PulseWave_analysis
+        isdone_flatfield 
         
 
 
@@ -58,6 +59,8 @@ classdef OneCycleClass
             obj.dataSH = cell(1,obj.nbFiles) ;
             obj.dataSH_interp = cell(1,obj.nbFiles) ;
             obj.k = 0;
+            
+         
 
 
             try
@@ -72,6 +75,7 @@ classdef OneCycleClass
 
 
             obj.k = PW_params.k;
+            obj.isdone_flatfield = 0;
 
             for ii = 1 : obj.nbFiles
 
@@ -293,7 +297,8 @@ classdef OneCycleClass
 
             %% FlatField 
 
-            if obj.flag_FlatField
+            if obj.flag_FlatField && (obj.isdone_flatfield == 0) 
+
                 disp("Correcting data with flat field")
                 for ii = 1 : obj.nbFiles
                 height = size(obj.dataM2M0_interp{1}, 1);
@@ -318,7 +323,8 @@ classdef OneCycleClass
                 obj.dataM0_interp{1} = tmp_dataM0;
 
                 end
-            else 
+                obj.isdone_flatfield = 1;
+            else
                 disp("no flatfield applied")
             end
 

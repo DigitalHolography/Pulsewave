@@ -28,14 +28,14 @@ figure(321)
 imshow(flowImageRGB)
 
 %% Construct Velocity video 
-flowVideoRGB = zeros(size(v_RMS,1),size(v_RMS,2),3,size(v_RMS,3));
+flowVideoRGB_one_cycle = zeros(size(v_RMS,1),size(v_RMS,2),3,size(v_RMS,3));
 
 for ii = 1:size(v_RMS,3)
     v = mat2gray(squeeze(v_RMS(:,:,ii)));
     [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
     [hue_vein,sat_vein,val_vein,cmap_vein] = createHSVmap(v,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
     val = v.*(~(maskArtery+maskVein))+val_artery.*maskArtery+val_vein.*maskVein;
-    flowVideoRGB(:,:,:,ii) =   hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
+    flowVideoRGB_one_cycle(:,:,:,ii) =   hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
 
     
 end
@@ -83,17 +83,17 @@ title("Velocity histogram in arteries")
 
 % save video
 % avi
-w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_flowVideo'))) ;
+w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_flowVideo_one_cycle'))) ;
 open(w)
-for jj = 1:size(flowVideoRGB,4)
-    writeVideo(w,squeeze(flowVideoRGB(:,:,:,jj))) ;
+for jj = 1:size(flowVideoRGB_one_cycle,4)
+    writeVideo(w,squeeze(flowVideoRGB_one_cycle(:,:,:,jj))) ;
 end
 close(w);
 % mp4
-w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_flowVideo')),'MPEG-4') ;
+w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_flowVideo_one_cycle')),'MPEG-4') ;
 open(w)
-for jj = 1:size(flowVideoRGB,4)
-    writeVideo(w,squeeze(flowVideoRGB(:,:,:,jj))) ;
+for jj = 1:size(flowVideoRGB_one_cycle,4)
+    writeVideo(w,squeeze(flowVideoRGB_one_cycle(:,:,:,jj))) ;
 end
 close(w);
 

@@ -162,7 +162,7 @@ set(gca,'YDir','normal')
 ylabel('Frequency (kHz)')
 xlabel('Time (s)')
 title('Delta Spectrogram')
-colormap("gray")
+colormap(gray.^3)
 pbaspect([cubeFrameLength/(cubeFreqLength*k_int) 1 1]) ;
 hold on
 p = plot(XAx,mean(log(DELTA),1));
@@ -191,7 +191,7 @@ set(gca,'YDir','normal')
 ylabel('Frequency (Hz)')
 xlabel('Time (s)')
 title('artery Spectrogram')
-colormap("gray")
+colormap(gray.^3)
 pbaspect([cubeFrameLength/(cubeFreqLength*k_int) 1 1]) ;
 hold on
 p = plot(XAx,mean(log(A),1));
@@ -219,7 +219,7 @@ set(gca,'YDir','normal')
 ylabel('Frequency (Hz)')
 xlabel('Time (s)')
 title('background Spectrogram')
-colormap("gray")
+colormap(gray.^3)
 pbaspect([cubeFrameLength/(cubeFreqLength*k_int) 1 1]) ;
 hold on
 p = plot(XAx,mean(log(BG),1));

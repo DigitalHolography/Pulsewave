@@ -87,10 +87,8 @@ maskBackground = not(maskVessel);
 
 %% Create Mask Section 
 
-ecart = 0.01;
-
-radius1 = (PW_params.radius_ratio-ecart)* (M+N)/2;
-radius2 = (PW_params.radius_ratio+ecart)* (M+N)/2;
+radius1 = (PW_params.radius_ratio-PW_params.radius_gap)* (M+N)/2;
+radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
 
 cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
 cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;

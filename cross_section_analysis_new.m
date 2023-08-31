@@ -34,8 +34,10 @@ for ii = 1:size(locs)
     theta = linspace(0,180,181);
     projx = zeros(size(subImg,1),length(theta));
     projy = zeros(size(subImg,2),length(theta));
+    Video_subIm_rotate = zeros(size(subImg,1),size(subImg,2),length(theta));
     for tt = 1:length(theta)
         tmpImg = imrotate(subImg,theta(tt),'bilinear','crop');
+        Video_subIm_rotate(:,:,tt) = tmpImg;
         projx(:,tt) = squeeze(sum(tmpImg,1));
         projy(:,tt) = squeeze(sum(tmpImg,2));
     end
@@ -44,7 +46,10 @@ for ii = 1:size(locs)
 
     figure(3002)
     imagesc(projy)
+    % avi
+    
 
+ 
 
     % [max_projx,tilt_idx] = max(projx(:),[],'all','linear');
     % [row,col] = ind2sub(size(squeeze(projx)),tilt_idx);
@@ -60,6 +65,33 @@ for ii = 1:size(locs)
     tmp_section = (section_cut./max(section_cut))*size(section_cut,1);
 
 
+    figure(1000+ii)
+    xAx = linspace(0,size(projx,1),size(projx,1));
+    xAy = linspace(0,size(projx,2),size(projx,2));
+    imagesc(xAy,xAx,projx)
+    colormap("gray")
+    axis image 
+    hold on 
+    x = [ tilt_angle_list(ii)  tilt_angle_list(ii)];
+    y = [0 size(projx,1)];
+    line(x,y,'Color','red','LineStyle',':','LineWidth',3)
+    axis off;
+    hold off;
+    set(gca,'PlotBoxAspectRatio',  [1,1.618,1]);
+    f = getframe(gcf);              %# Capture the current window
+    imwrite(f.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_proj_' num2str(ii) '.png'])));
+
+   % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(ii)]);
+    w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(ii) '.avi'])));
+    tmp_video = mat2gray( Video_subIm_rotate);
+    open(w)
+    for j = 1:size( Video_subIm_rotate,3)
+        writeVideo(w,tmp_video(:,:,j)) ;
+    end
+    close(w);
+
+
+
 %     figure(1013)
 %     plot(section_cut);
 
@@ -68,8 +100,9 @@ for ii = 1:size(locs)
 
 
 
-%     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1),'MinPeakProminence',std(section_cut));
     [ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
+    tmp = nnz(section_cut);
+
     % if tmp contains more than 1 element, we select the first one
     % if tmp is empty, we select 0 as width because then it's a 1-2 pixel noise peak
     if isempty(tmp) 
@@ -80,8 +113,8 @@ for ii = 1:size(locs)
 
 
     figure(70+ii)
-xAx = linspace(0,size(section_cut,1),size(subImg,1));
-    imagesc(subImg)
+    xAx = linspace(0,size(section_cut,1),size(subImg,1));
+    imagesc(xAx,xAx,subImg)
     colormap("gray")
     axis image 
     hold on 
@@ -93,6 +126,9 @@ xAx = linspace(0,size(section_cut,1),size(subImg,1));
     x = [round(size(subImg,1)/2)-round(width_cross_section(ii)/2) round(size(subImg,1)/2)+round(width_cross_section(ii)/2)];
     y = [round(size(subImg,1)/2) round(size(subImg,1)/2)];
     line(x,y,'Color','red','LineWidth',3)
+    axis off;
+    f = getframe(gcf);              %# Capture the current window
+    imwrite(f.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(ii) '.png'])));
 
 
 
@@ -137,6 +173,11 @@ xAx = linspace(0,size(section_cut,1),size(subImg,1));
 %     text(locs,pks,string(round(avg_blood_rate,3)))
 %     title("Peaks of luminosity")
 %     pbaspect([1.618 1 1]);
+
+%print(['-f' num2str(70+ii)],'-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(ii) '.png']))) ;
+%print(['-f' num2str(1000+ii)],'-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Proj_Artery_Section_' num2str(ii) '.png']))) ;
+
+
 
     end
 end % ii

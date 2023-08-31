@@ -97,11 +97,14 @@ ratio_etiquette = 1.2;
 
 figure(111222)
 imagesc(mean(v_RMS,3).*cross_section_mask)
+colormap("gray")
 Total_blood_flow_rate = sum(avg_blood_rate);
 disp('Total_blood_flow_rate')
 disp(Total_blood_flow_rate)
 
 title('Artery Sections' );
+axis image
+axis off
 
 figure(120)
 imshow(maskRGB);

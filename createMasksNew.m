@@ -1,4 +1,4 @@
-function [mask_artery, mask_vein, mask_vessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasksNew(videoM0,videoM1M0, path, ToolBox)
+function [mask_artery, mask_vein, mask_vessel,maskBackground,maskCRA,maskCRV,maskSection] = createMasksNew(videoM0,videoM1M0, path, ToolBox)
 
 %% loading parameters and compute useful variables
 PW_params = Parameters(path);
@@ -201,27 +201,29 @@ maskBackground = not(mask_vessel);
 
 %% Create Mask Section 
 
-ecart = ToolBox.ecart;
 
-radius1 = (PW_params.radius_ratio-ecart)* (M+N)/2;
-radius2 = (PW_params.radius_ratio+ecart)* (M+N)/2;
+
+radius1 = (PW_params.radius_ratio-PW_params.radius_gap)* (M+N)/2;
+radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
 
 cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
 cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
 
-maskSectionArtery = xor(cercle_mask1,cercle_mask2);
+maskSection = xor(cercle_mask1,cercle_mask2);
 
 
 %% Create Colormap ARtery/Vein 
 
 
 meanIm = mat2gray(meanIm);
-[hue_artery,sat_artery,val] = createHSVmap(meanIm,mask_artery-mask_artery.*maskSectionArtery,0,0);
-[hue_vein,sat_vein,~] = createHSVmap(meanIm,mask_vein-mask_vein.*maskSectionArtery-mask_vein.*mask_artery,0.7,0.7);
-[hue_section,sat_section,~] = createHSVmap(meanIm,maskSectionArtery,0.35,0.35);
-sat_section = sat_section.*mask_artery ; %+~maskSectionArtery.*(~mask_artery);
-val = val.*(~maskSectionArtery)+val.*maskSectionArtery+ maskSectionArtery.*(~mask_artery);
-VesselImageRGB =  hsv2rgb(hue_artery+hue_vein+hue_section, sat_artery+sat_vein+sat_section, val);
+[hue_artery,sat_artery,val] = createHSVmap(meanIm,mask_artery-mask_artery.*maskSection,0,0);
+[hue_vein,sat_vein,~] = createHSVmap(meanIm,mask_vein-mask_vein.*maskSection-mask_vein.*mask_artery,0.7,0.7);
+[hue_sectionA,sat_sectionA,~] = createHSVmap(meanIm,maskSection.*mask_artery,0.15,0.15);
+[hue_sectionV,sat_sectionV,~] = createHSVmap(meanIm,maskSection.*mask_vein,0.5,0.5);
+sat_section_artery = sat_sectionA; 
+sat_section_vein = sat_sectionV ;%+~maskSectionArtery.*(~mask_artery);
+val = val.*(~maskSection)+val.*maskSection+ maskSection.*(~(mask_artery+mask_vein));
+VesselImageRGB =  hsv2rgb(hue_artery+hue_vein+hue_sectionA+hue_sectionV, sat_artery+sat_vein+sat_section_artery+sat_section_vein, val);
 
 figure(101)
 imshow(VesselImageRGB)
