@@ -356,24 +356,24 @@ classdef OneCycleClass
                     disp('FindSystoleIndex timing :')
                     toc
 
-                    [v_RMS] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
+                    [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
                     toc
 
                     tic
-                    velocity_map(maskArtery, maskVein, v_RMS, ToolBox);
+                    velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox);
                     disp('Velocity map timing :')
                     toc
 
                     tic
-                    ArterialResistivityIndex(v_RMS,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
+                    ArterialResistivityIndex(v_RMS_one_cycle,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     toc
                     %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
 
-                    flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS, ToolBox, obj.k,obj.directory);
+                    flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS_all,obj.dataM0_interp{1}, ToolBox, obj.k,obj.directory);
                     disp('FlowRate timing :')
                     toc
                     %                     try

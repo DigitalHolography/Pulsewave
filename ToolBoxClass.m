@@ -103,7 +103,7 @@ classdef ToolBoxClass
             %% Calculation of the Sacling Factors
 
 %             obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
-            obj.ScalingFactorVelocityInPlane = 60;
+            obj.ScalingFactorVelocityInPlane = 30;
             obj.ScalingFactorVelocityCRA_AVG  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (PW_params.theta/2); % 1000 for kHz -> Hz and 1000 for m -> mm
             obj.ScalingFactorVelocityCRA_RMS  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (1/(2+2*(PW_params.theta^3)/3))^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
             %% Parameters the color maps 

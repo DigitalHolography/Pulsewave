@@ -1,4 +1,4 @@
-function [v_RMS] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list, maskArtery,maskVein,maskBackground ,ToolBox,path)
+function [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list, maskArtery,maskVein,maskBackground ,ToolBox,path)
 PW_params = Parameters(path);
 
 dataCubeM2M0 = fullVideoM2M0;
@@ -72,6 +72,8 @@ end
 
 dataCubeM2M0minusBKG = dataCubeM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery); 
 
+v_RMS_all = ToolBox.ScalingFactorVelocityInPlane*dataCubeM2M0minusBKG;
+
 %% Global BKG for beautiful images 
 
 A = ones(size(dataCubeM2M0));
@@ -83,11 +85,11 @@ end
 dataCubeM2M0 = dataCubeM2M0 - A ; 
 
 %% Init of histogram axis
-v_histo_artery = round(ToolBox.ScalingFactorVelocityInPlane*dataCubeM2M0minusBKG.*maskArtery);
+v_histo_artery = round(v_RMS_all.*maskArtery);
 v_min_artery = min(v_histo_artery,[],'all');
 v_max_artery = max(v_histo_artery,[],'all');
 
-v_histo_vein = round(ToolBox.ScalingFactorVelocityInPlane*dataCubeM2M0minusBKG.*maskVein); 
+v_histo_vein = round(v_RMS_all.*maskVein); 
 v_min_vein = min(v_histo_vein,[],'all');
 v_max_vein = max(v_histo_vein,[],'all');
 
@@ -112,12 +114,12 @@ histo_artery = zeros(size(X,2),size(dataCubeM2M0,3));
 %histo_video_artery = zeros(size(X,2),size(dataCubeM2M0,3),3,size(dataCubeM2M0,3));
 
 f_distrib_artery = figure(157);
-f_distrib_artery.Position(3:4) = [1200 500];
+f_distrib_artery.Position(3:4) = [1200 550];
 index_min = find(X == v_min_all_display);
 index_max = find(X == v_max_all_display);
 imagesc(xAx,yAx_display,histo_artery(index_min:index_max,:))
 set(gca,'YDir','normal')
-set(gca,'PlotBoxAspectRatio',[3 1 1])
+set(gca,'PlotBoxAspectRatio',[2.5 1 1])
 colormap("hot")
 f = getframe(gcf);
 [M,N,~] = size(f.cdata);
@@ -173,7 +175,7 @@ histo_video_vein = zeros(M,N,3,size(dataCubeM2M0,3));
 
 
 f_distrib_vein = figure(158);
-f_distrib_vein.Position(3:4) = [1200 500];
+f_distrib_vein.Position(3:4) = [1200 550];
 imagesc(xAx,yAx_display,histo_vein(index_min:index_max,:))
 set(gca,'YDir','reverse')
 set(gca,'PlotBoxAspectRatio',[2.5 1 1])
@@ -199,7 +201,7 @@ for t = 1:size(dataCubeM2M0,3)
     ylabel('Velocity (mm.s^{-1})')
     xlabel('Time (s)')
     title("Velocity distribution in veins")
-    set(gca,'PlotBoxAspectRatio',[3 1 1])
+    set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     f = getframe(gcf);
     %histo_video_vein(:,:,:,t) = imresize(f.cdata,[M N]);
     histo_video_vein(:,:,:,t) = f.cdata;
@@ -272,7 +274,7 @@ avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArtery, [1 2]))/nn
 avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
 
 
-v_RMS = (onePulseVideominusBKG.*maskArtery+onePulseVideo.*~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
+v_RMS_one_cycle = (onePulseVideominusBKG.*maskArtery+onePulseVideo.*~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
 
 
 % avi

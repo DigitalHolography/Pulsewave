@@ -1,4 +1,4 @@
-function [] = ArterialResistivityIndex(onePulseVideo,dataCubeM2M0, maskArtery,  ToolBox)
+function [] = ArterialResistivityIndex(v_RMS_one_cycle,dataCubeM2M0, maskArtery,  ToolBox)
 PW_params = Parameters(path);
 disp('arterial resistivity...');
 
@@ -11,17 +11,17 @@ meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
 % tolVal = [0.02, 0.98]; 
 % meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
 
-[ARI, ARImap] = construct_resistivity_index(onePulseVideo, maskArtery);
+[ARI, ARImap] = construct_resistivity_index(v_RMS_one_cycle, maskArtery);
 ARImap(isnan(ARImap))=0;
 
 [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,meanIm,maskArtery,ToolBox);
 % arterial resistivity map RGB
 ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
 
-ARIvideoRGB = zeros(size(onePulseVideo,1),size(onePulseVideo,2),3,size(onePulseVideo,3));
+ARIvideoRGB = zeros(size(v_RMS_one_cycle,1),size(v_RMS_one_cycle,2),3,size(v_RMS_one_cycle,3));
 
-for ii = 1:size(onePulseVideo,3)
-    v = mat2gray(squeeze(onePulseVideo(:,:,ii)));
+for ii = 1:size(v_RMS_one_cycle,3)
+    v = mat2gray(squeeze(v_RMS_one_cycle(:,:,ii)));
     [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,v,maskArtery,ToolBox);
     %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
     ARIvideoRGB(:,:,:,ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
