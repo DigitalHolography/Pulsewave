@@ -40,9 +40,9 @@ for ii = 1:size(v_RMS,3)
     
 end
 
-v_histo = round(v_RMS.*maskArtery);
-v_min = min(v_histo,[],'all');
-v_max = max(v_histo,[],'all');
+v_histo_artery = round(v_RMS.*maskArtery);
+v_min = min(v_histo_artery,[],'all');
+v_max = max(v_histo_artery,[],'all');
 
 X = linspace(v_min,v_max,v_max-v_min+1);
 n = size(X,2);
@@ -50,8 +50,8 @@ histo = zeros(size(X,2),size(v_RMS,3));
 for t = 1:size(v_RMS,3)
     for x = 1:size(v_RMS,1)
         for y = 1:size(v_RMS,2)
-            if( v_histo(x,y,t) ~= 0) 
-            i = find(X == v_histo(x,y,t) );
+            if( v_histo_artery(x,y,t) ~= 0) 
+            i = find(X == v_histo_artery(x,y,t) );
             histo(i,t) = histo(i,t) + 1;
             end
 
@@ -70,7 +70,41 @@ set(gca,'YDir','normal')
 colormap("hot")
 ylabel('Velocity (mm.s^{-1})')
 xlabel('Time (s)')
-title("Velocity histogram in arteries")
+title("Velocity distribution in arteries")
+
+
+
+v_histo_veins = round(v_RMS.*maskArtery);
+v_min = min(v_histo_veins,[],'all');
+v_max = max(v_histo_veins,[],'all');
+
+X = linspace(v_min,v_max,v_max-v_min+1);
+n = size(X,2);
+histo = zeros(size(X,2),size(v_RMS,3));
+for t = 1:size(v_RMS,3)
+    for x = 1:size(v_RMS,1)
+        for y = 1:size(v_RMS,2)
+            if( v_histo_veins(x,y,t) ~= 0) 
+            i = find(X == v_histo_veins(x,y,t) );
+            histo(i,t) = histo(i,t) + 1;
+            end
+
+
+        end
+    end
+end 
+
+
+
+figure(157)
+yAx = [v_min v_max];
+xAx = [0 n*ToolBox.stride/(1000*ToolBox.fs)];
+imagesc(xAx,yAx,histo)
+set(gca,'YDir','normal')
+colormap("hot")
+ylabel('Velocity (mm.s^{-1})')
+xlabel('Time (s)')
+title("Velocity distribution in arteries")
 % h = histogram(v_RMS(:,:,ii).*maskArtery);
 % X = h.BinCounts;
 % 
@@ -124,7 +158,8 @@ fontsize(gca,15,"points") ;
 
 print('-f116','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_arteries.png'))) ;
 print('-f117','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_veins.png'))) ;
-print('-f156','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_histogram_arteries.png'))) ;
+print('-f156','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_arteries.png'))) ;
+print('-f157','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_veins.png'))) ;
 imwrite(flowImageRGB, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_flow_image.png')));
 
 end
