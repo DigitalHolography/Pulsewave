@@ -114,7 +114,7 @@ histo_artery = zeros(size(X,2),size(dataCubeM2M0,3));
 %histo_video_artery = zeros(size(X,2),size(dataCubeM2M0,3),3,size(dataCubeM2M0,3));
 
 f_distrib_artery = figure(157);
-f_distrib_artery.Position(3:4) = [1200 550];
+f_distrib_artery.Position(3:4) = [600 275];
 index_min = find(X == v_min_all_display);
 index_max = find(X == v_max_all_display);
 imagesc(xAx,yAx_display,histo_artery(index_min:index_max,:))
@@ -175,7 +175,7 @@ histo_video_vein = zeros(M,N,3,size(dataCubeM2M0,3));
 
 
 f_distrib_vein = figure(158);
-f_distrib_vein.Position(3:4) = [1200 550];
+f_distrib_vein.Position(3:4) = [600 275];
 imagesc(xAx,yAx_display,histo_vein(index_min:index_max,:))
 set(gca,'YDir','reverse')
 set(gca,'PlotBoxAspectRatio',[2.5 1 1])

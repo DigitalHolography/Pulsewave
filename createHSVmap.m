@@ -10,7 +10,7 @@ hue = (Im_hue*(hue_val_max-hue_val_min) + hue_val_min).*mask;
 sat = Ones.*mask;
 val = Im;
 %val = Ones.*mask;
-tolVal = [0.02, 0.98];
+tolVal = [0.01, 0.99];
 val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
 
 % inflexion_point_hue = mean(Im.*mask,'all');
