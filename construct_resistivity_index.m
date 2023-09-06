@@ -29,6 +29,7 @@ ARI = (maxAP - minAP)/maxAP;
 %% arterial resistivity map values 
 
 ARImap = squeeze( (video(:,:,maxAPidx) - video(:,:,minAPidx)) ./ video(:,:,maxAPidx) );
+ARImap(ARImap>1)=1;
 ARImap = ARImap .* (ARImap.*maskArtery > 0);
 
 end

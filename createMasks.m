@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV] = createMasks(videoM0,videoM1M0, path, ToolBox)
+function [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSection] = createMasks(videoM0,videoM1M0, path, ToolBox)
 
 PW_params = Parameters(path);
 %video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
@@ -27,6 +27,9 @@ vesselnessIm = vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, 
 
 
 maskVessel = vesselnessIm > (max(vesselnessIm,[],'all')* PW_params.arteryMask_vesselness_bin_threshold);
+figure(5)
+imagesc(maskVessel)
+
 
 maskCorr = maskVessel;
 
@@ -34,7 +37,7 @@ se = strel('disk',1);
 maskVessel = imerode(maskVessel,se);
 maskVessel = magicwand(maskVessel,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 se = strel('disk',2);
-maskVessel = imdilate(maskVessel,se) & (~maskCRA) & (~maskCRV);
+maskVessel = imdilate(maskVessel,se) ; %& (~maskCRA) & (~maskCRV);
 
 
 %% Creat Artery Mask
@@ -64,6 +67,9 @@ end
 C = C .* pulse_init_3d;
 C = squeeze(mean(C, 3));
 
+figure(6)
+imagesc(C)
+
 maskArtery = C > (max(C(:)) * PW_params.arteryMask_ArteryCorrThreshold);
 
 
@@ -75,6 +81,8 @@ maskArtery = imdilate(maskArtery,se);
 %% Create Vein Mask 
 
 maskVein = double(maskVessel) - double(maskArtery); 
+maskVein = maskVein > 0; 
+maskVein = magicwand(maskVein,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
 maskVein = maskVein > 0; 
 se = strel('disk',2);
 %maskVein = imerode(maskVein,se);
@@ -93,19 +101,26 @@ radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
 cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
 cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
 
-maskSectionArtery = xor(cercle_mask1,cercle_mask2);
+maskSection = xor(cercle_mask1,cercle_mask2);
 
-%%
+
+%% Create Colormap ARtery/Vein 
+mask_artery =maskArtery;
+mask_vein = maskVein;
+
 meanIm = mat2gray(meanIm);
-[hue_artery,sat_artery,val] = createHSVmap(meanIm,maskArtery-maskArtery.*maskSectionArtery,0,0);
-[hue_vein,sat_vein,~] = createHSVmap(meanIm,maskVein-maskVein.*maskSectionArtery-maskVein.*maskArtery,0.7,0.7);
-[hue_section,sat_section,~] = createHSVmap(meanIm,maskSectionArtery,0.35,0.35);
-sat_section = sat_section.*maskArtery ;
-val = val.*(~maskSectionArtery)+val.*maskSectionArtery+ maskSectionArtery.*(~maskArtery);
-VesselImageRGB =  hsv2rgb(hue_artery+hue_vein+hue_section, sat_artery+sat_vein+sat_section, val);
+[hue_artery,sat_artery,val] = createHSVmap(meanIm,mask_artery-mask_artery.*maskSection,0,0);
+[hue_vein,sat_vein,~] = createHSVmap(meanIm,mask_vein-mask_vein.*maskSection-mask_vein.*mask_artery,0.7,0.7);
+[hue_sectionA,sat_sectionA,~] = createHSVmap(meanIm,maskSection.*mask_artery,0.15,0.15);
+[hue_sectionV,sat_sectionV,~] = createHSVmap(meanIm,maskSection.*mask_vein,0.5,0.5);
+sat_section_artery = sat_sectionA; 
+sat_section_vein = sat_sectionV ;%+~maskSectionArtery.*(~mask_artery);
+val = val.*(~maskSection)+val.*maskSection+ maskSection.*(~(mask_artery+mask_vein));
+VesselImageRGB =  hsv2rgb(hue_artery+hue_vein+hue_sectionA+hue_sectionV, sat_artery+sat_vein+sat_section_artery+sat_section_vein, val);
 
 figure(101)
 imshow(VesselImageRGB)
+
 
 %% Saving masks as PNG 
 foldername = ToolBox.main_foldername;

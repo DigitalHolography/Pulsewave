@@ -1,15 +1,15 @@
-function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask,total_blood_volume_rate] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,ToolBox, path)
+function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask,total_blood_volume_rate] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,ToolBox, path,fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 PW_params = Parameters(path);
 
 [M,N,T_max] = size(v_RMS);
-width_cross_section = zeros(length(locs),1);
-avg_blood_rate = zeros(length(locs),1);
-cross_section_area = zeros(length(locs),1);
-avg_blood_velocity = zeros(length(locs),1);
+width_cross_section = zeros(size(locs,1),1);
+avg_blood_rate = zeros(size(locs,1),1);
+cross_section_area = zeros(size(locs,1),1);
+avg_blood_velocity = zeros(size(locs,1),1);
 cross_section_mask = zeros(size(mask));
-mask_sections = zeros(M,N,length(locs));
+mask_sections = zeros(M,N,size(locs,1));
 total_blood_volume_rate = zeros(T_max,1);
 
 % %% VARIABLES FOR VELOCITY PROFILE VIDEO
@@ -63,6 +63,12 @@ for ii = 1:size(locs)
     tilt_angle_list(ii) = idc(1);
     subImg = imrotate(subImg,tilt_angle_list(ii),'bilinear','crop');
     section_cut = projx(:,tilt_angle_list(ii));
+    for zz = 1:length(section_cut)
+        if section_cut(zz) < 0 
+            section_cut(zz) = 0;
+        end 
+    end 
+
     tmp_section = (section_cut./max(section_cut))*size(section_cut,1);
 
 
@@ -113,7 +119,7 @@ for ii = 1:size(locs)
     end
 
 
-    figure(70+ii)
+    figure(fig+ii)
     xAx = linspace(0,size(section_cut,1),size(subImg,1));
     imagesc(xAx,xAx,subImg)
     colormap("gray")
@@ -129,7 +135,7 @@ for ii = 1:size(locs)
     line(x,y,'Color','red','LineWidth',3)
     axis off;
     f = getframe(gcf);              %# Capture the current window
-    imwrite(f.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(ii) '.png'])));
+    imwrite(f.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(fig+ii) '.png'])));
 
 
     mask_slice_subImg = false(size(subImg,1),size(subImg,2));
@@ -189,8 +195,9 @@ for tt = 1:T_max
     total_blood_volume_rate(tt) = sum(avg_blood_rate(:,tt));
 end % ii
 
-%viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
-
+try
+viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+catch
 
 
 

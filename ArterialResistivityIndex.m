@@ -13,6 +13,9 @@ meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
 
 [ARI, ARImap] = construct_resistivity_index(v_RMS_one_cycle, maskArtery);
 ARImap(isnan(ARImap))=0;
+if ARI > 1
+    ARI = 1;
+end
 
 [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,meanIm,maskArtery,ToolBox);
 % arterial resistivity map RGB

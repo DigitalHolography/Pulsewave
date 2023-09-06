@@ -68,8 +68,9 @@ end
 %% Compute blood volume rate
 mask_artery = maskArtery;
 mask_vein = maskVein;
-[avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery,total_blood_volume_rate_artery] = cross_section_analysis_new(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path);
-[avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein,total_blood_volume_rate_vein] = cross_section_analysis_new(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path);
+[avg_blood_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein,total_blood_volume_rate_vein] = cross_section_analysis_new(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,80);
+[avg_blood_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery,total_blood_volume_rate_artery] = cross_section_analysis_new(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,70);
+
 
 dataM0 = mat2gray(dataM0);
 maskOnes = ones(size(maskArtery,1), size(maskArtery,2),size(dataM0,3));
@@ -118,7 +119,9 @@ for tt = 1:size(v_RMS,3)
             text(new_x, new_y, string(0), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
         end
     end
-    title(['Total blood volume rate : ' num2str(round(total_blood_volume_rate_artery(tt))) ' µL/min (arteries) - ']);
+    tmp_bvra = round(total_blood_volume_rate_artery(tt));
+    tmp_bvra = (tmp_bvra>0)*tmp_bvra;
+    title(['Total blood volume rate : ' num2str(tmp_bvra) ' µL/min (arteries) - ']);
     drawnow
     ax = gca;
     ax.Units = 'pixels';
@@ -233,14 +236,13 @@ for tt = 1:size(v_RMS,3)
             text(new_x, new_y, string(0), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
         end
     end
-    title(['Total blood volume rate : ' num2str(round(total_blood_volume_rate_vein(tt))) ' µL/min (veins) - ']);
+    tmp_bvrv = round(total_blood_volume_rate_vein(tt));
+    tmp_bvrv = (tmp_bvrv>0)*tmp_bvrv;
+    title(['Total blood volume rate : ' num2str(tmp_bvrv) ' µL/min (veins) - ']);
     drawnow
     ax = gca;
     ax.Units = 'pixels';
-    marg = 30;
-    pos = ax.Position;
-    rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
-    Total_blood_volume_rate = getframe(ax,rect);
+    Total_blood_volume_rate = getframe(gcf);
     volume_rate_video_vein(:,:,:,tt) = imresize(Total_blood_volume_rate.cdata,[size(volume_rate_video_vein,1) size(volume_rate_video_vein,2)]);
 end
 
