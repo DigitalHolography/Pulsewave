@@ -26,6 +26,7 @@ classdef OneCycleClass
         flag_SH_analysis
         flag_PulseWave_analysis
         isdone_flatfield 
+        ToolBoxmaster ToolBoxClass
         
 
 
@@ -76,6 +77,7 @@ classdef OneCycleClass
 
             obj.k = PW_params.k;
             obj.isdone_flatfield = 0;
+            obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
 
             for ii = 1 : obj.nbFiles
 
@@ -278,7 +280,8 @@ classdef OneCycleClass
 
         function onePulse(obj, Ninterp)
             PW_params = Parameters(obj.directory);
-            ToolBox = ToolBoxClass(obj.directory);
+            ToolBox = obj.ToolBoxmaster;
+           
 
             meanIm = squeeze(mean(obj.reference_interp{1}, 3));
             blurred_mask = imgaussfilt(double(meanIm),0.05*size(meanIm,1),'Padding',0);
@@ -331,12 +334,12 @@ classdef OneCycleClass
             %% Creating Masks
 
             tic
-          [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+        %  [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             toc
 
             tic
-          % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+           [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
 
             disp('CreatMasks New timing :')

@@ -82,7 +82,7 @@ maskArtery = imdilate(maskArtery,se);
 
 maskVein = double(maskVessel) - double(maskArtery); 
 maskVein = maskVein > 0; 
-maskVein = magicwand(maskVein,meanIm, 0.2, 8, PW_params.arteryMask_magicwand_nb_of_area_vessels);
+maskVein = magicwand(maskVein,meanIm, 0.2, 8,1);
 maskVein = maskVein > 0; 
 se = strel('disk',2);
 %maskVein = imerode(maskVein,se);
