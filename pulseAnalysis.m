@@ -101,7 +101,8 @@ v_min_all_display = round(0.8*v_min_all);
 
 
 yAx = [v_min_all v_max_all ] ;
-yAx_display = [v_min_all_display  v_max_all_display ] ; 
+yAx_display = [-20  80] ; 
+yAx_display = yAx;
 
 
 %% Velocity Histogram in arteries
@@ -895,6 +896,10 @@ print('-f1230','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldern
 
 
 imwrite(segmentation_map,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_artery_vein_segmentation.png')),'png') ;
+imwrite(heatmap_sys,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_heatmap_RMS_systol.png')),'png') ;
+imwrite(heatmap_AVG_raw ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'heatmap_AVG_raw.png')),'png') ;
+imwrite(heatmap_dia ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'heatmap_RMS_diastole.png')),'png') ;
+
 
 %close all
 

@@ -122,6 +122,7 @@ for tt = 1:size(v_RMS,3)
     tmp_bvra = round(total_blood_volume_rate_artery(tt));
     tmp_bvra = (tmp_bvra>0)*tmp_bvra;
     title(['Total blood volume rate : ' num2str(tmp_bvra) ' µL/min (arteries) - ']);
+    set(gca,'FontSize', 16)
     drawnow
     ax = gca;
     ax.Units = 'pixels';
@@ -179,7 +180,7 @@ for tt = 1:length(fullTime)
     ylabel('Blood volume rate (µL/min)')
     xlabel('Time (s)')
     title("Total blood volume rate in arteries")
-    fontsize(gca,12,"points") ;
+    fontsize(gca,16,"points") ;
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_artery = getframe(gcf);
@@ -239,6 +240,7 @@ for tt = 1:size(v_RMS,3)
     tmp_bvrv = round(total_blood_volume_rate_vein(tt));
     tmp_bvrv = (tmp_bvrv>0)*tmp_bvrv;
     title(['Total blood volume rate : ' num2str(tmp_bvrv) ' µL/min (veins) - ']);
+    set(gca,'FontSize', 16)
     drawnow
     ax = gca;
     ax.Units = 'pixels';
@@ -291,7 +293,7 @@ for tt = 1:length(fullTime)
     ylabel('Blood volume rate (µL/min)')
     xlabel('Time (s)')
     title("Total blood volume rate in veins")
-    fontsize(gca,12,"points") ;
+    fontsize(gca,16,"points") ;
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_vein = getframe(gcf);

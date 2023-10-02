@@ -192,7 +192,11 @@ for tt = 1:T_max
 
 
     end
-    total_blood_volume_rate(tt) = sum(avg_blood_rate(:,tt));
+    if ~isempty(avg_blood_rate)
+        total_blood_volume_rate(tt) = sum(avg_blood_rate(:,tt));
+    else
+        total_blood_volume_rate(tt)= 0;
+    end
 end % ii
 
 try
