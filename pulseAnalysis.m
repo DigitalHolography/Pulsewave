@@ -127,6 +127,8 @@ f = getframe(gcf);
 histo_video_artery = zeros(M,N,3,size(dataCubeM2M0,3));
 
 
+
+
 %FIXME avoir une ligne à zéro de trois pixel 
 %FIXME getframe pour la couleur 
 for t = 1:size(dataCubeM2M0,3)
@@ -152,6 +154,8 @@ for t = 1:size(dataCubeM2M0,3)
     histo_video_artery(:,:,:,t) = imresize(f.cdata,[M N]);
 
 end 
+
+velocity_dist_arteries = frame2im(getframe(gca));
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_velocity_histogram_artery.avi')));
 tmp = mat2gray(histo_video_artery);
@@ -182,8 +186,6 @@ set(gca,'YDir','reverse')
 set(gca,'PlotBoxAspectRatio',[2.5 1 1])
 colormap("bone")
 
-
-
 for t = 1:size(dataCubeM2M0,3)
     for x = 1:size(dataCubeM2M0,1)
         for y = 1:size(dataCubeM2M0,2)
@@ -196,7 +198,7 @@ for t = 1:size(dataCubeM2M0,3)
         end
     end
     %histo_video_vein(:,:,t) = flip(histo_vein,1);
-    figure(158) % save image only
+    figure(158)
     imagesc(xAx,yAx_display,histo_vein(index_min:index_max,:))
     set(gca,'YDir','normal')
     ylabel('Velocity (mm.s^{-1})')
@@ -207,6 +209,8 @@ for t = 1:size(dataCubeM2M0,3)
     %histo_video_vein(:,:,:,t) = imresize(f.cdata,[M N]);
     histo_video_vein(:,:,:,t) = f.cdata;
 end 
+
+velocity_dist_veins = frame2im(getframe(gca));
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_velocity_histogram_veins.avi')));
 tmp = mat2gray(histo_video_vein);
@@ -518,7 +522,7 @@ fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs/1000,size(
 % calculate raw signals of arteries, background and veins
 
 
-figure(18) %save image only
+figure(18) 
 imagesc(mean(LocalBKG_artery,3).*local_mask_artery+ones(size(LocalBKG_artery,1))*mean(LocalBKG_artery,'all').*~local_mask_artery) ;
 colormap gray
 title('Local Background in arteries');
@@ -531,6 +535,7 @@ axis off
 axis image
 range(1:2) = clim;
 
+local_bg_arteries = frame2im(getframe(gca));
 
 figure(19)
 imagesc(mean(LocalBKG_vein,3).*local_mask_vein+ones(size(LocalBKG_vein,1))*mean(LocalBKG_vein,'all').*~local_mask_vein) ;
@@ -545,7 +550,9 @@ axis off
 axis image
 range(1:2) = clim;
 
-figure(20) %plot2txt *3
+local_bg_veins = frame2im(getframe(gca));
+
+figure(20) 
 plot(fullTime,fullArterialPulse,'-k', fullTime,fullBackgroundSignal,':k', fullTime, fullVenousSignal, '-.k', 'LineWidth',2) ;
 title('arterial pulse waveform and background signal'); % averaged outside of segmented vessels
 legend('arterial pulse','background', 'venous signal') ;
@@ -556,8 +563,13 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
+plot2txt(fullTime,fullArterialPulse, 'FullArterialPulse', ToolBox)
+plot2txt(fullTime,fullBackgroundSignal, 'FullBackgroundSignal', ToolBox)
+plot2txt(fullTime,fullVenousSignal, 'FullVenousSignal', ToolBox)
+
+
 % cleaning signals
-figure(30) % plot2text x2
+figure(30)
 plot(fullTime,fullArterialPulseMinusBackground,':k', ...
     fullTime,fullArterialPulseClean,'-k', ...
     'LineWidth',2) ;
@@ -569,6 +581,9 @@ ylabel(strYlabel,'FontSize',14) ;
 pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
+
+plot2txt(fullTime,fullArterialPulseMinusBackground,'FullArterialPulseMinusBackground', ToolBox)
+plot2txt(fullTime,fullArterialPulseClean,'FullArterialPulseClean', ToolBox)
 
 figure(31)
 plot(fullTime,fullVenousSignalMinusBackground,':k', ...
@@ -584,7 +599,7 @@ set(gca, 'LineWidth', 2);
 axis tight;
 
 % calculate the pulse derivative and finding/cleaning pulses
-figure(40) %plot2txt
+figure(40)
 plot( ...
     fullTime(1:length(fullArterialPulseDerivative)),fullArterialPulseDerivative,':k', ...
     fullTime(1:length(fullArterialPulseCleanDerivative)),fullArterialPulseCleanDerivative,'-k', ...
@@ -599,6 +614,8 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
+plot2txt(fullTime(1:length(fullArterialPulseDerivative)),fullArterialPulseDerivative,'FullArterialPulseDerivative', ToolBox)
+plot2txt(fullTime(1:length(fullArterialPulseCleanDerivative)),fullArterialPulseCleanDerivative,'FullArterialPulseCleanDerivative', ToolBox)
 
 c = colorbar('southoutside');
 
@@ -618,7 +635,7 @@ colorTitleHandle = get(hCB,'Title');
 titleString = 'RMS Doppler frequency (kHz)';
 set(colorTitleHandle ,'String',titleString);
 
-figure(43) %plot2txt *2   
+figure(43) 
 plot( ...
     fullTime(1:length(fullArterialPulseRegularized)),fullArterialPulseRegularized,'-k', ...
     fullTime(1:length(fullArterialPulse)),fullArterialPulseMinusBackground,':k', ...
@@ -632,7 +649,11 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
-figure(44) %plot2txt x2
+plot2txt(fullTime(1:length(fullArterialPulseRegularized)),fullArterialPulseRegularized,'FullArterialPulseRegularized',ToolBox)
+plot2txt(fullTime(1:length(fullArterialPulse)),fullArterialPulseMinusBackground,'FullArterialPulseMinusBackground',ToolBox)
+
+
+figure(44)
 plot( ...
     fullTime(1:length(fullArterialPulseClean)),fullArterialPulseClean,':k', ...
     fullTime(1:length(noise)),noise,'-k', ...
@@ -649,6 +670,8 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
+plot2txt(fullTime(1:length(fullArterialPulseClean)),fullArterialPulseClean,'FilteredArterialPulse', ToolBox)
+plot2txt(fullTime(1:length(noise)),noise,'ResidualArterialPulse', ToolBox)
 
 % Colorbar for AVG image
 colorfig = figure(1230);
@@ -696,7 +719,7 @@ range(1:2) = clim;
 
 
 % diastolic Doppler frequency heatmap
-figure(80) % save image only
+figure(80) 
 imagesc(heatmap_dia) ;
 colormap gray
 title('bottom diastole RMS frequency map flatfield');
@@ -709,8 +732,10 @@ axis off
 axis image
 range(1:2) = clim;
 
+heatmap_dia_img = frame2im(getframe(gca));
+
 % systolic Doppler frequency heatmap
-figure(89) % save image only
+figure(89) 
 imagesc(heatmap_sys_raw) ;
 colormap gray
 title('peak systole RMS frequency map RAW');
@@ -724,12 +749,15 @@ axis image
 range(3:4) = clim;
     % same color axis for systolic and diastolic Doppler heatmaps
 clim([min(range),max(range)]);
+
+heatmap_sys_raw_img = frame2im(getframe(gca));
+
 figure(85)
 clim([min(range),max(range)]);
 
 
 % systolic Doppler frequency heatmap
-figure(90) %save image only
+figure(90) 
 imagesc(heatmap_sys) ;
 colormap gray
 title('peak systole RMS frequency map flatfield');
@@ -743,11 +771,16 @@ axis image
 range(3:4) = clim;
     % same color axis for systolic and diastolic Doppler heatmaps
 clim([min(range),max(range)]);
+
+heatmap_sys_img = frame2im(getframe(gca));
+
 figure(85)
 clim([min(range),max(range)]);
 
+
+
 %
-figure(100) %plot2txt
+figure(100) 
 plot( ...
     T(1:length(avgArterialPulseHz)),avgArterialPulseVelocityInPlane,'k-', ...
     LineWidth=2) ;
@@ -766,7 +799,9 @@ set(gca, 'LineWidth', 2);
 axis tight;
 title('average blood flow velocity estimate in in-plane retinal arteries');
 
-figure(101) %plot2text
+plot2txt( T(1:length(avgArterialPulseHz)),avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane', ToolBox)
+
+figure(101) 
 for ii = 1 : size(cycles_signal, 1)
     if ismember(ii, selectedPulseIdx)
         plot( ...
@@ -790,7 +825,11 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
-figure(102) %fig2txt
+h = findobj(gca,'Type','line');
+
+plot2txt(h.XData, h.YData, 'ArterialDopplerSignal', Toolbox)
+
+figure(102) 
 plot(T,avgArterialPulseHz,'k.', ...
     T(1:idx_sys),pulse_arteries_blurred_sys(1:idx_sys),'k-', ...
     T(idx_sys:Ninterp),pulse_arteries_blurred_dia(1:(Ninterp-idx_sys+1)),'k-', ...
@@ -811,7 +850,9 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 title('average background-corrected RMS frequency in retinal arteries');
 
-figure(103) %plot2txt
+plot2txt(T, avgArterialPulseHz, 'AvgArterialPulseHz', ToolBox)
+
+figure(103) 
 plot(T(1:end-1), diff_avgPulse,'k-', LineWidth=2);
 x = 0;
 yline(x,':',LineWidth=2) ;
@@ -830,12 +871,14 @@ set(gca, 'LineWidth', 2);
 title('Derivative of average arterial pulse wave');
 axis tight
 
+plot2txt(T(1:end-1), diff_avgPulse,'AverageArterialPulseWaveDerivative',ToolBox)
+
 %% Saving images and figures
 
 
 % png
 print('-f18','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_arteries.png'))) ;
-print('-f19','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_veins.png'))) ;
+print('-f19','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_veins_Fig.png'))) ;
 print('-f20','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_pulseVsBackground.png'))) ;
 print('-f30','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_filteredPulse.png'))) ;
 print('-f44','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_filteredPulseVsResidual.png'))) ;
@@ -844,10 +887,10 @@ print('-f40','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername
 print('-f100','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_avgPulseWave.png'))) ;
 print('-f102','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_avgPulseWaveLabeled.png'))) ;
 print('-f103','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_avgPulseWaveDerivative.png'))) ;
-print('-f80','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMap.png'))) ;
-print('-f90','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMap.png'))) ;
-print('-f79','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMapRAW.png'))) ;
-print('-f89','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMapRAW.png'))) ;
+print('-f80','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMapFig.png'))) ;
+print('-f90','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMapFig.png'))) ;
+print('-f79','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMapRAWFig.png'))) ;
+print('-f89','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMapRAWFig.png'))) ;
 print('-f101','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_all_cycles.png'))) ;
 print('-f2410','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_RMS_frequency_colorbar.png')));
 print('-f1230','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_frequency_colorbar.png')));
@@ -876,8 +919,16 @@ print('-f1230','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldern
 
 imwrite(segmentation_map,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_artery_vein_segmentation.png')),'png') ;
 imwrite(heatmap_sys,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_heatmap_RMS_systol.png')),'png') ;
-imwrite(heatmap_AVG_raw ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'heatmap_AVG_raw.png')),'png') ;
-imwrite(heatmap_dia ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'heatmap_RMS_diastole.png')),'png') ;
+imwrite(heatmap_AVG_raw ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_heatmap_AVG_raw.png')),'png') ;
+imwrite(heatmap_dia ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_heatmap_RMS_diastole.png')),'png') ;
+imwrite(heatmap_sys_img ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMap.png')),'png') ;
+imwrite(heatmap_sys_raw_img ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMapRAW.png')),'png') ;
+imwrite(heatmap_dia_img,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMap.png')),'png') ;
+imwrite(local_bg_veins,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_veins.png')),'png') ;
+imwrite(local_bg_arteries,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_arteries.png')),'png') ;
+imwrite(velocity_dist_veins,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Velocity_distribution_in_veins.png')),'png') ;
+imwrite(velocity_dist_arteries,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Velocity_distribution_in_arteries.png')),'png') ;
+
 
 
 %close all

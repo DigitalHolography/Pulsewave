@@ -1,4 +1,4 @@
-function [] = plot2text (tabx, taby, filename, ToolBox)
+function [] = plot2txt(tabx, taby, filename, ToolBox)
 
 tmp = [tabx, taby];
 
