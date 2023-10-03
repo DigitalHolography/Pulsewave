@@ -369,6 +369,12 @@ classdef OneCycleClass
                     toc
 
                     tic
+                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
+                    disp('Velocity Histogramm timing :')
+                    toc
+
+
+                    tic
                     ArterialResistivityIndex(v_RMS_one_cycle,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     toc
