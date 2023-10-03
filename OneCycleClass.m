@@ -297,6 +297,9 @@ classdef OneCycleClass
             path_dir_txt = fullfile(obj.directory,'txt');
             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
             copyfile(path_file_txt_params,ToolBox.PW_path_txt );
+            
+            %saving times
+            path_file_txt_exe_times = fullfile(path_dir_txt, 'ExecutionTimes.txt'));
 
             %% FlatField 
 
@@ -336,14 +339,18 @@ classdef OneCycleClass
             tic
           [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
-            toc
+            time = toc;
+            disp(time)
+            save_time(path_file_txt_exe_times, 'createMasks', time)
 
             tic
           % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
 
             disp('CreatMasks New timing :')
-            toc
+            time = toc;
+            disp(time)
+            %save_time(path_file_txt_exe_times, 'createMasksNew', time)
 
             %% PulseWave Analysis 
 
@@ -357,16 +364,22 @@ classdef OneCycleClass
                     % [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_norm_interp{n}, obj.directory,maskArtery);
                     [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_interp{n}, obj.directory,maskArtery);
                     disp('FindSystoleIndex timing :')
-                    toc
+                    time = toc;
+                    disp(time)
+                    save_time(path_file_txt_exe_times, 'find_systole_index', time)
 
                     [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
-                    toc
+                    time = toc;
+                    disp(time)
+                    save_time(path_file_txt_exe_times, 'pulseAnalysis', time)
 
                     tic
                     velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ? 
                     disp('Velocity map timing :')
-                    toc
+                    time = toc;
+                    disp(time)
+                    save_time(path_file_txt_exe_times, 'velocity_map', time)
 
                     tic
                     velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
@@ -377,7 +390,10 @@ classdef OneCycleClass
                     tic
                     ArterialResistivityIndex(v_RMS_one_cycle,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
-                    toc
+                    time = toc;
+                    disp(time)
+                    save_time(path_file_txt_exe_times, 'ArterialResistivityIndex', time)
+
                     %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
@@ -386,7 +402,9 @@ classdef OneCycleClass
                     catch
                         disp('FlowRate timing :')
                     
-                    toc
+                    time = toc;
+                    disp(time)
+                    save_time(path_file_txt_exe_times, 'flow_rate', time)
                     %                     try
                     %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
                     %                     catch
@@ -397,7 +415,9 @@ classdef OneCycleClass
 %                         tic
 %                         spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
 %                         disp('Spectrogram timing :')
-%                         toc
+%                         time = toc;
+%                         disp(time)
+%                         save_time(path_file_txt_exe_times, 'spectrogram', time)
 %                     else
 
                     end
@@ -422,12 +442,16 @@ classdef OneCycleClass
                 tic
                 spectrum_analysis(maskArtery,maskBackground ,SH_cube ,ToolBox,obj.dataM0_interp{1});
                 disp('Spectrum analysis :')
-                toc
+                time = toc;
+                disp(time)
+                save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
 
                 tic
                 spectrogram_new(maskArtery,maskBackground ,SH_cube ,ToolBox);
                 disp('Spectrogram timing :')
-                toc
+                time = toc;
+                disp(time)
+                save_time(path_file_txt_exe_times, 'spectrogram_new', time)
             end
             displaySuccessMsg(1);
             close all 

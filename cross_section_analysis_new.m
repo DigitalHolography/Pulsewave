@@ -86,6 +86,8 @@ for ii = 1:size(locs)
     hold off;
     set(gca,'PlotBoxAspectRatio',  [1,1.618,1]);
     f = getframe(gcf);              %# Capture the current window
+
+    %bords blancs
     imwrite(f.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_proj_' num2str(ii) '.png'])));
 
    % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(ii)]);
@@ -134,7 +136,9 @@ for ii = 1:size(locs)
     y = [round(size(subImg,1)/2) round(size(subImg,1)/2)];
     line(x,y,'Color','red','LineWidth',3)
     axis off;
-    f = getframe(gcf);              %# Capture the current window
+    f = getframe(gcf);              %# Capture the current 
+    
+    %bords blancs
     imwrite(f.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(fig+ii) '.png'])));
 
 
