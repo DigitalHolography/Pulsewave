@@ -78,6 +78,42 @@ fullTime = linspace(0,size(v_RMS,3)*ToolBox.stride/ToolBox.fs/1000,size(v_RMS,3)
 mean_M0 = mean(dataM0,3);
 ratio_etiquette = 1.2;
 
+%% Vein and artery numerotation
+
+maskRGB = ones(size(maskArtery,1), size(maskArtery,2),3);
+
+
+maskRGB(:,:,3) = mat2gray(mean_M0).*~cross_section_mask_vein + maskRGB(:,:,3).*cross_section_mask_vein;
+maskRGB(:,:,2) = mat2gray(mean_M0).*~cross_section_mask_artery;
+maskRGB(:,:,1) = mat2gray(mean_M0).*~cross_section_mask_artery+maskRGB(:,:,1).*cross_section_mask_artery;
+
+
+
+figure(652)
+imshow(maskRGB);
+
+x_center = ToolBox.x_barycentre;
+y_center = ToolBox.y_barycentre;
+for ii=1:size(avg_blood_rate_artery,1)
+    new_x = x_center + ratio_etiquette*(SubImg_locs_artery(ii,2)-x_center);
+    new_y = y_center + ratio_etiquette*(SubImg_locs_artery(ii,1)-y_center);
+    text(new_x, new_y, strcat("A", num2str(ii)), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
+end
+for ii=1:size(avg_blood_rate_vein,1)
+    new_x = x_center + ratio_etiquette*(SubImg_locs_vein(ii,2)-x_center);
+    new_y = y_center + ratio_etiquette*(SubImg_locs_vein(ii,1)-y_center);
+    text(new_x, new_y, strcat("V", num2str(ii)), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
+end
+drawnow
+ax = gca;
+ax.Units = 'pixels';
+marg = 30;
+pos = ax.Position;
+rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
+F_numerotation = getframe(ax,rect);
+
+
+
 %% Volume Rate in Arteries 
 
 maskRGB_artery = ones(size(maskArtery,1), size(maskArtery,2),3);
@@ -325,6 +361,7 @@ print('-f126','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldernam
 %imwrite(F_total_blood_flow.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_Velocity_in_arteriy_sections.png')));
 imwrite(F_Total_blood_volume_rate_artery.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Total_blood_volume_rate_in_arteries.png')));
 imwrite(F_Total_blood_volume_rate_vein.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Total_blood_volume_rate_in_veins.png')));
+imwrite(F_numerotation.cdata, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_arteries_veins_numerotation.png')));
 
 
 

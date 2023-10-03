@@ -364,7 +364,7 @@ classdef OneCycleClass
                     toc
 
                     tic
-                    velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox);
+                    velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ? 
                     disp('Velocity map timing :')
                     toc
 
