@@ -174,7 +174,7 @@ Plot_volume_rate_artery = getframe(gcf);
 Plot_volume_rate_video_artery = zeros(size(Plot_volume_rate_artery.cdata,1),size(Plot_volume_rate_artery.cdata,2),3,size(v_RMS,3));
 
 for tt = 1:length(fullTime)
-    figure(125); %plot2txt
+    figure(125); 
     plot(fullTime(1:tt),total_blood_volume_rate_artery(1:tt),'-k',...
         fullTime(1:tt),mean_volume_rate_artery(1:tt),':k','LineWidth',2);
     ylabel('Blood volume rate (µL/min)')
@@ -187,6 +187,8 @@ for tt = 1:length(fullTime)
     Plot_volume_rate_video_artery(:,:,:,tt) = Plot_volume_rate_artery.cdata;
 
 end
+
+plot2txt(fullTime(1:tt),total_blood_volume_rate_artery(1:tt), 'TotalBloodVolumeRateArtery', ToolBox)
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_plot_volume_rate_video_artery.avi')));
 tmp = mat2gray( Plot_volume_rate_video_artery);
@@ -208,7 +210,7 @@ maskRGB_vein(:,:,2) = mat2gray(mean_M0).*~cross_section_mask_vein;
 maskRGB_vein(:,:,3) = mat2gray(mean_M0).*~cross_section_mask_vein + maskRGB_vein(:,:,3).*cross_section_mask_vein;
 
 
-figure(111223) %bords blancs
+figure(111223)
 imagesc(mean(v_RMS,3).*cross_section_mask_vein)
 colormap("gray")
 Total_blood_flow_rate_vein = sum(avg_blood_rate_vein);
@@ -244,7 +246,7 @@ for tt = 1:size(v_RMS,3)
     drawnow
     ax = gca;
     ax.Units = 'pixels';
-    Total_blood_volume_rate = getframe(gcf);
+    Total_blood_volume_rate = frame2im(getframe(gca));
     volume_rate_video_vein(:,:,:,tt) = imresize(Total_blood_volume_rate.cdata,[size(volume_rate_video_vein,1) size(volume_rate_video_vein,2)]);
 end
 
@@ -256,7 +258,7 @@ for j = 1:size( volume_rate_video_vein,4)
 end
 close(w);
 
-figure(122) %bords blancs
+figure(122) 
 imshow(maskRGB_vein);
 x_center = ToolBox.x_barycentre;
 y_center = ToolBox.y_barycentre;
@@ -271,8 +273,8 @@ ax = gca;
 ax.Units = 'pixels';
 marg = 30;
 pos = ax.Position;
-rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
-F_Total_blood_volume_rate_vein = getframe(ax,rect);
+%rect = [-marg, -marg, pos(3)+2*marg, pos(4)+2*marg];
+F_Total_blood_volume_rate_vein = frame2im(getframe(gca));
 
 
 
@@ -287,7 +289,7 @@ Plot_volume_rate_vein = getframe(gcf);
 Plot_volume_rate_video_vein = zeros(size(Plot_volume_rate_vein.cdata,1),size(Plot_volume_rate_vein.cdata,2),3,size(v_RMS,3));
 
 for tt = 1:length(fullTime)
-    figure(126); %plot2txt
+    figure(126); 
     plot(fullTime(1:tt),total_blood_volume_rate_vein(1:tt),'-k',...
         fullTime(1:tt),mean_volume_rate_vein(1:tt),':k','LineWidth',2);
     ylabel('Blood volume rate (µL/min)')
@@ -300,6 +302,8 @@ for tt = 1:length(fullTime)
     Plot_volume_rate_video_vein(:,:,:,tt) = Plot_volume_rate_vein.cdata;
 
 end
+
+plot2txt(fullTime(1:tt),total_blood_volume_rate_vein(1:tt), 'TotalBloodVolumeRateVeins', ToolBox)
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_plot_volume_rate_video_vein.avi')));
 tmp = mat2gray( Plot_volume_rate_video_vein);
