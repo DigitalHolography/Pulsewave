@@ -216,7 +216,6 @@ for j = 1:size(histo_video_vein,4)
 end
 close(w);
 
-
 %% Construct Velocity video 
 flowVideoRGB = zeros(size(dataCubeM2M0,1),size(dataCubeM2M0,2),3,size(dataCubeM2M0,3));
 
@@ -832,24 +831,7 @@ title('Derivative of average arterial pulse wave');
 axis tight
 
 %% Saving images and figures
-% ToolBox.main_foldername(end-2:end) = 'AVG'; % Save of AVG files here
-% 
-% % png
-% print('-f102','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRApulseVsBackground.png'))) ;
-% print('-f103','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVpulseVsBackground.png'))) ;
-% print('-f108','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRAfilteredPulse.png'))) ;
-% print('-f110','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVfilteredPulse.png'))) ;
-% print('-f24','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_flattenedDopplerHeatMap.png'))) ;
-% print('-f77','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_zeroLagXcorr.png'))) ;
-% print('-f99','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_timeLags.png'))) ;
-% 
-% % eps
-% print('-f102','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRApulseVsBackground.eps'))) ;
-% print('-f103','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVpulseVsBackground.eps'))) ;
-% print('-f108','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRAfilteredPulse.eps'))) ;
-% print('-f110','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVfilteredPulse.eps'))) ;
-% print('-f77','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_zeroLagXcorr.eps'))) ;
-% print('-f99','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_timeLags.eps'))) ;
+
 
 % png
 print('-f18','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_arteries.png'))) ;
@@ -869,9 +851,6 @@ print('-f89','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername
 print('-f101','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_all_cycles.png'))) ;
 print('-f2410','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_RMS_frequency_colorbar.png')));
 print('-f1230','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_frequency_colorbar.png')));
-print('-f157','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_arteries_fullcycle.png'))) ;
-print('-f158','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_veins_fullcycle.png'))) ;
-
 
 
 % print('-f77','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_zeroLagXcorr.png'))) ;
@@ -1000,6 +979,24 @@ return;
 % pbaspect([1.618 1 1]) ;
 % set(gca, 'LineWidth', 2);
 % axis tight;
+
+% 
+% % png
+% print('-f102','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRApulseVsBackground.png'))) ;
+% print('-f103','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVpulseVsBackground.png'))) ;
+% print('-f108','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRAfilteredPulse.png'))) ;
+% print('-f110','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVfilteredPulse.png'))) ;
+% print('-f24','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_flattenedDopplerHeatMap.png'))) ;
+% print('-f77','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_zeroLagXcorr.png'))) ;
+% print('-f99','-dpng',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_timeLags.png'))) ;
+% 
+% % eps
+% print('-f102','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRApulseVsBackground.eps'))) ;
+% print('-f103','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVpulseVsBackground.eps'))) ;
+% print('-f108','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRAfilteredPulse.eps'))) ;
+% print('-f110','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_CRVfilteredPulse.eps'))) ;
+% print('-f77','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_zeroLagXcorr.eps'))) ;
+% print('-f99','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_timeLags.eps'))) ;
 % 
 
 end

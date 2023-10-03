@@ -382,6 +382,12 @@ classdef OneCycleClass
                     save_time(path_file_txt_exe_times, 'velocity_map', time)
 
                     tic
+                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
+                    disp('Velocity Histogramm timing :')
+                    toc
+
+
+                    tic
                     ArterialResistivityIndex(v_RMS_one_cycle,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     time = toc;
