@@ -141,7 +141,7 @@ for t = 1:size(dataCubeM2M0,3)
         end
     end
     %histo_video_artery(:,:,t) = flip(histo_artery,1);
-    figure(157)
+    figure(157) %save image only
     imagesc(xAx,yAx_display,histo_artery(index_min:index_max,:))
     set(gca,'YDir','normal')
     title("Velocity distribution in arteries")
@@ -196,7 +196,7 @@ for t = 1:size(dataCubeM2M0,3)
         end
     end
     %histo_video_vein(:,:,t) = flip(histo_vein,1);
-    figure(158)
+    figure(158) % save image only
     imagesc(xAx,yAx_display,histo_vein(index_min:index_max,:))
     set(gca,'YDir','normal')
     ylabel('Velocity (mm.s^{-1})')
@@ -519,7 +519,7 @@ fullTime = linspace(0,size(fullVideoM2M0,3)*ToolBox.stride/ToolBox.fs/1000,size(
 % calculate raw signals of arteries, background and veins
 
 
-figure(18)
+figure(18) %save image only
 imagesc(mean(LocalBKG_artery,3).*local_mask_artery+ones(size(LocalBKG_artery,1))*mean(LocalBKG_artery,'all').*~local_mask_artery) ;
 colormap gray
 title('Local Background in arteries');
@@ -546,7 +546,7 @@ axis off
 axis image
 range(1:2) = clim;
 
-figure(20)
+figure(20) %plot2txt *3
 plot(fullTime,fullArterialPulse,'-k', fullTime,fullBackgroundSignal,':k', fullTime, fullVenousSignal, '-.k', 'LineWidth',2) ;
 title('arterial pulse waveform and background signal'); % averaged outside of segmented vessels
 legend('arterial pulse','background', 'venous signal') ;
@@ -558,7 +558,7 @@ set(gca, 'LineWidth', 2);
 axis tight;
 
 % cleaning signals
-figure(30)
+figure(30) % plot2text x2
 plot(fullTime,fullArterialPulseMinusBackground,':k', ...
     fullTime,fullArterialPulseClean,'-k', ...
     'LineWidth',2) ;
@@ -585,7 +585,7 @@ set(gca, 'LineWidth', 2);
 axis tight;
 
 % calculate the pulse derivative and finding/cleaning pulses
-figure(40)
+figure(40) %plot2txt
 plot( ...
     fullTime(1:length(fullArterialPulseDerivative)),fullArterialPulseDerivative,':k', ...
     fullTime(1:length(fullArterialPulseCleanDerivative)),fullArterialPulseCleanDerivative,'-k', ...
@@ -619,7 +619,7 @@ colorTitleHandle = get(hCB,'Title');
 titleString = 'RMS Doppler frequency (kHz)';
 set(colorTitleHandle ,'String',titleString);
 
-figure(43)   
+figure(43) %plot2txt *2   
 plot( ...
     fullTime(1:length(fullArterialPulseRegularized)),fullArterialPulseRegularized,'-k', ...
     fullTime(1:length(fullArterialPulse)),fullArterialPulseMinusBackground,':k', ...
@@ -633,7 +633,7 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
-figure(44)
+figure(44) %plot2txt x2
 plot( ...
     fullTime(1:length(fullArterialPulseClean)),fullArterialPulseClean,':k', ...
     fullTime(1:length(noise)),noise,'-k', ...
@@ -697,7 +697,7 @@ range(1:2) = clim;
 
 
 % diastolic Doppler frequency heatmap
-figure(80)
+figure(80) % save image only
 imagesc(heatmap_dia) ;
 colormap gray
 title('bottom diastole RMS frequency map flatfield');
@@ -711,7 +711,7 @@ axis image
 range(1:2) = clim;
 
 % systolic Doppler frequency heatmap
-figure(89)
+figure(89) % save image only
 imagesc(heatmap_sys_raw) ;
 colormap gray
 title('peak systole RMS frequency map RAW');
@@ -730,7 +730,7 @@ clim([min(range),max(range)]);
 
 
 % systolic Doppler frequency heatmap
-figure(90)
+figure(90) %save image only
 imagesc(heatmap_sys) ;
 colormap gray
 title('peak systole RMS frequency map flatfield');
@@ -748,7 +748,7 @@ figure(85)
 clim([min(range),max(range)]);
 
 %
-figure(100)
+figure(100) %plot2txt
 plot( ...
     T(1:length(avgArterialPulseHz)),avgArterialPulseVelocityInPlane,'k-', ...
     LineWidth=2) ;
@@ -767,7 +767,7 @@ set(gca, 'LineWidth', 2);
 axis tight;
 title('average blood flow velocity estimate in in-plane retinal arteries');
 
-figure(101)
+figure(101) %plot2text
 for ii = 1 : size(cycles_signal, 1)
     if ismember(ii, selectedPulseIdx)
         plot( ...
@@ -791,7 +791,7 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
-figure(102)
+figure(102) %fig2txt
 plot(T,avgArterialPulseHz,'k.', ...
     T(1:idx_sys),pulse_arteries_blurred_sys(1:idx_sys),'k-', ...
     T(idx_sys:Ninterp),pulse_arteries_blurred_dia(1:(Ninterp-idx_sys+1)),'k-', ...
@@ -812,7 +812,7 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 title('average background-corrected RMS frequency in retinal arteries');
 
-figure(103)
+figure(103) %plot2txt
 plot(T(1:end-1), diff_avgPulse,'k-', LineWidth=2);
 x = 0;
 yline(x,':',LineWidth=2) ;
