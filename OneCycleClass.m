@@ -61,19 +61,22 @@ classdef OneCycleClass
             obj.dataSH_interp = cell(1,obj.nbFiles) ;
             obj.k = 0;
             
-         
+            %% AVEC TXT
 
+            % try
+            %     checkPulsewaveParamsFromTxt(obj.directory);
+            %     PW_params = Parameters(obj.directory);
+            % catch
+            %     dir_path_txt = fullfile(path,'txt');
+            %     delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
+            %     checkPulsewaveParamsFromTxt(obj.directory);
+            %     PW_params = Parameters(obj.directory);
+            % end
 
-            try
-                checkPulsewaveParamsFromTxt(obj.directory);
-                PW_params = Parameters(obj.directory);
-            catch
-                dir_path_txt = fullfile(path,'txt');
-                delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
-                checkPulsewaveParamsFromTxt(obj.directory);
-                PW_params = Parameters(obj.directory);
-            end
+            %% AVEC JSON
 
+            checkPulsewaveParamsFromJson(obj.directory);
+            PW_params = Parameters_json(obj.directory);
 
             obj.k = PW_params.k;
             obj.isdone_flatfield = 0;
@@ -299,7 +302,7 @@ classdef OneCycleClass
             copyfile(path_file_txt_params,ToolBox.PW_path_txt );
             
             %saving times
-            path_file_txt_exe_times = fullfile(path_dir_txt, 'ExecutionTimes.txt'));
+            path_file_txt_exe_times = fullfile(path_dir_txt, 'ExecutionTimes.txt');
 
             %% FlatField 
 

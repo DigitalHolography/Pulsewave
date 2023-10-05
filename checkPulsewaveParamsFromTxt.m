@@ -9,7 +9,7 @@ dir_path_txt = fullfile(path,'txt');
 txt_exists = exist(fullfile(dir_path_txt,filename_txt));
 
 
-if txt_exists
+if txt_exists 
     disp("Parameter file already exists")
 
 else
