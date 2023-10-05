@@ -50,7 +50,7 @@ classdef ToolBoxClass
                 mkdir(obj.PW_path_main);
             end
 
-            PW_folder_name = strcat( obj.main_foldername, '_pulsewave');
+            PW_folder_name = strcat( obj.main_foldername, '_PW');
 
             while (exist(fullfile(obj.PW_path_main, sprintf('%s_%d', PW_folder_name,idx)), 'dir'))
                 idx = idx + 1 ;

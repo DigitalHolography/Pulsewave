@@ -20,6 +20,7 @@ v_min_all_display = round(0.8*v_min_all);
 yAx = [v_min_all v_max_all ] ;
 %yAx_display = [-20  80] ; 
 yAx_display = yAx;
+%FIXME trouver un moyen de croper proprement sans décaler le zéro
 
 
 %% Velocity Histogram in arteries
@@ -69,6 +70,7 @@ for t = 1:size_vRMS_3
     histo_video_artery(:,:,:,t) = imresize(f.cdata,[M N]);
 
 end 
+velocity_dist_arteries = frame2im(getframe(gca));
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_velocity_histogram_artery.avi')));
 tmp = mat2gray(histo_video_artery);
@@ -125,6 +127,8 @@ for t = 1:size_vRMS_3
     histo_video_vein(:,:,:,t) = f.cdata;
 end 
 
+velocity_dist_veins = frame2im(getframe(gca));
+
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_velocity_histogram_veins.avi')));
 tmp = mat2gray(histo_video_vein);
 open(w)
@@ -135,4 +139,7 @@ close(w);
 
 print('-f157','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_arteries_fullcycle.png'))) ;
 print('-f158','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_veins_fullcycle.png'))) ;
+
+imwrite(velocity_dist_veins,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Velocity_distribution_in_veins.png')),'png') ;
+imwrite(velocity_dist_arteries,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Velocity_distribution_in_arteries.png')),'png') ;
 end

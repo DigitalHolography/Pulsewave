@@ -1,16 +1,19 @@
-function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask,total_blood_volume_rate] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,ToolBox, path,fig)
+function [avg_blood_volume_rate,std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask,total_avg_blood_volume_rate,total_std_blood_volume_rate] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,ToolBox, path,fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 PW_params = Parameters(path);
 
 [M,N,T_max] = size(v_RMS);
 width_cross_section = zeros(size(locs,1),1);
-avg_blood_rate = zeros(size(locs,1),1);
 cross_section_area = zeros(size(locs,1),1);
 avg_blood_velocity = zeros(size(locs,1),1);
+avg_blood_volume_rate = zeros(size(locs,1),1);
+std_blood_velocity = zeros(size(locs,1),1);
+std_blood_volume_rate = zeros(size(locs,1),1);
 cross_section_mask = zeros(size(mask));
 mask_sections = zeros(M,N,size(locs,1));
-total_blood_volume_rate = zeros(T_max,1);
+total_avg_blood_volume_rate = zeros(T_max,1);
+total_std_blood_volume_rate = zeros(T_max,1);
 
 % %% VARIABLES FOR VELOCITY PROFILE VIDEO
 
@@ -170,15 +173,27 @@ for ii = 1:size(locs)
     cross_section_area(ii) = pi*((width_cross_section(ii)/2)*(PW_params.cropSection_pixelSize/2^k))^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
 end
 
+
 for tt = 1:T_max
     current_frame = v_RMS(:,:,tt);
-    for ii = 1:size(locs)
+    all_velocity = zeros(M,N);
+    Total_cross_section =0;
+    for ii = 1:size(locs,1)
 
         %FIXME mean(v_RMS,3)
         tmp = current_frame.*mask_sections(:,:,ii);
+        %tmp_velocity = zeros(1,size(nnz(tmp(:))));
 
-        avg_blood_velocity(ii,tt) = sum(tmp(:))/nnz(tmp(:)); %% Atention, la moyenn est peu être fausse
-        avg_blood_rate(ii,tt) = avg_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
+
+
+        %FIXME calcul std avg avec des v = 0
+        %avg_blood_velocity(ii,tt) = sum(tmp(:))/nnz(tmp(:)); 
+        avg_blood_velocity(ii,tt) = mean(tmp(tmp~=0)); 
+        std_blood_velocity(ii,tt) = std(tmp(tmp~=0));
+        avg_blood_volume_rate(ii,tt) = avg_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
+        std_blood_volume_rate(ii,tt) = std_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
+        all_velocity(:,:) = all_velocity(:,:) + current_frame.*mask_sections(:,:,ii);
+        Total_cross_section = Total_cross_section+cross_section_area(ii);
         
 
         %     figure(101)
@@ -195,10 +210,14 @@ for tt = 1:T_max
 
 
     end
-    if ~isempty(avg_blood_rate)
-        total_blood_volume_rate(tt) = sum(avg_blood_rate(:,tt));
+
+  
+    if ~isempty(avg_blood_volume_rate)
+        total_avg_blood_volume_rate(tt) = sum(avg_blood_volume_rate(:,tt));
+        total_std_blood_volume_rate(tt) = (std(all_velocity(all_velocity~=0))*Total_cross_section*60); % microL/min; %FIXME calculer le vrai std 
     else
-        total_blood_volume_rate(tt)= 0;
+        total_avg_blood_volume_rate(tt)= 0;
+        total_std_blood_volume_rate(tt) = 0;
     end
 end % ii
 
