@@ -1,12 +1,12 @@
 function [] =  checkPulsewaveParamsFromJson(path)
 
-jsonInput = fileread("InputPulsewaveParams.json");
+jsonInput = fileread('DefaultsPulsewaveParams.json');
 init_data = jsondecode(jsonInput);
 
 %n_fields = count_fields_json(init_data);
 
 [~,filename,~] = fileparts(path);
-filename_json = 'DefaultsPulsewaveParams.json';
+filename_json = "InputPulsewaveParams.json";
 dir_path_json = fullfile(path,'json');
 
 

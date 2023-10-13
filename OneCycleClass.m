@@ -63,20 +63,20 @@ classdef OneCycleClass
             
             %% AVEC TXT
 
-            % try
-            %     checkPulsewaveParamsFromTxt(obj.directory);
-            %     PW_params = Parameters(obj.directory);
-            % catch
-            %     dir_path_txt = fullfile(path,'txt');
-            %     delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
-            %     checkPulsewaveParamsFromTxt(obj.directory);
-            %     PW_params = Parameters(obj.directory);
-            % end
+            try
+                checkPulsewaveParamsFromTxt(obj.directory);
+                PW_params = Parameters(obj.directory);
+            catch
+                dir_path_txt = fullfile(path,'txt');
+                delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
+                checkPulsewaveParamsFromTxt(obj.directory);
+                PW_params = Parameters(obj.directory);
+            end
 
             %% AVEC JSON
 
-            checkPulsewaveParamsFromJson(obj.directory);
-            PW_params = Parameters_json(obj.directory);
+%             checkPulsewaveParamsFromJson(obj.directory);
+%             PW_params = Parameters_json(obj.directory);
 
             obj.k = PW_params.k;
             obj.isdone_flatfield = 0;
@@ -388,6 +388,12 @@ classdef OneCycleClass
                     velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
                     disp('Velocity Histogramm timing :')
                     toc
+
+%                     tic
+%                     BKGHistogramm(obj.dataM2M0_interp{1}, maskBackground ,ToolBox)
+%                     disp('BKG Histogramm timing :')
+%                     toc
+                    
 
 
                     tic

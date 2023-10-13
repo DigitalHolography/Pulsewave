@@ -2,6 +2,8 @@ function [avg_blood_volume_rate,std_blood_volume_rate, cross_section_area, avg_b
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 PW_params = Parameters(path);
+subImg_cell = cell(size(locs,1));
+subVideo_cell = cell(size(locs,1));
 
 [M,N,T_max] = size(v_RMS);
 width_cross_section = zeros(size(locs,1),1);
@@ -21,7 +23,8 @@ tilt_angle_list = zeros(1,length(locs));
 
 
 img_v_artery = squeeze(mean(v_RMS,3)).* mask;
-for ii = 1:size(locs)
+v_RMS_masked = v_RMS.* mask;
+for ii = 1:size(locs,1)
     if width(ii)>2
     subImgHW = round(width(ii)*PW_params.cropSection_scaleFactorWidth);
     %FIXME bords d IMG, 
@@ -65,6 +68,12 @@ for ii = 1:size(locs)
     [~, idc] = max(list_x);
     tilt_angle_list(ii) = idc(1);
     subImg = imrotate(subImg,tilt_angle_list(ii),'bilinear','crop');
+    subImg_cell{ii} = subImg;
+    subVideo = v_RMS_masked(yRange, xRange, :);
+    for tt = 1:size(subVideo,3)
+        subVideo(:,:,tt) = imrotate(cropCircle(subVideo(:,:,tt)),tilt_angle_list(ii),'bilinear','crop');
+    end
+    subVideo_cell{ii} = subVideo;
     section_cut = projx(:,tilt_angle_list(ii));
     for zz = 1:length(section_cut)
         if section_cut(zz) < 0 
@@ -100,14 +109,6 @@ for ii = 1:size(locs)
         writeVideo(w,tmp_video(:,:,j)) ;
     end
     close(w);
-
-
-
-%     figure(1013)
-%     plot(section_cut);
-
-
-
 
 
 
@@ -173,7 +174,7 @@ for ii = 1:size(locs)
     cross_section_area(ii) = pi*((width_cross_section(ii)/2)*(PW_params.cropSection_pixelSize/2^k))^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
 end
 
-
+local_velocity_pulses = zeros(size(locs,1),T_max);
 for tt = 1:T_max
     current_frame = v_RMS(:,:,tt);
     all_velocity = zeros(M,N);
@@ -183,13 +184,23 @@ for tt = 1:T_max
         %FIXME mean(v_RMS,3)
         tmp = current_frame.*mask_sections(:,:,ii);
         %tmp_velocity = zeros(1,size(nnz(tmp(:))));
+        xRange = round(-subImgHW/2) + locs(ii,2) : round(subImgHW/2) + locs(ii,2);
+        yRange = round(-subImgHW/2) + locs(ii,1) : round(subImgHW/2) + locs(ii,1);
+        subFrame = tmp(yRange ,xRange);
+        subFrame = cropCircle(subFrame);
+        subFrame = imrotate(subFrame,tilt_angle_list(ii),'bilinear','crop');
+        avg_profil = mean(subFrame,1);
+        for ll = 1:size(subFrame,1)
+            subFrame(ll,:) = subFrame(ll,:)-avg_profil;
 
+        end
 
 
         %FIXME calcul std avg avec des v = 0
         %avg_blood_velocity(ii,tt) = sum(tmp(:))/nnz(tmp(:)); 
         avg_blood_velocity(ii,tt) = mean(tmp(tmp~=0)); 
-        std_blood_velocity(ii,tt) = std(tmp(tmp~=0));
+        %std_blood_velocity(ii,tt) = std(tmp(tmp~=0));
+        std_blood_velocity(ii,tt) = std(subFrame(subFrame~=0));
         avg_blood_volume_rate(ii,tt) = avg_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
         std_blood_volume_rate(ii,tt) = std_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
         all_velocity(:,:) = all_velocity(:,:) + current_frame.*mask_sections(:,:,ii);
@@ -214,15 +225,18 @@ for tt = 1:T_max
   
     if ~isempty(avg_blood_volume_rate)
         total_avg_blood_volume_rate(tt) = sum(avg_blood_volume_rate(:,tt));
-        total_std_blood_volume_rate(tt) = (std(all_velocity(all_velocity~=0))*Total_cross_section*60); % microL/min; %FIXME calculer le vrai std 
+        total_std_blood_volume_rate(tt) = mean(std_blood_volume_rate(:,tt));
+%         total_std_blood_volume_rate(tt) = (std(all_velocity(all_velocity~=0))*Total_cross_section*60);% microL/min; %FIXME calculer le vrai std 
     else
         total_avg_blood_volume_rate(tt)= 0;
         total_std_blood_volume_rate(tt) = 0;
     end
 end % ii
 
+
 try
-viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+viscosity_new(subImg_cell , subVideo_cell,  ToolBox);
+%viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 catch
 
 

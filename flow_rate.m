@@ -72,6 +72,44 @@ mask_vein = maskVein;
 [avg_blood_volume_rate_artery,std_blood_volume_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery,total_avg_blood_volume_rate_artery,total_std_blood_volume_rate_vein] = cross_section_analysis_new(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,70);
 
 
+
+
+labels_arteries = {};
+labels_veins = {};
+strXlabel = 'Time(s)' ;%createXlabelTime(1);
+strYlabel = 'Velocity (mm.s-1)';
+
+figure(57)
+hold on
+for ii=1:size(avg_blood_volume_rate_artery,1)
+   plot(smoothdata(avg_blood_velocity_artery(ii,:),'lowess'))
+   labels_arteries{end+1} = strcat('A',num2str(ii));
+end
+title('Blood velocity in artery sections');
+legend(labels_arteries);
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+ylabel(strYlabel,'FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+figure(58)
+hold on
+for ii=1:size(avg_blood_volume_rate_vein,1)
+   plot(smoothdata(avg_blood_velocity_vein(ii,:),'lowess'))
+   labels_veins{end+1} = strcat('V',num2str(ii));
+end
+title('Blood velocity in vein sections');
+legend(labels_veins);
+fontsize(gca,12,"points") ;
+xlabel(strXlabel,'FontSize',14) ;
+ylabel(strYlabel,'FontSize',14) ;
+pbaspect([1.618 1 1]) ;
+set(gca, 'LineWidth', 2);
+axis tight;
+
+
 dataM0 = mat2gray(dataM0);
 maskOnes = ones(size(maskArtery,1), size(maskArtery,2),size(dataM0,3));
 fullTime = linspace(0,size(v_RMS,3)*ToolBox.stride/ToolBox.fs/1000,size(v_RMS,3));
@@ -228,9 +266,12 @@ plot(fullTime,total_avg_blood_volume_rate_artery,'-k','LineWidth',1);
 axis tight ;
 hold off
 
+
 ax_vol_rate_artery = axis;
 ax_vol_rate_artery(3) = 0 ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
+yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+
 Plot_volume_rate_artery = getframe(gcf);
 Plot_volume_rate_video_artery = zeros(size(Plot_volume_rate_artery.cdata,1),size(Plot_volume_rate_artery.cdata,2),3,size(v_RMS,3));
 
@@ -256,6 +297,7 @@ for tt = 1:length(fullTime)
     xlabel('Time (s)')
     title("Total blood volume rate in arteries")
     fontsize(gca,14,"points") ;
+    yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_artery = getframe(gcf);
@@ -382,6 +424,7 @@ axis tight ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
 Plot_volume_rate_vein = getframe(gcf);
 Plot_volume_rate_video_vein = zeros(size(Plot_volume_rate_vein.cdata,1),size(Plot_volume_rate_vein.cdata,2),3,size(v_RMS,3));
+yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
 
 for tt = 1:length(fullTime)
     figure(126); 
@@ -401,6 +444,7 @@ for tt = 1:length(fullTime)
     xlabel('Time (s)')
     title("Total blood volume rate in veins")
     fontsize(gca,14,"points") ;
+    yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_vein = getframe(gcf);
@@ -473,6 +517,9 @@ end
 print('-f125','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Plot_blood_volume_rate_in_arteries.png'))) ;
 %print('-f122','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_mean_blood_volume_rate_in_veins.png'))) ;
 print('-f126','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Plot_blood_volume_rate_in_veins.png'))) ;
+print('-f57','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Plot_velocity_in_artery_section.png'))) ;
+print('-f58','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_Plot_velocity_in_vein_section.png'))) ;
+
 
 
 %print('-f115','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_AVG_Velocity_in_arteriy_sections.png'))) ;
