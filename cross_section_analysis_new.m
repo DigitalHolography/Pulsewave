@@ -1,10 +1,14 @@
 function [avg_blood_volume_rate,std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask,total_avg_blood_volume_rate,total_std_blood_volume_rate] = cross_section_analysis_new(locs, width, mask, v_RMS, slice_half_thickness, k,ToolBox, path,fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
+<<<<<<< HEAD
 
 PW_params = Parameters_json(path);
 subImg_cell = cell(size(locs,1));
 subVideo_cell = cell(size(locs,1));
+=======
+PW_params = Parameters_json(path);
+>>>>>>> 9b0eac6... fix: creation of folder json if needed
 
 [M,N,T_max] = size(v_RMS);
 width_cross_section = zeros(size(locs,1),1);
