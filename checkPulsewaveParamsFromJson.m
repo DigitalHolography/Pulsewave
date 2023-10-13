@@ -42,8 +42,6 @@ else
 
     jsonData = jsonencode(init_data, PrettyPrint=true);
 
-    jsonFilePath = fullfile(dir_path_json,filename_json);
-
     fileID = fopen(jsonFilePath, 'w');
     fprintf(fileID, jsonData);
     fclose(fileID);
