@@ -180,7 +180,7 @@ classdef OneCycleClass
         end
 
         function obj = MomentFlatField(obj)
-            PW_params = Parameters(obj.directory);
+            PW_params = Parameters_json(obj.directory);
             for ii = 1 : obj.nbFiles
                 height = size(obj.dataM2M0_interp{1}, 1);
                 width = size(obj.dataM2M0_interp{1}, 2);
@@ -208,7 +208,7 @@ classdef OneCycleClass
 
         function obj = cropAllVideo(obj)
             %Crop a video (matrix dim 3)
-            PW_params = Parameters(obj.directory);
+            PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
             lastFrame = PW_params.videoEndFrameIndex;
 
@@ -282,7 +282,7 @@ classdef OneCycleClass
         end
 
         function onePulse(obj, Ninterp)
-            PW_params = Parameters(obj.directory);
+            PW_params = Parameters_json(obj.directory);
             ToolBox = obj.ToolBoxmaster;
            
 

@@ -1,5 +1,5 @@
 function [avg_blood_rate, avg_blood_velocity, size_section,new_mask] = SectionAnalysis(v_RMS_AVG,mask,k)
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 
 skel = bwskel(logical(mask));
 

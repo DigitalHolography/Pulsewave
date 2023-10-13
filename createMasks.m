@@ -1,6 +1,6 @@
 function [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSection] = createMasks(videoM0,videoM1M0, path, ToolBox)
 
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 %video(:,:,:) = video(:,:,:) ./ mean(video(:,:,:), [1 2]);
 
 [N,M,L] = size(videoM0);

@@ -1,5 +1,5 @@
 function [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list, maskArtery,maskVein,maskBackground ,ToolBox,path)
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 
 dataCubeM2M0 = fullVideoM2M0;
 dataCubeM1M0 = fullVideoM1M0;

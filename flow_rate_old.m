@@ -1,7 +1,7 @@
 function [flowVideoRGB] = flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, k,path)
 
  %% Define a section (circle)
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 radius = round((PW_params.radius_ratio)* size(v_RMS,1));
 x_center  = ToolBox.x_barycentre;
 y_center  = ToolBox.y_barycentre;

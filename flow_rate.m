@@ -1,6 +1,6 @@
 function [] = flow_rate(maskArtery, maskVein, maskCRA,maskSection, v_RMS,dataM0, ToolBox, k,path)
 
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 
 %maskArtery = imdilate(maskArtery,strel('disk',5));
 %FIXME function velocity map

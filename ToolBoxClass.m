@@ -38,7 +38,7 @@ classdef ToolBoxClass
      methods
          function obj = ToolBoxClass(path)
 
-             PW_params = Parameters(path);
+             PW_params = Parameters_json(path);
 
              %% Creating paths
             idx = 0 ;

@@ -10,7 +10,7 @@ function [mask,RG_video] = region_growing_for_vessel(img, seed_map,conditionMask
     
     
     %% INITIALISATION
-    PW_params = Parameters(path);
+    PW_params = Parameters_json(path);
 
 
     [N,M] = size(img);

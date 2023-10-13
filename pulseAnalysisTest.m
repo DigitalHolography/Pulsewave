@@ -1,6 +1,5 @@
 function [v_RMS] = pulseAnalysisTest(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list, maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,path)
-PW_params = Parameters(path);
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 
 dataCubeM2M0 = fullVideoM2M0;
 dataCubeM1M0 = fullVideoM1M0;

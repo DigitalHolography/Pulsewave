@@ -1,7 +1,7 @@
 function [avg_blood_rate, cross_section_area, avg_blood_velocity, cross_section_mask] = cross_section_analysis(locs, width, mask, cx, cy, v_RMS, slice_half_thickness, k, one_cycle_dir, filename, vessel_type,path)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
-PW_params = Parameters(path);
+PW_params = Parameters_json(path);
 
 img_v_artery = squeeze(mean(v_RMS,3)).* mask;
 width_cross_section = zeros(length(locs),1);
