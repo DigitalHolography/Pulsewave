@@ -1,6 +1,5 @@
 function [] =  checkPulsewaveParamsFromJson(path)
 
-
 jsonInput = fileread("DefaultsPulsewaveParams.json");
 init_data = jsondecode(jsonInput);
 
