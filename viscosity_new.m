@@ -1,4 +1,4 @@
-function [] = viscosity_new(SubImage_cell , SubVideo_cell,  ToolBox)
+function [] = viscosity_new(SubImage_cell , SubVideo_cell, type_of_vessel, ToolBox)
 
 
 nb_section = size(SubImage_cell, 2);
@@ -49,9 +49,9 @@ end% ii (artery #)
 
 average_velocity_profile = squeeze(mean(velocity_profiles, 3));
 average_velocity_profile_std = squeeze(mean(velocity_profiles_std, 3));
-
-v = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername,'_velocity_profile.avi')));% avi
-vMP4 = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername,'_velocity_profile.mp4')),'MPEG-4');% mp4
+video_name = strcat('_velocity_profile_',type_of_vessel);
+v = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername,strcat(video_name,'.avi'))));% avi
+vMP4 = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername,strcat(video_name,'.mp4'))),'MPEG-4');% mp4
 open(v);
 open(vMP4);
 mimin = min(average_velocity_profile(:));
@@ -142,6 +142,13 @@ close(vMP4)
 video = subVideo;
 
 % Systole/Diastole velocity profile
+average_velocity_profile_systole_plus_std = average_velocity_profile_systole + 0.5*average_velocity_profile_std(:,idx_syst);
+average_velocity_profile_systole_minus_std = average_velocity_profile_systole - 0.5*average_velocity_profile_std(:,idx_syst);
+average_velocity_profile_diastole_plus_std = average_velocity_profile_diastole + 0.5*average_velocity_profile_std(:,end);
+average_velocity_profile_diastole_minus_std = average_velocity_profile_diastole - 0.5*average_velocity_profile_std(:,end);
+inBetween_syst = [average_velocity_profile_systole_plus_std', fliplr(average_velocity_profile_systole_minus_std')];
+inBetween_diast= [average_velocity_profile_diastole_plus_std', fliplr(average_velocity_profile_diastole_minus_std')];
+fullTime2 = [fullTime, fliplr(fullTime)];
 
 x_section = linspace(-0.7,0.7,length(squeeze(average_velocity_profile_systole)));
 fit_velocity_profile_systole = Vmax_list(idx_syst)*(1-(1-alpha_list(idx_syst)).*abs(x_section).^beta_list(idx_syst));
@@ -149,10 +156,22 @@ fit_velocity_profile_diastole = Vmax_list(end)*(1-(1-alpha_list(end)).*abs(x_sec
 
 
 figure(668)
-plot(x_section,average_velocity_profile_systole,'-k',...
-x_section,average_velocity_profile_diastole,'-k',...
-    x_section,fit_velocity_profile_systole,'-r',...
-    x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
+% plot(x_section,average_velocity_profile_systole,'-k',...
+% x_section,average_velocity_profile_diastole,'-k',...
+%     x_section,fit_velocity_profile_systole,'-r',...
+%     x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
+fill(fullTime2,inBetween_syst, Color_std);
+hold on
+fill(fullTime2,inBetween_diast, Color_std);
+
+plot(average_velocity_profile_systole,'-k', 'LineWidth',2) ;
+plot(average_velocity_profile_systole_plus_std,"Color",Color_std, 'LineWidth',2)
+plot(average_velocity_profile_systole_minus_std,"Color",Color_std, 'LineWidth',2)
+plot(average_velocity_profile_diastole,'-k', 'LineWidth',2) ;
+plot(average_velocity_profile_diastole_plus_std,"Color",Color_std, 'LineWidth',2)
+plot(average_velocity_profile_diastole_minus_std,"Color",Color_std, 'LineWidth',2)
+plot(fit_velocity_profile_diastole,'-r', 'LineWidth',2);
+plot(fit_velocity_profile_systole,'-r', 'LineWidth',2);
 title('Systole and diastole arterial velocity profile');
 fontsize(gca,12,"points") ;
 % xticks(x);
@@ -169,16 +188,27 @@ figure(666)
 plot(viscosity_list)
 pbaspect([1.618 1 1]);
 xlabel('Frame','FontSize',14);
-ylabel('Viscosity (cP)','FontSize',14); 
+ylabel('Viscosity (cP)','FontSize',14);
 set(gca, 'LineWidth', 2);
 axis tight;
 
 % png
-print('-f668','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_cross_section.png'))) ;
-print('-f666','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_viscosity_in_time.png'))) ;
-% eps
-print('-f668','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_velocity_cross_section.eps'))) ;
-print('-f666','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_viscosity_in_time.eps'))) ;
+if strcmp(type_of_vessel, 'artery')
+    print('-f668','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_cross_section_artery.png'))) ;
+    print('-f666','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_viscosity_in_time_artery.png'))) ;
+    % eps
+    print('-f668','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_velocity_cross_section_artery.eps'))) ;
+    print('-f666','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_viscosity_in_time_artery.eps'))) ;
+
+else
+
+    print('-f668','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_cross_section_vein.png'))) ;
+    print('-f666','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_viscosity_in_time_vein.png'))) ;
+    % eps
+    print('-f668','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_velocity_cross_section_vein.eps'))) ;
+    print('-f666','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_viscosity_in_time_vein.eps'))) ;
+
+end
 
 list_fig_close = [666, 899];
 for ii=1:length(list_fig_close)

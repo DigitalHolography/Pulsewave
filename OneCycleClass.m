@@ -63,20 +63,20 @@ classdef OneCycleClass
             
             %% AVEC TXT
 
-            try
-                checkPulsewaveParamsFromTxt(obj.directory);
-                PW_params = Parameters(obj.directory);
-            catch
-                dir_path_txt = fullfile(path,'txt');
-                delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
-                checkPulsewaveParamsFromTxt(obj.directory);
-                PW_params = Parameters(obj.directory);
-            end
+%             try
+%                 checkPulsewaveParamsFromTxt(obj.directory);
+%                 PW_params = Parameters(obj.directory);
+%             catch
+%                 dir_path_txt = fullfile(path,'txt');
+%                 delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
+%                 checkPulsewaveParamsFromTxt(obj.directory);
+%                 PW_params = Parameters(obj.directory);
+%             end
 
             %% AVEC JSON
 
-%             checkPulsewaveParamsFromJson(obj.directory);
-%             PW_params = Parameters_json(obj.directory);
+            checkPulsewaveParamsFromJson(obj.directory);
+            PW_params = Parameters_json(obj.directory);
 
             obj.k = PW_params.k;
             obj.isdone_flatfield = 0;

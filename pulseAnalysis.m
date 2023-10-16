@@ -477,7 +477,7 @@ fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
 ylabel('A.U.','FontSize',14) ;
 pbaspect([1.618 1 1]) ;
-set(gca, 'LineWidth', 2);
+%set(gca, 'LineWidth', 2);
 axis tight;
 
 plot2txt(fullTime(1:length(fullArterialPulseDerivative)),fullArterialPulseDerivative,'FullArterialPulseDerivative', ToolBox)
