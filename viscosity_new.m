@@ -210,7 +210,7 @@ else
 
 end
 
-list_fig_close = [666, 899];
+list_fig_close = [666,668, 899];
 for ii=1:length(list_fig_close)
     close(list_fig_close(ii));
 end

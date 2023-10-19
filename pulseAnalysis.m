@@ -477,14 +477,14 @@ fontsize(gca,12,"points") ;
 xlabel(strXlabel,'FontSize',14) ;
 ylabel('A.U.','FontSize',14) ;
 pbaspect([1.618 1 1]) ;
-%set(gca, 'LineWidth', 2);
+set(gca, 'LineWidth', 2);
 axis tight;
 
 plot2txt(fullTime(1:length(fullArterialPulseDerivative)),fullArterialPulseDerivative,'FullArterialPulseDerivative', ToolBox)
 plot2txt(fullTime(1:length(fullArterialPulseCleanDerivative)),fullArterialPulseCleanDerivative,'FullArterialPulseCleanDerivative', ToolBox)
 
-c = colorbar('southoutside');
-
+% c = colorbar('southoutside');
+% 
     % Colorbar for raw/flattened image
 colorfig = figure(2410);
 colorfig.Units = 'normalized';

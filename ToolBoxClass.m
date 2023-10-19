@@ -8,6 +8,7 @@ classdef ToolBoxClass
         PW_path_txt char 
         PW_path_avi char 
         PW_path_mp4 char
+        PW_path_json char
         PW_path_pulswave char 
         main_foldername char
         PW_folder_name char
@@ -62,6 +63,7 @@ classdef ToolBoxClass
             obj.PW_path_txt = fullfile(obj.PW_path_dir, 'txt');
             obj.PW_path_avi = fullfile(obj.PW_path_dir, 'avi');
             obj.PW_path_mp4 = fullfile(obj.PW_path_dir, 'mp4');
+            obj.PW_path_json = fullfile(obj.PW_path_dir, 'json');
 
             %% Reading Cache Parameters from .mat
             dir_path_mat = fullfile(path,'mat');
