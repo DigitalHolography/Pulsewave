@@ -194,6 +194,7 @@ classdef OneCycleClass
                 tmp_dataM2M0 = zeros(height, width, length);
                 tmp_calc_data = obj.dataM2M0_interp{1};
                 tmp_calc_data_M0 = obj.dataM0_interp{1};
+                disp('occ 1')
                 parfor i = 1 : num_frames % loop over frames
                     tmp_dataM0(:,:,i) =  flat_field_correction_old(tmp_calc_data_M0(:,:,i), gwRatio*height, flatField_border);
                     tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
@@ -252,12 +253,21 @@ classdef OneCycleClass
             tmp_calc_data = obj.dataM2M0{1};
             tmp_calc_data_M0 = obj.dataM0{1};
             tmp_calc_data_M1M0 = obj.dataM1M0{1};
-
+            
+            disp('occ 2')
             parfor i = 1 : num_frames % loop over frames
                 tmp_dataM0(:,:,i) = interp2(tmp_calc_data_M0(:,:,i), k_interp);
+            end
+            parfor i = 1 : num_frames
                 tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
+            end
+            parfor i = 1 : num_frames
                 tmp_data_M1M0(:,:,i) = interp2(tmp_calc_data_M1M0(:,:,i), k_interp);
+            end
+            parfor i = 1 : num_frames
                 tmp_ref(:,:,i) = interp2( tmp_calc_ref(:,:,i), k_interp);
+            end
+            parfor i = 1 : num_frames
                 tmp_ref_norm(:,:,i) = interp2(tmp_calc_ref_norm(:,:,i), k_interp);
             end
 
@@ -327,6 +337,8 @@ classdef OneCycleClass
                 tmp_dataM2M0 = zeros(height, width, length);
                 tmp_calc_data = obj.dataM2M0_interp{1};
                 tmp_calc_data_M0 = obj.dataM0_interp{1};
+
+                disp('occ 3')
                 parfor i = 1 : num_frames % loop over frames
                     tmp_dataM0(:,:,i) =  flat_field_correction_old(tmp_calc_data_M0(:,:,i), gwRatio*height, flatField_border);
                     tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
@@ -387,7 +399,7 @@ classdef OneCycleClass
                     disp('Velocity map timing :')
                     time = toc;
                     disp(time)
-                    save_time(path_file_txt_exe_times, 'velocity_map', time)
+                    save_time(path_file_txt_exe_times, 'velocity_mabasp', time)
 
                     tic
                     velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)

@@ -4,6 +4,7 @@ classdef GuiCache
 % so that the user can modify the values in the GUI without messing
 % everything up
 properties (Access = public)
+
     batch_size
     ref_batch_size
     batch_stride

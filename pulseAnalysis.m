@@ -58,6 +58,7 @@ legend
 
 local_mask_artery = imdilate(maskArtery,strel('disk',PW_params.local_background_width));
 LocalBKG_artery = zeros(size(dataCubeM2M0));
+disp('pa 1')
 parfor nn = 1:size(dataCubeM2M0,3)
     LocalBKG_artery(:,:,nn) = regionfill(dataCubeM2M0(:,:,nn),local_mask_artery);
 end
@@ -66,6 +67,7 @@ end
 
 local_mask_vein = imdilate(maskVein,strel('disk',PW_params.local_background_width));
 LocalBKG_vein = zeros(size(dataCubeM2M0));
+disp('pa 2')
 parfor nn = 1:size(dataCubeM2M0,3)
     LocalBKG_vein(:,:,nn) = regionfill(dataCubeM2M0(:,:,nn),local_mask_vein);
 end
