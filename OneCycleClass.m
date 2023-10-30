@@ -205,11 +205,11 @@ classdef OneCycleClass
                 clear tmp_dataM0 tmp_calc_data_M0
                 
                 tmp_dataM2M0 = zeros(height, width, length);
-                tmp_calc_data = obj.dataM2M0_interp{1};
+                tmp_calc_data = (obj.dataM2M0_interp{1});
                 parfor i = 1 : num_frames
                     tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
                 end
-                obj.dataM2M0_interp{1} = tmp_dataM2M0;
+                obj.dataM2M0_interp{1} = (tmp_dataM2M0);
                 clear tmp_dataM2M0 tmp_calc_data
 
             end
@@ -271,7 +271,7 @@ classdef OneCycleClass
             parfor i = 1 : num_frames
                 tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
             end
-            obj.dataM2M0_interp{1} = tmp_dataM2M0;
+            obj.dataM2M0_interp{1} = (tmp_dataM2M0);
             clear tmp_dataM2M0 tmp_calc_data
 
             tmp_dataM0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
@@ -290,7 +290,11 @@ classdef OneCycleClass
             obj.dataM1M0_interp{1} = tmp_data_M1M0;
             clear tmp_data_M1M0 tmp_calc_data_M1M0
 
-            % Virer les pas interpolés
+            % obj.reference{1} = []; %need n frames ; maybe stock in obj ?
+            obj.reference_norm{1} = [];
+            obj.dataM2M0{1} = [];
+            obj.dataM0{1} = [];
+            obj.dataM1M0{1} = [];
 
 %             if obj.flag_SH == 1
 %                 tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
@@ -333,18 +337,6 @@ classdef OneCycleClass
             %saving times
             path_file_txt_exe_times = fullfile(ToolBox.PW_path_txt, 'ExecutionTimes.txt');
 
-            % Size variables
-            variableInfo = whos;
-            [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-            % print 3 largest variables
-            disp('BEGINNING ONE PULSE')
-            for i = 1: size(variableInfo,1)
-                fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                if variableInfo(sortedIndices(i)).bytes < 100000
-                    break
-                end
-            end
-            disp('-----------------------------------------------------------')
 
             %% FlatField 
 
@@ -371,10 +363,10 @@ classdef OneCycleClass
 
                 tmp_dataM2M0 = zeros(height, width, length);
                 tmp_calc_data = obj.dataM2M0_interp{1};
-                parfor i = 1 : num_frames 
-                    tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
+                parfor ii = 1 : num_frames 
+                    tmp_dataM2M0(:,:,ii) = flat_field_correction_old(tmp_calc_data(:,:,ii), gwRatio*height, flatField_border);
                 end
-                obj.dataM2M0_interp{1} = tmp_dataM2M0;
+                obj.dataM2M0_interp{1} = (tmp_dataM2M0);
                 clear tmp_dataM2M0 tmp_calc_data
 
                 end
@@ -418,24 +410,11 @@ classdef OneCycleClass
                     disp(time)
                     save_time(path_file_txt_exe_times, 'find_systole_index', time)
 
-                    [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
+                    [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
                     time = toc;
                     disp(time)
                     save_time(path_file_txt_exe_times, 'pulseAnalysis', time)
-
-                    % Size variables
-                    variableInfo = whos;
-                    [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-                    % print 3 largest variables
-                    disp('AFTER PULSEANALYSIS')
-                    for i = 1: size(variableInfo,1)
-                        fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                        if variableInfo(sortedIndices(i)).bytes < 100000
-                            break
-                        end
-                    end
-                    disp('-----------------------------------------------------------') 
 
                     tic
                     velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ? 
@@ -444,36 +423,11 @@ classdef OneCycleClass
                     disp(time)
                     save_time(path_file_txt_exe_times, 'velocity_mabasp', time)
 
-                    % Size variables
-                    variableInfo = whos;
-                    [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-                    % print 3 largest variables
-                    disp('AFTER VELOCITY MAP')
-                    for i = 1: size(variableInfo,1)
-                        fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                        if variableInfo(sortedIndices(i)).bytes < 100000
-                            break
-                        end
-                    end
-                    disp('-----------------------------------------------------------') 
-
                     tic
                     velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
                     disp('Velocity Histogramm timing :')
-                    to
-
-                    % Size variables
-                    variableInfo = whos;
-                    [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-                    % print 3 largest variables
-                    disp('AFTER VELOCITY HISTO')
-                    for i = 1: size(variableInfo,1)
-                        fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                        if variableInfo(sortedIndices(i)).bytes < 100000
-                            break
-                        end
-                    end
-                    disp('-----------------------------------------------------------') 
+                    toc
+ 
 
 %                     tic
 %                     BKGHistogramm(obj.dataM2M0_interp{1}, maskBackground ,ToolBox)
@@ -489,18 +443,6 @@ classdef OneCycleClass
                     disp(time)
                     save_time(path_file_txt_exe_times, 'ArterialResistivityIndex', time)
 
-                    % Size variables
-                    variableInfo = whos;
-                    [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-                    % print 3 largest variables
-                    disp('AFTER ARI')
-                    for i = 1: size(variableInfo,1)
-                        fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                        if variableInfo(sortedIndices(i)).bytes < 100000
-                            break
-                        end
-                    end
-                    disp('-----------------------------------------------------------') 
 
                     %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
@@ -509,23 +451,6 @@ classdef OneCycleClass
                         flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS_all,obj.dataM0_interp{1}, ToolBox, obj.k,obj.directory);
                     catch
                         disp('FlowRate timing :')
-                    
-                    time = toc;
-                    disp(time)
-                    save_time(path_file_txt_exe_times, 'flow_rate', time)
-
-                    % Size variables
-                    variableInfo = whos;
-                    [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-                    % print 3 largest variables
-                    disp('AFTER FLOWRATE')
-                    for i = 1: size(variableInfo,1)
-                        fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                        if variableInfo(sortedIndices(i)).bytes < 100000
-                            break
-                        end
-                    end
-                    disp('-----------------------------------------------------------') 
 
                     %                     try
                     %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
@@ -578,18 +503,6 @@ classdef OneCycleClass
             displaySuccessMsg(1);
             close all 
 
-            % Size variables
-            variableInfo = whos;
-            [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-            % print 3 largest variables
-            disp('END OF ONEPULSE')
-            for i = 1: size(variableInfo,1)
-                fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                if variableInfo(sortedIndices(i)).bytes < 100000
-                    break
-                end
-            end
-            disp('-----------------------------------------------------------')
 
         end
     end
