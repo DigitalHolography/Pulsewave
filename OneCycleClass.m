@@ -209,7 +209,7 @@ classdef OneCycleClass
                 parfor i = 1 : num_frames
                     tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
                 end
-                obj.dataM2M0_interp{1} = (tmp_dataM2M0);
+                obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
                 clear tmp_dataM2M0 tmp_calc_data
 
             end
@@ -271,7 +271,7 @@ classdef OneCycleClass
             parfor i = 1 : num_frames
                 tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
             end
-            obj.dataM2M0_interp{1} = (tmp_dataM2M0);
+            obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
             clear tmp_dataM2M0 tmp_calc_data
 
             tmp_dataM0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
@@ -366,7 +366,7 @@ classdef OneCycleClass
                 parfor ii = 1 : num_frames 
                     tmp_dataM2M0(:,:,ii) = flat_field_correction_old(tmp_calc_data(:,:,ii), gwRatio*height, flatField_border);
                 end
-                obj.dataM2M0_interp{1} = (tmp_dataM2M0);
+                obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
                 clear tmp_dataM2M0 tmp_calc_data
 
                 end
