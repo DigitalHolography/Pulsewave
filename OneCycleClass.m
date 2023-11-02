@@ -82,6 +82,18 @@ classdef OneCycleClass
             obj.isdone_flatfield = 0;
             obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
 
+             % Size variables
+            variableInfo = whos;
+            [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
+            % print 3 largest variables
+            for i = 1: size(variableInfo,1)
+                fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
+                if variableInfo(sortedIndices(i)).bytes < 100000
+                    break
+                end
+            end
+            disp('-----------------------------------------------------------')
+
             for ii = 1 : obj.nbFiles
 
                 %% Ref loading
@@ -194,8 +206,6 @@ classdef OneCycleClass
                 gwRatio = PW_params.flatField_gwRatio;
                 flatField_border = PW_params.flatField_border;             
                 
-                disp('occ 1')
-
                 tmp_dataM0 = zeros(height, width, length);
                 tmp_calc_data_M0 = obj.dataM0_interp{1};
                 parfor i = 1 : num_frames % loop over frames
@@ -249,7 +259,6 @@ classdef OneCycleClass
             height = (height-1)*(2^k_interp-1)+height;
             width = (width-1)*(2^k_interp-1)+width;
 
-            disp('occ 2')
             tmp_ref = zeros(height,width, size(obj.dataM2M0{1}, 3));
             tmp_calc_ref = obj.reference{1};
             parfor i = 1 : num_frames
@@ -336,39 +345,53 @@ classdef OneCycleClass
             
             %saving times
             path_file_txt_exe_times = fullfile(ToolBox.PW_path_txt, 'ExecutionTimes.txt');
+            fileID = fopen(path_file_txt_exe_times,'w') ;
+            fprintf(fileID,'EXECUTION TIMES : \r\n==================\n\r\n');
+            fclose(fileID);
 
 
             %% FlatField 
 
             if obj.flag_FlatField && (obj.isdone_flatfield == 0) 
 
+                fileID = fopen(path_file_txt_exe_times,'a+') ;
+                fprintf(fileID,'FLATFIELD : \r\n\n');
+                fclose(fileID);
+
                 disp("Correcting data with flat field")
                 for ii = 1 : obj.nbFiles
-                height = size(obj.dataM2M0_interp{1}, 1);
-                width = size(obj.dataM2M0_interp{1}, 2);
-                length = size(obj.dataM2M0_interp{1}, 3);
-                num_frames = size(obj.reference{1}, 3);
-                gwRatio = PW_params.flatField_gwRatio;
-                flatField_border = PW_params.flatField_border;
+                    height = size(obj.dataM2M0_interp{1}, 1);
+                    width = size(obj.dataM2M0_interp{1}, 2);
+                    length = size(obj.dataM2M0_interp{1}, 3);
+                    num_frames = size(obj.reference{1}, 3);
+                    gwRatio = PW_params.flatField_gwRatio;
+                    flatField_border = PW_params.flatField_border;
 
+                    tic
+                    tmp_dataM0 = zeros(height, width, length);
+                    tmp_calc_data_M0 = obj.dataM0_interp{1};
+                    parfor i = 1 : num_frames % loop over frames
+                        tmp_dataM0(:,:,i) =  flat_field_correction_old(tmp_calc_data_M0(:,:,i), gwRatio*height, flatField_border);
+                    end
+                    obj.dataM0_interp{1} = tmp_dataM0;
+                    clear tmp_dataM0 tmp_calc_data_M0
+                    timeM0 = toc;
+                    save_time(path_file_txt_exe_times, 'FlatField M0', timeM0)
 
-                disp('occ 3')
-                tmp_dataM0 = zeros(height, width, length);
-                tmp_calc_data_M0 = obj.dataM0_interp{1};
-                parfor i = 1 : num_frames % loop over frames
-                    tmp_dataM0(:,:,i) =  flat_field_correction_old(tmp_calc_data_M0(:,:,i), gwRatio*height, flatField_border);
-                end
-                obj.dataM0_interp{1} = tmp_dataM0;
-                clear tmp_dataM0 tmp_calc_data_M0
+                    tic
+                    tmp_dataM2M0 = zeros(height, width, length);
+                    tmp_calc_data = obj.dataM2M0_interp{1};
+                    parfor i = 1 : num_frames
+                        tmp_dataM2M0(:,:,i) = flat_field_correction_old(tmp_calc_data(:,:,i), gwRatio*height, flatField_border);
+                    end
+                    obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
+                    clear tmp_dataM2M0 tmp_calc_data
+                    timeM2M0 = toc;
+                    save_time(path_file_txt_exe_times, 'FlatField M2M0', timeM2M0)
 
-                tmp_dataM2M0 = zeros(height, width, length);
-                tmp_calc_data = obj.dataM2M0_interp{1};
-                parfor ii = 1 : num_frames 
-                    tmp_dataM2M0(:,:,ii) = flat_field_correction_old(tmp_calc_data(:,:,ii), gwRatio*height, flatField_border);
-                end
-                obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
-                clear tmp_dataM2M0 tmp_calc_data
-
+                    fileID = fopen(path_file_txt_exe_times,'a+') ;
+                    fprintf(fileID,'\r\n=== Total : %.0fs \r\n\n----------\r\n',timeM2M0+timeM0);
+                    fclose(fileID);
                 end
                 obj.isdone_flatfield = 1;
             else
@@ -377,20 +400,28 @@ classdef OneCycleClass
 
             %% Creating Masks
 
+            fileID = fopen(path_file_txt_exe_times,'a+') ;
+            fprintf(fileID,'\r\n');
+            fclose(fileID);
+
             tic
-          [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, meanIm, obj.directory, ToolBox);
+            [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, meanIm, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
             save_time(path_file_txt_exe_times, 'createMasks', time)
 
+            fileID = fopen(path_file_txt_exe_times,'a+') ;
+            fprintf(fileID,'\r\n----------\r\n');
+            fclose(fileID);
+
             tic
           % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
 
-            disp('CreatMasks New timing :')
-            time = toc;
-            disp(time)
+            % disp('CreatMasks New timing :')
+            % time = toc;
+            % disp(time)
             %save_time(path_file_txt_exe_times, 'createMasksNew', time)
 
             %% PulseWave Analysis 
@@ -402,31 +433,52 @@ classdef OneCycleClass
                 fullPulseWave_cell = cell(obj.nbFiles) ;
                 for n = 1:obj.nbFiles
 
+                    fileID = fopen(path_file_txt_exe_times,'a+') ;
+                    fprintf(fileID,'PULSEWAVE ANALYSIS : \r\n\n');
+                    fclose(fileID);
+
+                    time_sys_idx=0;
+                    time_pulseanalysis=0;
+                    time_vel_map=0;
+                    time_hist=0;
+                    time_arterial_res=0;
+                    time_flowrate =0;
+
                     tic
                     % [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_norm_interp{n}, obj.directory,maskArtery);
                     [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_interp{n}, obj.directory,maskArtery);
                     disp('FindSystoleIndex timing :')
-                    time = toc;
-                    disp(time)
-                    save_time(path_file_txt_exe_times, 'find_systole_index', time)
-
-                    [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
+                    time_sys_idx = toc;
+                    disp(time_sys_idx)
+                    save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
+                    
+                    tic
+                    [v_RMS_one_cycle,v_RMS_all,exec_times] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
-                    time = toc;
-                    disp(time)
-                    save_time(path_file_txt_exe_times, 'pulseAnalysis', time)
+                    time_pulseanalysis = toc;
+                    disp(time_pulseanalysis)
+                    save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
+                    %exec time details
+                    fileID = fopen(path_file_txt_exe_times,'a+') ;
+                    for i=1:size(exec_times,2)
+                        fprintf(fileID,'\t%s : %.0fs \r\n',exec_times(1,i),exec_times(2,i));
+                    end
+                    fclose(fileID);
+                    clear exec_times
 
                     tic
                     velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ? 
                     disp('Velocity map timing :')
-                    time = toc;
-                    disp(time)
-                    save_time(path_file_txt_exe_times, 'velocity_mabasp', time)
+                    time_vel_map = toc;
+                    disp(time_vel_map)
+                    save_time(path_file_txt_exe_times, 'Velocity map', time_vel_map)
 
                     tic
                     velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
                     disp('Velocity Histogramm timing :')
-                    toc
+                    time_hist = toc;
+                    disp(time_hist)
+                    save_time(path_file_txt_exe_times, 'Velocity Histogramm', time_hist)
  
 
 %                     tic
@@ -439,9 +491,9 @@ classdef OneCycleClass
                     tic
                     ArterialResistivityIndex(v_RMS_one_cycle,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
-                    time = toc;
-                    disp(time)
-                    save_time(path_file_txt_exe_times, 'ArterialResistivityIndex', time)
+                    time_arterial_res = toc;
+                    disp(time_arterial_res)
+                    save_time(path_file_txt_exe_times, 'Arterial Resistivity Index', time_arterial_res)
 
 
                     %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
@@ -449,24 +501,31 @@ classdef OneCycleClass
                     tic
                     try
                         flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS_all,obj.dataM0_interp{1}, ToolBox, obj.k,obj.directory);
-                    catch
                         disp('FlowRate timing :')
+                        time_flowrate = toc;
+                        disp(time_flowrate)
+                        save_time(path_file_txt_exe_times, 'Flow rate', time_flowrate)
+                    catch
+                        disp('no flow rate')
 
-                    %                     try
-                    %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
-                    %                     catch
-                    %                     end
+                        %                     try
+                        %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
+                        %                     catch
+                        %                     end
 
-                   
 
-%                         tic
-%                         spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
-%                         disp('Spectrogram timing :')
-%                         time = toc;
-%                         disp(time)
-%                         save_time(path_file_txt_exe_times, 'spectrogram', time)
-%                     else
 
+                        %                         tic
+                        %                         spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
+                        %                         disp('Spectrogram timing :')
+                        %                         time = toc;
+                        %                         disp(time)
+                        %                         save_time(path_file_txt_exe_times, '\tSpectrogram', time)
+                        %                     else
+
+                        fileID = fopen(path_file_txt_exe_times,'a+') ;
+                        fprintf(fileID,'\r\n=== Total : %.0fs \r\n\n----------\r\n',time_sys_idx+time_pulseanalysis+time_vel_map+time_hist+time_arterial_res+time_flowrate);
+                        fclose(fileID);
                     end
                 end
             end
@@ -500,8 +559,10 @@ classdef OneCycleClass
                 disp(time)
                 save_time(path_file_txt_exe_times, 'spectrogram_new', time)
             end
+
             displaySuccessMsg(1);
-            close all 
+            close all
+            
 
 
         end

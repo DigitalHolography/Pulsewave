@@ -201,15 +201,13 @@ maskBackground = not(mask_vessel);
 
 %% Create Mask Section 
 
-
-
 radius1 = (PW_params.radius_ratio-PW_params.radius_gap)* (M+N)/2;
 radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
 
-cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
-cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
+circle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
+circle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
 
-maskSection = xor(cercle_mask1,cercle_mask2);
+maskSection = xor(circle_mask1,circle_mask2);
 
 
 %% Create Colormap ARtery/Vein 

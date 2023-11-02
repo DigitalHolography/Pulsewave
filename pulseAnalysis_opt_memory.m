@@ -1,4 +1,4 @@
-function [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis_opt_memory(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
+function [v_RMS_one_cycle,v_RMS_all, exec_times] = pulseAnalysis_opt_memory(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : fullVideoM1M0, Taille : 10631287200 bytes (DEBUT)
@@ -10,6 +10,9 @@ function [v_RMS_one_cycle,v_RMS_all] = pulseAnalysis_opt_memory(Ninterp, fullVid
 % Variable : variableInfo, Taille : 12898 bytes
 
 disp('try opt version')
+
+exec_times_id = [];
+exec_times_time = [];
 
 PW_params = Parameters_json(path);
 
@@ -27,7 +30,9 @@ range0(1:2) = clim;
 fullTime = linspace(0,n_frames*ToolBox.stride/ToolBox.fs/1000,n_frames);
 
 
-%% Doppler AVG frequency heatmap 
+%% Doppler AVG frequency heatmap
+
+tic
 
 heatmap_AVG_raw = squeeze(mean(fullVideoM1M0,3));
 
@@ -50,7 +55,12 @@ range(1:2) = clim;
 
 clear heatmap_AVG_raw
 
+exec_times_id = [exec_times_id, "Doppler AVG frequency heatmap"];
+exec_times_time = [exec_times_time, toc];
+
 %% calculate raw signals of arteries, background and veins
+
+tic
 
 fullArterialPulse = fullVideoM2M0 .* maskArtery;
 fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
@@ -64,8 +74,12 @@ fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
 fullArterialPulseMinusBackground = fullArterialPulse - fullBackgroundSignal;
 fullVenousSignalMinusBackground = fullVenousSignal - fullBackgroundSignal;
 
+exec_times_id = [exec_times_id, "Calculate raw signals"];
+exec_times_time = [exec_times_time, toc];
+
 %% cleaning signals
 
+tic
 
 % remove outliers
 % 1st pass
@@ -82,32 +96,24 @@ disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
 
 fullArterialPulseClean = smoothdata(fullArterialPulseRmOut,'lowess');
 fullVenousSignalClean = smoothdata(fullVenousSignalRmOut, 'lowess');
-fullBackgroundSignalClean = smoothdata(fullBackgroundSignalRmOut,'lowess');
 
+% FIXME: usecase?
+% fullBackgroundSignalClean = smoothdata(fullBackgroundSignalRmOut,'lowess');
 
-figure(2)
-plot(fullBackgroundSignal)
-hold on 
-plot(fullArterialPulse)
-hold on 
-plot(fullBackgroundSignalClean)
-hold off 
-legend
+exec_times_id = [exec_times_id, "Cleaning signals"];
+exec_times_time = [exec_times_time, toc];
 
-fullArterialPulseDerivative = diff(fullArterialPulse);
-fullArterialPulseCleanDerivative = diff(fullArterialPulseClean);
+% figure(2)
+% plot(fullBackgroundSignal)
+% hold on 
+% plot(fullArterialPulse)
+% hold on 
+% plot(fullBackgroundSignalClean)
+% hold off 
+% legend
 
-% now cleanup dataCube to create_one_cycle()
-% strategy : use average pulse profiles to detect and
-% find  noisy frames @ >3 std from zero-mean
-% replace them with cleaned data
-noise = sqrt(abs(abs(fullArterialPulseMinusBackground).^2 - abs(fullArterialPulseClean).^2));
-idxOutNoise = find(noise>PW_params.pulseAnal_outNoiseThreshold*std(noise));
+%% PLOTS
 
-dataReliabilityIndex2 = ceil(100*(1-(length(idxOutNoise)/length(fullArterialPulseClean) )));
-disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
-
-% cleaning signals
 figure(30)
 plot(fullTime,fullArterialPulseMinusBackground,':k', ...
     fullTime,fullArterialPulseClean,'-k', ...
@@ -138,7 +144,29 @@ pbaspect([1.618 1 1]) ;
 set(gca, 'LineWidth', 2);
 axis tight;
 
-% calculate the pulse derivative and finding/cleaning pulses
+
+%% calculate the pulse derivative and finding/cleaning pulses
+
+tic
+
+fullArterialPulseDerivative = diff(fullArterialPulse);
+fullArterialPulseCleanDerivative = diff(fullArterialPulseClean);
+
+% now cleanup dataCube to create_one_cycle()
+% strategy : use average pulse profiles to detect and
+% find  noisy frames @ >3 std from zero-mean
+% replace them with cleaned data
+noise = sqrt(abs(abs(fullArterialPulseMinusBackground).^2 - abs(fullArterialPulseClean).^2));
+idxOutNoise = find(noise>PW_params.pulseAnal_outNoiseThreshold*std(noise));
+
+dataReliabilityIndex2 = ceil(100*(1-(length(idxOutNoise)/length(fullArterialPulseClean) )));
+disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
+
+exec_times_id = [exec_times_id, "Calculate pulse derivative"];
+exec_times_time = [exec_times_time, toc];
+
+%% PLOTS
+
 figure(40)
 plot( ...
     fullTime(1:length(fullArterialPulseDerivative)),fullArterialPulseDerivative,':k', ...
@@ -159,6 +187,7 @@ plot2txt(fullTime(1:length(fullArterialPulseCleanDerivative)),fullArterialPulseC
 
 
 clear fullArterialPulseDerivative fullArterialPulseCleanDerivative
+
 % c = colorbar('southoutside');
 % 
     % Colorbar for raw/flattened image
@@ -176,7 +205,6 @@ fontsize(gca,15,"points");
 colorTitleHandle = get(hCB,'Title');
 titleString = 'RMS Doppler frequency (kHz)';
 set(colorTitleHandle ,'String',titleString);
-
 
 
 figure(44)
@@ -199,10 +227,15 @@ axis tight;
 plot2txt(fullTime(1:length(fullArterialPulseClean)),fullArterialPulseClean,'FilteredArterialPulse', ToolBox)
 plot2txt(fullTime(1:length(noise)),noise,'ResidualArterialPulse', ToolBox)
 
+
+%C'EST QUOI
 figure(85)
 clim([min(range),max(range)]);
 
-%% Local BKG Artery
+%% Local BKG Artery and Veins %~1min
+
+tic
+
 local_mask_artery = imdilate(maskArtery,strel('disk',PW_params.local_background_width));
 local_mask_vein = imdilate(maskVein,strel('disk',PW_params.local_background_width));
 
@@ -216,8 +249,14 @@ end
 
 fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery); 
 
-% FIXME : compute true regularied cube by replacing bad frames
+exec_times_id = [exec_times_id, "Local Backgrounds"];
+exec_times_time = [exec_times_time, toc];
+
+%% FIXME : compute true regularied cube by replacing bad frames
+
 fullArterialPulseRegularized = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
+
+%% PLOT 
 
 figure(43) 
 plot( ...
@@ -235,10 +274,6 @@ axis tight;
 
 plot2txt(fullTime(1:length(fullArterialPulseRegularized)),fullArterialPulseRegularized,'FullArterialPulseRegularized',ToolBox)
 plot2txt(fullTime(1:length(fullArterialPulse)),fullArterialPulseMinusBackground,'FullArterialPulseMinusBackground',ToolBox)
-
-
-% calculate raw signals of arteries, background and veins
-
 
 figure(18) 
 imagesc(mean(LocalBKG_artery,3).*local_mask_artery+ones(size(LocalBKG_artery,1))*mean(LocalBKG_artery,'all').*~local_mask_artery) ;
@@ -296,7 +331,6 @@ clear LocalBKG_artery LocalBKG_vein
 
 A = ones(size(fullVideoM2M0));
 
-%% 
 for pp = 1:n_frames
       A(:,:,pp) = A(:,:,pp) * fullBackgroundSignal(pp);
 end
@@ -304,7 +338,10 @@ fullVideoM2M0 = fullVideoM2M0 - A ;
 
 clear fullBackgroundSignal fullVenousSignal A
 
-%% Construct Velocity video 
+%% Construct Velocity video ~3min
+
+tic
+
 flowVideoRGB = zeros(size(fullVideoM2M0,1),size(fullVideoM2M0,2),3,size(fullVideoM2M0,3));
 
 for ii = 1:size(fullVideoM2M0,3)
@@ -336,7 +373,12 @@ close(w);
 
 clear flowVideoRGB
 
-%% Creation of the avg pluse for In-plane arteries
+exec_times_id = [exec_times_id, "Construct velocity video"];
+exec_times_time = [exec_times_time, toc];
+
+%% Creation of the avg pluse for In-plane arteries ~5min
+
+tic
 
 [onePulseVideo, ~, ~] = create_one_cycle(fullVideoM2M0, maskArtery, sys_index_list, Ninterp,path);
 
@@ -400,11 +442,14 @@ fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername,'_av
 fprintf(fileID,'%f %f \r\n',tmp');
 fclose(fileID);
 
+exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
+exec_times_time = [exec_times_time, toc];
 
+%% Arterial pulse wave analysis
 
-%%
 disp('arterial pulse wave analysis...');
 
+tic
 
 %%
 %zero-mean local-to-average arterial pulse cross-correlation
@@ -498,8 +543,8 @@ disp('arterial pulse wave analysis...');
 
 [~,idx_sys] = max(avgArterialPulseHz) ;
 
-
 %% diastolic Doppler frequency heatmap : 10% of frames before minimum of diastole
+
 heatmap_dia_raw = squeeze(mean(onePulseVideominusBKG(:,:,floor(0.9*Ninterp):Ninterp),3));
 % onePulseVideo2 : no background correction 
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*Ninterp):Ninterp),3));
@@ -510,6 +555,7 @@ heatmap_dia = flat_field_correction(heatmap_dia_raw, ceil(PW_params.flatField_gw
 clear heatmap_sys_raw
 
 %% systolic Doppler frequency heatmap : 10% of frames around peak systole
+
 a = max(ceil(idx_sys-0.05*Ninterp),1);
 b = min(ceil(idx_sys+0.05*Ninterp),Ninterp);
 heatmap_sys_raw = squeeze(mean(onePulseVideominusBKG(:,:,a:b),3));
@@ -522,7 +568,10 @@ heatmap_sys = flat_field_correction(heatmap_sys_raw, ceil(PW_params.flatField_gw
 clear onePulseVideo
 clear onePulseVideominusBKG
 
-%% plot
+exec_times_id = [exec_times_id, "Arterial Pulsewave analysis"];
+exec_times_time = [exec_times_time, toc];
+
+%% PLOT
 
 % Colorbar for AVG image
 colorfig = figure(1230);
@@ -614,12 +663,16 @@ clim([min(range),max(range)]);
 heatmap_sys_img = frame2im(getframe(gca));
 
 
+%% SAVING IMAGES
 
 imwrite(heatmap_sys,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_heatmap_RMS_systol.png')),'png') ;
 imwrite(heatmap_dia ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_heatmap_RMS_diastole.png')),'png') ;
 imwrite(heatmap_sys_img ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMap.png')),'png') ;
 imwrite(heatmap_sys_raw_img ,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_systoleHeatMapRAW.png')),'png') ;
 imwrite(heatmap_dia_img,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_diastoleHeatMap.png')),'png') ;
+
+
+
 
 %%
 % FIXME : replace sys + dia blur by homogenous blur ? 
@@ -841,9 +894,9 @@ imwrite(segmentation_map,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_folder
 imwrite(local_bg_veins,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_veins.png')),'png') ;
 imwrite(local_bg_arteries,fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_LocalBackground_in_arteries.png')),'png') ; 
 
-
-
 close all
+
+exec_times = [exec_times_id; exec_times_time];
 
 return;
 
