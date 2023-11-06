@@ -7,6 +7,23 @@ PW_params = Parameters_json(path);
 
 v_RMS_AVG = mean(v_RMS,3);
 fullTime = linspace(0,size(v_RMS,3)*ToolBox.stride/ToolBox.fs/1000,size(v_RMS,3));
+
+%% change mask section ?
+
+radius_ratio = 0.18;
+radius_gap = 0.05;
+
+% radius1 = (PW_params.radius_ratio-PW_params.radius_gap)* (M+N)/2;
+% radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
+
+radius1 = (radius_ratio-radius_gap)* (M+N)/2;
+radius2 = (radius_ratio+radius_gap)* (M+N)/2;
+
+cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
+cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
+
+maskSection = xor(cercle_mask1,cercle_mask2);
+
 %% Find the locations of the sections in artery
 
 maskSectionArtery = maskSection.*maskArtery;

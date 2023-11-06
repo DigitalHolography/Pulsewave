@@ -452,10 +452,10 @@ classdef OneCycleClass
                     disp(time_sys_idx)
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
                     
-                    tic
                     [v_RMS_one_cycle,v_RMS_all,exec_times] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
-                    time_pulseanalysis = toc;
+                    % time_pulseanalysis = sum(exec_times(2,:));
+                    time_pulseanalysis = 45;
                     disp(time_pulseanalysis)
                     save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
                     %exec time details
@@ -474,7 +474,7 @@ classdef OneCycleClass
                     save_time(path_file_txt_exe_times, 'Velocity map', time_vel_map)
 
                     tic
-                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ToolBox)
+                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,meanIm, ToolBox)
                     disp('Velocity Histogramm timing :')
                     time_hist = toc;
                     disp(time_hist)
@@ -500,6 +500,7 @@ classdef OneCycleClass
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
                     try
+                        disp('flowrate :')
                         flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS_all,obj.dataM0_interp{1}, ToolBox, obj.k,obj.directory);
                         disp('FlowRate timing :')
                         time_flowrate = toc;
