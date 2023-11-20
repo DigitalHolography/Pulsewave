@@ -131,33 +131,39 @@ for jj = 1:size(flowVideoRGB_one_cycle,4)
 end
 close(w);
 
- % Save colorbar
-colorfig = figure(116);
-colorfig.Units = 'normalized';
-colormap(cmap_artery)
-%hCB = colorbar('north');
-hCB = colorbar('north','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmin_Arteries,1)),string(round(Vmax_Arteries/2,1)),string(round(Vmax_Arteries,1))});
-set(gca,'Visible',false)
-set(gca,'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca,15,"points") ;
+try
+    % Save colorbar
+    colorfig = figure(116);
+    colorfig.Units = 'normalized';
+    colormap(cmap_artery)
+    %hCB = colorbar('north');
+    hCB = colorbar('north','Ticks',[0,1],'TickLabels',{string(round(Vmin_Arteries,1)),string(round(Vmax_Arteries,1))});
+    set(gca,'Visible',false)
+    set(gca,'LineWidth', 3);
+    hCB.Position = [0.10 0.3 0.81 0.35];
+    colorfig.Position(4) = 0.1000;
+    fontsize(gca,15,"points") ;
 
 
     % Save colorbar
-colorfig = figure(117);
-colorfig.Units = 'normalized';
-colormap(cmap_vein)
-%hCB = colorbar('north');
-hCB = colorbar('north','Ticks',[0,0.5,1],'TickLabels',{string(round(Vmin_Veins,1)),string(round(Vmax_Veins/2,1)),string(round(Vmax_Veins,1))});
-set(gca,'Visible',false)
-set(gca,'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca,15,"points") ;
+    colorfig = figure(117);
+    colorfig.Units = 'normalized';
+    colormap(cmap_vein)
+    %hCB = colorbar('north');
+    hCB = colorbar('north','Ticks',[0,1],'TickLabels',{string(round(Vmin_Veins,1)),string(round(Vmax_Veins,1))});
+    set(gca,'Visible',false)
+    set(gca,'LineWidth', 3);
+    hCB.Position = [0.10 0.3 0.81 0.35];
+    colorfig.Position(4) = 0.1000;
+    fontsize(gca,15,"points") ;
 
-print('-f116','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_arteries.png'))) ;
-print('-f117','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_veins.png'))) ;
+
+    print('-f116','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_arteries.png'))) ;
+    print('-f117','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_veins.png'))) ;
+
+catch
+    disp('fail saving colorbars')
+end
 print('-f156','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_arteries.png'))) ;
 print('-f157','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_distribution_veins.png'))) ;
 imwrite(flowImageRGB, fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_flow_image.png')));
