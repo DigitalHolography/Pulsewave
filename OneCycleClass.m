@@ -452,10 +452,9 @@ classdef OneCycleClass
                     disp(time_sys_idx)
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
                     
-                    [v_RMS_one_cycle,v_RMS_all,exec_times] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
+                    [v_RMS_one_cycle,v_RMS_all,exec_times, total_time] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
-                    % time_pulseanalysis = sum(exec_times(2,:));
-                    time_pulseanalysis = 45;
+                    time_pulseanalysis = total_time;
                     disp(time_pulseanalysis)
                     save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
                     %exec time details

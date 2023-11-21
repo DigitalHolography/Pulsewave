@@ -1,4 +1,4 @@
-function [v_RMS_one_cycle,v_RMS_all, exec_times] = pulseAnalysis_opt_memory(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
+function [v_RMS_one_cycle,v_RMS_all, exec_times,total_time] = pulseAnalysis_opt_memory(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : fullVideoM1M0, Taille : 10631287200 bytes (DEBUT)
@@ -13,6 +13,7 @@ disp('try opt version')
 
 exec_times_id = [];
 exec_times_time = [];
+total_time=0;
 
 PW_params = Parameters_json(path);
 
@@ -57,6 +58,7 @@ clear heatmap_AVG_raw
 
 exec_times_id = [exec_times_id, "Doppler AVG frequency heatmap"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% calculate raw signals of arteries, background and veins
 
@@ -76,6 +78,7 @@ fullVenousSignalMinusBackground = fullVenousSignal - fullBackgroundSignal;
 
 exec_times_id = [exec_times_id, "Calculate raw signals"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% cleaning signals
 
@@ -102,6 +105,7 @@ fullVenousSignalClean = smoothdata(fullVenousSignalRmOut, 'lowess');
 
 exec_times_id = [exec_times_id, "Cleaning signals"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 % figure(2)
 % plot(fullBackgroundSignal)
@@ -164,6 +168,7 @@ disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 
 exec_times_id = [exec_times_id, "Calculate pulse derivative"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% PLOTS
 
@@ -251,6 +256,7 @@ fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + Loc
 
 exec_times_id = [exec_times_id, "Local Backgrounds"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% FIXME : compute true regularied cube by replacing bad frames
 
@@ -375,6 +381,7 @@ clear flowVideoRGB
 
 exec_times_id = [exec_times_id, "Construct velocity video"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% Creation of the avg pluse for In-plane arteries ~5min
 
@@ -444,6 +451,7 @@ fclose(fileID);
 
 exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% Arterial pulse wave analysis
 
@@ -570,6 +578,7 @@ clear onePulseVideominusBKG
 
 exec_times_id = [exec_times_id, "Arterial Pulsewave analysis"];
 exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
 
 %% PLOT
 
