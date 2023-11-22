@@ -2,6 +2,10 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA,maskSection, v_RMS,dataM0,
 
 PW_params = Parameters_json(path);
 
+[N,M] = size(maskArtery);
+[x, y] = meshgrid(1:M,1:N);
+
+
 %maskArtery = imdilate(maskArtery,strel('disk',5));
 %FIXME function velocity map
 

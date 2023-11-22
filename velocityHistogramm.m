@@ -2,9 +2,14 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery,maskVein ,meanIm, ToolBox
 %% Init of histogram axis
 [size_vRMS_1,size_vRMS_2,size_vRMS_3] = size(v_RMS_all);
 
+%%
 [maskSection] = create_mask_section(meanIm, maskArtery, ToolBox, path);
-
 maskArtery_section = maskArtery & maskSection;
+
+%or
+
+% maskArtery_section = maskArtery;
+%%
 
 v_histo_artery = round(v_RMS_all.*maskArtery_section);
 v_min_artery = min(v_histo_artery,[],'all');
@@ -26,7 +31,7 @@ yAx_display = yAx;
 
 
 
-%% Velocity Histogram in arteries
+%% Velocity Histogram in arteries 
 %FIXME prctile 10% Y = percentil(X,[5 95])
 
 X = linspace(v_min_all,v_max_all,v_max_all-v_min_all+1);
