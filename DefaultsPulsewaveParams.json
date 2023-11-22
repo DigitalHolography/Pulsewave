@@ -90,6 +90,10 @@
         "F0" : 150,
         "R0" : 150
     },
+    "Velocity" : {
+        "Small radius ratio" : 0.15,
+        "Big radius ratio" : 0.2
+    },
     "Vessels video" : {
         "Radius ratio factor" : 0.27,
         "Gaussian filter padding" : 0,

@@ -70,6 +70,8 @@ classdef Parameters_json
         pulseAnal_exp
         trWavelength_f0
         trWavelength_r0
+        velocity_smallRadiusRatio
+        velocity_bigRadiusRatio
         video2vessels_radiusRatio
         video2vessels_gaussFiltPadding
         video2vessels_gaussFiltFactor
@@ -186,6 +188,9 @@ classdef Parameters_json
 
                 obj.trWavelength_f0 = parsedData.Wavelength.F0;
                 obj.trWavelength_r0 = parsedData.Wavelength.R0;
+                
+                obj.velocity_smallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
+                obj.velocity_bigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
 
                 obj.video2vessels_radiusRatio = parsedData.VesselsVideo.RadiusRatioFactor;
                 obj.video2vessels_gaussFiltPadding = parsedData.VesselsVideo.GaussianFilterPadding;

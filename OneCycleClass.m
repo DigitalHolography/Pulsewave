@@ -473,7 +473,7 @@ classdef OneCycleClass
                     save_time(path_file_txt_exe_times, 'Velocity map', time_vel_map)
 
                     tic
-                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,meanIm, ToolBox)
+                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,meanIm, ToolBox, path)
                     disp('Velocity Histogramm timing :')
                     time_hist = toc;
                     disp(time_hist)
