@@ -26,6 +26,7 @@ classdef OneCycleClass
         flag_SH_analysis
         flag_PulseWave_analysis
         isdone_flatfield 
+        %% FIXME : relancer a chaque rendering
         ToolBoxmaster ToolBoxClass
         
 
@@ -318,7 +319,14 @@ classdef OneCycleClass
         end
 
         function onePulse(obj, Ninterp)
+            % PW_params = Parameters_json(obj.directory);
+            % ToolBox = obj.ToolBoxmaster;
+
+            checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
+            
+            obj.k = PW_params.k;
+            obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;
            
             meanIm = squeeze(mean(obj.reference_interp{1}, 3));
@@ -405,7 +413,7 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, meanIm, obj.directory, ToolBox);
+            [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasksNew(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
@@ -498,15 +506,15 @@ classdef OneCycleClass
                     %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
-                    try
+                    % try
                         disp('flowrate :')
                         flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS_all,obj.dataM0_interp{1}, ToolBox, obj.k,obj.directory);
                         disp('FlowRate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)
                         save_time(path_file_txt_exe_times, 'Flow rate', time_flowrate)
-                    catch
-                        disp('no flow rate')
+                    % catch
+                        % disp('no flow rate')
 
                         %                     try
                         %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
@@ -526,7 +534,7 @@ classdef OneCycleClass
                         fileID = fopen(path_file_txt_exe_times,'a+') ;
                         fprintf(fileID,'\r\n=== Total : %.0fs \r\n\n----------\r\n',time_sys_idx+time_pulseanalysis+time_vel_map+time_hist+time_arterial_res+time_flowrate);
                         fclose(fileID);
-                    end
+                    % end
                 end
             end
 

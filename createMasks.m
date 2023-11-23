@@ -38,9 +38,6 @@ maskCRV= imdilate(maskCRV,se);
 
 vesselnessIm = vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
 
-disp('SIGMA?')
-disp(PW_params.arteryMask_vesselness_sigma)
-
 maskVessel = vesselnessIm > (max(vesselnessIm,[],'all')* PW_params.arteryMask_vesselness_bin_threshold);
 figure(5)
 imagesc(maskVessel)

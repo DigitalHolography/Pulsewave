@@ -32,6 +32,7 @@ tilt_angle_list = zeros(1,length(locs));
 
 img_v_artery = squeeze(mean(v_RMS,3)).* mask;
 v_RMS_masked = v_RMS.* mask;
+
 for ii = 1:size(locs,1)
     if width(ii)>2
     subImgHW = round(width(ii)*PW_params.cropSection_scaleFactorWidth);
@@ -182,7 +183,7 @@ for ii = 1:size(locs,1)
     cross_section_area(ii) = pi*((width_cross_section(ii)/2)*(PW_params.cropSection_pixelSize/2^k))^2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
 end
 
-local_velocity_pulses = zeros(size(locs,1),T_max);
+local_velocity_pulses = zeros(size(locs,2),T_max);
 for tt = 1:T_max
     current_frame = v_RMS(:,:,tt);
     all_velocity = zeros(M,N);
