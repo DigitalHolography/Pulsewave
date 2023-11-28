@@ -12,7 +12,6 @@ figure(666), imagesc(meanIm);
 
 for pp = 1:L
     videoM0(:,:,pp) = flat_field_correction(squeeze(videoM0(:,:,pp)), PW_params.flatField_gwRatio*(M+N)/2,0);
-
 end
 
 meanIm = squeeze(mean(videoM0, 3));
@@ -136,6 +135,8 @@ seeds_vein = seeds_vein & condition_vein;
 %[mask_vein,RG_video_vein]  = region_growing_for_vessel(vesselness_vein, seeds_vein, condition_vein, path);
 [mask_vessel,RG_video_vessel] = region_growing_for_vessel(vesselnessIm, seeds_artery | seeds_vein, condition_vein | condition_artery,path);
 
+mask_vessel = bwareafilt(mask_vessel, PW_params.arteryMask_magicwand_nb_of_area_vessels,4);
+
 mask_artery = mask_vessel.*correlationMatrix_artery;
 mask_artery = mask_artery>PW_params.arteryMask_ArteryCorrThreshold;
 
@@ -178,6 +179,8 @@ clear vesselness_vein vesselness_artery floor_vein floor_artery level_vein level
 mask_artery = bwareaopen(mask_artery,PW_params.masks_minSize);
 mask_artery = imdilate(mask_artery,strel('disk',2));
 mask_artery = imclose(mask_artery,strel('disk',5));
+
+mask_artery = bwareafilt(mask_artery, PW_params.arteryMask_magicwand_nb_of_area_artery,4);
 
 mask_vein = bwareaopen(mask_vein,PW_params.masks_minSize) ;
 mask_vein = imdilate(mask_vein,strel('disk',2));

@@ -105,7 +105,7 @@ for tt = 1 : nb_frames
     [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2],'Lower', [0 -5 1.5], 'Upper', [80 3 6]);
     R2_tmp_fit = R2_tmp_fit.rsquare;
     
-    fifig = figure(899);
+    fifig = figure('Visible',off');
     
     fill(fullTime2,inBetween, Color_std);
     hold on

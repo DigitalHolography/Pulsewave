@@ -1,4 +1,3 @@
-
 function [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSection] = createMasks(videoM0,videoM1M0, meanIm, path, ToolBox)
 
 % AFTER CREATING MASKS
