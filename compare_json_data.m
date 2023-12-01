@@ -1,9 +1,9 @@
-    function [data_ref, old_data] = compare_json_data(data_ref, old_data)
+function [data_ref, data_test] = compare_json_data(data_ref, data_test)
 
 % jsonData = fileread('InputPulsewaveParams.json');
 % data_ref = jsondecode(jsonData);
 % jsonData = fileread('Copy_of_InputPulsewaveParams.json');
-% old_data = jsondecode(jsonData);
+% data_test = jsondecode(jsonData);
 
 if isstruct(data_ref)
 
@@ -12,7 +12,7 @@ if isstruct(data_ref)
     for i=1:numel(keys)
         key = keys{i};
         try
-            [data_ref.(key), old_data.(key)] = compare_json_data(data_ref.(key), old_data.(key));
+            [data_ref.(key), data_test.(key)] = compare_json_data(data_ref.(key), data_test.(key));
         catch
             fprintf('Parameter added : %s (value set by default) \n', key)
         end
@@ -20,8 +20,8 @@ if isstruct(data_ref)
 
 else
 
-    if ~isstruct(old_data)
-        data_ref = old_data;
+    if ~isstruct(data_test)
+        data_ref = data_test;   
     end
 
 end

@@ -83,18 +83,6 @@ classdef OneCycleClass
             obj.isdone_flatfield = 0;
             obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
 
-             % Size variables
-            variableInfo = whos;
-            [~, sortedIndices] = sort([variableInfo.bytes], 'descend');
-            % print 3 largest variables
-            for i = 1: size(variableInfo,1)
-                fprintf('Variable : %s, Taille : %d bytes\n', variableInfo(sortedIndices(i)).name, variableInfo(sortedIndices(i)).bytes);
-                if variableInfo(sortedIndices(i)).bytes < 100000
-                    break
-                end
-            end
-            disp('-----------------------------------------------------------')
-
             for ii = 1 : obj.nbFiles
 
                 %% Ref loading
@@ -104,6 +92,10 @@ classdef OneCycleClass
                 ext = '.avi';
 
                 disp(['reading : ',RefAviFilePath]);
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'reading : %s \r', RefAviFilePath);
+                fclose(fileID);
+
                 V = VideoReader(fullfile(dir_path_avi,[NameRefAviFile,ext]));
                 video = zeros(V.Height, V.Width, V.NumFrames);
                 for n = 1 : V.NumFrames
@@ -120,6 +112,10 @@ classdef OneCycleClass
 
                 % sqrt M2/M0 : DopplerRMS
                 disp(['reading : ',fullfile(dir_path_raw,NameRawFile)]);
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,NameRawFile));
+                fclose(fileID);
+
                 fileID = fopen(RawFilePath);
                 video = fread(fileID,'float32');
                 fclose(fileID);
@@ -128,6 +124,10 @@ classdef OneCycleClass
                 tmpname = NameRawFile;
                 tmpname(end-2:end) = 'AVG';
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                fclose(fileID);
+
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM1M0 = fread(fileID,'float32');
                 fclose(fileID);
@@ -135,6 +135,10 @@ classdef OneCycleClass
                 % Import Moment 0
                 tmpname = strcat(NameRawFile(1:end-10), 'moment0');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                fclose(fileID);
+
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM0 = fread(fileID,'float32');
                 fclose(fileID);
@@ -142,6 +146,10 @@ classdef OneCycleClass
                 % Import Moment 1
                 tmpname = strcat(NameRawFile(1:end-10), 'moment1');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                fclose(fileID);
+
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM1 = fread(fileID,'float32');
                 fclose(fileID);
@@ -149,14 +157,21 @@ classdef OneCycleClass
                 % Import Moment 2
                 tmpname = strcat(NameRawFile(1:end-10), 'moment2');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                fclose(fileID);
+
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM2 = fread(fileID,'float32');
                 fclose(fileID);
                 obj.dataM2{ii} = reshape(videoM2,refvideosize);
 %                 % Import SH
-% 
+%       
 %                 tmpname = strcat(NameRawFile(1:end-10), 'SH');
 %                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
+%                 fileID = fopen(path_file_log,'a+') ;
+%                 fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+%                 fclose(fileID);
 %                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
 %                 videoSH = fread(fileID,'float32');
 %                 fclose(fileID);
@@ -245,10 +260,18 @@ classdef OneCycleClass
 
 
                 disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM2M0{1},3))])
+
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'Data cube frame: %s/%s to %s/%s \r',num2str(firstFrame), num2str(size(obj.dataM2M0{1},3)),num2str(lastFrame), num2str(size(obj.dataM2M0{1},3)));
+                fclose(fileID);
             else
                 disp('Wrong value for the first frame. Set as 1')
                 disp('Wrong value for the last frame. Set as the end.')
                 disp(['Data cube frame: 1/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(size(obj.dataM2M0{1},3)), '/', num2str(size(obj.dataM2M0{1},3))])
+
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID,'Wrong value for the first frame. Set as 1 \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s \r', num2str(size(obj.dataM2M0{1},3)),num2str(size(obj.dataM2M0{1},3)), num2str(size(obj.dataM2M0{1},3)));
+                fclose(fileID);
             end
         end
 
@@ -327,8 +350,8 @@ classdef OneCycleClass
             
             obj.k = PW_params.k;
             obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
-            ToolBox = obj.ToolBoxmaster;
-           
+            ToolBox = obj.ToolBoxmaster;           
+
             meanIm = squeeze(mean(obj.reference_interp{1}, 3));
             blurred_mask = imgaussfilt(double(meanIm),0.05*size(meanIm,1),'Padding',0);
             [ToolBox.y_barycentre,ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask,[],'all'));
@@ -342,6 +365,7 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_avi);
             mkdir(ToolBox.PW_path_mp4);
             mkdir(ToolBox.PW_path_json);
+            mkdir(ToolBox.PW_path_log);
 
 %             path_dir_txt = fullfile(obj.directory,'txt');
 %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
@@ -357,6 +381,42 @@ classdef OneCycleClass
             fprintf(fileID,'EXECUTION TIMES : \r\n==================\n\r\n');
             fclose(fileID);
 
+            % SAVING GIT VERSION 
+            % In the txt file in the folder : "log"
+            
+            name_log = strcat(ToolBox.PW_folder_name, '.txt');
+
+            path_file_log = fullfile(ToolBox.PW_path_log, name_log);
+
+            gitBranchCommand = 'git symbolic-ref --short HEAD';
+            [statusBranch, resultBranch] = system(gitBranchCommand);
+
+            if statusBranch == 0
+                resultBranch = strtrim(resultBranch);
+                MessBranch = 'Current branch : %s \r';
+            else
+                MessBranch = 'Error getting current branch name.\r Git command output: %s \r';
+            end
+
+            gitHashCommand = 'git rev-parse HEAD';
+            [statusHash, resultHash] = system(gitHashCommand);
+
+            if statusHash == 0 %hash command was successful
+                resultHash = strtrim(resultHash);
+                MessHash = 'Latest Commit Hash : %s \r';
+            else
+                MessHash = 'Error getting latest commit hash.\r Git command output: %s \r';
+            end
+
+            
+            fileID = fopen(path_file_log,'w') ;
+
+            fprintf(fileID,'==================\rGIT VERSION :\r');
+            fprintf(fileID,MessBranch, resultBranch);
+            fprintf(fileID,MessHash, resultHash);
+            fprintf(fileID,'==================\r\n ');
+
+            fclose(fileID);
 
             %% FlatField 
 
