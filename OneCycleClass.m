@@ -346,7 +346,7 @@ classdef OneCycleClass
             % ToolBox = obj.ToolBoxmaster;
             
 
-            disp('TEST COMMIT')
+            disp('TEST COMMIT BIS')
 
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
