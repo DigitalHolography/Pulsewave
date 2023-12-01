@@ -92,9 +92,9 @@ classdef OneCycleClass
                 ext = '.avi';
 
                 disp(['reading : ',RefAviFilePath]);
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'reading : %s \r', RefAviFilePath);
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'reading : %s \r', RefAviFilePath);
+                % fclose(fileID);
 
                 V = VideoReader(fullfile(dir_path_avi,[NameRefAviFile,ext]));
                 video = zeros(V.Height, V.Width, V.NumFrames);
@@ -112,9 +112,9 @@ classdef OneCycleClass
 
                 % sqrt M2/M0 : DopplerRMS
                 disp(['reading : ',fullfile(dir_path_raw,NameRawFile)]);
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,NameRawFile));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,NameRawFile));
+                % fclose(fileID);
 
                 fileID = fopen(RawFilePath);
                 video = fread(fileID,'float32');
@@ -124,9 +124,9 @@ classdef OneCycleClass
                 tmpname = NameRawFile;
                 tmpname(end-2:end) = 'AVG';
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                % fclose(fileID);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM1M0 = fread(fileID,'float32');
@@ -135,9 +135,9 @@ classdef OneCycleClass
                 % Import Moment 0
                 tmpname = strcat(NameRawFile(1:end-10), 'moment0');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                % fclose(fileID);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM0 = fread(fileID,'float32');
@@ -146,9 +146,9 @@ classdef OneCycleClass
                 % Import Moment 1
                 tmpname = strcat(NameRawFile(1:end-10), 'moment1');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                % fclose(fileID);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM1 = fread(fileID,'float32');
@@ -157,9 +157,9 @@ classdef OneCycleClass
                 % Import Moment 2
                 tmpname = strcat(NameRawFile(1:end-10), 'moment2');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
+                % fclose(fileID);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM2 = fread(fileID,'float32');
@@ -261,17 +261,17 @@ classdef OneCycleClass
 
                 disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM2M0{1},3))])
 
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'Data cube frame: %s/%s to %s/%s \r',num2str(firstFrame), num2str(size(obj.dataM2M0{1},3)),num2str(lastFrame), num2str(size(obj.dataM2M0{1},3)));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'Data cube frame: %s/%s to %s/%s \r',num2str(firstFrame), num2str(size(obj.dataM2M0{1},3)),num2str(lastFrame), num2str(size(obj.dataM2M0{1},3)));
+                % fclose(fileID);
             else
                 disp('Wrong value for the first frame. Set as 1')
                 disp('Wrong value for the last frame. Set as the end.')
                 disp(['Data cube frame: 1/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(size(obj.dataM2M0{1},3)), '/', num2str(size(obj.dataM2M0{1},3))])
 
-                fileID = fopen(path_file_log,'a+') ;
-                fprintf(fileID,'Wrong value for the first frame. Set as 1 \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s \r', num2str(size(obj.dataM2M0{1},3)),num2str(size(obj.dataM2M0{1},3)), num2str(size(obj.dataM2M0{1},3)));
-                fclose(fileID);
+                % fileID = fopen(path_file_log,'a+') ;
+                % fprintf(fileID,'Wrong value for the first frame. Set as 1 \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s \r', num2str(size(obj.dataM2M0{1},3)),num2str(size(obj.dataM2M0{1},3)), num2str(size(obj.dataM2M0{1},3)));
+                % fclose(fileID);
             end
         end
 
@@ -344,6 +344,9 @@ classdef OneCycleClass
         function onePulse(obj, Ninterp)
             % PW_params = Parameters_json(obj.directory);
             % ToolBox = obj.ToolBoxmaster;
+            
+
+            disp('TEST COMMIT')
 
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
