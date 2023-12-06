@@ -18,6 +18,7 @@ classdef OneCycleClass
         nbFiles {mustBeNumeric , mustBePositive}
         filenames (1,:) cell
         k double %interpolaton parameter
+        load_logs char
         % For sectioning
         video_loaded
         pictureSection
@@ -83,6 +84,9 @@ classdef OneCycleClass
             obj.isdone_flatfield = 0;
             obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
 
+            obj.load_logs = '\n=== LOADING : \r\n';
+            logs = obj.load_logs;
+
             for ii = 1 : obj.nbFiles
 
                 %% Ref loading
@@ -92,9 +96,9 @@ classdef OneCycleClass
                 ext = '.avi';
 
                 disp(['reading : ',RefAviFilePath]);
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'reading : %s \r', RefAviFilePath);
-                % fclose(fileID);
+                RefAviFilePath(strfind(RefAviFilePath,'\'))='/';
+                str_tosave = sprintf('reading : %s', RefAviFilePath);
+                logs = strcat(logs,'\r', str_tosave);
 
                 V = VideoReader(fullfile(dir_path_avi,[NameRefAviFile,ext]));
                 video = zeros(V.Height, V.Width, V.NumFrames);
@@ -112,9 +116,10 @@ classdef OneCycleClass
 
                 % sqrt M2/M0 : DopplerRMS
                 disp(['reading : ',fullfile(dir_path_raw,NameRawFile)]);
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,NameRawFile));
-                % fclose(fileID);
+                FilePathUnix = fullfile(dir_path_raw,NameRawFile);
+                FilePathUnix(strfind(FilePathUnix,'\'))='/';
+                str_tosave = sprintf('reading : %s', FilePathUnix);
+                logs = strcat(logs,'\r', str_tosave);
 
                 fileID = fopen(RawFilePath);
                 video = fread(fileID,'float32');
@@ -123,10 +128,12 @@ classdef OneCycleClass
                 % M1/M0 : DopplerAvg
                 tmpname = NameRawFile;
                 tmpname(end-2:end) = 'AVG';
+
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                % fclose(fileID);
+                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                FilePathUnix(strfind(FilePathUnix,'\'))='/';
+                str_tosave = sprintf('reading : %s', FilePathUnix);
+                logs = strcat(logs,'\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM1M0 = fread(fileID,'float32');
@@ -134,10 +141,12 @@ classdef OneCycleClass
                 obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
                 % Import Moment 0
                 tmpname = strcat(NameRawFile(1:end-10), 'moment0');
+
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                % fclose(fileID);
+                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                FilePathUnix(strfind(FilePathUnix,'\'))='/';
+                str_tosave = sprintf('reading : %s', FilePathUnix);
+                logs = strcat(logs,'\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM0 = fread(fileID,'float32');
@@ -146,9 +155,10 @@ classdef OneCycleClass
                 % Import Moment 1
                 tmpname = strcat(NameRawFile(1:end-10), 'moment1');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                % fclose(fileID);
+                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                FilePathUnix(strfind(FilePathUnix,'\'))='/';
+                str_tosave = sprintf('reading : %s', FilePathUnix);
+                logs = strcat(logs,'\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM1 = fread(fileID,'float32');
@@ -157,9 +167,10 @@ classdef OneCycleClass
                 % Import Moment 2
                 tmpname = strcat(NameRawFile(1:end-10), 'moment2');
                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-                % fclose(fileID);
+                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                FilePathUnix(strfind(FilePathUnix,'\'))='/';
+                str_tosave = sprintf('reading : %s', FilePathUnix);
+                logs = strcat(logs,'\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
                 videoM2 = fread(fileID,'float32');
@@ -169,15 +180,18 @@ classdef OneCycleClass
 %       
 %                 tmpname = strcat(NameRawFile(1:end-10), 'SH');
 %                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-%                 fileID = fopen(path_file_log,'a+') ;
-%                 fprintf(fileID,'reading : %s \r', fullfile(dir_path_raw,[tmpname,ext]));
-%                 fclose(fileID);
+%                 FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+%                 FilePathUnix(strfind(FilePathUnix,'\'))='/';
+%                 str_tosave = sprintf('reading : %s', FilePathUnix);
+%                 logs = strcat(logs,'\r', str_tosave);
+%
 %                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
 %                 videoSH = fread(fileID,'float32');
 %                 fclose(fileID);
 %                 obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
 %   
-
+               
+                obj.load_logs = logs;
 
             end
         end
@@ -247,6 +261,8 @@ classdef OneCycleClass
             firstFrame = PW_params.videoStartFrameIndex;
             lastFrame = PW_params.videoEndFrameIndex;
 
+            logs = obj.load_logs;
+
             if firstFrame > 0 && firstFrame < size(obj.dataM2M0{1},3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM2M0{1},3)
 
 
@@ -261,18 +277,19 @@ classdef OneCycleClass
 
                 disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM2M0{1},3))])
 
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'Data cube frame: %s/%s to %s/%s \r',num2str(firstFrame), num2str(size(obj.dataM2M0{1},3)),num2str(lastFrame), num2str(size(obj.dataM2M0{1},3)));
-                % fclose(fileID);
+                str_tosave = sprintf('Data cube frame: %s/%s to %s/%s',num2str(firstFrame), num2str(size(obj.dataM2M0{1},3)),num2str(lastFrame), num2str(size(obj.dataM2M0{1},3)));
+                logs = strcat(logs,'\r', str_tosave);
             else
-                disp('Wrong value for the first frame. Set as 1')
+                disp('Wrong value for the first frame. Set as 1.')
                 disp('Wrong value for the last frame. Set as the end.')
                 disp(['Data cube frame: 1/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(size(obj.dataM2M0{1},3)), '/', num2str(size(obj.dataM2M0{1},3))])
 
-                % fileID = fopen(path_file_log,'a+') ;
-                % fprintf(fileID,'Wrong value for the first frame. Set as 1 \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s \r', num2str(size(obj.dataM2M0{1},3)),num2str(size(obj.dataM2M0{1},3)), num2str(size(obj.dataM2M0{1},3)));
-                % fclose(fileID);
+                str_tosave = sprintf('Wrong value for the first frame. Set as 1. \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s', num2str(size(obj.dataM2M0{1},3)),num2str(size(obj.dataM2M0{1},3)), num2str(size(obj.dataM2M0{1},3)));
+                logs = strcat(logs,'\r\n\n', str_tosave,'\n');
             end
+
+            obj.load_logs = logs;
+
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
@@ -343,10 +360,7 @@ classdef OneCycleClass
 
         function onePulse(obj, Ninterp)
             % PW_params = Parameters_json(obj.directory);
-            % ToolBox = obj.ToolBoxmaster;
-            
-
-            disp('TEST COMMIT')
+            % ToolBox = obj.ToolBoxmaster; 
 
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
@@ -419,6 +433,10 @@ classdef OneCycleClass
             fprintf(fileID,MessHash, resultHash);
             fprintf(fileID,'==================\r\n ');
 
+            fprintf(fileID, obj.load_logs);
+
+            fprintf(fileID, '\r\n=== EXECUTION :\r\n\n');
+
             fclose(fileID);
 
             %% FlatField 
@@ -429,7 +447,11 @@ classdef OneCycleClass
                 fprintf(fileID,'FLATFIELD : \r\n\n');
                 fclose(fileID);
 
-                disp("Correcting data with flat field")
+                disp("Correcting data with flat field")   
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID, 'Correcting data with flat field \r\n');
+                fclose(fileID);
+
                 for ii = 1 : obj.nbFiles
                     height = size(obj.dataM2M0_interp{1}, 1);
                     width = size(obj.dataM2M0_interp{1}, 2);
@@ -467,6 +489,9 @@ classdef OneCycleClass
                 obj.isdone_flatfield = 1;
             else
                 disp("no flatfield applied")
+                fileID = fopen(path_file_log,'a+') ;
+                fprintf(fileID, 'No flatfield applied \r\n\n');
+                fclose(fileID);
             end
 
             %% Creating Masks
@@ -480,6 +505,9 @@ classdef OneCycleClass
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
+            fileID = fopen(path_file_log,'a+') ;
+            fprintf(fileID, 'CreatMasks timing : % \r\n\n');
+            fclose(fileID);
             save_time(path_file_txt_exe_times, 'createMasks', time)
 
             fileID = fopen(path_file_txt_exe_times,'a+') ;
