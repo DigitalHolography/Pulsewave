@@ -1,73 +1,57 @@
-function video = viscosity(mask_cell , velocity_cell, angle_list, one_cycle_dir, filename)
+function [] = viscosity(SubImage_cell , SubVideo_cell, type_of_vessel, ToolBox)
 
-one_cycle_dir_png = fullfile(one_cycle_dir, 'png');
-one_cycle_dir_eps = fullfile(one_cycle_dir, 'eps');
-one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
-one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
-one_cycle_dir_mp4 = fullfile(one_cycle_dir, 'mp4');
 
-num_vessels = size(mask_cell, 2);
-num_frames = size(velocity_cell{1}, 3);
+nb_section = size(SubImage_cell, 2);
+nb_frames = size(SubVideo_cell{1}, 3);
 n_interp = 100;
 %interpolation parameter
 k = 2;
 
-velocity_profiles = zeros(n_interp, num_frames, num_vessels);
+velocity_profiles = zeros(n_interp, nb_frames, nb_section);
+velocity_profiles_std = zeros(n_interp, nb_frames, nb_section);
 
-for ii = 1 : num_vessels
-    subImg = mask_cell{ii};
-    subVideo = velocity_cell{ii};
-    tilt_angle = (angle_list(ii));
-    
+for ii = 1 : nb_section
+    subImg = SubImage_cell{ii};
+    subVideo =SubVideo_cell{ii};
+
+     %% interpolate
     interp_size = 4*size(subImg, 1)-3;
-    % subImg_interp = zeros(interp_size, interp_size);
+
     subVideo_interp = zeros(interp_size, interp_size, size(subVideo, 3));
-    
-    %% interpolate
     subImg_interp = interp2(subImg, k);
     for frame = 1 : size(subVideo, 3)
         subVideo_interp(:,:, frame) = interp2(subVideo(:,:, frame), k);
     end
-
-    subImg_interp = imrotate(subImg_interp, tilt_angle ,'bilinear','crop');
-    for frame = 1 : size(subVideo, 3)
-        subVideo_interp(:,:, frame) = imrotate(subVideo_interp(:,:, frame), tilt_angle ,'bilinear','crop');
-    end
-    
-    
-    projVideo = sum(subVideo_interp, 3);
-    % find vessels width
-    projImg = squeeze(sum(subImg_interp, 1));
-    projImg = projImg/max(projImg, [], "all");
-    projImg = (projImg > 0.1);
+    avg_profile = squeeze(sum(subImg_interp, 1)/(size(subImg_interp,1)));
     projVideo = squeeze(sum(subVideo_interp, 1)/size(subVideo_interp,1));
+    projVideo_std = squeeze(std(subVideo_interp,0,1));
+    list = find(avg_profile>(0.1*max(avg_profile,[],'all')));
 
-    width_masked = nnz(projImg);
-    list = find(projImg);
-    
-    % projVideo_cropped = projVideo(list(1) : list(end), :);
-    
+
     x = 1:size(projVideo,1);
-    x_wall2wall = list(1) : list(end);
     xinterp_wall2wall = linspace(list(1),list(end),n_interp);
+
+    
 
     velocityProfileInterp = zeros(n_interp, size(projVideo,2));
     for tt = 1:size(projVideo,2)
         velocityProfileInterp(:,tt) = interp1(x, projVideo(:,tt), xinterp_wall2wall);
     end
-
-    % figure(1234)
-    % plot(projImg)
-
     velocity_profiles(:, :, ii) = velocityProfileInterp;
-    1;
+
+    velocityProfileInterp_std = zeros(n_interp, size(projVideo,2));
+    for tt = 1:size(projVideo,2)
+        velocityProfileInterp_std(:,tt) = interp1(x, projVideo_std(:,tt), xinterp_wall2wall);
+    end
+    velocity_profiles_std(:, :, ii) = velocityProfileInterp_std;
 
 end% ii (artery #)
 
 average_velocity_profile = squeeze(mean(velocity_profiles, 3));
-
-v = VideoWriter(fullfile(one_cycle_dir_avi, strcat(filename,'_velocity_profile.avi')));% avi
-vMP4 = VideoWriter(fullfile(one_cycle_dir_mp4, strcat(filename,'_velocity_profile.mp4')),'MPEG-4');% mp4
+average_velocity_profile_std = squeeze(mean(velocity_profiles_std, 3));
+video_name = strcat('_velocity_profile_',type_of_vessel);
+v = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername,strcat(video_name,'.avi'))));% avi
+vMP4 = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername,strcat(video_name,'.mp4'))),'MPEG-4');% mp4
 open(v);
 open(vMP4);
 mimin = min(average_velocity_profile(:));
@@ -76,17 +60,40 @@ mimin = min(average_velocity_profile(:));
 % x for normalize wall length for fiting
 x = linspace(-1,1,length(average_velocity_profile(:,1)));
 
-Vmax_list = zeros(num_frames,1);
-alpha_list = zeros(num_frames,1);
-beta_list = zeros(num_frames,1);
-eta_list = zeros(num_frames,1);
-viscosity_list = zeros(num_frames,1);
+Vmax_list = zeros(nb_frames,1);
+alpha_list = zeros(nb_frames,1);
+beta_list = zeros(nb_frames,1);
+eta_list = zeros(nb_frames,1);
+viscosity_list = zeros(nb_frames,1);
 
 average_velocity_profile_systole = average_velocity_profile(:,idx_syst);
 average_velocity_profile_diastole = average_velocity_profile(:,end);
 
-for tt = 1 : num_frames
+% 
+% curve1 = total_avg_blood_volume_rate_vein+0.5*total_std_blood_volume_rate_vein;
+% curve2 = total_avg_blood_volume_rate_vein-0.5*total_std_blood_volume_rate_vein;
+% fullTime2 = [fullTime, fliplr(fullTime)];
+% inBetween = [curve1', fliplr(curve2')];
+% fill(fullTime2, inBetween, Color_std);
+% hold on;
+% plot(fullTime,curve1,"Color",Color_std, 'LineWidth', 2);
+% plot(fullTime, curve2, "Color",Color_std, 'LineWidth', 2);
+% plot(fullTime,total_avg_blood_volume_rate_vein,'-k','LineWidth',1);
+% axis tight ;
+% hold off
+
+Color_std = [0.8 0.8 0.8];
+fullTime = 1:n_interp;
+
+
+for tt = 1 : nb_frames
     tmp_velocity_profile = squeeze(average_velocity_profile(:,tt));
+    tmp_velocity_profile_plus_std = tmp_velocity_profile + 0.5*average_velocity_profile_std(:,tt);
+    tmp_velocity_profile_minus_std = tmp_velocity_profile - 0.5*average_velocity_profile_std(:,tt);
+    inBetween = [tmp_velocity_profile_plus_std', fliplr(tmp_velocity_profile_minus_std')];
+    fullTime2 = [fullTime, fliplr(fullTime)];
+    
+
 
     % Use the defined function as an input to fit the function of viscosity
     tmp_fittype = fittype('Vmax .* (1-(1-alpha).* (abs(0.7*x).^beta))',...
@@ -95,16 +102,19 @@ for tt = 1 : num_frames
     % tmp_fittype = fittype('Vmax .* (1-(1-0.13).* (abs(x).^beta))',...
     % 'dependent',{'tmp_velocity_profile'},'independent',{'x'},...
     % 'coefficients',{'Vmax','beta'});
-    [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2],'Lower', [10 -5 0], 'Upper', [80 3 6]);
+    [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2],'Lower', [0 -5 1.5], 'Upper', [80 3 6]);
     R2_tmp_fit = R2_tmp_fit.rsquare;
     
-    fifig = figure(899);
-    plot(tmp_velocity_profile,'-k', 'LineWidth',2) ;
-
+    fifig = figure('Visible',off');
+    
+    fill(fullTime2,inBetween, Color_std);
     hold on
+    plot(tmp_velocity_profile,'-k', 'LineWidth',2) ;
+    plot(tmp_velocity_profile_plus_std,"Color",Color_std, 'LineWidth',2)
+    plot(tmp_velocity_profile_minus_std,"Color",Color_std, 'LineWidth',2)
     plot(tmp_fit(x), '-r', 'LineWidth',2);
     title('average wall-to-wall arterial velocity profile');
-    legend(strcat('R² = ',string(R2_tmp_fit),' Vmax = ', string(tmp_fit.Vmax),' alpha = ', string(tmp_fit.alpha),' beta = ', string(tmp_fit.beta)));
+    legend(strcat('R² = ',string(round(R2_tmp_fit,2)),' Vmax = ', string(round(tmp_fit.Vmax,1)),' alpha = ', string(round(tmp_fit.alpha,1)),' beta = ', string(round(tmp_fit.beta,1))));
     fontsize(gca,12,"points") ;
     xticks(x);
     xticklabels({'-1','wall start', '-0.6','-0.4', '-0.2','0','0.2','0.4', '0.6', '0.8','wall end'});
@@ -132,15 +142,36 @@ close(vMP4)
 video = subVideo;
 
 % Systole/Diastole velocity profile
+average_velocity_profile_systole_plus_std = average_velocity_profile_systole + 0.5*average_velocity_profile_std(:,idx_syst);
+average_velocity_profile_systole_minus_std = average_velocity_profile_systole - 0.5*average_velocity_profile_std(:,idx_syst);
+average_velocity_profile_diastole_plus_std = average_velocity_profile_diastole + 0.5*average_velocity_profile_std(:,end);
+average_velocity_profile_diastole_minus_std = average_velocity_profile_diastole - 0.5*average_velocity_profile_std(:,end);
+inBetween_syst = [average_velocity_profile_systole_plus_std', fliplr(average_velocity_profile_systole_minus_std')];
+inBetween_diast= [average_velocity_profile_diastole_plus_std', fliplr(average_velocity_profile_diastole_minus_std')];
+fullTime2 = [fullTime, fliplr(fullTime)];
 
 x_section = linspace(-0.7,0.7,length(squeeze(average_velocity_profile_systole)));
 fit_velocity_profile_systole = Vmax_list(idx_syst)*(1-(1-alpha_list(idx_syst)).*abs(x_section).^beta_list(idx_syst));
 fit_velocity_profile_diastole = Vmax_list(end)*(1-(1-alpha_list(end)).*abs(x_section).^beta_list(end));
+
+
 figure(668)
-plot(x_section,average_velocity_profile_systole,'-k',...
-x_section,average_velocity_profile_diastole,'-k',...
-    x_section,fit_velocity_profile_systole,'-r',...
-    x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
+% plot(x_section,average_velocity_profile_systole,'-k',...
+% x_section,average_velocity_profile_diastole,'-k',...
+%     x_section,fit_velocity_profile_systole,'-r',...
+%     x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
+fill(fullTime2,inBetween_syst, Color_std);
+hold on
+fill(fullTime2,inBetween_diast, Color_std);
+
+plot(average_velocity_profile_systole,'-k', 'LineWidth',2) ;
+plot(average_velocity_profile_systole_plus_std,"Color",Color_std, 'LineWidth',2)
+plot(average_velocity_profile_systole_minus_std,"Color",Color_std, 'LineWidth',2)
+plot(average_velocity_profile_diastole,'-k', 'LineWidth',2) ;
+plot(average_velocity_profile_diastole_plus_std,"Color",Color_std, 'LineWidth',2)
+plot(average_velocity_profile_diastole_minus_std,"Color",Color_std, 'LineWidth',2)
+plot(fit_velocity_profile_diastole,'-r', 'LineWidth',2);
+plot(fit_velocity_profile_systole,'-r', 'LineWidth',2);
 title('Systole and diastole arterial velocity profile');
 fontsize(gca,12,"points") ;
 % xticks(x);
@@ -157,18 +188,29 @@ figure(666)
 plot(viscosity_list)
 pbaspect([1.618 1 1]);
 xlabel('Frame','FontSize',14);
-ylabel('Viscosity (cP)','FontSize',14); 
+ylabel('Viscosity (cP)','FontSize',14);
 set(gca, 'LineWidth', 2);
 axis tight;
 
 % png
-print('-f668','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_velocity_cross_section.png'))) ;
-print('-f666','-dpng',fullfile(one_cycle_dir_png,strcat(filename,'_viscosity_in_time.png'))) ;
-% eps
-print('-f668','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_velocity_cross_section.eps'))) ;
-print('-f666','-depsc',fullfile(one_cycle_dir_eps,strcat(filename,'_viscosity_in_time.eps'))) ;
+if strcmp(type_of_vessel, 'artery')
+    print('-f668','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_cross_section_artery.png'))) ;
+    print('-f666','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_viscosity_in_time_artery.png'))) ;
+    % eps
+    print('-f668','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_velocity_cross_section_artery.eps'))) ;
+    print('-f666','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_viscosity_in_time_artery.eps'))) ;
 
-list_fig_close = [666, 899];
+else
+
+    print('-f668','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_velocity_cross_section_vein.png'))) ;
+    print('-f666','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_viscosity_in_time_vein.png'))) ;
+    % eps
+    print('-f668','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_velocity_cross_section_vein.eps'))) ;
+    print('-f666','-depsc',fullfile(ToolBox.PW_path_eps,strcat(ToolBox.main_foldername,'_viscosity_in_time_vein.eps'))) ;
+
+end
+
+list_fig_close = [666,668, 899];
 for ii=1:length(list_fig_close)
     close(list_fig_close(ii));
 end

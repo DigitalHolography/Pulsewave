@@ -1,4 +1,3 @@
-
 function signal = find_vessel_signal(mask, v_RMS, circle_in_img_x, circle_in_img_y, jj)
 
 % find_cross_section detects each peak in a circular patern 

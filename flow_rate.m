@@ -89,8 +89,8 @@ end
 %% Compute blood volume rate
 mask_artery = maskArtery;
 mask_vein = maskVein;
-[avg_blood_volume_rate_vein,std_blood_volume_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein,total_avg_blood_volume_rate_vein,total_std_blood_volume_rate_artery] = cross_section_analysis_new(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,'vein');
-[avg_blood_volume_rate_artery,std_blood_volume_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery,total_avg_blood_volume_rate_artery,total_std_blood_volume_rate_vein] = cross_section_analysis_new(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,'artery');
+[avg_blood_volume_rate_vein,std_blood_volume_rate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein,total_avg_blood_volume_rate_vein,total_std_blood_volume_rate_artery] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,'vein');
+[avg_blood_volume_rate_artery,std_blood_volume_rate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery,total_avg_blood_volume_rate_artery,total_std_blood_volume_rate_vein] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k,ToolBox,path,'artery');
 
 
 

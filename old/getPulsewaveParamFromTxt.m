@@ -1,4 +1,3 @@
-
 function [flag,parameter] =  getPulsewaveParamFromTxt(path,str)
 myPath = split(path,'\');
 myPath{size(myPath,1)} = '..';

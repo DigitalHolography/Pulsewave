@@ -36,8 +36,8 @@ parsedData.CentralRetinaMask.MinimumSeedAreaSize = extractValue(fileContent, 'Mi
 parsedData.CentralRetinaMask.CleaningCoroidOrNot = extractValue(fileContent, 'Cleaning Coroid or not :');
 parsedData.CentralRetinaMask.ShowingIntermediateFiguresInTheProcess = extractValue(fileContent, 'Showing intermediate figures in the process :');
 parsedData.CentralRetinaMask.RegionGrowingFloorThreshold = extractValue(fileContent, 'Region growing floor threshold :');
-parsedData.CentralRetinaMask.RegionGrowingVeinConditionThreshold = extractValue(fileContent, 'Region growing vein condition threshold :');
-parsedData.CentralRetinaMask.RegionGrowingArteryConditionThreshold = extractValue(fileContent, 'Region growing artery condition threshold :');
+parsedData.CentralRetinaMask.RegionGrowingVeinConditionThreshold = extractValue(fileContent, 'Region growing vein floor :');
+parsedData.CentralRetinaMask.RegionGrowingArteryConditionThreshold = extractValue(fileContent, 'Region growing artery floor :');
 parsedData.CentralRetinaMask.CentralRetinaVeinArteryThreshold = extractValue(fileContent, 'Central Retina Vein/Artery threshold :');
 parsedData.CentralRetinaMask.RegionGrowingThreshold = extractValue(fileContent, 'Region growing threshold :');
 
@@ -97,8 +97,8 @@ parsedData.Viscosity.ViscosityListParameterB = extractValue(fileContent, 'Viscos
 
 parsedData.Other.NumberOfSides = extractValue(fileContent, 'Number of sides :');
 
-
-fields = fieldnames(parsedData);
-json_data = rmfield(parsedData, fields(structfun(@isempty, parsedData)));
+json_data = clear_empty_fields(parsedData);
+% fields = fieldnames(parsedData);
+% json_data = rmfield(parsedData, fields(structfun(@isempty, parsedData)));
 
 end

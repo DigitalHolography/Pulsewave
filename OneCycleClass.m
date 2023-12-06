@@ -501,7 +501,7 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasksNew(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery] = createMasks(obj.reference_norm_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
@@ -515,8 +515,8 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-          % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-            % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasksNew(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+          % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasks(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasks(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
 
             % disp('CreatMasks New timing :')
             % time = toc;
@@ -551,7 +551,7 @@ classdef OneCycleClass
                     disp(time_sys_idx)
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
                     
-                    [v_RMS_one_cycle,v_RMS_all,exec_times, total_time] = pulseAnalysis_opt_memory(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
+                    [v_RMS_one_cycle,v_RMS_all,exec_times, total_time] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
                     time_pulseanalysis = total_time;
                     disp(time_pulseanalysis)
@@ -652,11 +652,11 @@ classdef OneCycleClass
                 save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
 
                 tic
-                spectrogram_new(maskArtery,maskBackground ,SH_cube ,ToolBox);
+                spectrogram(maskArtery,maskBackground ,SH_cube ,ToolBox);
                 disp('Spectrogram timing :')
                 time = toc;
                 disp(time)
-                save_time(path_file_txt_exe_times, 'spectrogram_new', time)
+                save_time(path_file_txt_exe_times, 'spectrogram', time)
             end
 
             displaySuccessMsg(1);

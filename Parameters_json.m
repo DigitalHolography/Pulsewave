@@ -23,6 +23,7 @@ classdef Parameters_json
         arteryMask_magicwand_nb_of_area_vessels
         arteryMask_magicwand_nb_of_area_artery
         arteryMask_ArteryCorrThreshold
+        arteryMask_CorrelationMatrixThreshold
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
         centralRetinal_backgndThreshold
@@ -34,6 +35,7 @@ classdef Parameters_json
         RG_FloorThreshold
         RG_veinConditionThreshold
         RG_ArteryConditionThreshold
+        RG_ArterySeedsThreshold
         CRACRV_Threshold
         RG_alpha
         cropSection_scaleFactorWidth
@@ -133,6 +135,7 @@ classdef Parameters_json
                 obj.arteryMask_magicwand_nb_of_area_vessels = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForVessels;
                 obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
                 obj.arteryMask_ArteryCorrThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
+                obj.arteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
 
                 obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
                 obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;
@@ -145,6 +148,7 @@ classdef Parameters_json
                 obj.RG_FloorThreshold = parsedData.CentralRetinaMask.RegionGrowingFloorThreshold;
                 obj.RG_veinConditionThreshold = parsedData.CentralRetinaMask.RegionGrowingVeinConditionThreshold;
                 obj.RG_ArteryConditionThreshold = parsedData.CentralRetinaMask.RegionGrowingArteryConditionThreshold;
+                obj.RG_ArterySeedsThreshold = parsedData.CentralRetinaMask.RegionGrowingArterySeedsThreshold;
                 obj.CRACRV_Threshold = parsedData.CentralRetinaMask.CentralRetinaVeinArteryThreshold;
                 obj.RG_alpha = parsedData.CentralRetinaMask.RegionGrowingThreshold;
 
