@@ -177,13 +177,13 @@ clear vesselness_vein vesselness_artery floor_vein floor_artery level_vein level
 % end
 
 mask_artery = bwareaopen(mask_artery,PW_params.masks_minSize);
-mask_artery = imdilate(mask_artery,strel('disk',2));
+mask_artery = imdilate(mask_artery,strel('disk',3));
 mask_artery = imclose(mask_artery,strel('disk',5));
 
 mask_artery = bwareafilt(mask_artery, PW_params.arteryMask_magicwand_nb_of_area_artery,4);
 
 mask_vein = bwareaopen(mask_vein,PW_params.masks_minSize) ;
-mask_vein = imdilate(mask_vein,strel('disk',2));
+mask_vein = imdilate(mask_vein,strel('disk',3));
 mask_vein = imclose(mask_vein,strel('disk',5)) & ~mask_artery;
 
 mask_vessel = mask_artery | mask_vein;

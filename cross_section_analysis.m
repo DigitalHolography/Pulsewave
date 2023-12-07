@@ -207,9 +207,15 @@ for tt = 1:T_max
 
         %FIXME calcul std avg avec des v = 0
         %avg_blood_velocity(ii,tt) = sum(tmp(:))/nnz(tmp(:)); 
-        avg_blood_velocity(ii,tt) = mean(tmp(tmp~=0)); 
+        avg_blood_velocity(ii,tt) = mean(tmp(tmp~=0));
+        if isnan(avg_blood_velocity(ii,tt))
+            avg_blood_velocity(ii,tt) = 0;
+        end
         %std_blood_velocity(ii,tt) = std(tmp(tmp~=0));
         std_blood_velocity(ii,tt) = std(subFrame(subFrame~=0));
+        if isnan(std_blood_velocity(ii,tt))
+            std_blood_velocity(ii,tt) = 0;
+        end
         avg_blood_volume_rate(ii,tt) = avg_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
         std_blood_volume_rate(ii,tt) = std_blood_velocity(ii,tt)*cross_section_area(ii)*60; % microL/min
         all_velocity(:,:) = all_velocity(:,:) + current_frame.*mask_sections(:,:,ii);

@@ -28,7 +28,7 @@ cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^
 
 maskSection = xor(cercle_mask1,cercle_mask2);
 
-%% Find the locations of the sections in artery
+%% Find the locations of the sections in arteries
 
 maskSectionArtery = maskSection.*maskArtery;
 
@@ -57,7 +57,7 @@ for ii = 1:nb_sections_artery
     SubImg_width_artery(ii) = 0.01*size(maskArtery,1);
 end
 
-%% Find the locations of the sections in artery
+%% Find the locations of the sections in veins
 
 maskSectionVein = maskSection.*maskVein;
 
