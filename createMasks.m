@@ -213,7 +213,7 @@ circle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^
 maskSection = xor(circle_mask1,circle_mask2);
 
 
-%% Create Colormap ARtery/Vein 
+%% Create Colormap Artery/Vein 
 
 
 meanIm = mat2gray(meanIm);
@@ -229,6 +229,16 @@ VesselImageRGB =  hsv2rgb(hue_artery+hue_vein+hue_sectionA+hue_sectionV, sat_art
 figure(101)
 imshow(VesselImageRGB)
 
+%% Create Colormap Artery Only 
+[hue_artery,sat_artery,val] = createHSVmap(meanIm,mask_artery-mask_artery.*maskSection,0,0);
+[hue_sectionA,sat_sectionA,~] = createHSVmap(meanIm,maskSection.*mask_artery,0.15,0.15);
+sat_section_artery = sat_sectionA; 
+val = val.*(~maskSection)+val.*maskSection+ maskSection.*(~mask_artery);
+VesselImageRGB_Artery =  hsv2rgb(hue_artery+hue_sectionA, sat_artery+sat_section_artery, val);
+
+figure(102)
+imshow(VesselImageRGB_Artery)
+
 
 %% Saving masks as PNG 
 foldername = ToolBox.main_foldername;
@@ -240,6 +250,7 @@ imwrite(mat2gray(single(mask_vessel)),fullfile(ToolBox.PW_path_png,[foldername,'
 imwrite(mat2gray(single(maskBackground)),fullfile(ToolBox.PW_path_png,[foldername,'_maskBackground_New.png']),'png') ;
 %vesselMap = uint8( cat( 3, uint8(meanIm)+ uint8(mask_artery)*255, uint8(meanIm) , uint8(meanIm) + uint8(mask_vein)*255 ));
 imwrite(VesselImageRGB,fullfile(ToolBox.PW_path_png,[foldername,'_vesselMap.png']),'png') ;
+imwrite(VesselImageRGB_Artery,fullfile(ToolBox.PW_path_png,[foldername,'_vesselMapArtery.png']),'png') ;
 imwrite(mat2gray(maskCRA),fullfile(ToolBox.PW_path_png,[foldername,'_maskCRA.png']),'png') ;
 imwrite(mat2gray(maskCRV),fullfile(ToolBox.PW_path_png,[foldername,'_maskCRV.png']),'png') ;
 

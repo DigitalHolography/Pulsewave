@@ -14,15 +14,13 @@ fullTime = linspace(0,size(v_RMS,3)*ToolBox.stride/ToolBox.fs/1000,size(v_RMS,3)
 
 %% change mask section ?
 
-radius_ratio = 0.18;
-radius_gap = 0.05;
+% radius_ratio = 0.18;
+% radius_gap = 0.05;
+% radius1 = (radius_ratio-radius_gap)* (M+N)/2;
+% radius2 = (radius_ratio+radius_gap)* (M+N)/2;
 
-% radius1 = (PW_params.radius_ratio-PW_params.radius_gap)* (M+N)/2;
-% radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
-
-radius1 = (radius_ratio-radius_gap)* (M+N)/2;
-radius2 = (radius_ratio+radius_gap)* (M+N)/2;
-
+radius1 = (PW_params.radius_ratio-PW_params.radius_gap)* (M+N)/2;
+radius2 = (PW_params.radius_ratio+PW_params.radius_gap)* (M+N)/2;
 cercle_mask1 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius1;
 cercle_mask2 = sqrt((x - ToolBox.x_barycentre).^2 + (y - ToolBox.y_barycentre).^2) <= radius2;
 
@@ -304,7 +302,11 @@ hold off
 ax_vol_rate_artery = axis;
 ax_vol_rate_artery(3) = 0 ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
-yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40
+    yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+else 
+    yticks(sort([0 20 40]))
+end
 
 Plot_volume_rate_artery = getframe(gcf);
 Plot_volume_rate_video_artery = zeros(size(Plot_volume_rate_artery.cdata,1),size(Plot_volume_rate_artery.cdata,2),3,size(v_RMS,3));
@@ -331,7 +333,11 @@ for tt = 1:length(fullTime)
     xlabel('Time (s)')
     title("Total blood volume rate in arteries")
     fontsize(gca,14,"points") ;
-    yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+    if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40
+        yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+    else
+        yticks(sort([0 20 40]))
+    end
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_artery = getframe(gcf);
@@ -458,7 +464,11 @@ axis tight ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
 Plot_volume_rate_vein = getframe(gcf);
 Plot_volume_rate_video_vein = zeros(size(Plot_volume_rate_vein.cdata,1),size(Plot_volume_rate_vein.cdata,2),3,size(v_RMS,3));
-yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
+if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40
+    yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
+else 
+    yticks(sort([0 20 40]))
+end
 
 for tt = 1:length(fullTime)
     figure(126); 
@@ -478,7 +488,11 @@ for tt = 1:length(fullTime)
     xlabel('Time (s)')
     title("Total blood volume rate in veins")
     fontsize(gca,14,"points") ;
-    yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
+    if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40
+        yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
+    else
+        yticks(sort([0 20 40]))
+    end
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_vein = getframe(gcf);
