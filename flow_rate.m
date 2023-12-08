@@ -345,8 +345,8 @@ for tt = 1:length(fullTime)
 
 end
 
-plot2txt(fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt), 'TotalBloodVolumeRateArtery', ToolBox)
-plot2txt(fullTime(1:tt),total_std_blood_volume_rate_artery(1:tt), 'TotalBloodVolumeRateArtery', ToolBox)
+plot2txt(fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt), 'TotalBloodVolumeRateArteryAVG', ToolBox)
+plot2txt(fullTime(1:tt),total_std_blood_volume_rate_artery(1:tt), 'TotalBloodVolumeRateArterySTD', ToolBox)
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_plot_volume_rate_video_artery.avi')));
 tmp = mat2gray( Plot_volume_rate_video_artery);
@@ -500,8 +500,8 @@ for tt = 1:length(fullTime)
 
 end
 
-plot2txt(fullTime,total_avg_blood_volume_rate_vein, 'TotalBloodVolumeRateVeins', ToolBox)
-plot2txt(fullTime,total_std_blood_volume_rate_vein, 'TotalBloodVolumeRateVeins', ToolBox)
+plot2txt(fullTime,total_avg_blood_volume_rate_vein, 'TotalBloodVolumeRateVeinsAVG', ToolBox)
+plot2txt(fullTime,total_std_blood_volume_rate_vein, 'TotalBloodVolumeRateVeinsSTD', ToolBox)
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_plot_volume_rate_video_vein.avi')));
 tmp = mat2gray( Plot_volume_rate_video_vein);
