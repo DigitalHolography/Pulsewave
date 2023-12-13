@@ -131,6 +131,7 @@ figure(58)
 %    plot(smoothdata(avg_blood_velocity_vein(ii,:),'lowess'))
 %    labels_veins{end+1} = strcat('V',num2str(ii));
 % end
+% hold off
 plot(fullTime ,data_to_plot_vein,'LineWidth',2)
 title('Blood velocity in vein sections');
 legend(labels_veins);
@@ -302,10 +303,10 @@ hold off
 ax_vol_rate_artery = axis;
 ax_vol_rate_artery(3) = 0 ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
-if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40
-    yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60
+    yticks(sort([0 20 40 round(mean_volume_rate_artery(1)) 60]))
 else 
-    yticks(sort([0 20 40]))
+    yticks(sort([0 20 40 60]))
 end
 
 Plot_volume_rate_artery = getframe(gcf);
@@ -323,20 +324,15 @@ for tt = 1:length(fullTime)
     plot(fullTime(1:tt), curve2, "Color",Color_std, 'LineWidth', 2);
     plot(fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt),'-k','LineWidth',2);
     plot(fullTime(1:tt),mean_volume_rate_artery(1:tt),':k','LineWidth',2);
-
-%     plot(fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt),'-k',...
-%         fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt)+total_std_blood_volume_rate_artery(1:tt),'-k',...
-%         fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt)-total_std_blood_volume_rate_artery(1:tt),'-k',...
-%         fullTime(1:tt),mean_volume_rate_artery(1:tt),':k','LineWidth',2);
-
+    hold off;
     ylabel('Blood volume rate (µL/min)')
     xlabel('Time (s)')
     title("Total blood volume rate in arteries")
     fontsize(gca,14,"points") ;
-    if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40
-        yticks(sort([0 20 40 round(mean_volume_rate_artery(1))]))
+    if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60
+        yticks(sort([0 20 40 round(mean_volume_rate_artery(1)) 60]))
     else
-        yticks(sort([0 20 40]))
+        yticks(sort([0 20 40 60]))
     end
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
@@ -464,10 +460,10 @@ axis tight ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
 Plot_volume_rate_vein = getframe(gcf);
 Plot_volume_rate_video_vein = zeros(size(Plot_volume_rate_vein.cdata,1),size(Plot_volume_rate_vein.cdata,2),3,size(v_RMS,3));
-if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40
-    yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
+if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40 && round(mean_volume_rate_vein(1))~=60
+    yticks(sort([0 20 40 round(mean_volume_rate_vein(1)) 60]))
 else 
-    yticks(sort([0 20 40]))
+    yticks(sort([0 20 40 60]))
 end
 
 for tt = 1:length(fullTime)
@@ -482,16 +478,15 @@ for tt = 1:length(fullTime)
     plot(fullTime(1:tt), curve2, "Color",Color_std, 'LineWidth', 2);
     plot(fullTime(1:tt),total_avg_blood_volume_rate_vein(1:tt),'-k','LineWidth',2);
     plot(fullTime(1:tt),mean_volume_rate_vein(1:tt),':k','LineWidth',2);
-%     plot(fullTime(1:tt),total_avg_blood_volume_rate_vein(1:tt),'-k',...
-%         fullTime(1:tt),mean_volume_rate_vein(1:tt),':k','LineWidth',2);
+    hold off;
     ylabel('Blood volume rate (µL/min)')
     xlabel('Time (s)')
     title("Total blood volume rate in veins")
     fontsize(gca,14,"points") ;
-    if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40
-        yticks(sort([0 20 40 round(mean_volume_rate_vein(1))]))
+    if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40 && round(mean_volume_rate_vein(1))~=60
+        yticks(sort([0 20 40 round(mean_volume_rate_vein(1)) 60]))
     else
-        yticks(sort([0 20 40]))
+        yticks(sort([0 20 40 60]))
     end
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);

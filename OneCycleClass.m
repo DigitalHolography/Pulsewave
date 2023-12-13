@@ -369,8 +369,9 @@ classdef OneCycleClass
             obj.ToolBoxmaster =  ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;           
 
-            meanIm = squeeze(mean(obj.reference_interp{1}, 3));
-            blurred_mask = imgaussfilt(double(meanIm),0.05*size(meanIm,1),'Padding',0);
+            meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
+            meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
+            blurred_mask = imgaussfilt(double(meanIm.*meanIm_M1M0),PW_params.gauss_filt_size_for_barycentre*size(meanIm.*meanIm_M1M0,1),'Padding',0);
             [ToolBox.y_barycentre,ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask,[],'all'));
 
             clear blurred_mask
@@ -505,11 +506,12 @@ classdef OneCycleClass
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
+
             fileID = fopen(path_file_log,'a+') ;
             fprintf(fileID, 'CreatMasks timing : % \r\n\n');
             fclose(fileID);
-            save_time(path_file_txt_exe_times, 'createMasks', time)
 
+            save_time(path_file_txt_exe_times, 'createMasks', time)
             fileID = fopen(path_file_txt_exe_times,'a+') ;
             fprintf(fileID,'\r\n----------\r\n');
             fclose(fileID);

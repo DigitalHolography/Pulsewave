@@ -8,6 +8,7 @@ classdef Parameters_json
         k
         radius_ratio
         radius_gap
+        gauss_filt_size_for_barycentre
         resistivity_gaussFiltSigma
         resistivity_satAmp
         resistivity_minTolVal
@@ -117,6 +118,7 @@ classdef Parameters_json
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
                 obj.radius_ratio = parsedData.RadiusRatio;
                 obj.radius_gap = parsedData.RadiusGap;
+                obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
 
                 obj.resistivity_gaussFiltSigma = parsedData.ResistivityIndex.GaussianFilterSigma;
                 obj.resistivity_satAmp = parsedData.ResistivityIndex.AmplitudeSaturationPonderation;

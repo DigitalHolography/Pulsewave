@@ -2,6 +2,13 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle,dataCubeM2M0, maskArtery,
 PW_params = Parameters_json(path);
 disp('arterial resistivity...');
 
+name_log = strcat(ToolBox.PW_folder_name, '.txt');
+path_file_log = fullfile(ToolBox.PW_path_log, name_log);
+
+fileID = fopen(path_file_log,'a+') ;
+fprintf(fileID, 'Arterial resistivity... \r\n');
+fclose(fileID);
+
 % for pp = 1:size(dataCubeM2M0,3)
 %     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
 %     
@@ -47,6 +54,9 @@ end
 close(w);
 
 disp('done.');
+fileID = fopen(path_file_log,'a+') ;
+fprintf(fileID, 'Done. \r\n');
+fclose(fileID);
 
 % disp('arterial resistivity...');
 % [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo, maskArtery,path);
