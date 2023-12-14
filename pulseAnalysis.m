@@ -272,7 +272,7 @@ end
 if veins_analysis
     fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
 else
-    fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_artery.*local_mask_artery);
+    fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
 end
     
 exec_times_id = [exec_times_id, "Local Backgrounds"];
@@ -332,7 +332,6 @@ if veins_analysis
     axis off
     axis image
     range(1:2) = clim;
-
     local_bg_veins = frame2im(getframe(gca));
 end
 
