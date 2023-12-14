@@ -73,6 +73,7 @@ classdef Parameters_json
         pulseAnal_exp
         trWavelength_f0
         trWavelength_r0
+        veins_analysis
         velocity_smallRadiusRatio
         velocity_bigRadiusRatio
         video2vessels_radiusRatio
@@ -119,6 +120,7 @@ classdef Parameters_json
                 obj.radius_ratio = parsedData.RadiusRatio;
                 obj.radius_gap = parsedData.RadiusGap;
                 obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
+                obj.veins_analysis = parsedData.VeinsAnalysis;
 
                 obj.resistivity_gaussFiltSigma = parsedData.ResistivityIndex.GaussianFilterSigma;
                 obj.resistivity_satAmp = parsedData.ResistivityIndex.AmplitudeSaturationPonderation;
