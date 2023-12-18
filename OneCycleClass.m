@@ -361,7 +361,6 @@ classdef OneCycleClass
         function onePulse(obj, Ninterp)
             % PW_params = Parameters_json(obj.directory);
             % ToolBox = obj.ToolBoxmaster; 
-
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
             

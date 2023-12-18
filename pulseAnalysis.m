@@ -9,7 +9,6 @@ function [v_RMS_one_cycle,v_RMS_all, exec_times,total_time] = pulseAnalysis(Nint
 % Variable : maskVein, Taille : 2356225 bytes (DEBUT)
 % Variable : variableInfo, Taille : 12898 bytes
 
-disp('try opt version')
 
 exec_times_id = [];
 exec_times_time = [];
