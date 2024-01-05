@@ -1,4 +1,4 @@
-function [] = flow_rate(maskArtery, maskVein, maskCRA,maskSection, v_RMS,dataM0, ToolBox, k,path)
+function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k,path)
 
 PW_params = Parameters_json(path);
 
@@ -160,7 +160,7 @@ end
 dataM0 = mat2gray(dataM0);
 maskOnes = ones(size(maskArtery,1), size(maskArtery,2),size(dataM0,3));
 fullTime = linspace(0,size(v_RMS,3)*ToolBox.stride/ToolBox.fs/1000,size(v_RMS,3));
-mean_M0 = mean(dataM0,3);
+mean_M0 = rescale(mean(videoM0_from_holowaves,3));
 ratio_etiquette = 1.2;
 %% Saving Vein and artery data in txt
 
@@ -184,14 +184,14 @@ end
 maskRGB = ones(size(maskArtery,1), size(maskArtery,2),3);
 
 if veins_analysis
-    maskRGB(:,:,3) = mat2gray(mean_M0).*~cross_section_mask_vein + maskRGB(:,:,3).*cross_section_mask_vein;
-    maskRGB(:,:,2) = mat2gray(mean_M0).*~cross_section_mask_artery;
-    maskRGB(:,:,1) = mat2gray(mean_M0).*~cross_section_mask_artery+maskRGB(:,:,1).*cross_section_mask_artery;
+    maskRGB(:,:,3) = mean_M0.*~cross_section_mask_vein + maskRGB(:,:,3).*cross_section_mask_vein;
+    maskRGB(:,:,2) = mean_M0.*~(cross_section_mask_artery+cross_section_mask_vein) + zeros(size(maskRGB(:,:,1))).*(cross_section_mask_artery+cross_section_mask_vein);
+    maskRGB(:,:,1) = mean_M0.*~cross_section_mask_artery+maskRGB(:,:,1).*cross_section_mask_artery;
 
 else
-    maskRGB(:,:,3) = mat2gray(mean_M0);
-    maskRGB(:,:,2) = mat2gray(mean_M0).*~cross_section_mask_artery;
-    maskRGB(:,:,1) = mat2gray(mean_M0).*~cross_section_mask_artery+maskRGB(:,:,1).*cross_section_mask_artery;
+    maskRGB(:,:,3) = mean_M0.*~cross_section_mask_artery + zeros(size(maskRGB(:,:,1))).*cross_section_mask_artery;
+    maskRGB(:,:,2) = mean_M0.*~cross_section_mask_artery + zeros(size(maskRGB(:,:,1))).*cross_section_mask_artery;
+    maskRGB(:,:,1) = mean_M0.*~cross_section_mask_artery+maskRGB(:,:,1).*cross_section_mask_artery;
 end
 
 figure(652)
@@ -228,12 +228,11 @@ Color_std = [0.7 0.7 0.7];
 
 maskRGB_artery = ones(size(maskArtery,1), size(maskArtery,2),3);
 volume_rate_video_artery = zeros(size(v_RMS,1),size(v_RMS,2),3,size(v_RMS,3));
-
 mean_volume_rate_artery = ones(length(fullTime),1)*mean(total_avg_blood_volume_rate_artery);
 
-maskRGB_artery(:,:,3) = mat2gray(mean_M0).*~cross_section_mask_artery;
-maskRGB_artery(:,:,2) = mat2gray(mean_M0).*~cross_section_mask_artery;
-maskRGB_artery(:,:,1) = mat2gray(mean_M0).*~cross_section_mask_artery+maskRGB_artery(:,:,1).*cross_section_mask_artery;
+maskRGB_artery(:,:,3) = mean_M0.*~cross_section_mask_artery;
+maskRGB_artery(:,:,2) = mean_M0.*~cross_section_mask_artery;
+maskRGB_artery(:,:,1) = mean_M0.*~cross_section_mask_artery+maskRGB_artery(:,:,1).*cross_section_mask_artery;
 
 
 figure(111222)
@@ -249,10 +248,12 @@ for tt = 1:size(v_RMS,3)
 
     hue = 0*(maskOnes(:,:,tt).*cross_section_mask_artery);
     sat = maskOnes(:,:,tt).*cross_section_mask_artery;
-    val = dataM0(:,:,tt).*~cross_section_mask_artery+maskOnes(:,:,tt).*cross_section_mask_artery;
+    val = maskOnes(:,:,tt).*cross_section_mask_artery;
 
-    tmp_frame = hsv2rgb(hue,sat,val);
-    imshow(tmp_frame);
+    tmp_frame = hsv2rgb(hue,sat,val).*cross_section_mask_artery;
+    imgM0 = ~cross_section_mask_artery.*rescale(videoM0_from_holowaves(:,:,tt)) + tmp_frame;
+
+    imshow(imgM0);
     x_center = ToolBox.x_barycentre;
     y_center = ToolBox.y_barycentre;
 
@@ -280,7 +281,7 @@ for tt = 1:size(v_RMS,3)
 end
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ volume_rate_video_artery.avi')));
-tmp = mat2gray( volume_rate_video_artery);
+tmp = mat2gray(volume_rate_video_artery);
 open(w)
 for j = 1:size( volume_rate_video_artery,4)
     writeVideo(w,tmp(:,:,:,j)) ;  
@@ -385,9 +386,9 @@ if veins_analysis
 
     mean_volume_rate_vein = ones(length(fullTime),1)*mean(total_avg_blood_volume_rate_vein);
 
-    maskRGB_vein(:,:,1) = mat2gray(mean_M0).*~cross_section_mask_vein;
-    maskRGB_vein(:,:,2) = mat2gray(mean_M0).*~cross_section_mask_vein;
-    maskRGB_vein(:,:,3) = mat2gray(mean_M0).*~cross_section_mask_vein + maskRGB_vein(:,:,3).*cross_section_mask_vein;
+    maskRGB_vein(:,:,1) = mean_M0.*~cross_section_mask_vein;
+    maskRGB_vein(:,:,2) = mean_M0.*~cross_section_mask_vein;
+    maskRGB_vein(:,:,3) = mean_M0.*~cross_section_mask_vein + maskRGB_vein(:,:,3).*cross_section_mask_vein;
 
 
     figure(111223)
@@ -403,10 +404,11 @@ if veins_analysis
 
         hue = 0.6*(maskOnes(:,:,tt).*cross_section_mask_vein);
         sat = maskOnes(:,:,tt).*cross_section_mask_vein;
-        val = dataM0(:,:,tt).*~cross_section_mask_vein + maskOnes(:,:,tt).*cross_section_mask_vein;
+        val = maskOnes(:,:,tt).*cross_section_mask_vein;
 
-        tmp_frame = hsv2rgb(hue,sat,val);
-        imshow(tmp_frame);
+        tmp_frame = hsv2rgb(hue,sat,val).*cross_section_mask_vein;
+        imgM0 = ~cross_section_mask_vein.*rescale(videoM0_from_holowaves(:,:,tt)) + tmp_frame;
+        imshow(imgM0);
         x_center = ToolBox.x_barycentre;
         y_center = ToolBox.y_barycentre;
 

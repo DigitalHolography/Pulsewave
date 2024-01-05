@@ -201,7 +201,7 @@ classdef OneCycleClass
                 avgM0 = mean(obj.dataM0{ii},[1 2]);
                 avgRef = mean(obj.reference{ii},[1 2]);
 
-                tmp_M2M0 = obj.dataM2M0{ii};
+                tmp_M2M0 = obj.dataM2M0{ii};obj.reference_norm
                 tmp_M2 = obj.dataM2{ii};
                 for jj = 1 : size(obj.dataM2M0{ii}, 3)
                     tmp_M2M0(:,:,jj) = sqrt((tmp_M2(:,:,jj))./avgM0(:,:,jj));
@@ -532,7 +532,6 @@ classdef OneCycleClass
                 sys_index_list_cell = cell(obj.nbFiles) ;
                 fullPulseWave_cell = cell(obj.nbFiles) ;
                 for n = 1:obj.nbFiles
-
                     fileID = fopen(path_file_txt_exe_times,'a+') ;
                     fprintf(fileID,'PULSEWAVE ANALYSIS : \r\n\n');
                     fclose(fileID);
@@ -552,7 +551,7 @@ classdef OneCycleClass
                     disp(time_sys_idx)
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
                     
-                    [v_RMS_one_cycle,v_RMS_all,exec_times, total_time] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
+                    [v_RMS_one_cycle,v_RMS_all,onePulseVideoM0,exec_times, total_time] = pulseAnalysis(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},obj.reference_interp{1},sys_index_list_cell{n},meanIm, maskArtery,maskVein,maskBackground ,ToolBox,obj.directory);
                     disp('PulseAnalysis timing :')
                     time_pulseanalysis = total_time;
                     disp(time_pulseanalysis)
@@ -566,14 +565,15 @@ classdef OneCycleClass
                     clear exec_times
 
                     tic
-                    velocity_map(maskArtery, maskVein, v_RMS_one_cycle, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ? 
+                    velocity_map(maskArtery, maskVein, v_RMS_one_cycle, onePulseVideoM0, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ? 
                     disp('Velocity map timing :')
                     time_vel_map = toc;
                     disp(time_vel_map)
                     save_time(path_file_txt_exe_times, 'Velocity map', time_vel_map)
 
                     tic
-                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,meanIm, ToolBox, path)
+                    ImgM0 = rescale(mean(obj.reference_interp{1},3));
+                    velocityHistogramm(v_RMS_all, maskArtery,maskVein ,ImgM0 , ToolBox, path)
                     disp('Velocity Histogramm timing :')
                     time_hist = toc;
                     disp(time_hist)
@@ -588,19 +588,19 @@ classdef OneCycleClass
 
 
                     tic
-                    ArterialResistivityIndex(v_RMS_one_cycle,obj.dataM2M0_interp{n}, maskArtery,  ToolBox);
+                    ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp{1}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     time_arterial_res = toc;
                     disp(time_arterial_res)
                     save_time(path_file_txt_exe_times, 'Arterial Resistivity Index', time_arterial_res)
 
 
-                    %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
+                    %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},obj.reference_interp{1},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
                     %                     detectElasticWave(datacube, maskArtery, maskCRA);
                     tic
                     % try
                         disp('flowrate :')
-                        flow_rate(maskArtery, maskVein, maskCRA,maskSectionArtery, v_RMS_all,obj.dataM0_interp{1}, ToolBox, obj.k,obj.directory);
+                        flow_rate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k,obj.directory);
                         disp('FlowRate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)

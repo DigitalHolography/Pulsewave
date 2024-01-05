@@ -1,4 +1,4 @@
-function [one_cycle_video, selectedPulseIdx, cycles_signal] = create_one_cycle(video, mask, sys_index_list, Ninterp,path)
+function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] = create_one_cycle(video, videoM0, mask, sys_index_list, Ninterp,path)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 
@@ -10,6 +10,7 @@ disp('over one cardiac cycle...');
 
 M = length(sys_index_list)-1; % M : pulse #
 one_cycle_video = zeros(size(video,1), size(video,2), Ninterp, M);
+one_cycle_videoM0 = zeros(size(video,1), size(video,2), Ninterp, M);
 
 Nx = size(video,1);
 Ny = size(video,2);
@@ -105,6 +106,7 @@ if M > 0 % we have detected at least two systoles
     %     hold off
 
     tmp = zeros(size(video,1), size(video,2), Ninterp);
+    tmpM0 = zeros(size(video,1), size(video,2), Ninterp);
 %     ctr = 0;
     cycles_accepted = (dataReliabilityIndex > PW_params.oneCycle_outNoiseThreshold);
     %cycles_accepted = [1 ;1 ;0;0];
@@ -121,6 +123,7 @@ if M > 0 % we have detected at least two systoles
 
 
     single_cycles = zeros(Nx, Ny, Ninterp, M);
+    single_cyclesM0 = zeros(Nx, Ny, Ninterp, M);
     selectedPulseIdx = find(cycles_accepted);
     %     parfor ii = 1:M % for each detected pulse, loop
     if ~isempty(selectedPulseIdx) %at least one cycle was accepted
@@ -132,10 +135,12 @@ if M > 0 % we have detected at least two systoles
                 for id_y = 1 : Ny
                     %                 one_cycle_video(id_x,id_y,:,ii) = interp1((sys_index_list(ii):sys_index_list(ii+1)-1),squeeze(video(id_x, id_y,sys_index_list(ii):sys_index_list(ii+1)-1)),interp_range);
                     single_cycles(id_x,id_y,:,ii) = interp1(frame_range, squeeze(video(id_x, id_y,frame_range)),interp_range);
+                    single_cyclesM0(id_x,id_y,:,ii) = interp1(frame_range, squeeze(videoM0(id_x, id_y,frame_range)),interp_range);
                 end
             end
         end
         tmp = squeeze(sum(single_cycles, 4))/length(selectedPulseIdx);
+        tmpM0 = squeeze(sum(single_cycles, 4))/length(selectedPulseIdx);
     else
         1; % never happens because of the normalization
     end
@@ -148,10 +153,12 @@ end
 
 
 one_cycle_video = tmp; % average all detected cycles
+one_cycle_videoM0 = tmpM0; % average all detected cycles
 
 oneP = squeeze(sum(one_cycle_video .* mask,[1 2]) / nnz(mask));
 [min_val,shift] = min(oneP); % find bottom systole
 one_cycle_video = circshift(one_cycle_video,-shift, 3);
+one_cycle_videoM0 = circshift(one_cycle_videoM0,-shift, 3);
 cycles_signal = circshift(cycles_signal,-shift, 2); % shift pulse to start & end with bottom diastole
 
 

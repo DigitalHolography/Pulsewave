@@ -1,4 +1,4 @@
-function [] = ArterialResistivityIndex(v_RMS_one_cycle,dataCubeM2M0, maskArtery,  ToolBox)
+function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, maskArtery,  ToolBox)
 PW_params = Parameters_json(path);
 disp('arterial resistivity...');
 
@@ -9,14 +9,8 @@ fileID = fopen(path_file_log,'a+') ;
 fprintf(fileID, 'Arterial resistivity... \r\n');
 fclose(fileID);
 
-% for pp = 1:size(dataCubeM2M0,3)
-%     dataCubeM2M0(:,:,pp) = flat_field_correction(squeeze(dataCubeM2M0(:,:,pp)), PW_params.flatField_gwRatio*size(dataCubeM2M0,1), PW_params.flatField_border);
-%     
-% end
-
-meanIm = mat2gray(squeeze(mean(dataCubeM2M0,3)));
-% tolVal = [0.02, 0.98]; 
-% meanIm = mat2gray(imadjust(meanIm, stretchlim(meanIm, tolVal)));
+meanIm = rescale(mean(videoM0_from_holowaves,3));
+videoM0_from_holowaves = rescale(videoM0_from_holowaves);
 
 [ARI, ARImap] = construct_resistivity_index(v_RMS_one_cycle, maskArtery);
 ARImap(isnan(ARImap))=0;
@@ -27,14 +21,16 @@ end
 [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,meanIm,maskArtery,ToolBox);
 % arterial resistivity map RGB
 ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+ARImapRGB = ARImapRGB.*maskArtery + ones(size(ARImapRGB)).*meanIm.*~maskArtery;
 
 ARIvideoRGB = zeros(size(v_RMS_one_cycle,1),size(v_RMS_one_cycle,2),3,size(v_RMS_one_cycle,3));
 
 for ii = 1:size(v_RMS_one_cycle,3)
-    v = mat2gray(squeeze(v_RMS_one_cycle(:,:,ii)));
-    [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,v,maskArtery,ToolBox);
+    [hue_ARI,sat_ARI,val_ARI] = createARI_HSVmap(ARImap,videoM0_from_holowaves(:,:,ii),maskArtery,ToolBox);
     %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
     ARIvideoRGB(:,:,:,ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+    img_M0 = videoM0_from_holowaves(:,:,ii);
+    ARIvideoRGB(:,:,:,ii) = ARIvideoRGB(:,:,:,ii).*maskArtery + ones(size(ARIvideoRGB(:,:,:,ii))).*img_M0.*~maskArtery;
 end
 
 % save video

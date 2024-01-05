@@ -69,17 +69,17 @@ cercle_mask2 = sqrt((x - xx).^2 + (y - yy).^2) <= radius2;
 
 maskSection = xor(cercle_mask1,cercle_mask2);
 
-%% Create Colormap ARtery/Vein 
+%% Create Colormap Artery/Vein 
 
 mask_artery = maskArtery;
-
-meanIm = mat2gray(meanIm);
 
 [hue_artery,sat_artery,val] = createHSVmap(meanIm,mask_artery-mask_artery.*maskSection,0,0);
 [hue_sectionA,sat_sectionA,~] = createHSVmap(meanIm,maskSection.*mask_artery,0.15,0.15);
 sat_section_artery = sat_sectionA; 
 val = val.*(~maskSection)+val.*maskSection+ maskSection.*(~(mask_artery));
 VesselImageRGB =  hsv2rgb(hue_artery+hue_sectionA, sat_artery+sat_section_artery, val);
+mask_all = mask_artery | maskSection;
+VesselImageRGB = VesselImageRGB.*mask_all + ones(size(VesselImageRGB)).*meanIm.*~mask_all;
 
 figure(156) 
 imshow(VesselImageRGB) ;

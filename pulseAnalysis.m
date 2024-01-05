@@ -1,4 +1,4 @@
-function [v_RMS_one_cycle,v_RMS_all, exec_times,total_time] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0,sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
+function [v_RMS_one_cycle,v_RMS_all, onePulseVideoM0, exec_times,total_time] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0, fullVideoM0, sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : fullVideoM1M0, Taille : 10631287200 bytes (DEBUT)
@@ -386,7 +386,7 @@ clear fullBackgroundSignal fullVenousSignal A
 tic
 
 flowVideoRGB = zeros(size(fullVideoM2M0,1),size(fullVideoM2M0,2),3,size(fullVideoM2M0,3));
-
+fullVideoM0_norm = rescale(fullVideoM0);
 if veins_analysis
     for ii = 1:size(fullVideoM2M0,3)
         v = mat2gray(squeeze(fullVideoM2M0(:,:,ii)));
@@ -394,6 +394,7 @@ if veins_analysis
         [hue_vein,sat_vein,val_vein,~] = createHSVmap(v,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
         val = v.*(~(maskArtery+maskVein))+val_artery.*maskArtery+val_vein.*maskVein;
         flowVideoRGB(:,:,:,ii) =   hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
+        flowVideoRGB(:,:,:,ii) = flowVideoRGB(:,:,:,ii).*(maskArtery+maskVein) + ones(size(flowVideoRGB(:,:,:,ii))).*fullVideoM0_norm(:,:,ii).*~(maskArtery+maskVein);
     end
 else
     for ii = 1:size(fullVideoM2M0,3)
@@ -401,6 +402,7 @@ else
         [hue_artery,sat_artery,val_artery,~] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
         val = v.*~maskArtery + val_artery.*maskArtery;
         flowVideoRGB(:,:,:,ii) =   hsv2rgb(hue_artery, sat_artery, val);
+        flowVideoRGB(:,:,:,ii) = flowVideoRGB(:,:,:,ii).*(maskArtery) + ones(size(flowVideoRGB(:,:,:,ii))).*fullVideoM0_norm(:,:,ii).*~(maskArtery);
     end
 end
 
@@ -432,11 +434,11 @@ total_time = total_time + toc;
 
 tic
 
-[onePulseVideo, ~, ~] = create_one_cycle(fullVideoM2M0, maskArtery, sys_index_list, Ninterp,path);
+[onePulseVideo, ~, ~, onePulseVideoM0] = create_one_cycle(fullVideoM2M0, fullVideoM0, maskArtery, sys_index_list, Ninterp,path);
 
 clear fullVideoM2M0 
 
-[onePulseVideominusBKG, selectedPulseIdx, cycles_signal] = create_one_cycle(fullVideoM2M0minusBKG, maskArtery, sys_index_list, Ninterp,path);
+[onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp,path);
 v_RMS_all = ToolBox.ScalingFactorVelocityInPlane*fullVideoM2M0minusBKG;
 
 clear fullVideoM2M0minusBKG

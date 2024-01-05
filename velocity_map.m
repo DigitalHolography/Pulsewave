@@ -1,11 +1,10 @@
-function [] = velocity_map(maskArtery, maskVein, v_RMS, ToolBox)
+function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolBox)
 
 PW_params = Parameters_json(path);
 veins_analysis = PW_params.veins_analysis;
 
 % TRUE MIN and MAX V_RMS but not realistic
-
-Im = mat2gray(squeeze(mean(v_RMS,3)));
+Im = rescale(mean(videoM0_one_cycle,3));
 
 % Ones = ones(size(v_RMS));
 % V = mean(v_RMS,3);
@@ -39,10 +38,10 @@ imshow(flowImageRGB)
 
 %% Construct Velocity video 
 flowVideoRGB_one_cycle = zeros(size(v_RMS,1),size(v_RMS,2),3,size(v_RMS,3));
-
+videoM0_one_cycle = rescale(videoM0_one_cycle);
 if veins_analysis
     for ii = 1:size(v_RMS,3)
-        v = mat2gray(squeeze(v_RMS(:,:,ii)));
+        v = videoM0_one_cycle(:,:,ii);
         [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein,sat_vein,val_vein,cmap_vein] = createHSVmap(v,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
         val = v.*(~(maskArtery+maskVein))+val_artery.*maskArtery+val_vein.*maskVein;
@@ -50,7 +49,7 @@ if veins_analysis
     end
 else
     for ii = 1:size(v_RMS,3)
-        v = mat2gray(squeeze(v_RMS(:,:,ii)));
+        v = videoM0_one_cycle(:,:,ii);
         [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
         val = v.*(~(maskArtery))+val_artery.*maskArtery;
         flowVideoRGB_one_cycle(:,:,:,ii) =   hsv2rgb(hue_artery, sat_artery, val);

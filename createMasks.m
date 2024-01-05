@@ -102,7 +102,7 @@ correlationMatrix_vein(vesselnessIm == 0) = min(correlationMatrix_vein,[],'all')
 vesselness_artery = vesselnessIm.*rescale(correlationMatrix_artery);
 vesselness_vein = vesselnessIm.*rescale(correlationMatrix_vein);
 
-% Create seed artery mask and contidion artery mask for region growing
+% Create seed artery mask and condition artery mask for region growing
 correlationMatrix_arteryCondition = correlationMatrix_artery.*rescale(vesselnessIm);
 
 level_artery = graythresh(correlationMatrix_arteryCondition);
