@@ -22,15 +22,18 @@ Vmin_Veins = min(v_vein(:));
 
 %% Construct velocity map
 
+ImgM0 = rescale(mean(videoM0_one_cycle,3));
 if veins_analysis
     [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(Im,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
     [hue_vein,sat_vein,val_vein,cmap_vein] = createHSVmap(Im,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
     val = Im.*(~(maskArtery+maskVein))+val_artery.*maskArtery+val_vein.*maskVein;
     flowImageRGB =  hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
+    flowImageRGB = flowImageRGB.*(maskArtery+maskVein) + ones(size(flowImageRGB)).*ImgM0.*~(maskArtery+maskVein);
 else
     [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(Im,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
     val = Im.*(~(maskArtery))+val_artery.*maskArtery;
     flowImageRGB =  hsv2rgb(hue_artery, sat_artery, val);
+    flowImageRGB = flowImageRGB.*(maskArtery) + ones(size(flowImageRGB)).*ImgM0.*~(maskArtery);
 end
 
 figure(321)
@@ -38,21 +41,23 @@ imshow(flowImageRGB)
 
 %% Construct Velocity video 
 flowVideoRGB_one_cycle = zeros(size(v_RMS,1),size(v_RMS,2),3,size(v_RMS,3));
-videoM0_one_cycle = rescale(videoM0_one_cycle);
+videoM0_one_cycle_norm = rescale(videoM0_one_cycle);
 if veins_analysis
     for ii = 1:size(v_RMS,3)
-        v = videoM0_one_cycle(:,:,ii);
+        v = v_RMS(:,:,ii);
         [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein,sat_vein,val_vein,cmap_vein] = createHSVmap(v,maskVein,0.68,0.5); %0.5/0.68 for cyan-dark blue range
         val = v.*(~(maskArtery+maskVein))+val_artery.*maskArtery+val_vein.*maskVein;
         flowVideoRGB_one_cycle(:,:,:,ii) =   hsv2rgb(hue_artery+hue_vein, sat_artery+sat_vein, val);
+        flowVideoRGB_one_cycle(:,:,:,ii) =   flowVideoRGB_one_cycle(:,:,:,ii).*(maskArtery+maskVein) + ones(size(flowVideoRGB_one_cycle(:,:,:,ii))).*~(maskArtery+maskVein).*videoM0_one_cycle_norm(:,:,ii);
     end
 else
     for ii = 1:size(v_RMS,3)
-        v = videoM0_one_cycle(:,:,ii);
+        v = v_RMS(:,:,ii);
         [hue_artery,sat_artery,val_artery,cmap_artery] = createHSVmap(v,maskArtery,0,0.18); % 0 / 0.18 for orange-yellow range
         val = v.*(~(maskArtery))+val_artery.*maskArtery;
         flowVideoRGB_one_cycle(:,:,:,ii) =   hsv2rgb(hue_artery, sat_artery, val);
+        flowVideoRGB_one_cycle(:,:,:,ii) =   flowVideoRGB_one_cycle(:,:,:,ii).*(maskArtery) + ones(size(flowVideoRGB_one_cycle(:,:,:,ii))).*~(maskArtery).*videoM0_one_cycle_norm(:,:,ii);
     end
 end
 

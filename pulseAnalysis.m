@@ -452,20 +452,34 @@ v_RMS_one_cycle = (onePulseVideominusBKG.*maskArtery+onePulseVideo.*~maskArtery)
 
 % avi
 w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_one_cycle.avi')));
+wM0 = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_one_cycleM0.avi')));
 tmp = mat2gray(onePulseVideo);
+tmpM0 = mat2gray(onePulseVideoM0);
 open(w)
+open(wM0)
 for j = 1:size(onePulseVideo,3)
     writeVideo(w,tmp(:,:,j)) ;  
+    writeVideo(wM0,tmpM0(:,:,j)) ;
 end
 close(w);
+close(wM0);
+
 % mp4
 w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_one_cycle.mp4')),'MPEG-4');
+wM0 = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_one_cycleM0.mp4')),'MPEG-4');
 tmp = mat2gray(onePulseVideo);
+tmpM0 = mat2gray(onePulseVideoM0);
 open(w)
+open(wM0)
 for j = 1:size(onePulseVideo,3)
-    writeVideo(w,tmp(:,:,j)) ;  
+    writeVideo(w,tmp(:,:,j)) ; 
+    writeVideo(wM0,tmpM0(:,:,j)) ; 
 end
 close(w);
+close(wM0);
+
+clear tmp
+clear tmpM0
 
 %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 

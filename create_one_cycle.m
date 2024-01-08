@@ -140,7 +140,7 @@ if M > 0 % we have detected at least two systoles
             end
         end
         tmp = squeeze(sum(single_cycles, 4))/length(selectedPulseIdx);
-        tmpM0 = squeeze(sum(single_cycles, 4))/length(selectedPulseIdx);
+        tmpM0 = squeeze(sum(single_cyclesM0, 4))/length(selectedPulseIdx);
     else
         1; % never happens because of the normalization
     end

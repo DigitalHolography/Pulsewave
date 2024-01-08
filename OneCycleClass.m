@@ -201,7 +201,7 @@ classdef OneCycleClass
                 avgM0 = mean(obj.dataM0{ii},[1 2]);
                 avgRef = mean(obj.reference{ii},[1 2]);
 
-                tmp_M2M0 = obj.dataM2M0{ii};obj.reference_norm
+                tmp_M2M0 = obj.dataM2M0{ii};obj.reference_norm;
                 tmp_M2 = obj.dataM2{ii};
                 for jj = 1 : size(obj.dataM2M0{ii}, 3)
                     tmp_M2M0(:,:,jj) = sqrt((tmp_M2(:,:,jj))./avgM0(:,:,jj));
