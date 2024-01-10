@@ -45,7 +45,7 @@ yAx_display = yAx;
 
 X = linspace(v_min_all,v_max_all,v_max_all-v_min_all+1);
 n = size(X,2);
-xAx = [0 n*ToolBox.stride/(1000*ToolBox.fs)];
+xAx = [0 size_vRMS_3*ToolBox.stride/(1000*ToolBox.fs)];
 histo_artery = zeros(size(X,2),size_vRMS_3);
 %histo_video_artery = zeros(size(X,2),size(dataCubeM2M0,3),3,size(dataCubeM2M0,3));
 
@@ -105,7 +105,7 @@ if veins_analysis
 
     X = linspace(v_min_all,v_max_all,v_max_all-v_min_all+1);
     n = size(X,2);
-    xAx = [0 n*ToolBox.stride/(1000*ToolBox.fs)];
+    xAx = [0 size_vRMS_3*ToolBox.stride/(1000*ToolBox.fs)];
     histo_vein = zeros(size(X,2),size_vRMS_3);
     %histo_video_vein = zeros(size(X,2),size(dataCubeM2M0,3),size(dataCubeM2M0,3));
     f = getframe(gcf);

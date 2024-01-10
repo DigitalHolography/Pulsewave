@@ -329,10 +329,10 @@ hold off
 ax_vol_rate_artery = axis;
 ax_vol_rate_artery(3) = 0 ;
 axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
-if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60
-    yticks(sort([0 20 40 round(mean_volume_rate_artery(1)) 60]))
+if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60 && round(mean_volume_rate_artery(1))~=80 && round(mean_volume_rate_artery(1))~=100
+    yticks(sort([0 20 40 60 80 100 round(mean_volume_rate_artery(1))]))
 else 
-    yticks(sort([0 20 40 60]))
+    yticks(sort([0 20 40 60 80 100]))
 end
 
 Plot_volume_rate_artery = getframe(gcf);
@@ -355,10 +355,10 @@ for tt = 1:length(fullTime)
     xlabel('Time (s)')
     title("Total blood volume rate in arteries")
     fontsize(gca,14,"points") ;
-    if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60
-        yticks(sort([0 20 40 round(mean_volume_rate_artery(1)) 60]))
+    if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60 && round(mean_volume_rate_artery(1))~=80 && round(mean_volume_rate_artery(1))~=100
+        yticks(sort([0 20 40 60 80 100 round(mean_volume_rate_artery(1))]))
     else
-        yticks(sort([0 20 40 60]))
+        yticks(sort([0 20 40 60 80 100]))
     end
     set(gca,'PlotBoxAspectRatio',[2.5 1 1])
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
@@ -490,10 +490,10 @@ if veins_analysis
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     Plot_volume_rate_vein = getframe(gcf);
     Plot_volume_rate_video_vein = zeros(size(Plot_volume_rate_vein.cdata,1),size(Plot_volume_rate_vein.cdata,2),3,size(v_RMS,3));
-    if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40 && round(mean_volume_rate_vein(1))~=60
-        yticks(sort([0 20 40 round(mean_volume_rate_vein(1)) 60]))
+    if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40 && round(mean_volume_rate_vein(1))~=60 && round(mean_volume_rate_vein(1))~=80 && round(mean_volume_rate_vein(1))~=100
+        yticks(sort([0 20 40 60 80 100 round(mean_volume_rate_vein(1))]))
     else
-        yticks(sort([0 20 40 60]))
+        yticks(sort([0 20 40 60 80 100]))
     end
 
     for tt = 1:length(fullTime)
@@ -513,10 +513,10 @@ if veins_analysis
         xlabel('Time (s)')
         title("Total blood volume rate in veins")
         fontsize(gca,14,"points") ;
-        if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40 && round(mean_volume_rate_vein(1))~=60
-            yticks(sort([0 20 40 round(mean_volume_rate_vein(1)) 60]))
+        if round(mean_volume_rate_vein(1))~=20 && round(mean_volume_rate_vein(1))~=40 && round(mean_volume_rate_vein(1))~=60 && round(mean_volume_rate_vein(1))~=80 && round(mean_volume_rate_vein(1))~=100
+            yticks(sort([0 20 40 60 80 100 round(mean_volume_rate_vein(1))]))
         else
-            yticks(sort([0 20 40 60]))
+            yticks(sort([0 20 40 60 80 100]))
         end
         set(gca,'PlotBoxAspectRatio',[2.5 1 1])
         axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
