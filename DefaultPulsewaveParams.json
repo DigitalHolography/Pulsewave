@@ -83,6 +83,7 @@
         "Theta" : 0.05,
         "Optical index" : 1.35,
         "Lambda" : 852e-9,
+        "Phi" : 2.5,
         "Data reliatibility factor" : 0.5,
         "Peak height threshold" : 0.7,
         "Out of noise threshold" : 4,

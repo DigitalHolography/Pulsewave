@@ -64,6 +64,7 @@ classdef Parameters_json
         theta
         opticalIndex
         lambda
+        phi
         pulseAnal_dataReliabilityFactor
         pulseAnal_peakHeightThreshold
         pulseAnal_outNoiseThreshold
@@ -186,6 +187,7 @@ classdef Parameters_json
                 obj.theta = parsedData.PulseAnalysis.Theta;
                 obj.opticalIndex = parsedData.PulseAnalysis.OpticalIndex;
                 obj.lambda = parsedData.PulseAnalysis.Lambda;
+                obj.phi = parsedData.PulseAnalysis.Phi; % Mie scattering angle
                 obj.pulseAnal_dataReliabilityFactor = parsedData.PulseAnalysis.DataReliatibilityFactor; %?
                 obj.pulseAnal_peakHeightThreshold = parsedData.PulseAnalysis.PeakHeightThreshold;
                 obj.pulseAnal_outNoiseThreshold = parsedData.PulseAnalysis.OutOfNoiseThreshold;
