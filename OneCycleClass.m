@@ -110,82 +110,54 @@ classdef OneCycleClass
 
                 %% File loading
                 dir_path_raw = fullfile(obj.directory ,'raw');
-                RawFilePath = fullfile(dir_path_raw,strcat(obj.filenames{ii}, '_DopplerRMS.raw'));
-                NameRawFile = strcat(obj.filenames{ii}, '_DopplerRMS');
+                NameRawFile = strcat(obj.filenames{ii}, '_moment0');
                 ext = '.raw';
 
-                % sqrt M2/M0 : DopplerRMS
-                disp(['reading : ',fullfile(dir_path_raw,NameRawFile)]);
-                FilePathUnix = fullfile(dir_path_raw,NameRawFile);
-                FilePathUnix(strfind(FilePathUnix,'\'))='/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs,'\r', str_tosave);
-
-                fileID = fopen(RawFilePath);
-                video = fread(fileID,'float32');
-                fclose(fileID);
-                obj.dataM2M0{ii} = reshape(video,refvideosize);
-                % M1/M0 : DopplerAvg
-                tmpname = NameRawFile;
-                tmpname(end-2:end) = 'AVG';
-
-                disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
-                FilePathUnix(strfind(FilePathUnix,'\'))='/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs,'\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
-                videoM1M0 = fread(fileID,'float32');
-                fclose(fileID);
-                obj.dataM1M0{ii} = reshape(videoM1M0,refvideosize);
                 % Import Moment 0
-                tmpname = strcat(NameRawFile(1:end-10), 'moment0');
-
-                disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                disp(['reading : ',fullfile(dir_path_raw,[NameRawFile,ext])]);
+                FilePathUnix = fullfile(dir_path_raw,[NameRawFile,ext]);
                 FilePathUnix(strfind(FilePathUnix,'\'))='/';
                 str_tosave = sprintf('reading : %s', FilePathUnix);
                 logs = strcat(logs,'\r', str_tosave);
 
-                fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
+                fileID = fopen(fullfile(dir_path_raw,[NameRawFile,ext]));
                 videoM0 = fread(fileID,'float32');
                 fclose(fileID);
                 obj.dataM0{ii} = reshape(videoM0,refvideosize);
                 % Import Moment 1
-                tmpname = strcat(NameRawFile(1:end-10), 'moment1');
-                disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                NameRawFile = strcat(obj.filenames{ii}, '_moment1');
+                disp(['reading : ',fullfile(dir_path_raw,[NameRawFile,ext])]);
+                FilePathUnix = fullfile(dir_path_raw,[NameRawFile,ext]);
                 FilePathUnix(strfind(FilePathUnix,'\'))='/';
                 str_tosave = sprintf('reading : %s', FilePathUnix);
                 logs = strcat(logs,'\r', str_tosave);
 
-                fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
+                fileID = fopen(fullfile(dir_path_raw,[NameRawFile,ext]));
                 videoM1 = fread(fileID,'float32');
                 fclose(fileID);
                 obj.dataM1{ii} = reshape(videoM1,refvideosize);
                 % Import Moment 2
-                tmpname = strcat(NameRawFile(1:end-10), 'moment2');
-                disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-                FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+                NameRawFile = strcat(obj.filenames{ii}, '_moment2');
+                disp(['reading : ',fullfile(dir_path_raw,[NameRawFile,ext])]);
+                FilePathUnix = fullfile(dir_path_raw,[NameRawFile,ext]);
                 FilePathUnix(strfind(FilePathUnix,'\'))='/';
                 str_tosave = sprintf('reading : %s', FilePathUnix);
                 logs = strcat(logs,'\r', str_tosave);
 
-                fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
+                fileID = fopen(fullfile(dir_path_raw,[NameRawFile,ext]));
                 videoM2 = fread(fileID,'float32');
                 fclose(fileID);
                 obj.dataM2{ii} = reshape(videoM2,refvideosize);
 %                 % Import SH
 %       
-%                 tmpname = strcat(NameRawFile(1:end-10), 'SH');
-%                 disp(['reading : ',fullfile(dir_path_raw,[tmpname,ext])]);
-%                 FilePathUnix = fullfile(dir_path_raw,[tmpname,ext]);
+%                 NameRawFile = strcat(obj.filenames{ii}, '_SH');
+%                 disp(['reading : ',fullfile(dir_path_raw,[NameRawFile,ext])]);
+%                 FilePathUnix = fullfile(dir_path_raw,[NameRawFile,ext]);
 %                 FilePathUnix(strfind(FilePathUnix,'\'))='/';
 %                 str_tosave = sprintf('reading : %s', FilePathUnix);
 %                 logs = strcat(logs,'\r', str_tosave);
 %
-%                 fileID = fopen(fullfile(dir_path_raw,[tmpname,ext]));
+%                 fileID = fopen(fullfile(dir_path_raw,[NameRawFile,ext]));
 %                 videoSH = fread(fileID,'float32');
 %                 fclose(fileID);
 %                 obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
@@ -201,24 +173,24 @@ classdef OneCycleClass
                 avgM0 = mean(obj.dataM0{ii},[1 2]);
                 avgRef = mean(obj.reference{ii},[1 2]);
 
-                tmp_M2M0 = obj.dataM2M0{ii};obj.reference_norm;
+                tmp_M2M0 = obj.dataM0{ii};
                 tmp_M2 = obj.dataM2{ii};
-                for jj = 1 : size(obj.dataM2M0{ii}, 3)
+                for jj = 1 : size(obj.dataM0{ii}, 3)
                     tmp_M2M0(:,:,jj) = sqrt((tmp_M2(:,:,jj))./avgM0(:,:,jj));
                 end
                 obj.dataM2M0{ii} = tmp_M2M0;
                 clear tmp_M2M0 tmp_M2
 
+                tmp_M1M0 = obj.dataM0{ii};
                 tmp_M1 = obj.dataM1{ii};
-                tmp_M1M0 = obj.dataM1M0{ii};
-                for jj = 1 : size(obj.dataM2M0{ii}, 3)
+                for jj = 1 : size(obj.dataM0{ii}, 3)
                     tmp_M1M0(:,:,jj) = (tmp_M1(:,:,jj))./avgM0(:,:,jj);
                 end
                 obj.dataM1M0{ii} = tmp_M1M0;
                 clear tmp_M1M0 tmp_M1
                 
                 tmp_Ref = obj.reference{ii};
-                for jj = 1 : size(obj.dataM2M0{ii}, 3)  
+                for jj = 1 : size(obj.dataM0{ii}, 3)  
                     tmp_Ref(:,:,jj) = tmp_Ref(:,:,jj)./avgRef(:,:,jj);
                 end 
                 obj.reference_norm{ii} = tmp_Ref;
@@ -229,9 +201,9 @@ classdef OneCycleClass
         function obj = MomentFlatField(obj)
             PW_params = Parameters_json(obj.directory);
             for ii = 1 : obj.nbFiles
-                height = size(obj.dataM2M0_interp{1}, 1);
-                width = size(obj.dataM2M0_interp{1}, 2);
-                length = size(obj.dataM2M0_interp{1}, 3);
+                height = size(obj.dataM0_interp{1}, 1);
+                width = size(obj.dataM0_interp{1}, 2);
+                length = size(obj.dataM0_interp{1}, 3);
                 num_frames = size(obj.reference{1}, 3);
                 gwRatio = PW_params.flatField_gwRatio;
                 flatField_border = PW_params.flatField_border;             
@@ -263,7 +235,7 @@ classdef OneCycleClass
 
             logs = obj.load_logs;
 
-            if firstFrame > 0 && firstFrame < size(obj.dataM2M0{1},3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM2M0{1},3)
+            if firstFrame > 0 && firstFrame < size(obj.dataM0{1},3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM0{1},3)
 
 
                 obj.reference{1} = obj.reference{1}(:,:,firstFrame:lastFrame);
@@ -275,16 +247,16 @@ classdef OneCycleClass
                 obj.dataM2{1} = obj.dataM2{1}(:,:,firstFrame:lastFrame);
 
 
-                disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM2M0{1},3))])
+                disp(['Data cube frame: ',num2str(firstFrame), '/', num2str(size(obj.dataM0{1},3)), ' to ',num2str(lastFrame), '/', num2str(size(obj.dataM0{1},3))])
 
-                str_tosave = sprintf('Data cube frame: %s/%s to %s/%s',num2str(firstFrame), num2str(size(obj.dataM2M0{1},3)),num2str(lastFrame), num2str(size(obj.dataM2M0{1},3)));
+                str_tosave = sprintf('Data cube frame: %s/%s to %s/%s',num2str(firstFrame), num2str(size(obj.dataM0{1},3)),num2str(lastFrame), num2str(size(obj.dataM0{1},3)));
                 logs = strcat(logs,'\r', str_tosave);
             else
                 disp('Wrong value for the first frame. Set as 1.')
                 disp('Wrong value for the last frame. Set as the end.')
-                disp(['Data cube frame: 1/', num2str(size(obj.dataM2M0{1},3)), ' to ',num2str(size(obj.dataM2M0{1},3)), '/', num2str(size(obj.dataM2M0{1},3))])
+                disp(['Data cube frame: 1/', num2str(size(obj.dataM0{1},3)), ' to ',num2str(size(obj.dataM0{1},3)), '/', num2str(size(obj.dataM0{1},3))])
 
-                str_tosave = sprintf('Wrong value for the first frame. Set as 1. \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s', num2str(size(obj.dataM2M0{1},3)),num2str(size(obj.dataM2M0{1},3)), num2str(size(obj.dataM2M0{1},3)));
+                str_tosave = sprintf('Wrong value for the first frame. Set as 1. \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s', num2str(size(obj.dataM0{1},3)),num2str(size(obj.dataM0{1},3)), num2str(size(obj.dataM0{1},3)));
                 logs = strcat(logs,'\r\n\n', str_tosave,'\n');
             end
 
@@ -300,7 +272,7 @@ classdef OneCycleClass
             height = (height-1)*(2^k_interp-1)+height;
             width = (width-1)*(2^k_interp-1)+width;
 
-            tmp_ref = zeros(height,width, size(obj.dataM2M0{1}, 3));
+            tmp_ref = zeros(height,width, size(obj.dataM0{1}, 3));
             tmp_calc_ref = obj.reference{1};
             parfor i = 1 : num_frames
                 tmp_ref(:,:,i) = interp2(tmp_calc_ref(:,:,i), k_interp);
@@ -308,7 +280,7 @@ classdef OneCycleClass
             obj.reference_interp{1} = tmp_ref;
             clear tmp_ref tmp_calc_ref
 
-            tmp_ref_norm = zeros(height,width, size(obj.dataM2M0{1}, 3));
+            tmp_ref_norm = zeros(height,width, size(obj.dataM0{1}, 3));
             tmp_calc_ref_norm = obj.reference_norm{1};
             parfor i = 1 : num_frames
                 tmp_ref_norm(:,:,i) = interp2(tmp_calc_ref_norm(:,:,i), k_interp);
@@ -316,7 +288,7 @@ classdef OneCycleClass
             obj.reference_norm_interp{1} = tmp_ref_norm;
             clear tmp_ref_norm tmp_calc_ref_norm
 
-            tmp_dataM2M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+            tmp_dataM2M0 = zeros(height, width, size(obj.dataM0{1}, 3));
             tmp_calc_data = obj.dataM2M0{1};
             parfor i = 1 : num_frames
                 tmp_dataM2M0(:,:,i) = interp2(tmp_calc_data(:,:,i), k_interp);
@@ -324,7 +296,7 @@ classdef OneCycleClass
             obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
             clear tmp_dataM2M0 tmp_calc_data
 
-            tmp_dataM0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+            tmp_dataM0 = zeros(height, width, size(obj.dataM0{1}, 3));
             tmp_calc_data_M0 = obj.dataM0{1};
             parfor i = 1 : num_frames % loop over frames
                 tmp_dataM0(:,:,i) = interp2(tmp_calc_data_M0(:,:,i), k_interp);
@@ -332,7 +304,7 @@ classdef OneCycleClass
             obj.dataM0_interp{1} = tmp_dataM0;
             clear tmp_dataM0 tmp_calc_data_M0
 
-            tmp_data_M1M0 = zeros(height, width, size(obj.dataM2M0{1}, 3));
+            tmp_data_M1M0 = zeros(height, width, size(obj.dataM0{1}, 3));
             tmp_calc_data_M1M0 = obj.dataM1M0{1};
             parfor i = 1 : num_frames
                 tmp_data_M1M0(:,:,i) = interp2(tmp_calc_data_M1M0(:,:,i), k_interp);
@@ -453,9 +425,9 @@ classdef OneCycleClass
                 fclose(fileID);
 
                 for ii = 1 : obj.nbFiles
-                    height = size(obj.dataM2M0_interp{1}, 1);
-                    width = size(obj.dataM2M0_interp{1}, 2);
-                    length = size(obj.dataM2M0_interp{1}, 3);
+                    height = size(obj.dataM0_interp{1}, 1);
+                    width = size(obj.dataM0_interp{1}, 2);
+                    length = size(obj.dataM0_interp{1}, 3);
                     num_frames = size(obj.reference{1}, 3);
                     gwRatio = PW_params.flatField_gwRatio;
                     flatField_border = PW_params.flatField_border;

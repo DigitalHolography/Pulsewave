@@ -12,7 +12,7 @@ M = length(sys_index_list)-1; % M : pulse #
 one_cycle_video = zeros(size(video,1), size(video,2), Ninterp, M);
 one_cycle_videoM0 = zeros(size(video,1), size(video,2), Ninterp, M);
 
-Nx = size(video,1);
+Nx = size(video,1); 
 Ny = size(video,2);
 
 if M > 0 % we have detected at least two systoles

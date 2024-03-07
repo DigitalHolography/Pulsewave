@@ -164,24 +164,20 @@ try
     hCB.Position = [0.10 0.3 0.81 0.35];
     colorfig.Position(4) = 0.1000;
     fontsize(gca,15,"points") ;
-
-
-    % Save colorbar
-    colorfig = figure(117);
-    colorfig.Units = 'normalized';
-    colormap(cmap_vein)
-    %hCB = colorbar('north');
-    hCB = colorbar('north','Ticks',[0,1],'TickLabels',{string(round(Vmin_Veins,1)),string(round(Vmax_Veins,1))});
-    set(gca,'Visible',false)
-    set(gca,'LineWidth', 3);
-    hCB.Position = [0.10 0.3 0.81 0.35];
-    colorfig.Position(4) = 0.1000;
-    fontsize(gca,15,"points") ;
-
-
     print('-f116','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_arteries.png'))) ;
 
     if veins_analysis
+        % Save colorbar
+        colorfig = figure(117);
+        colorfig.Units = 'normalized';
+        colormap(cmap_vein)
+        %hCB = colorbar('north');
+        hCB = colorbar('north','Ticks',[0,1],'TickLabels',{string(round(Vmin_Veins,1)),string(round(Vmax_Veins,1))});
+        set(gca,'Visible',false)
+        set(gca,'LineWidth', 3);
+        hCB.Position = [0.10 0.3 0.81 0.35];
+        colorfig.Position(4) = 0.1000;
+        fontsize(gca,15,"points") ;
         print('-f117','-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,'_colorbar_velocity_veins.png'))) ;
     end
 
