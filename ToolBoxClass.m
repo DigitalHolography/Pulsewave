@@ -33,6 +33,9 @@ classdef ToolBoxClass
         ARI_val_min double
         ARI_inflexion_point_val double
         ARI_slope_val double
+        NormalizationFactor double
+
+
 
      end
 
@@ -123,6 +126,11 @@ classdef ToolBoxClass
             obj.ARI_val_min = 1;
             obj.ARI_inflexion_point_val = 1;
             obj.ARI_slope_val = 10;
+
+
+            %% Normalization parameters
+            disp('reading Normalization Factors')
+            obj.NormalizationFactor = load(fullfile(path,'mat',"normalization_factor.mat"));
 
          end
         

@@ -148,6 +148,7 @@ classdef OneCycleClass
                 videoM2 = fread(fileID,'float32');
                 fclose(fileID);
                 obj.dataM2{ii} = reshape(videoM2,refvideosize);
+
 %                 % Import SH
 %       
 %                 NameRawFile = strcat(obj.filenames{ii}, '_SH');
@@ -240,8 +241,11 @@ classdef OneCycleClass
 
                 obj.reference{1} = obj.reference{1}(:,:,firstFrame:lastFrame);
                 obj.reference_norm{1} = obj.reference{1}(:,:,firstFrame:lastFrame);
-                obj.dataM2M0{1} = obj.dataM2M0{1}(:,:,firstFrame:lastFrame);
-                obj.dataM1M0{1} = obj.dataM1M0{1}(:,:,firstFrame:lastFrame);
+                % obj.dataM2M0{1} =
+                % obj.dataM2M0{1}(:,:,firstFrame:lastFrame); % NOT DONE
+                % ANYMORE HERE BECAUSE M2M0 and M1M0 DO NOT EXIST YET (NOT
+                % LOADED)
+                % obj.dataM1M0{1} = obj.dataM1M0{1}(:,:,firstFrame:lastFrame);
                 obj.dataM0{1} = obj.dataM0{1}(:,:,firstFrame:lastFrame);
                 obj.dataM1{1} = obj.dataM1{1}(:,:,firstFrame:lastFrame);
                 obj.dataM2{1} = obj.dataM2{1}(:,:,firstFrame:lastFrame);

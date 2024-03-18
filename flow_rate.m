@@ -1,4 +1,4 @@
-function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k,path)
+function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path)
 
 PW_params = Parameters_json(path);
 
@@ -91,6 +91,9 @@ if veins_analysis
 end
 
 %% Compute blood volume rate
+
+jsondata = jsondecode(fileread(fullfile(path,'log','Power_Normalization.mat')));
+b = jsondata.ReferenceWave.MeanPower / jsondata.BeatingWaveVariance.MeanPower;
 
 mask_artery = maskArtery;
 mask_vein = maskVein;
@@ -323,6 +326,7 @@ plot(fullTime,curve1,"Color", Color_std, 'LineWidth', 2);
 plot(fullTime, curve2, "Color",Color_std, 'LineWidth', 2);
 plot(fullTime,total_avg_blood_volume_rate_artery,'-k','LineWidth',1);
 axis tight ;
+ylim([0 102])
 hold off
 
 
@@ -484,6 +488,7 @@ if veins_analysis
     plot(fullTime, curve2, "Color",Color_std, 'LineWidth', 2);
     plot(fullTime,total_avg_blood_volume_rate_vein,'-k','LineWidth',1);
     axis tight ;
+    ylim([0 102])
     hold off
 
     axis tight ;
