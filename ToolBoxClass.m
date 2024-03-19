@@ -130,7 +130,13 @@ classdef ToolBoxClass
 
             %% Normalization parameters
             disp('reading Normalization Factors')
-            obj.NormalizationFactor = load(fullfile(path,'mat',"normalization_factor.mat"));
+            try
+                a = load(fullfile(path,'mat',"normalization_factor.mat"));
+                obj.NormalizationFactor = 40 * 0.206 * a.ReferenceWavePower / a.BeatingWaveVariancePower;
+
+            catch
+                obj.NormalizationFactor = 1;
+            end
 
          end
         

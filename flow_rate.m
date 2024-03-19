@@ -92,9 +92,6 @@ end
 
 %% Compute blood volume rate
 
-jsondata = jsondecode(fileread(fullfile(path,'log','Power_Normalization.mat')));
-b = jsondata.ReferenceWave.MeanPower / jsondata.BeatingWaveVariance.MeanPower;
-
 mask_artery = maskArtery;
 mask_vein = maskVein;
 

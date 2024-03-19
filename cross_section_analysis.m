@@ -192,6 +192,7 @@ for tt = 1:T_max
 
         %FIXME mean(v_RMS,3)
         tmp = current_frame.*mask_sections(:,:,ii);
+
         %tmp_velocity = zeros(1,size(nnz(tmp(:))));
         xRange = round(-subImgHW/2) + locs(ii,2) : round(subImgHW/2) + locs(ii,2);
         yRange = round(-subImgHW/2) + locs(ii,1) : round(subImgHW/2) + locs(ii,1);
@@ -257,4 +258,5 @@ catch
 
 
 
+end
 end
