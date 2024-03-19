@@ -59,6 +59,8 @@ classdef Parameters_json
         flowRate_minTolVal
         flowRate_maxTolVal
         flowRate_sliceHalfThickness
+        normCoeff
+        normTarget
         pupilRadius
         iris2retinaDist
         theta
@@ -181,6 +183,9 @@ classdef Parameters_json
                 obj.flowRate_minTolVal = parsedData.FlowRate.TolerantValueMinimum;
                 obj.flowRate_maxTolVal = parsedData.FlowRate.TolerantValueMaximum;
                 obj.flowRate_sliceHalfThickness = parsedData.FlowRate.SliceHalfThickness;
+
+                obj.normCoeff = parsedData.NormalizationParameters.Slope; 
+                obj.normTarget = parsedData.NormalizationParameters.Target; 
 
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
                 obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;

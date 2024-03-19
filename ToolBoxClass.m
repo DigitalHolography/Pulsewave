@@ -132,7 +132,7 @@ classdef ToolBoxClass
             disp('reading Normalization Factors')
             try
                 a = load(fullfile(path,'mat',"normalization_factor.mat"));
-                obj.NormalizationFactor = 40 * 0.206 * a.ReferenceWavePower / a.BeatingWaveVariancePower;
+                obj.NormalizationFactor = PW_params.normTarget * PW_params.normCoeff * a.ReferenceWavePower / a.BeatingWaveVariancePower;
 
             catch
                 obj.NormalizationFactor = 1;
