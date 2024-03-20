@@ -77,9 +77,11 @@
         "Tolerant value maximum" : 0.98,
         "Slice half thickness" : 10
     },
-    "Normalization" : {
-        "Slope" : 0.2069,
-        "Target" : 40,
+    "Optical Power Normalization" : {
+        "Normalization Flag" : 1,
+        "Power Calibration Curve Slope" : 0.2069,
+        "Power Calibration yIntercept": 1.449,
+        "Reference Total Retinal Blood Flow" : 40
     },
     "Pulse analysis" : {
         "Radius pupil" : 2,

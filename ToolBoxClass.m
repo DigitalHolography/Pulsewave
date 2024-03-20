@@ -33,7 +33,7 @@ classdef ToolBoxClass
         ARI_val_min double
         ARI_inflexion_point_val double
         ARI_slope_val double
-        NormalizationFactor double
+        NormalizationFactors
 
 
 
@@ -130,12 +130,18 @@ classdef ToolBoxClass
 
             %% Normalization parameters
             disp('reading Normalization Factors')
-            try
-                a = load(fullfile(path,'mat',"normalization_factor.mat"));
-                obj.NormalizationFactor = PW_params.normTarget * PW_params.normCoeff * a.ReferenceWavePower / a.BeatingWaveVariancePower;
-
-            catch
-                obj.NormalizationFactor = 1;
+            if PW_params.normFlag
+                try
+                    a = load(fullfile(path,'mat',"power_normalization.mat"));
+                    obj.NormalizationFactors = PW_params.normPowerCalibrationSlope * a.ReferenceWavePower / (a.BeatingWaveVariancePower/PW_params.normRefBloodFlow - PW_params.normPoweryIntercept);
+                    disp("Normalization factor mean: \n", mean(obj.NormalizationFactors))
+                catch
+                    obj.NormalizationFactors = 1;
+                    % TO DO EXCEPTION HANDLING
+                    disp('Normalization Error: No normalization was performed')
+                end
+            else
+                obj.NormalizationFactors = 1;
             end
 
          end
