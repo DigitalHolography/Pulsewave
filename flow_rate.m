@@ -323,7 +323,6 @@ plot(fullTime,curve1,"Color", Color_std, 'LineWidth', 2);
 plot(fullTime, curve2, "Color",Color_std, 'LineWidth', 2);
 plot(fullTime,total_avg_blood_volume_rate_artery,'-k','LineWidth',1);
 axis tight ;
-ylim([0 102])
 hold off
 
 
@@ -485,7 +484,6 @@ if veins_analysis
     plot(fullTime, curve2, "Color",Color_std, 'LineWidth', 2);
     plot(fullTime,total_avg_blood_volume_rate_vein,'-k','LineWidth',1);
     axis tight ;
-    ylim([0 102])
     hold off
 
     axis tight ;

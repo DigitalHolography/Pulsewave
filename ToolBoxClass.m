@@ -1,5 +1,5 @@
 classdef ToolBoxClass
-     properties
+    properties
         %Path of the PW dir and the output dir inside
         PW_path_main char 
         PW_path_dir char
@@ -37,15 +37,15 @@ classdef ToolBoxClass
 
 
 
-     end
+    end
 
 
-     methods
-         function obj = ToolBoxClass(path)
+    methods
+        function obj = ToolBoxClass(path)
 
-             PW_params = Parameters_json(path);
+            PW_params = Parameters_json(path);
 
-             %% Creating paths
+            %% Creating paths
             idx = 0 ;
             split_path = strsplit(path, '\');
             obj.main_foldername = split_path{end-1};
@@ -111,8 +111,8 @@ classdef ToolBoxClass
 
             %% Calculation of the Sacling Factors
 
-%             obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
-%             obj.ScalingFactorVelocityInPlane = 30;
+%           obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
+%           obj.ScalingFactorVelocityInPlane = 30;
             obj.ScalingFactorVelocityInPlane = 1000 * 1000 * 2 * PW_params.lambda / sin(deg2rad(PW_params.phi));
             obj.ScalingFactorVelocityCRA_AVG  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (PW_params.theta/2); % 1000 for kHz -> Hz and 1000 for m -> mm
             obj.ScalingFactorVelocityCRA_RMS  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (1/(2+2*(PW_params.theta^3)/3))^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
@@ -143,11 +143,6 @@ classdef ToolBoxClass
             else
                 obj.NormalizationFactors = 1;
             end
-
-         end
-        
-
-
-
-     end
+        end
+    end
 end
