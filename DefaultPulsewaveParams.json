@@ -79,8 +79,8 @@
     },
     "Optical Power Normalization" : {
         "Normalization Flag" : 1,
-        "Power Calibration Curve Slope" : 0.2069,
-        "Power Calibration yIntercept": 1.449,
+        "Power Calibration Curve Slope" : 0.146,
+        "Power Calibration YIntercept": 1.449,
         "Reference Total Retinal Blood Flow" : 40
     },
     "Pulse analysis" : {

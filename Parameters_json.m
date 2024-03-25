@@ -189,7 +189,7 @@ classdef Parameters_json
                 
                 obj.normFlag = parsedData.OpticalPowerNormalization.NormalizationFlag;
                 obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope; 
-                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationyIntercept; 
+                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept; 
                 obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow; 
 
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
