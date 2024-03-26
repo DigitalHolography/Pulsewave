@@ -132,11 +132,11 @@ classdef ToolBoxClass
             disp('reading Normalization Factors')
             if PW_params.normFlag
                 try
-                    % normData = load(fullfile(path,'mat',"power_normalization.mat"));
+                    normData = load(fullfile(path,'mat',"power_normalization.mat"));
                     % obj.NormalizationFactors = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (normData.beating_wave_variance_power./normData.reference_wave_power - PW_params.normPoweryIntercept);
                     obj.NormalizationFactors = 1;
                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactors,'all'))
-                    % fprintf("Ratio mean: %4.2f \n", mean(a.beating_wave_variance_power./a.reference_wave_power,'all'))
+                    fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
                 catch ME
                     obj.NormalizationFactors = 1;
                     % TO DO EXCEPTION HANDLING
