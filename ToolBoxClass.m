@@ -33,7 +33,8 @@ classdef ToolBoxClass
         ARI_val_min double
         ARI_inflexion_point_val double
         ARI_slope_val double
-        NormalizationFactors
+        NormalizationFactor
+        NormalizationOffset
 
 
 
@@ -132,19 +133,25 @@ classdef ToolBoxClass
             disp('reading Normalization Factors')
             if PW_params.normFlag
                 try
-                    normData = load(fullfile(path,'mat',"power_normalization.mat"));
-                    % obj.NormalizationFactors = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (normData.beating_wave_variance_power./normData.reference_wave_power - PW_params.normPoweryIntercept);
-                    obj.NormalizationFactors = 1;
-                    fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactors,'all'))
-                    fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
+                    normData = load(fullfile(path,'mat',"power_normalization.mat"),"beating_wave_variance","reference_wave");
+                    ratio2D = normData.beating_wave_variance ./ normData.reference_wave;
+                    ratioAveraged = squeeze(mean(ratio2D,'all')); % Spatial and Temporal average AFTER division
+                    
+                    obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - ratioAveraged) ./ PW_params.normPowerCalibrationSlope;
+                    obj.NormalizationFactor = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (ratioAveraged - PW_params.normPoweryIntercept);
+
+%                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
+%                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
                 catch ME
-                    obj.NormalizationFactors = 1;
+                    obj.NormalizationFactor = 1;
+                    obj.NormalizationOffset = 0;
                     % TO DO EXCEPTION HANDLING
                     disp('Normalization Error: No normalization was performed')
                     disp(ME)
                 end
             else
-                obj.NormalizationFactors = 1;
+                obj.NormalizationFactor = 1;
+                obj.NormalizationOffset = 0;
             end
         end
     end
