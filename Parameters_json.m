@@ -59,6 +59,11 @@ classdef Parameters_json
         flowRate_minTolVal
         flowRate_maxTolVal
         flowRate_sliceHalfThickness
+        normFlag
+        normPowerCalibrationSlope
+        normPoweryIntercept
+        normRefBloodFlow
+        normActualCoefficient
         pupilRadius
         iris2retinaDist
         theta
@@ -181,6 +186,11 @@ classdef Parameters_json
                 obj.flowRate_minTolVal = parsedData.FlowRate.TolerantValueMinimum;
                 obj.flowRate_maxTolVal = parsedData.FlowRate.TolerantValueMaximum;
                 obj.flowRate_sliceHalfThickness = parsedData.FlowRate.SliceHalfThickness;
+                
+                obj.normFlag = parsedData.OpticalPowerNormalization.NormalizationFlag;
+                obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope; 
+                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept; 
+                obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow; 
 
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
                 obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;
@@ -221,7 +231,7 @@ classdef Parameters_json
                 error('The json file could not be found.');
             end
         end
-
+    
 
 end
 end

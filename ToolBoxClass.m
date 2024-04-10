@@ -1,5 +1,5 @@
 classdef ToolBoxClass
-     properties
+    properties
         %Path of the PW dir and the output dir inside
         PW_path_main char 
         PW_path_dir char
@@ -33,16 +33,20 @@ classdef ToolBoxClass
         ARI_val_min double
         ARI_inflexion_point_val double
         ARI_slope_val double
+        NormalizationFactor
+        NormalizationOffset
 
-     end
 
 
-     methods
-         function obj = ToolBoxClass(path)
+    end
 
-             PW_params = Parameters_json(path);
 
-             %% Creating paths
+    methods
+        function obj = ToolBoxClass(path)
+
+            PW_params = Parameters_json(path);
+
+            %% Creating paths
             idx = 0 ;
             split_path = strsplit(path, '\');
             obj.main_foldername = split_path{end-1};
@@ -108,8 +112,8 @@ classdef ToolBoxClass
 
             %% Calculation of the Sacling Factors
 
-%             obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
-%             obj.ScalingFactorVelocityInPlane = 30;
+%           obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
+%           obj.ScalingFactorVelocityInPlane = 30;
             obj.ScalingFactorVelocityInPlane = 1000 * 1000 * 2 * PW_params.lambda / sin(deg2rad(PW_params.phi));
             obj.ScalingFactorVelocityCRA_AVG  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (PW_params.theta/2); % 1000 for kHz -> Hz and 1000 for m -> mm
             obj.ScalingFactorVelocityCRA_RMS  = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (1/(2+2*(PW_params.theta^3)/3))^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
@@ -124,10 +128,31 @@ classdef ToolBoxClass
             obj.ARI_inflexion_point_val = 1;
             obj.ARI_slope_val = 10;
 
-         end
-        
 
+            %% Normalization parameters
+            disp('reading Normalization Factors')
+            if PW_params.normFlag
+                try
+                    normData = load(fullfile(path,'mat',"power_normalization.mat"),"beating_wave_variance","reference_wave");
+                    OpticalPower = normData.beating_wave_variance ./ normData.reference_wave;
+                    OpticalPowerAveraged = squeeze(mean(OpticalPower,'all')); % Spatial and Temporal average AFTER division
+                    
+                    obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - OpticalPowerAveraged) ./ PW_params.normPowerCalibrationSlope;
+                    obj.NormalizationFactor = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (OpticalPowerAveraged - PW_params.normPoweryIntercept);
 
-
-     end
+%                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
+%                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
+                catch ME
+                    obj.NormalizationFactor = 1;
+                    obj.NormalizationOffset = 0;
+                    % TO DO EXCEPTION HANDLING
+                    disp('Normalization Error: No normalization was performed')
+                    disp(ME)
+                end
+            else
+                obj.NormalizationFactor = 1;
+                obj.NormalizationOffset = 0;
+            end
+        end
+    end
 end

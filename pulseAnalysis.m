@@ -439,7 +439,10 @@ tic
 clear fullVideoM2M0 
 
 [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp,path);
-v_RMS_all = ToolBox.ScalingFactorVelocityInPlane*fullVideoM2M0minusBKG;
+v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
+fprintf('Factor Normalization was performed: %d',ToolBox.NormalizationFactor)
+% v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
+% fprintf('Offset Normalization was performed: +%d µL/min',ToolBox.NormalizationOffset)
 
 clear fullVideoM2M0minusBKG
 

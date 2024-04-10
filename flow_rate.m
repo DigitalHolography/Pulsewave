@@ -1,4 +1,4 @@
-function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k,path)
+function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path)
 
 PW_params = Parameters_json(path);
 

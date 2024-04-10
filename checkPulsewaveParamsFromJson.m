@@ -1,5 +1,9 @@
 function [] =  checkPulsewaveParamsFromJson(path)
 
+% This function checks if in the file you can find a default Pulsewave
+% parameter file. If not it creates it. If you find obsolete files it also
+% cleares them with the new parameters
+
 jsonInput = fileread("DefaultPulsewaveParams.json");
 init_data = jsondecode(jsonInput);
 
