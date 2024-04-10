@@ -1,0 +1,115 @@
+{
+  "Video": {
+    "StartFrame": 1,
+    "EndFrame": -1
+  },
+  "ValueOfTheInterpolationParameter": 1,
+  "RadiusRatio": 0.18,
+  "RadiusGap": 0.01,
+  "ResistivityIndex": {
+    "GaussianFilterSigma": 0.7,
+    "AmplitudeSaturationPonderation": 0.75,
+    "TolerantValueMinimum": 0.02,
+    "TolerantValueMaximum": 0.98,
+    "Gamma": 0.7
+  },
+  "CreationOfOneCycle": {
+    "NumberOfInterpolation": 64,
+    "OutOfNoiseThreshold": 85,
+    "DataReliabilityIndexThreshold": 50,
+    "LocalBackgroundWidth": 15
+  },
+  "CreationOfMasks": {
+    "VesselnesParameterSigma": 3,
+    "VesselnesParameterBeta": 0.8,
+    "VesselnessBinarizationThreshold": 0.35,
+    "MagicWandNumberOfSegmentedAreaDetectedForVessels": 3,
+    "MagicWandNumberOfSegmentedAreaDetectedForArtery": 3,
+    "ArteryCorrelationThreshold": 0.07
+  },
+  "CentralRetinaMask": {
+    "CentralRetinaArteryThreshold": 3,
+    "CentralRetinaVeinThreshold": -3,
+    "CentralRetinaBackgroundThreshold": 2,
+    "CropCoroidRadius": 0.15,
+    "StandardBinarizationThreshold": 0.15,
+    "MinimumSeedAreaSize": 150,
+    "CleaningCoroidOrNot": 1,
+    "ShowingIntermediateFiguresInTheProcess": 0,
+    "RegionGrowingFloorThreshold": 0.33,
+    "RegionGrowingVeinConditionThreshold": 0.33,
+    "RegionGrowingArteryConditionThreshold": 2,
+    "CentralRetinaVeinArteryThreshold": 3,
+    "RegionGrowingThreshold": -0.0025
+  },
+  "CropSectionAnalysis": {
+    "ScaleFactorWidth": 3,
+    "ScaleFactorSize": 0.004,
+    "MaskSliceThreshold": 0.01,
+    "PixelSize": 0.0102
+  },
+  "ElasticWaves": {
+    "NumberOfDominantFrequency": 2,
+    "PixelSize": 0.003909,
+    "GaussianFilterPadding": 0,
+    "ButterworthFilterOrder": 10,
+    "ButterworthFilterThicknessBand": 3
+  },
+  "Systole": {
+    "SystoleThreshold": 0.7
+  },
+  "FlatFieldCorrection": {
+    "GWRatio": 0.07,
+    "Border": 0.15,
+    "BorderDMAP": 0.33,
+    "BorderPulseAnalysis": 0
+  },
+  "FlowRate": {
+    "GaussianFilterPadding": 0,
+    "YellowOrangeRangeHSV": 0.18,
+    "CyanDarkBlueRangeHSV": 0.68,
+    "TolerantValueMinimum": 0.2,
+    "TolerantValueMaximum": 0.98,
+    "SliceHalfThickness": 10
+  },
+  "PulseAnalysis": {
+    "RadiusPupil": 2,
+    "DistanceIrisRetina": 20,
+    "Theta": 0.05,
+    "OpticalIndex": 1.35,
+    "Lambda": 8.52E-7,
+    "DataReliatibilityFactor": 0.5,
+    "PeakHeightThreshold": 0.7,
+    "OutOfNoiseThreshold": 4,
+    "BlurScaleFactor": 100,
+    "FramePercentageBeforeMinimumOfDiastole": 0.1,
+    "FramePercentageAroundPeakSystole": 0.1,
+    "Exponentiel": 2.718282
+  },
+  "Wavelength": {
+    "F0": 150,
+    "R0": 150
+  },
+  "Velocity": {
+    "SmallRadiusRatio": 0.15,
+    "BigRadiusRatio": 0.2
+  },
+  "VesselsVideo": {
+    "RadiusRatioFactor": 0.27,
+    "GaussianFilterPadding": 0,
+    "GaussianFilterFactor": 0.25
+  },
+  "Viscosity": {
+    "NumberOfInterpolation": 100,
+    "InterpolationParameter": 2,
+    "InterpolationSizeFactor": 4,
+    "ImageProjectionThreshold": 0.1,
+    "ViscosityFunctionFactor": 0.7,
+    "FitFunctionParameterMatrix": 0,
+    "ViscosityListParameterA": 1.459,
+    "ViscosityListParameterB": 0.017
+  },
+  "Other": {
+    "NumberOfSides": 120
+  }
+}
