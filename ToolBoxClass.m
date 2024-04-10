@@ -134,11 +134,11 @@ classdef ToolBoxClass
             if PW_params.normFlag
                 try
                     normData = load(fullfile(path,'mat',"power_normalization.mat"),"beating_wave_variance","reference_wave");
-                    ratio2D = normData.beating_wave_variance ./ normData.reference_wave;
-                    ratioAveraged = squeeze(mean(ratio2D,'all')); % Spatial and Temporal average AFTER division
+                    OpticalPower = normData.beating_wave_variance ./ normData.reference_wave;
+                    OpticalPowerAveraged = squeeze(mean(OpticalPower,'all')); % Spatial and Temporal average AFTER division
                     
-                    obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - ratioAveraged) ./ PW_params.normPowerCalibrationSlope;
-                    obj.NormalizationFactor = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (ratioAveraged - PW_params.normPoweryIntercept);
+                    obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - OpticalPowerAveraged) ./ PW_params.normPowerCalibrationSlope;
+                    obj.NormalizationFactor = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (OpticalPowerAveraged - PW_params.normPoweryIntercept);
 
 %                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
 %                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
