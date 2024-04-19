@@ -11,7 +11,7 @@ init_data = jsondecode(jsonInput);
 
 % [~,filename,~] = fileparts(path);
 filename_json = 'InputPulsewaveParams.json';
-dir_path_json = fullfile(path,'json');
+dir_path_json = fullfile(path,'pulsewave','json');
 
 
 %filename_json = strcat(filename,filename_json);

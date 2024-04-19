@@ -359,21 +359,20 @@ classdef OneCycleClass
 %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
 %             copyfile(path_file_txt_params,ToolBox.PW_path_txt );
 
-            path_dir_json = fullfile(obj.directory,'json');
+            path_dir_json = fullfile(obj.directory,'pulsewave','json');
             path_file_json_params = fullfile(path_dir_json,'InputPulsewaveParams.json');
             copyfile(path_file_json_params,ToolBox.PW_path_json );
             
             %saving times
-            path_file_txt_exe_times = fullfile(ToolBox.PW_path_txt, 'ExecutionTimes.txt');
-            fileID = fopen(path_file_txt_exe_times,'w') ;
+            path_file_txt_exe_times = fullfile(ToolBox.PW_path_log, sprintf('%s_execution_times.txt',ToolBox.PW_folder_name));
+            fileID = fopen(path_file_txt_exe_times,'w');
             fprintf(fileID,'EXECUTION TIMES : \r\n==================\n\r\n');
             fclose(fileID);
 
             % SAVING GIT VERSION 
             % In the txt file in the folder : "log"
             
-            name_log = strcat(ToolBox.PW_folder_name, '.txt');
-
+            name_log = strcat(ToolBox.PW_folder_name, '_log.txt');
             path_file_log = fullfile(ToolBox.PW_path_log, name_log);
 
             gitBranchCommand = 'git symbolic-ref --short HEAD';

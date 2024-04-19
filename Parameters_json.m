@@ -111,7 +111,7 @@ classdef Parameters_json
             % Constructor method     
             %[~, filename, ~] = fileparts(obj.path);
             filename_json = 'InputPulsewaveParams.json';
-            dir_path_json = fullfile(obj.path,'json');
+            dir_path_json = fullfile(obj.path,'pulsewave','json');
             jsonPath = fullfile(dir_path_json, filename_json);
             
             if exist(jsonPath, 'file')

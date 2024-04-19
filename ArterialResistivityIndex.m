@@ -2,7 +2,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
 PW_params = Parameters_json(path);
 disp('arterial resistivity...');
 
-name_log = strcat(ToolBox.PW_folder_name, '.txt');
+name_log = strcat(ToolBox.PW_folder_name,'_log.txt');
 path_file_log = fullfile(ToolBox.PW_path_log, name_log);
 
 fileID = fopen(path_file_log,'a+') ;
