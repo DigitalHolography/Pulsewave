@@ -33,7 +33,7 @@ tilt_angle_list = zeros(1,length(locs));
 img_v_artery = squeeze(mean(v_RMS,3)).* mask;
 v_RMS_masked = v_RMS.* mask;
 
-for ii = 1:size(locs,1)
+for ii = 1:size(locs,1) % ii: vessel_number
     if width(ii)>2
     subImgHW = round(width(ii)*PW_params.cropSection_scaleFactorWidth);
     %FIXME bords d IMG, 

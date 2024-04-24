@@ -18,8 +18,11 @@ for ii = 1:size(video, 1)
         end
     end
 end
-figure(549)
-plot(arterialPulse)
+% figure(549)
+% plot(arterialPulse,'k','LineWidth',2)
+% set(gca,'LineWidth',2)
+% axis tight;
+
 
 [maxAP,maxAPidx] = max(arterialPulse(:));
 [minAP,minAPidx] = min(arterialPulse(:));

@@ -268,12 +268,29 @@ else
 end
 
 
-if veins_analysis
-    fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
+
+if veins_analysis 
+    % Remove arteries (always calculated) from local BKG
+    if PW_params.DiffFirstCalculationsFlag
+        tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
+        tmp = tmp .* (tmp > 0);
+        fullVideoM2M0minusBKG = sqrt(abs(tmp));
+        clear tmp
+    else
+        fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
+    end
+
 else
-    fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
+    if PW_params.DiffFirstCalculationsFlag
+        tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
+        tmp = tmp.*(tmp>0);
+        fullVideoM2M0minusBKG = sqrt(abs(tmp));
+        clear tmp
+    else
+        fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
+    end
 end
-    
+
 exec_times_id = [exec_times_id, "Local Backgrounds"];
 exec_times_time = [exec_times_time, toc];
 total_time = total_time + toc;
@@ -440,7 +457,7 @@ clear fullVideoM2M0
 
 [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp,path);
 v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
-fprintf('Factor Normalization was performed: %d',ToolBox.NormalizationFactor)
+fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
 % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
 % fprintf('Offset Normalization was performed: +%d µL/min',ToolBox.NormalizationOffset)
 

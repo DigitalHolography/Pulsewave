@@ -137,8 +137,13 @@ classdef ToolBoxClass
                     OpticalPower = normData.beating_wave_variance ./ normData.reference_wave;
                     OpticalPowerAveraged = squeeze(mean(OpticalPower,'all')); % Spatial and Temporal average AFTER division
                     
-                    obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - OpticalPowerAveraged) ./ PW_params.normPowerCalibrationSlope;
+                    % obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - OpticalPowerAveraged) ./ PW_params.normPowerCalibrationSlope;
                     obj.NormalizationFactor = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (OpticalPowerAveraged - PW_params.normPoweryIntercept);
+
+                    if obj.NormalizationFactor < 0
+                        obj.NormalizationFactor = 1;
+                        disp('Normalization Factor is NEGATIVE, No normalization was peformed')
+                    end
 
 %                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
 %                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))

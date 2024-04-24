@@ -94,6 +94,7 @@ classdef Parameters_json
         viscosity_listParamA
         viscosity_listParamB
         nbSides
+        DiffFirstCalculationsFlag
     end
     
     methods
@@ -226,6 +227,7 @@ classdef Parameters_json
                 obj.viscosity_listParamB = parsedData.Viscosity.ViscosityListParameterB;
 
                 obj.nbSides = parsedData.Other.NumberOfSides;
+                obj.DiffFirstCalculationsFlag = parsedData.Other.DiffFirstCalculationsFlag;
 
             else
                 error('The json file could not be found.');

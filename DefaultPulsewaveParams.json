@@ -122,6 +122,7 @@
         "Viscosity list parameter b" : 0.017
     },
     "Other" : {
-        "Number of sides" : 120
+        "Number of sides" : 120,
+        "Diff First Calculations Flag" : 1
     }
 }
