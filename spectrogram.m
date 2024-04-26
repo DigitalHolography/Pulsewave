@@ -185,7 +185,7 @@ hold off
 % Artery
 
 figure(39)
-imagesc(XAx,YAx,log(A))
+imagesc(XAx,YAx,log(abs(A+0.001)))
 set(gca,'YDir','normal')
 %ylim([0 f2])
 ylabel('Frequency (Hz)')
@@ -213,7 +213,7 @@ hold off
 % Background
 
 figure(40)
-imagesc(XAx,YAx,log(BG))
+imagesc(XAx,YAx,log(abs(BG+0.001)))
 set(gca,'YDir','normal')
 %ylim([0 f2])
 ylabel('Frequency (Hz)')

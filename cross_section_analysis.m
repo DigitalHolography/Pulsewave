@@ -3,10 +3,10 @@ function [avg_blood_volume_rate,std_blood_volume_rate, cross_section_area, avg_b
 %   Detailed explanation goes here FIXME
 
 if strcmp(type_of_vessel, 'artery')
-    fig = 70;
+    fig_idx_start = 70;
     name_section = 'A';
 else 
-    fig = 80;
+    fig_idx_start = 80;
     name_section = 'V';
 end
 PW_params = Parameters_json(path);
@@ -120,20 +120,21 @@ for ii = 1:size(locs,1) % ii: vessel_number
     close(w);
 
 
-
-    %[ ~, ~, tmp, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
+    
+    % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
     tmp = nnz(section_cut);
-
     % if tmp contains more than 1 element, we select the first one
     % if tmp is empty, we select 0 as width because then it's a 1-2 pixel noise peak
     if isempty(tmp) 
         width_cross_section(ii) = 0;
+        % display_width = 0;
     else
         width_cross_section(ii) = tmp(1);
+        % display_width = tmp_0(1);
     end
 
 
-    figure(fig+ii)
+    figure(fig_idx_start+ii)
     xAx = linspace(0,size(section_cut,1),size(subImg,1));
     imagesc(xAx,xAx,subImg)
     colormap("gray")

@@ -133,7 +133,7 @@ classdef ToolBoxClass
             disp('reading Normalization Factors')
             if PW_params.normFlag
                 try
-                    normData = load(fullfile(path,'mat',"power_normalization.mat"),"beating_wave_variance","reference_wave");
+                    normData = load(fullfile(dir_path_mat,sprintf('%s_power_normalization.mat',obj.main_foldername)),'beating_wave_variance','reference_wave');
                     OpticalPower = normData.beating_wave_variance ./ normData.reference_wave;
                     OpticalPowerAveraged = squeeze(mean(OpticalPower,'all')); % Spatial and Temporal average AFTER division
                     

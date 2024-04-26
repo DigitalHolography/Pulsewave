@@ -271,7 +271,7 @@ end
 
 if veins_analysis 
     % Remove arteries (always calculated) from local BKG
-    if PW_params.DiffFirstCalculationsFlag
+    if ~PW_params.DiffFirstCalculationsFlag
         tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
         tmp = tmp .* (tmp > 0);
         fullVideoM2M0minusBKG = sqrt(abs(tmp));
@@ -281,7 +281,7 @@ if veins_analysis
     end
 
 else
-    if PW_params.DiffFirstCalculationsFlag
+    if ~PW_params.DiffFirstCalculationsFlag
         tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
         tmp = tmp.*(tmp>0);
         fullVideoM2M0minusBKG = sqrt(abs(tmp));
