@@ -5,6 +5,7 @@ classdef ToolBoxClass
         PW_path_dir char
         PW_path_png char 
         PW_path_eps char 
+        PW_path_gif char 
         PW_path_txt char 
         PW_path_avi char 
         PW_path_mp4 char
@@ -67,6 +68,7 @@ classdef ToolBoxClass
             obj.PW_path_eps = fullfile(obj.PW_path_dir, 'eps');
             obj.PW_path_txt = fullfile(obj.PW_path_dir, 'txt');
             obj.PW_path_avi = fullfile(obj.PW_path_dir, 'avi');
+            obj.PW_path_gif = fullfile(obj.PW_path_dir, 'gif');
             obj.PW_path_mp4 = fullfile(obj.PW_path_dir, 'mp4');
             obj.PW_path_json = fullfile(obj.PW_path_dir, 'json');
             obj.PW_path_log = fullfile(obj.PW_path_dir, 'log');
@@ -133,7 +135,7 @@ classdef ToolBoxClass
             disp('reading Normalization Factors')
             if PW_params.normFlag
                 try
-                    normData = load(fullfile(dir_path_mat,sprintf('%s_power_normalization.mat',obj.main_foldername)),'beating_wave_variance','reference_wave');
+                    normData = load(fullfile(path,'mat',sprintf("%s_power_normalization.mat",obj.main_foldername)),"beating_wave_variance","reference_wave");
                     OpticalPower = normData.beating_wave_variance ./ normData.reference_wave;
                     OpticalPowerAveraged = squeeze(mean(OpticalPower,'all')); % Spatial and Temporal average AFTER division
                     

@@ -349,6 +349,7 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_dir);
             mkdir(ToolBox.PW_path_png);
             mkdir(ToolBox.PW_path_eps);
+            mkdir(ToolBox.PW_path_gif);
             mkdir(ToolBox.PW_path_txt);
             mkdir(ToolBox.PW_path_avi);
             mkdir(ToolBox.PW_path_mp4);

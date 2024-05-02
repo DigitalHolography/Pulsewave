@@ -346,8 +346,8 @@ for tt = 1:length(fullTime)
     inBetween = [curve1', fliplr(curve2')];
     fill( tmp_fullTime, inBetween, Color_std);
     hold on;
-    plot(fullTime(1:tt),curve1,"Color", Color_std, 'LineWidth', 2);
-    plot(fullTime(1:tt), curve2, "Color",Color_std, 'LineWidth', 2);
+    plot(fullTime(1:tt),curve1, "Color", Color_std, 'LineWidth', 2);
+    plot(fullTime(1:tt),curve2, "Color", Color_std, 'LineWidth', 2);
     plot(fullTime(1:tt),total_avg_blood_volume_rate_artery(1:tt),'-k','LineWidth',2);
     plot(fullTime(1:tt),mean_volume_rate_artery(1:tt),':k','LineWidth',2);
     hold off;
@@ -376,6 +376,74 @@ open(w)
 for j = 1:size( Plot_volume_rate_video_artery,4)
     writeVideo(w,tmp(:,:,:,j)) ;  
 end
+
+%% GIF MAKER
+
+f127 = figure(127);
+f127.Position = [680,273,560,725]; 
+filename_gif = fullfile(ToolBox.PW_path_gif,sprintf("%s_Animated_Volume_Rate.gif",ToolBox.PW_folder_name));
+
+for tt = 1:length(fullTime)
+    subplot(4,3,[1,9]), 
+    
+    hue = 0*(maskOnes(:,:,tt).*cross_section_mask_artery);
+    sat = maskOnes(:,:,tt).*cross_section_mask_artery;
+    val = maskOnes(:,:,tt).*cross_section_mask_artery;
+    
+    tmp_frame = hsv2rgb(hue,sat,val).*cross_section_mask_artery;
+    imgM0 = ones(size(tmp_frame)).*~cross_section_mask_artery.*videoM0_from_holowaves_norm(:,:,tt) + tmp_frame;
+    
+    imshow(imgM0);
+    x_center = ToolBox.x_barycentre;
+    y_center = ToolBox.y_barycentre;
+    
+    for ii=1:size(avg_blood_volume_rate_artery,1)
+        new_x = x_center + ratio_etiquette*(SubImg_locs_artery(ii,2)-x_center);
+        new_y = y_center + ratio_etiquette*(SubImg_locs_artery(ii,1)-y_center);
+        if round(avg_blood_volume_rate_artery(ii,tt),1) > 0
+    	        text(new_x, new_y, string(round(avg_blood_volume_rate_artery(ii,tt),1)), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
+        else
+	        text(new_x, new_y, string(0), "FontWeight", "bold","FontSize", 15,   "Color", "white", "BackgroundColor", "black");
+        end
+    end
+    tmp_bvra = round(total_avg_blood_volume_rate_artery(tt));
+    tmp_bvra = (tmp_bvra>0) * tmp_bvra;
+    title(['Total blood volume rate : ' num2str(tmp_bvra) ' µL/min (arteries)']);
+    set(gca,'FontSize', 14)
+    
+    subplot(4,3,[10,12]),
+    curve1 = total_avg_blood_volume_rate_artery(1:tt) + 0.5 * total_std_blood_volume_rate_artery(1:tt);
+    curve2 = total_avg_blood_volume_rate_artery(1:tt) - 0.5 * total_std_blood_volume_rate_artery(1:tt);
+    tmp_fullTime = [fullTime(1:tt), fliplr(fullTime(1:tt))];
+    inBetween = [curve1', fliplr(curve2')];
+    fill( tmp_fullTime, inBetween, Color_std);
+    hold on;
+    plot(fullTime(1:tt), curve1, "Color", Color_std, 'LineWidth', 2);
+    plot(fullTime(1:tt), curve2, "Color", Color_std, 'LineWidth', 2);
+    plot(fullTime(1:tt), total_avg_blood_volume_rate_artery(1:tt), '-k', 'LineWidth', 2);
+    plot(fullTime(1:tt), mean_volume_rate_artery(1:tt), ':k', 'LineWidth', 2);
+    hold off;    hold off;
+    ylabel('Blood volume rate (µL/min)')
+    xlabel('Time (s)')
+    if round(mean_volume_rate_artery(1))~=20 && round(mean_volume_rate_artery(1))~=40 && round(mean_volume_rate_artery(1))~=60 && round(mean_volume_rate_artery(1))~=80 && round(mean_volume_rate_artery(1))~=100
+        yticks(sort([0 20 40 60 80 100 round(mean_volume_rate_artery(1))]))
+    else
+        yticks(sort([0 20 40 60 80 100]))
+    end
+    set(gca,'PlotBoxAspectRatio',[2.5 1 1])
+    axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
+    set(gca,'Linewidth',2)
+    drawnow
+    % exportgraphics(f127,filename_gif,"Append",true)
+    frame = getframe(f127);
+    [A,map] = rgb2ind(frame2im(frame),256);
+    if tt == 1
+        imwrite(A,map,filename_gif,"gif","LoopCount",Inf,"DelayTime",0.02);
+    else
+        imwrite(A,map,filename_gif,"gif","WriteMode","append","DelayTime",0.02);
+    end
+end        
+
 close(w);
 
 %% Volume Rate in Veins 
