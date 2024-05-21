@@ -1,4 +1,4 @@
-function [v_RMS_one_cycle,v_RMS_all, onePulseVideoM0, exec_times,total_time] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0, fullVideoM0, sys_index_list,meanIm, maskArtery,maskVein,maskBackground ,ToolBox,path)
+function [v_RMS_one_cycle,v_RMS_all, onePulseVideoM0, exec_times,total_time] = pulseAnalysis(Ninterp, fullVideoM2M0, fullVideoM1M0, fullVideoM2, fullVideo_M0, fullVideoM0, sys_index_list, meanIm, maskArtery, maskVein, maskBackground, ToolBox, path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : fullVideoM1M0, Taille : 10631287200 bytes (DEBUT)
@@ -72,10 +72,32 @@ fullArterialPulse = fullVideoM2M0 .* maskArtery;
 fullArterialPulse = squeeze(sum(fullArterialPulse, [1 2]))/nnz(maskArtery);
 fullArterialPulseMinusBackground = fullArterialPulse - fullBackgroundSignal;
 
+fullBackgroundM2 = fullVideoM2 .* maskBackground;
+fullBackgroundM2 = squeeze(sum(fullBackgroundM2, [1 2]))/nnz(maskBackground);
+
+fullArterialPulseM2 = fullVideoM2 .* maskArtery;
+fullArterialPulseM2 = squeeze(sum(fullArterialPulseM2, [1 2]))/nnz(maskArtery);
+fullArterialPulseMinusBackgroundM2 = fullArterialPulseM2 - fullBackgroundM2;
+
+fullBackgroundM0 = fullVideoM0 .* maskBackground;
+fullBackgroundM0 = squeeze(sum(fullBackgroundM0, [1 2]))/nnz(maskBackground);
+
+fullArterialPulseM0 = fullVideoM0 .* maskArtery;
+fullArterialPulseM0 = squeeze(sum(fullArterialPulseM0, [1 2]))/nnz(maskArtery);
+fullArterialPulseMinusBackgroundM0 = fullArterialPulseM0 - fullBackgroundM0;
+
 if veins_analysis
     fullVenousSignal = fullVideoM2M0 .* maskVein;
     fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2]))/nnz(maskVein);
     fullVenousSignalMinusBackground = fullVenousSignal - fullBackgroundSignal;
+
+    fullVenousSignalM2 = fullVideoM2 .* maskVein;
+    fullVenousSignalM2 = squeeze(sum(fullVenousSignalM2, [1 2]))/nnz(maskVein);
+    fullVenousSignalMinusBackgroundM2 = fullVenousSignalM2 - fullBackgroundSignalM2;
+
+    fullVenousSignalM0 = fullVideoM0 .* maskVein;
+    fullVenousSignalM0 = squeeze(sum(fullVenousSignalM0, [1 2]))/nnz(maskVein);
+    fullVenousSignalMinusBackgroundM0 = fullVenousSignalM0 - fullBackgroundSignalM0;
 end
 
 
@@ -250,20 +272,30 @@ tic
 
 local_mask_artery = imdilate(maskArtery,strel('disk',PW_params.local_background_width));
 LocalBKG_artery = zeros(size(fullVideoM2M0));
+LocalBKG_arteryM2 = zeros(size(fullVideoM2));
+LocalBKG_arteryM0 = zeros(size(fullVideoM0));
 
 if veins_analysis
     local_mask_vein = imdilate(maskVein,strel('disk',PW_params.local_background_width));
     LocalBKG_vein = zeros(size(fullVideoM2M0));
+    LocalBKG_veinM2 = zeros(size(fullVideoM2));
+    LocalBKG_veinM0 = zeros(size(fullVideoM0));
 end
 
 if veins_analysis
     parfor nn = 1:n_frames
         LocalBKG_artery(:,:,nn) = single(regionfill(fullVideoM2M0(:,:,nn),local_mask_artery));
         LocalBKG_vein(:,:,nn) = single(regionfill(fullVideoM2M0(:,:,nn),local_mask_vein));
+        LocalBKG_arteryM2(:,:,nn) = single(regionfill(fullVideoM2(:,:,nn),local_mask_artery));
+        LocalBKG_veinM2(:,:,nn) = single(regionfill(fullVideoM2(:,:,nn),local_mask_vein));
+        LocalBKG_arteryM0(:,:,nn) = single(regionfill(fullVideoM0(:,:,nn),local_mask_artery));
+        LocalBKG_veinM0(:,:,nn) = single(regionfill(fullVideoM0(:,:,nn),local_mask_vein));
     end
 else
     parfor nn = 1:n_frames
         LocalBKG_artery(:,:,nn) = single(regionfill(fullVideoM2M0(:,:,nn),local_mask_artery));
+        LocalBKG_arteryM2(:,:,nn) = single(regionfill(fullVideoM2(:,:,nn),local_mask_artery));
+        LocalBKG_arteryM0(:,:,nn) = single(regionfill(fullVideoM0(:,:,nn),local_mask_artery));
     end
 end
 
@@ -272,10 +304,13 @@ end
 if veins_analysis 
     % Remove arteries (always calculated) from local BKG
     if ~PW_params.DiffFirstCalculationsFlag
-        tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
-        tmp = tmp .* (tmp > 0);
-        fullVideoM2M0minusBKG = sqrt(abs(tmp));
-        clear tmp
+        % tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
+        % tmp = tmp .* (tmp > 0);
+        % fullVideoM2M0minusBKG = sqrt(abs(tmp));
+        % clear tmp
+        fullVideoM2eff = fullVideoM2 - (LocalBKG_veinM2.*~local_mask_artery + LocalBKG_arteryM2.*local_mask_artery);
+        fullVideoM0eff = fullVideoM0 - (LocalBKG_veinM0.*~local_mask_artery + LocalBKG_arteryM0.*local_mask_artery);
+        fullVideoM2M0minusBKG = sqrt(fullVideoM2eff(fullVideoM2eff>0)./fullVideoM0eff(fullVideoM0eff>0));
     else
         fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
     end
@@ -283,9 +318,14 @@ if veins_analysis
 else
     if ~PW_params.DiffFirstCalculationsFlag
         tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
-        tmp = tmp.*(tmp>0);
-        fullVideoM2M0minusBKG = sqrt(abs(tmp));
+        % tmp = tmp.*(tmp>0);
+        % tmp(tmp<0) = 0;
+        fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
         clear tmp
+        % fullVideoM2eff = fullVideoM2 - LocalBKG_arteryM2;
+        % fullVideoM0eff = fullVideoM0 - LocalBKG_arteryM0;
+        % fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
+        % fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));
     else
         fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
     end

@@ -1,6 +1,6 @@
 classdef Parameters_json
     % Class for storing parameters from an input json file
-    
+
     properties
         path
         videoStartFrameIndex
@@ -96,25 +96,27 @@ classdef Parameters_json
         nbSides
         DiffFirstCalculationsFlag
     end
-    
+
     methods
 
         function obj = Parameters_json(dir_path)
             obj.path = dir_path;
             persistent PulsewaveParams
-            if isempty(PulsewaveParams) 
+
+            if isempty(PulsewaveParams)
                 PulsewaveParams = obj.GetParameters();
             end
-           obj = PulsewaveParams;
-       end
+
+            obj = PulsewaveParams;
+        end
 
         function obj = GetParameters(obj)
-            % Constructor method     
+            % Constructor method
             %[~, filename, ~] = fileparts(obj.path);
             filename_json = 'InputPulsewaveParams.json';
-            dir_path_json = fullfile(obj.path,'pulsewave','json');
+            dir_path_json = fullfile(obj.path, 'pulsewave', 'json');
             jsonPath = fullfile(dir_path_json, filename_json);
-            
+
             if exist(jsonPath, 'file')
                 jsonData = fileread(jsonPath);
                 parsedData = jsondecode(jsonData);
@@ -151,7 +153,7 @@ classdef Parameters_json
                 obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
                 obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;
                 obj.centralRetinal_backgndThreshold = parsedData.CentralRetinaMask.CentralRetinaBackgroundThreshold;
-                obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold ;
+                obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold;
                 obj.masks_radius = parsedData.CentralRetinaMask.CropCoroidRadius;
                 obj.masks_minSize = parsedData.CentralRetinaMask.MinimumSeedAreaSize;
                 obj.masks_cleaningCoroid = parsedData.CentralRetinaMask.CleaningCoroidOrNot;
@@ -187,11 +189,11 @@ classdef Parameters_json
                 obj.flowRate_minTolVal = parsedData.FlowRate.TolerantValueMinimum;
                 obj.flowRate_maxTolVal = parsedData.FlowRate.TolerantValueMaximum;
                 obj.flowRate_sliceHalfThickness = parsedData.FlowRate.SliceHalfThickness;
-                
+
                 obj.normFlag = parsedData.OpticalPowerNormalization.NormalizationFlag;
-                obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope; 
-                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept; 
-                obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow; 
+                obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope;
+                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept;
+                obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow;
 
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
                 obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;
@@ -209,7 +211,7 @@ classdef Parameters_json
 
                 obj.trWavelength_f0 = parsedData.Wavelength.F0;
                 obj.trWavelength_r0 = parsedData.Wavelength.R0;
-                
+
                 obj.velocity_smallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
                 obj.velocity_bigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
 
@@ -232,8 +234,9 @@ classdef Parameters_json
             else
                 error('The json file could not be found.');
             end
-        end
-    
 
-end
+        end
+
+    end
+
 end

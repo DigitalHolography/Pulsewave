@@ -4,7 +4,7 @@ function [G] = comp_gaussian(x,sigma)
 
 %DESCRIPTION: G = comp_gaussian(x, sigma)
 %       Computes the value of a zero-mean Gaussian function
-%       (i.e. normal  distribution) 
+%       (i.e. normal  distribution)
 
 % INPUTS:
 %       x (double vector) - Function input values (x-axis)
