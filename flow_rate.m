@@ -352,7 +352,7 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM
     title("Total blood volume rate in arteries")
     axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
     ax125 = gca;
-    fontsize(14, "points");
+    fontsize(gca, 14, "points");
 
     if ~ismember(round(mean_volume_rate_artery(1)), get(gca, 'YTick'))
         set(ax125, 'YTick', sort([round(mean_volume_rate_artery(1)), get(gca, 'YTick')]));

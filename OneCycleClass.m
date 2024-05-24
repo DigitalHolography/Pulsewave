@@ -114,6 +114,9 @@ classdef OneCycleClass
                 
                 %% File loading
                 dir_path_raw = fullfile(obj.directory ,'raw');
+                if isempty(dir(dir_path_raw))
+                    fprintf("No Raw Files, please select a Holowave folder with raw files exported")
+                end
                 NameRawFile = strcat(obj.filenames{ii}, '_moment0');
                 ext = '.raw';
                 

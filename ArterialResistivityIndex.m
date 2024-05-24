@@ -19,7 +19,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
         ARI = 1;
     end
 
-    [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, meanIm, maskArtery, ToolBox);
+    [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, meanIm, maskArtery, ToolBox);
     % arterial resistivity map RGB
     ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     ARImapRGB = ARImapRGB .* maskArtery + ones(size(ARImapRGB)) .* meanIm .* ~maskArtery;
@@ -27,7 +27,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     ARIvideoRGB = zeros(size(v_RMS_one_cycle, 1), size(v_RMS_one_cycle, 2), 3, size(v_RMS_one_cycle, 3));
 
     for ii = 1:size(v_RMS_one_cycle, 3)
-        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, videoM0_from_holowaves(:, :, ii), maskArtery, ToolBox);
+        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, videoM0_from_holowaves(:, :, ii), maskArtery, ToolBox);
         %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
         ARIvideoRGB(:, :, :, ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
         img_M0 = videoM0_from_holowaves(:, :, ii);
@@ -53,6 +53,9 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     end
 
     close(w);
+
+
+
 
     disp('done.');
     fileID = fopen(path_file_log, 'a+');
@@ -85,7 +88,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     %% Display Figure
     figure(70)
     imagesc(ARImapRGB);
-    title(strcat('Arterial resistivity. avg. index value : ', num2str(ARI)));
+    title(strcat('Arterial resistivity. avg. index value : ', sprintf(" %3.2f",ARI)));
     axis image
     axis off
     set(gca, 'LineWidth', 2);
@@ -111,6 +114,75 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     hCB.Position = [0.10 0.3 0.81 0.35];
     colorfig.Position(4) = 0.1000;
     fontsize(gca, 15, "points");
+
+%% GIF MAKER
+
+    f71 = figure(71);
+    % f71.Position = [200, 200, 570, 740];
+    for tt = 1:size(ARIvideoRGB,4)
+        imagesc(ARIvideoRGB(:,:,:,tt));
+        title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f",ARI)));
+        axis image
+        axis off
+        set(gca, 'LineWidth', 2);
+        fontsize(gca, 12, "points");
+        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
+        c.Label.String = 'Arterial resistivity index';
+        c.Label.FontSize = 12;
+
+        colormap(cmap);
+        % FIGURE IMAGE EXPORT
+        frame = getframe(f71);
+        im = frame2im(frame);
+
+        if tt == 1
+            im_tab = zeros(size(im, 1), size(im, 2), 3, size(ARIvideoRGB, 4), 'uint8');
+            im_tab(:, :, :, 1) = im;
+        else
+            im_tab(:, :, :, tt) = im;
+        end
+
+    end
+
+    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_ARI.gif", ToolBox.PW_folder_name));
+    time_period = ToolBox.stride / ToolBox.fs / 1000;
+    time_period_target = 0.04;
+
+    if time_period < time_period_target
+        num_T = floor(size(ARIvideoRGB, 4) * time_period / time_period_target);
+        im_tab_interp(:, :, 1, :) = imresize3(squeeze(im_tab(:, :, 1, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 2, :) = imresize3(squeeze(im_tab(:, :, 2, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 3, :) = imresize3(squeeze(im_tab(:, :, 3, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+
+        for tt = 1:num_T
+            [A, map] = rgb2ind(im_tab_interp(:, :, :, tt), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period_target);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period_target);
+            end
+
+        end
+
+    else
+
+        for tt = 1:size(im_tab, 4)
+            [A, map] = rgb2ind(frame2im(frame), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period);
+            end
+
+        end
+
+    end
+
+
+
+    
 
     %% Save Figures
     print('-f113', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_ARI_map_colorbar.png')));

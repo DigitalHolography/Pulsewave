@@ -69,7 +69,7 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
     viscosity_list = zeros(nb_frames, 1);
 
     average_velocity_profile_systole = average_velocity_profile(:, idx_syst);
-    average_velocity_profile_diastole = average_velocity_profile(:, end);
+    average_velocity_profile_diastole = average_velocity_profile(:, end); 
 
     %
     % curve1 = total_avg_blood_volume_rate_vein+0.5*total_std_blood_volume_rate_vein;
@@ -104,7 +104,7 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
         [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2], 'Lower', [0 -5 1.5], 'Upper', [80 3 6]);
         R2_tmp_fit = R2_tmp_fit.rsquare;
 
-        fifig = figure('Visible', off');
+        fifig = figure(60280);
 
         fill(fullTime2, inBetween, Color_std);
         hold on
@@ -124,6 +124,19 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
         ylim([mimin mamax]);
         ylabel('quantitative velocity mm/s', 'FontSize', 14);
         hold off
+        drawnow
+
+        % FIGURE IMAGE EXPORT
+        frame = getframe(fifig);
+        im = frame2im(frame);
+    
+        if tt == 1
+            im_tab = zeros(size(im, 1), size(im, 2), 3, nb_frames, 'uint8');
+            im_tab(:, :, :, 1) = im;
+        else
+            im_tab(:, :, :, tt) = im;
+        end
+
         writeVideo(v, getframe(fifig));
         writeVideo(vMP4, getframe(fifig));
 
@@ -133,6 +146,42 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
         beta_list(tt) = tmp_fit.beta;
         eta_list(tt) = (tmp_fit.beta + 1) / (tmp_fit.beta + tmp_fit.alpha);
         viscosity_list(tt) =- (eta_list(tt) - 1.459) / 0.017;
+
+    end
+
+    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_viscosity.gif", ToolBox.PW_folder_name));
+    time_period = ToolBox.stride / ToolBox.fs / 1000;
+    time_period_target = 0.04;
+    
+    if time_period < time_period_target
+        num_T = floor(nb_frames * time_period / time_period_target);
+        im_tab_interp(:, :, 1, :) = imresize3(squeeze(im_tab(:, :, 1, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 2, :) = imresize3(squeeze(im_tab(:, :, 2, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 3, :) = imresize3(squeeze(im_tab(:, :, 3, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+
+        for tt = 1:num_T
+            [A, map] = rgb2ind(im_tab_interp(:, :, :, tt), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period_target);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period_target);
+            end
+
+        end
+
+    else
+
+        for tt = 1:size(im_tab, 4)
+            [A, map] = rgb2ind(frame2im(frame), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period);
+            end
+
+        end
 
     end
 
@@ -154,10 +203,10 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
     fit_velocity_profile_diastole = Vmax_list(end) * (1 - (1 - alpha_list(end)) .* abs(x_section) .^ beta_list(end));
 
     figure(668)
-    % plot(x_section,average_velocity_profile_systole,'-k',...
-    % x_section,average_velocity_profile_diastole,'-k',...
-    %     x_section,fit_velocity_profile_systole,'-r',...
-    %     x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
+    plot(x_section,average_velocity_profile_systole,'-k',...
+    x_section,average_velocity_profile_diastole,'-k',...
+        x_section,fit_velocity_profile_systole,'-r',...
+        x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
     fill(fullTime2, inBetween_syst, Color_std);
     hold on
     fill(fullTime2, inBetween_diast, Color_std);
@@ -207,10 +256,10 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
 
     end
 
-    list_fig_close = [666, 668, 899];
+    list_fig_close = [666, 668, 60280];
 
     for ii = 1:length(list_fig_close)
         close(list_fig_close(ii));
     end
-
+    
 end

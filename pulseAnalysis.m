@@ -262,9 +262,9 @@ plot2txt(fullTime(1:length(fullArterialPulseClean)),fullArterialPulseClean,'Filt
 plot2txt(fullTime(1:length(noise)),noise,'ResidualArterialPulse', ToolBox)
 
 
-%C'EST QUOI
-figure(85)
-clim([min(range),max(range)]);
+% % C'EST QUOI? 
+% figure(85)
+% clim([min(range),max(range)]);
 
 %% Local BKG Artery and Veins %~1min
 
@@ -320,7 +320,7 @@ else
         tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
         % tmp = tmp.*(tmp>0);
         % tmp(tmp<0) = 0;
-        fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
+        fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));%  
         clear tmp
         % fullVideoM2eff = fullVideoM2 - LocalBKG_arteryM2;
         % fullVideoM0eff = fullVideoM0 - LocalBKG_arteryM0;
@@ -497,7 +497,7 @@ clear fullVideoM2M0
 
 [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp,path);
 v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
-fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
+% fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
 % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
 % fprintf('Offset Normalization was performed: +%d µL/min',ToolBox.NormalizationOffset)
 
@@ -770,8 +770,8 @@ clim([min(range),max(range)]);
 
 heatmap_sys_raw_img = frame2im(getframe(gca));
 
-figure(85)
-clim([min(range),max(range)]);
+% figure(85)
+% clim([min(range),max(range)]);
 
 
 % systolic Doppler frequency heatmap

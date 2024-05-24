@@ -150,7 +150,8 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
         end
 
     else % if M = 0
-        1;
+        print("Less than two systoles were detected");
+        
     end
 
     % FIXME : create zerolag correlation matrix between all zero-mean pulses,
