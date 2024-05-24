@@ -359,6 +359,7 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM
     end
 
     set(ax125, 'PlotBoxAspectRatio', [2.5, 1, 1])
+    set(ax125, 'Linewidth', 2)
 
     for tt = 1:length(fullTime)
         curve1 = total_avg_blood_volume_rate_artery(1:tt) + 0.5 * total_std_blood_volume_rate_artery(1:tt);
@@ -367,6 +368,10 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM
         inBetween = [curve1', fliplr(curve2')];
         fill(ax125, tmp_fullTime, inBetween, Color_std);
         axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
+
+        if ~ismember(round(mean_volume_rate_artery(1)), get(gca, 'YTick'))
+            set(ax125, 'YTick', sort([round(mean_volume_rate_artery(1)), get(gca, 'YTick')]));
+        end
         hold on;
         plot(ax125, fullTime(1:tt), curve1, "Color", Color_std, 'LineWidth', 2);
         plot(ax125, fullTime(1:tt), curve2, "Color", Color_std, 'LineWidth', 2);

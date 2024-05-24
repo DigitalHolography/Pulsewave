@@ -610,7 +610,7 @@ classdef OneCycleClass
                     tic
                     % try
                     disp('flowrate :')
-                    flow_rate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k,obj.directory);
+                    flow_rate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_one_cycle, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k,obj.directory);
                     disp('FlowRate timing :')
                     time_flowrate = toc;
                     disp(time_flowrate)

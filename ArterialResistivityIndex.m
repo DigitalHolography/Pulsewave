@@ -118,7 +118,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
 %% GIF MAKER
 
     f71 = figure(71);
-    % f71.Position = [200, 200, 570, 740];
+    f71.Position = [300, 300, 570, 740];
     for tt = 1:size(ARIvideoRGB,4)
         imagesc(ARIvideoRGB(:,:,:,tt));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f",ARI)));
