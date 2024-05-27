@@ -198,6 +198,74 @@ function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolB
         disp('fail saving colorbars')
     end
 
+
+    %% GIF MAKER
+
+    f158 = figure(158);
+    f158.Position = [300, 300, 570, 630];
+    for tt = 1:size(flowVideoRGB_one_cycle,4)
+        imagesc(flowVideoRGB_one_cycle(:,:,:,tt));
+        title('Flow Map');
+        axis image
+        axis off
+        set(gca, 'LineWidth', 2);
+        fontsize(gca, 12, "points");
+        hCB = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
+        hCB.Label.String = 'Velocity (mm.s^{-1})';
+        hCB.Label.FontSize = 12;
+        colormap(cmap_artery);
+        % FIGURE IMAGE EXPORT
+        frame = getframe(f158);
+        im = frame2im(frame);
+
+        if tt == 1
+            im_tab = zeros(size(im, 1), size(im, 2), 3, size(flowVideoRGB_one_cycle, 4), 'uint8');
+            im_tab(:, :, :, 1) = im;
+        else
+            im_tab(:, :, :, tt) = im;
+        end
+
+    end
+
+    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_Flow_map.gif", ToolBox.PW_folder_name));
+    time_period = ToolBox.stride / ToolBox.fs / 1000;
+    time_period_target = 0.04;
+
+    if time_period < time_period_target
+        num_T = floor(size(flowVideoRGB_one_cycle, 4) * time_period / time_period_target);
+        im_tab_interp(:, :, 1, :) = imresize3(squeeze(im_tab(:, :, 1, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 2, :) = imresize3(squeeze(im_tab(:, :, 2, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 3, :) = imresize3(squeeze(im_tab(:, :, 3, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+
+        for tt = 1:num_T
+            [A, map] = rgb2ind(im_tab_interp(:, :, :, tt), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period_target);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period_target);
+            end
+
+        end
+
+    else
+
+        for tt = 1:size(im_tab, 4)
+            [A, map] = rgb2ind(frame2im(frame), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period);
+            end
+
+        end
+
+    end
+
+
+
+
     print('-f156', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_velocity_distribution_arteries.png')));
 
     if veins_analysis

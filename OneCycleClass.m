@@ -588,15 +588,15 @@ classdef OneCycleClass
                     time_hist = toc;
                     disp(time_hist)
                     save_time(path_file_txt_exe_times, 'Velocity Histogramm', time_hist)
-                    
-                    
-                    %                     tic
-                    %                     BKGHistogramm(obj.dataM2M0_interp{1}, maskBackground ,ToolBox)
-                    %                     disp('BKG Histogramm timing :')
-                    %                     toc
-                    
-                    
-                    
+
+
+                    % tic
+                    % BKGHistogramm(obj.dataM2M0_interp{1}, maskBackground ,ToolBox)
+                    % disp('BKG Histogramm timing :')
+                    % toc
+
+
+
                     tic
                     ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp{1}, maskArtery,  ToolBox);
                     disp('ArterialResistivityIndex timing :')

@@ -1,4 +1,4 @@
-function [hue, mapped_sat, val] = createARI_HSVmap(ARImap, ARI, Im, mask, ToolBox)
+function [hue, mapped_sat, val, cmap] = createARI_HSVmap(ARImap, ARI, Im, mask, ToolBox)
 
     % ARImap = imgaussfilt(ARImap, 1.3);
     % hue = ((ToolBox.ARI_hue_max - ToolBox.ARI_hue_min) ./ (1 + exp(- (ARImap - ToolBox.ARI_inflexion_point_hue) .* ToolBox.ARI_slope_hue)) + ToolBox.ARI_hue_min) .* mask;
@@ -23,5 +23,6 @@ function [hue, mapped_sat, val] = createARI_HSVmap(ARImap, ARI, Im, mask, ToolBo
     mapped_sat = (sat - healthy_ARI) / (1-healthy_ARI);
     mapped_sat(mapped_sat<=0) = 0;
     val = adjusted_image;
-
+    cmap = ones(256,3);
+    cmap(193:256,2:3) = [linspace(1,0,64)' linspace(1,0,64)'];
 end

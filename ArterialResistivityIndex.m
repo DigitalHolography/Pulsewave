@@ -19,7 +19,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
         ARI = 1;
     end
 
-    [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, meanIm, maskArtery, ToolBox);
+    [hue_ARI, sat_ARI, val_ARI, cmap] = createARI_HSVmap(ARImap, ARI, meanIm, maskArtery, ToolBox);
     % arterial resistivity map RGB
     ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     ARImapRGB = ARImapRGB .* maskArtery + ones(size(ARImapRGB)) .* meanIm .* ~maskArtery;
@@ -101,7 +101,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     ARI_h = (ToolBox.ARI_hue_max - ToolBox.ARI_hue_min) * sigmoid(ARI_x, ToolBox.ARI_inflexion_point_hue, ToolBox.ARI_slope_hue) + ToolBox.ARI_hue_min;
     ARI_s = ones(1, 256);
     ARI_v = (ToolBox.ARI_val_max - ToolBox.ARI_val_min) * sigmoid(ARI_x, ToolBox.ARI_inflexion_point_val, ToolBox.ARI_slope_val) + ToolBox.ARI_val_min;
-    cmap = squeeze(hsv2rgb(ARI_h, ARI_s, ARI_v));
+    % cmap = squeeze(hsv2rgb(ARI_h, ARI_s, ARI_v));
     colormap(cmap);
 
     % Save colorbar
