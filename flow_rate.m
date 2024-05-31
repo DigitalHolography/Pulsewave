@@ -464,7 +464,7 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM
         drawnow
 
         % FIGURE IMAGE EXPORT
-        frame = getframe(f127);
+        frame = getframe(f127,[40 10 500 720]);
         im = frame2im(frame);
 
         if tt == 1

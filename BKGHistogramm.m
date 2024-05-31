@@ -26,7 +26,7 @@ function [] = BKGHistogramm(data_M2M0, maskBKG, ToolBox)
     set(gca, 'YDir', 'normal')
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     %colormap("hot")
-    f = getframe(gcf);
+    f = getframe(gcf, [10 10 550 600]);
     [M, N, ~] = size(f.cdata);
     histo_video_artery = zeros(M, N, 3, size_data_3);
 

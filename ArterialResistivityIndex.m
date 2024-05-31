@@ -118,7 +118,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
 %% GIF MAKER
 
     f71 = figure(71);
-    f71.Position = [300, 300, 570, 740];
+    f71.Position = [300, 300, 570, 630];
     for tt = 1:size(ARIvideoRGB,4)
         imagesc(ARIvideoRGB(:,:,:,tt));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f",ARI)));
@@ -132,7 +132,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
 
         colormap(cmap);
         % FIGURE IMAGE EXPORT
-        frame = getframe(f71);
+        frame = getframe(f71,[40 10 500 600]);
         im = frame2im(frame);
 
         if tt == 1

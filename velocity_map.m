@@ -215,7 +215,7 @@ function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolB
         hCB.Label.FontSize = 12;
         colormap(cmap_artery);
         % FIGURE IMAGE EXPORT
-        frame = getframe(f158);
+        frame = getframe(f158,[40 10 500 600]);
         im = frame2im(frame);
 
         if tt == 1
