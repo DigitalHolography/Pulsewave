@@ -150,13 +150,15 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
         end
 
     else % if M = 0
-        print("Less than two systoles were detected");
+        fprintf("Less than two systoles were detected");
+        tmp = zeros(size(video, 1), size(video, 2), Ninterp);
+        tmpM0 = zeros(size(video, 1), size(video, 2), Ninterp);
+        cycles_signal = zeros(M, Ninterp);
         
     end
 
     % FIXME : create zerolag correlation matrix between all zero-mean pulses,
     % then svd, to identify the most correlated pulses
-
     one_cycle_video = tmp; % average all detected cycles
     one_cycle_videoM0 = tmpM0; % average all detected cycles
 

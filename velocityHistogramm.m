@@ -87,7 +87,55 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
         f = getframe(gcf);
         histo_video_artery(:, :, :, t) = imresize(f.cdata, [M N]);
 
+        im = frame2im(f);
+
+        if t == 1
+            im_tab = zeros(size(im, 1), size(im, 2), 3, size_vRMS_3, 'uint8');
+            im_tab(:, :, :, 1) = im;
+        else
+            im_tab(:, :, :, t) = im;
+        end
+
     end
+
+    %% GIF MAKER
+
+    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_Velocity_Histogram.gif", ToolBox.PW_folder_name));
+    time_period = ToolBox.stride / ToolBox.fs / 1000;
+    time_period_target = 0.04;
+
+    if time_period < time_period_target
+        num_T = floor(size_vRMS_3 * time_period / time_period_target);
+        im_tab_interp(:, :, 1, :) = imresize3(squeeze(im_tab(:, :, 1, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 2, :) = imresize3(squeeze(im_tab(:, :, 2, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 3, :) = imresize3(squeeze(im_tab(:, :, 3, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+
+        for tt = 1:num_T
+            [A, map] = rgb2ind(im_tab_interp(:, :, :, tt), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period_target);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period_target);
+            end
+
+        end
+
+    else
+
+        for tt = 1:size(im_tab, 4)
+            [A, map] = rgb2ind(frame2im(frame), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period);
+            end
+
+        end
+
+    end
+
 
     velocity_dist_arteries = frame2im(getframe(gca));
 
@@ -100,6 +148,8 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
     end
 
     close(w);
+
+    
 
     %% Velocity Histogram in veins
 

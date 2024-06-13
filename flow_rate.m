@@ -343,6 +343,7 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM
         set(gca, 'YTick', sort([round(mean_volume_rate_artery(1)), get(gca, 'YTick')]));
     end
 
+
     Plot_volume_rate_artery = getframe(gcf);
     Plot_volume_rate_video_artery = zeros(size(Plot_volume_rate_artery.cdata, 1), size(Plot_volume_rate_artery.cdata, 2), 3, size(v_RMS, 3));
 
@@ -464,7 +465,7 @@ function [] = flow_rate(maskArtery, maskVein, maskCRA, maskSection, v_RMS, dataM
         drawnow
 
         % FIGURE IMAGE EXPORT
-        frame = getframe(f127,[40 10 500 720]);
+        frame = getframe(f127,[30 10 520 720]);
         im = frame2im(frame);
 
         if tt == 1

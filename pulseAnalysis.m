@@ -321,12 +321,19 @@ else
         % tmp = tmp.*(tmp>0);
         % tmp(tmp<0) = 0;
         fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));%  
+        % tmp = tmp .* (tmp>0);
+        % fullVideoM2M0minusBKG = sqrt(tmp);%  
         clear tmp
         % fullVideoM2eff = fullVideoM2 - LocalBKG_arteryM2;
         % fullVideoM0eff = fullVideoM0 - LocalBKG_arteryM0;
         % fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
-        % fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));
+        % fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));%
+
+    %elif PW_params.DiffFirstCalculationsFlag == A CHANGER
+
+        
     else
+        
         fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
     end
 end

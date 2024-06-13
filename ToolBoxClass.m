@@ -35,8 +35,8 @@ classdef ToolBoxClass
         ARI_val_min double
         ARI_inflexion_point_val double
         ARI_slope_val double
-        NormalizationFactor
-        NormalizationOffset
+        NormalizationFactor double
+        NormalizationOffset double
 
     end
 
@@ -150,12 +150,18 @@ classdef ToolBoxClass
 
                     %                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
                     %                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
-                catch ME
+                catch exception
                     obj.NormalizationFactor = 1;
                     obj.NormalizationOffset = 0;
                     % TO DO EXCEPTION HANDLING
                     disp('Normalization Error: No normalization was performed')
-                    disp(ME)
+                    disp(['Error while loading : ', path])
+                    disp(exception.identifier)
+                    disp(exception.message)
+                    for i = 1:size(exception.stack,1)
+                        stack = sprintf('%s : %s, line : %d',exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
+                        fprintf(stack);
+                    end
                 end
 
             else
