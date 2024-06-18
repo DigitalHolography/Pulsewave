@@ -159,8 +159,7 @@ classdef ToolBoxClass
                     disp(exception.identifier)
                     disp(exception.message)
                     for i = 1:size(exception.stack,1)
-                        stack = sprintf('%s : %s, line : %d',exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
-                        fprintf(stack);
+                        fprintf('%s : %s, line : %d \n',exception.stack(i).file, exception.stack(i).name, exception.stack(i).line)
                     end
                 end
 
