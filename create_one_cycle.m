@@ -152,9 +152,9 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
     else % if M = 0
         fprintf("Less than two systoles were detected");
         cycles_signal = squeeze(sum(video(:, :, :) .* mask, [1 2]) / nnz(mask));
-        cycles_signal = interp1(cycles_signal,1:Ninterp);
-        tmp = interp3(video,size(video, 1), size(video, 2), Ninterp);
-        tmpM0 = interp3(videoM0,size(video, 1), size(video, 2), Ninterp);
+        cycles_signal = interp1(cycles_signal, 1:Ninterp);
+        tmp = interp3(video, size(video, 1), size(video, 2), Ninterp);
+        tmpM0 = interp3(videoM0, size(video, 1), size(video, 2), Ninterp);
         selectedPulseIdx = 0;
 
     end

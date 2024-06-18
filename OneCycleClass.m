@@ -404,6 +404,8 @@ classdef OneCycleClass
         function onePulse(obj, Ninterp)
             % PW_params = Parameters_json(obj.directory);
             % ToolBox = obj.ToolBoxmaster;
+
+            progress_bar = waitbar(0,'');
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
 
@@ -482,6 +484,7 @@ classdef OneCycleClass
             fclose(fileID);
 
             %% FlatField
+            waitbar(0,progress_bar,"FlatField");
 
             if obj.flag_FlatField && (obj.isdone_flatfield == 0)
 
@@ -542,6 +545,7 @@ classdef OneCycleClass
             end
 
             %% Creating Masks
+            waitbar(0.1,progress_bar,"Creating Masks");
 
             fileID = fopen(path_file_txt_exe_times, 'a+');
             fprintf(fileID, '\r\n');
@@ -572,6 +576,7 @@ classdef OneCycleClass
             %save_time(path_file_txt_exe_times, 'createMasksNew', time)
 
             %% PulseWave Analysis
+            waitbar(0.25,progress_bar,"PulseWave analysis");
 
             if obj.flag_PulseWave_analysis
                 close all
@@ -676,6 +681,7 @@ classdef OneCycleClass
             end
 
             %% Spectrum Analysis
+            waitbar(0.9,progress_bar,"Spectrum analysis");
 
             if obj.flag_SH_analysis
 
@@ -706,6 +712,7 @@ classdef OneCycleClass
             end
 
             displaySuccessMsg(1);
+            close(progress_bar)
             close all
 
         end

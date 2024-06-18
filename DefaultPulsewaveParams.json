@@ -123,6 +123,6 @@
     },
     "Other" : {
         "Number of sides" : 120,
-        "Diff First Calculations Flag" : 1
+        "Diff First Calculations Flag" : 0
     }
 }
