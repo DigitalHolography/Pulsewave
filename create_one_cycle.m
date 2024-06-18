@@ -154,6 +154,7 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
         tmp = zeros(size(video, 1), size(video, 2), Ninterp);
         tmpM0 = zeros(size(video, 1), size(video, 2), Ninterp);
         cycles_signal = zeros(M, Ninterp);
+        selectedPulseIdx = 0;
         
     end
 
