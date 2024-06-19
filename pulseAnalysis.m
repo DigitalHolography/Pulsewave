@@ -91,11 +91,11 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
         fullVenousSignalM2 = fullVideoM2 .* maskVein;
         fullVenousSignalM2 = squeeze(sum(fullVenousSignalM2, [1 2])) / nnz(maskVein);
-        fullVenousSignalMinusBackgroundM2 = fullVenousSignalM2 - fullBackgroundSignalM2;
+        fullVenousSignalMinusBackgroundM2 = fullVenousSignalM2 - fullBackgroundM2;
 
         fullVenousSignalM0 = fullVideoM0 .* maskVein;
         fullVenousSignalM0 = squeeze(sum(fullVenousSignalM0, [1 2])) / nnz(maskVein);
-        fullVenousSignalMinusBackgroundM0 = fullVenousSignalM0 - fullBackgroundSignalM0;
+        fullVenousSignalMinusBackgroundM0 = fullVenousSignalM0 - fullBackgroundM0;
     end
 
     exec_times_id = [exec_times_id, "Calculate raw signals"];
@@ -302,40 +302,58 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
     if veins_analysis
         % Remove arteries (always calculated) from local BKG
-        if ~PW_params.DiffFirstCalculationsFlag
-            % tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
-            % tmp = tmp .* (tmp > 0);
-            % fullVideoM2M0minusBKG = sqrt(abs(tmp));
-            % clear tmp
-            fullVideoM2eff = fullVideoM2 - (LocalBKG_veinM2 .* ~local_mask_artery + LocalBKG_arteryM2 .* local_mask_artery);
-            fullVideoM0eff = fullVideoM0 - (LocalBKG_veinM0 .* ~local_mask_artery + LocalBKG_arteryM0 .* local_mask_artery);
-            fullVideoM2M0minusBKG = sqrt(fullVideoM2eff(fullVideoM2eff > 0) ./ fullVideoM0eff(fullVideoM0eff > 0));
-        else
-            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein .* ~local_mask_artery + LocalBKG_artery .* local_mask_artery);
+        if PW_params.DiffFirstCalculationsFlag
+
+            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
+
+        elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
+
+            tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
+            tmp = tmp .* (tmp > 0);
+            fullVideoM2M0minusBKG = sqrt(abs(tmp));
+            clear tmp
+
+        elseif PW_params.DiffFirstCalculationsFlag ==  2 % TO BE TESTED
+
+            fullVideoM2eff = fullVideoM2 - (LocalBKG_veinM2.*~local_mask_artery + LocalBKG_arteryM2.*local_mask_artery);
+            fullVideoM0eff = fullVideoM0 - (LocalBKG_veinM0.*~local_mask_artery + LocalBKG_arteryM0.*local_mask_artery);
+            fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
+            fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));
+
+        else %SIGNED DIFFERENCE FIRST
+
+            tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
+            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
+            clear tmp
+
         end
 
     else
-
-        if ~PW_params.DiffFirstCalculationsFlag
-            tmp = fullVideoM2M0 .^ 2 - LocalBKG_artery .^ 2;
-            % tmp = tmp.*(tmp>0);
-            % tmp(tmp<0) = 0;
-            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp)); %
-            % tmp = tmp .* (tmp>0);
-            % fullVideoM2M0minusBKG = sqrt(tmp);%
-            clear tmp
-            % fullVideoM2eff = fullVideoM2 - LocalBKG_arteryM2;
-            % fullVideoM0eff = fullVideoM0 - LocalBKG_arteryM0;
-            % fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
-            % fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));%
-
-            %elif PW_params.DiffFirstCalculationsFlag == A CHANGER
-
-        else
+        if PW_params.DiffFirstCalculationsFlag == 0 % DIFFERENCE LAST
 
             fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
-        end
 
+        elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
+
+            tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
+            tmp = tmp.*(tmp>0);
+            fullVideoM2M0minusBKG = sqrt(tmp);
+            clear tmp
+
+        elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
+
+            fullVideoM2eff = fullVideoM2 - LocalBKG_arteryM2;
+            fullVideoM0eff = fullVideoM0 - LocalBKG_arteryM0;
+            fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
+            fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));
+
+        else %SIGNED DIFFERENCE FIRST
+
+            tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
+            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
+            clear tmp
+
+        end
     end
 
     exec_times_id = [exec_times_id, "Local Backgrounds"];
@@ -458,7 +476,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
         for ii = 1:size(fullVideoM2M0, 3)
             v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
-            [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+            [hue_artery, sat_artery, val_artery, cmap_artery] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
             val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
             flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery + hue_vein, sat_artery + sat_vein, val);
@@ -469,7 +487,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
         for ii = 1:size(fullVideoM2M0, 3)
             v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
-            [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+            [hue_artery, sat_artery, val_artery, cmap_vein] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             val = v .* ~maskArtery + val_artery .* maskArtery;
             flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery, sat_artery, val);
             flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery);
@@ -489,6 +507,84 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     end
 
     close(w);
+    f21 = figure(21);
+    f21.Position = [300, 300, 570, 630];
+
+    v_artery = sum(v .* maskArtery, [1 2]) / nnz(maskArtery);
+    v_vein = sum(v .* maskVein, [1 2]) / nnz(maskVein);
+    Vmax_Arteries = max(v_artery(:));
+    Vmax_Veins = max(v_vein(:));
+    Vmin_Arteries = min(v_artery(:));
+    Vmin_Veins = min(v_vein(:));
+
+
+    for tt = 1:size(flowVideoRGB,4)
+        imagesc(flowVideoRGB(:,:,:,tt));
+        title('Flow Map');
+        axis image
+        axis off
+        set(gca, 'LineWidth', 2);
+        fontsize(gca, 12, "points");
+        hCB = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
+        hCB.Label.String = 'Velocity (mm.s^{-1})';
+        hCB.Label.FontSize = 12;
+        colormap(cmap_artery);
+
+        hCB_vein = colorbar('northoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Veins, 1)), string(round(Vmax_Veins, 1))});
+        hCB_vein.Label.String = 'Velocity (mm.s^{-1})';
+        hCB_vein.Label.FontSize = 12;
+        colormap(cmap_vein);
+
+        % FIGURE IMAGE EXPORT
+        frame = getframe(f21,[40 10 500 600]);
+        im = frame2im(frame);
+
+        if tt == 1
+            im_tab = zeros(size(im, 1), size(im, 2), 3, size(flowVideoRGB, 4), 'uint8');
+            im_tab(:, :, :, 1) = im;
+        else
+            im_tab(:, :, :, tt) = im;
+        end
+
+    end
+
+    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_Flow_map.gif", ToolBox.PW_folder_name));
+    time_period = ToolBox.stride / ToolBox.fs / 1000;
+    time_period_target = 0.04;
+
+    if time_period < time_period_target
+        num_T = floor(size(flowVideoRGB, 4) * time_period / time_period_target);
+        im_tab_interp(:, :, 1, :) = imresize3(squeeze(im_tab(:, :, 1, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 2, :) = imresize3(squeeze(im_tab(:, :, 2, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+        im_tab_interp(:, :, 3, :) = imresize3(squeeze(im_tab(:, :, 3, :)), [size(im, 1) size(im, 2) num_T], "nearest");
+
+        for tt = 1:num_T
+            [A, map] = rgb2ind(im_tab_interp(:, :, :, tt), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period_target);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period_target);
+            end
+
+        end
+
+    else
+
+        for tt = 1:size(im_tab, 4)
+            [A, map] = rgb2ind(frame2im(frame), 256);
+
+            if tt == 1
+                imwrite(A, map, filename_gif, "gif", "LoopCount", Inf, "DelayTime", time_period);
+            else
+                imwrite(A, map, filename_gif, "gif", "WriteMode", "append", "DelayTime", time_period);
+            end
+
+        end
+
+    end
+
+
     % mp4
     w = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, '_flowVideo')), 'MPEG-4');
     open(w)

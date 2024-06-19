@@ -227,7 +227,7 @@ function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolB
 
     end
 
-    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_Flow_map.gif", ToolBox.PW_folder_name));
+    filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_Animated_Flow_map_one_cycle.gif", ToolBox.PW_folder_name));
     time_period = ToolBox.stride / ToolBox.fs / 1000;
     time_period_target = 0.04;
 
