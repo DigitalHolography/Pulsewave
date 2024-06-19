@@ -150,17 +150,10 @@ classdef ToolBoxClass
 
                     %                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
                     %                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
-                catch exception
+                catch
                     obj.NormalizationFactor = 1;
                     obj.NormalizationOffset = 0;
-                    % TO DO EXCEPTION HANDLING
                     disp('Normalization Error: No normalization was performed')
-                    disp(['Error while loading : ', path])
-                    disp(exception.identifier)
-                    disp(exception.message)
-                    for i = 1:size(exception.stack,1)
-                        fprintf('%s : %s, line : %d \n',exception.stack(i).file, exception.stack(i).name, exception.stack(i).line)
-                    end
                 end
 
             else

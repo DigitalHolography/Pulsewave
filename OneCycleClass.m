@@ -413,6 +413,8 @@ classdef OneCycleClass
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;
 
+            fprintf("File: %s\n",ToolBox.PW_folder_name)
+
             meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
             meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
             blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0), PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);

@@ -302,9 +302,11 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
     if veins_analysis
         % Remove arteries (always calculated) from local BKG
-        if PW_params.DiffFirstCalculationsFlag
+        if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
+            tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
+            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
+            clear tmp
 
         elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
@@ -320,18 +322,18 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
             fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
             fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));
 
-        else %SIGNED DIFFERENCE FIRST
+        else % DIFFERENCE LAST
 
-            tmp = fullVideoM2M0.^2 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery).^2;
-            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
-            clear tmp
+            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein.*~local_mask_artery + LocalBKG_artery.*local_mask_artery);
 
         end
 
     else
-        if PW_params.DiffFirstCalculationsFlag == 0 % DIFFERENCE LAST
+        if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-            fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
+            tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
+            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
+            clear tmp
 
         elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
@@ -347,11 +349,9 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
             fullVideoM2M0eff = fullVideoM2eff./fullVideoM0eff;
             fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff.*(fullVideoM2M0eff>0));
 
-        else %SIGNED DIFFERENCE FIRST
+        else % DIFFERENCE LAST
 
-            tmp = fullVideoM2M0.^2 - LocalBKG_artery.^2;
-            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
-            clear tmp
+            fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
 
         end
     end
@@ -477,7 +477,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
         for ii = 1:size(fullVideoM2M0, 3)
             v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
             [hue_artery, sat_artery, val_artery, cmap_artery] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-            [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
+            [hue_vein, sat_vein, val_vein, cmap_vein] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
             val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
             flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery + hue_vein, sat_artery + sat_vein, val);
             flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery + maskVein) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery + maskVein);
@@ -487,7 +487,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
         for ii = 1:size(fullVideoM2M0, 3)
             v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
-            [hue_artery, sat_artery, val_artery, cmap_vein] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+            [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             val = v .* ~maskArtery + val_artery .* maskArtery;
             flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery, sat_artery, val);
             flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery);
@@ -519,21 +519,23 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
 
 
     for tt = 1:size(flowVideoRGB,4)
+        % subplot(2,1,1)
         imagesc(flowVideoRGB(:,:,:,tt));
         title('Flow Map');
         axis image
         axis off
         set(gca, 'LineWidth', 2);
         fontsize(gca, 12, "points");
-        hCB = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
-        hCB.Label.String = 'Velocity (mm.s^{-1})';
-        hCB.Label.FontSize = 12;
-        colormap(cmap_artery);
-
+        % colorbar(cmap_artery)
+        hCB_artery = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
+        hCB_artery.Label.String = 'Velocity (mm.s^{-1})';
+        hCB_artery.Label.FontSize = 12;
+        
+        % subplot(2,1,2)
+        % colorbar(cmap_vein)
         hCB_vein = colorbar('northoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Veins, 1)), string(round(Vmax_Veins, 1))});
         hCB_vein.Label.String = 'Velocity (mm.s^{-1})';
         hCB_vein.Label.FontSize = 12;
-        colormap(cmap_vein);
 
         % FIGURE IMAGE EXPORT
         frame = getframe(f21,[40 10 500 600]);
