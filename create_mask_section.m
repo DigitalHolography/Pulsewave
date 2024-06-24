@@ -89,10 +89,8 @@ function [maskSection, VesselImageRGB] = create_mask_section(meanIm, maskArtery,
     axis off
     axis image
 
-    mask_artery_section_im = frame2im(getframe(gca));
-
     print('-f156', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_mask_artery_section.png')));
 
-    imwrite(mask_artery_section_im, fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_mask_artery_section_rgb.png')), 'png');
+    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_mask_artery_section_rgb.png')), 'png');
 
 end

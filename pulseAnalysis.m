@@ -383,7 +383,8 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     plot2txt(fullTime(1:length(fullArterialPulseRegularized)), fullArterialPulseRegularized, 'FullArterialPulseRegularized', ToolBox)
     plot2txt(fullTime(1:length(fullArterialPulse)), fullArterialPulseMinusBackground, 'FullArterialPulseMinusBackground', ToolBox)
     
-    figure(18)
+    f18 = figure(18);
+    f18.Position = [1100 485 350 420];
     imagesc(mean(LocalBKG_artery, 3) .* local_mask_artery + ones(size(LocalBKG_artery, 1)) * mean(LocalBKG_artery, 'all') .* ~local_mask_artery);
     colormap gray
     title('Local Background in arteries');
@@ -394,6 +395,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     c.Label.FontSize = 12;
     axis off
     axis image
+
     range(1:2) = clim;
     
     local_bg_arteries = frame2im(getframe(gca));
@@ -487,7 +489,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
         
         for ii = 1:size(fullVideoM2M0, 3)
             v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
-            [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+            [hue_artery, sat_artery, val_artery, cmap_artery] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             val = v .* ~maskArtery + val_artery .* maskArtery;
             flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery, sat_artery, val);
             flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery);
@@ -512,32 +514,32 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     f21.Position = [300, 300, 570, 630];
     gifWriter= GifWriter("Animated_Flow_map",0.04,ToolBox);
     
-    v_artery = sum(v .* maskArtery, [1 2]) / nnz(maskArtery);
-    v_vein = sum(v .* maskVein, [1 2]) / nnz(maskVein);
-    Vmax_Arteries = max(v_artery(:));
-    Vmax_Veins = max(v_vein(:));
-    Vmin_Arteries = min(v_artery(:));
-    Vmin_Veins = min(v_vein(:));
+    f_RMS_artery = sum(flowVideoRGB .* maskArtery, [1 2]) / nnz(maskArtery);
+    f_RMS_vein = sum(flowVideoRGB .* maskVein, [1 2]) / nnz(maskVein);
+    f_RMS_max_Arteries = max(f_RMS_artery(:));
+    f_RMS_max_Veins = max(f_RMS_vein(:));
+    f_RMS_min_Arteries = min(f_RMS_artery(:));
+    f_RMS_min_Veins = min(f_RMS_vein(:));
     
     
     for tt = 1:size(flowVideoRGB,4)
-        % subplot(2,1,1)
+
         imagesc(flowVideoRGB(:,:,:,tt));
         title('Flow Map');
         axis image
         axis off
         set(gca, 'LineWidth', 2);
         fontsize(gca, 12, "points");
-        % colorbar(cmap_artery)
-        hCB_artery = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
-        hCB_artery.Label.String = 'Velocity (mm.s^{-1})';
+        colormap(cmap_artery)
+        hCB_artery = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(f_RMS_min_Arteries, 1)), string(round(f_RMS_max_Arteries, 1))});
+        hCB_artery.Label.String = 'RMS Doppler Frequency (kHz)';
         hCB_artery.Label.FontSize = 12;
         
-        % subplot(2,1,2)
-        % colorbar(cmap_vein)
-        hCB_vein = colorbar('northoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Veins, 1)), string(round(Vmax_Veins, 1))});
-        hCB_vein.Label.String = 'Velocity (mm.s^{-1})';
-        hCB_vein.Label.FontSize = 12;
+        if veins_analysis
+        % colormap(cmap_vein)
+        hCB_vein = colorbar('northoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(f_RMS_min_Veins, 1)), string(round(f_RMS_max_Veins, 1))});
+        hCB_artery.Label.String = 'RMS Doppler Frequency (kHz)';
+        end
         
         % FIGURE IMAGE EXPORT
         frame = getframe(f21,[40 10 500 600]);
@@ -810,7 +812,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     clear heatmap_dia_raw
     
     % diastolic Doppler frequency heatmap
-    figure(80)
+    f80 = figure(80);
     imagesc(heatmap_dia);
     colormap gray
     title('bottom diastole RMS frequency map flatfield');
@@ -821,12 +823,14 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     c.Label.FontSize = 12;
     axis off
     axis image
+    f80.Position = [1100 500 380 420];
     range(1:2) = clim;
     
     heatmap_dia_img = frame2im(getframe(gca));
     
     % systolic Doppler frequency heatmap
-    figure(89)
+    f89 = figure(89);
+    f89.Position = [1100 500 380 420];
     imagesc(heatmap_sys_raw);
     colormap gray
     title('peak systole RMS frequency map RAW');
@@ -847,7 +851,8 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     % clim([min(range),max(range)]);
     
     % systolic Doppler frequency heatmap
-    figure(90)
+    f90 = figure(90);
+    f90.Position = [1100 500 380 420];
     imagesc(heatmap_sys);
     colormap gray
     title('peak systole RMS frequency map flatfield');
@@ -955,7 +960,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
         if ismember(ii, selectedPulseIdx)
             plot( ...
                 T, movavgvar(cycles_signal(ii, :), 5), 'k-', ...
-                'LineWidth', 1);
+                'LineWidth', 2);
             hold on
             %     else
             %         plot( ...

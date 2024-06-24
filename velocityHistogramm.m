@@ -62,7 +62,7 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
     %FIXME avoir une ligne à zéro de trois pixel
     %FIXME getframe pour la couleur
     
-    gifWriter = GifWriter("Animated_Velocity_Histogram",0.04,ToolBox);
+    gifWriter = GifWriter("Animated_Velocity_Histogram_Artery",0.04,ToolBox);
     
     for t = 1:size_vRMS_3
         
@@ -128,6 +128,8 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
         set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
         colormap("bone")
         
+        gifWriter = GifWriter("Animated_Velocity_Histogram_Veins",0.04,ToolBox);
+
         for t = 1:size_vRMS_3
             
             for x = 1:size_vRMS_1
@@ -154,10 +156,12 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
             f = getframe(gcf);
             %histo_video_vein(:,:,:,t) = imresize(f.cdata,[M N]);
             histo_video_vein(:, :, :, t) = f.cdata;
+            gifWriter = gifWriter.write(f);
         end
-        
+
         velocity_dist_veins = frame2im(getframe(gca));
-        
+        gifWriter.generate();
+
         w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_velocity_histogram_veins.avi')));
         tmp = mat2gray(histo_video_vein);
         open(w)

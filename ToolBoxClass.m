@@ -141,7 +141,7 @@ classdef ToolBoxClass
                     OpticalPowerAveraged = squeeze(mean(OpticalPower, 'all')); % Spatial and Temporal average AFTER division
 
                     % obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - OpticalPowerAveraged) ./ PW_params.normPowerCalibrationSlope;
-                    obj.NormalizationFactor = PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (OpticalPowerAveraged - PW_params.normPoweryIntercept);
+                    obj.NormalizationFactor = 1 ;% PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (OpticalPowerAveraged - PW_params.normPoweryIntercept);
 
                     if obj.NormalizationFactor < 0
                         obj.NormalizationFactor = 1;

@@ -4,7 +4,6 @@ classdef GifWriter
 
     properties
         filename_gif
-        timePeriod
         gifLength
         images
         time_period
@@ -19,9 +18,9 @@ classdef GifWriter
             %   filename: where want your Gif to be built
             %   time_period_min: minimal time between each frame of your GIF
 
-            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_s.gif", ToolBox.PW_folder_name,filename));
+            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name,filename));
             obj.time_period_min = time_period_min;
-            obj.timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+            obj.time_period = ToolBox.stride / ToolBox.fs / 1000;
 
         end
 
@@ -32,8 +31,8 @@ classdef GifWriter
             obj.images = cat(4,obj.images,image);
 
             obj.gifLength = size(obj.images,4);
-            obj.Nx = size(im, 1);
-            obj.Ny = size(im, 2);
+            obj.Nx = size(image, 1);
+            obj.Ny = size(image, 2);
 
         end
 

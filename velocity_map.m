@@ -97,12 +97,12 @@ function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolB
     xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
     imagesc(xAx, yAx, histo)
     set(gca, 'YDir', 'normal')
-    colormap("hot")
+    colormap('hot')
     ylabel('Velocity (mm.s^{-1})')
     xlabel('Time (s)')
     title("Velocity distribution in arteries")
     
-    v_histo_veins = round(v_RMS .* maskArtery);
+    v_histo_veins = round(v_RMS .* maskVein);
     v_min = min(v_histo_veins, [], 'all');
     v_max = max(v_histo_veins, [], 'all');
     
@@ -127,15 +127,17 @@ function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolB
         
     end
     
-    figure(157)
-    yAx = [v_min v_max];
-    xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
-    imagesc(xAx, yAx, histo)
-    set(gca, 'YDir', 'normal')
-    colormap("hot")
-    ylabel('Velocity (mm.s^{-1})')
-    xlabel('Time (s)')
-    title("Velocity distribution in arteries")
+    if veins_analysis
+        figure(157)
+        yAx = [v_min v_max];
+        xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
+        imagesc(xAx, yAx, histo)
+        set(gca, 'YDir', 'normal')
+        colormap(cmap_vein)
+        ylabel('Velocity (mm.s^{-1})')
+        xlabel('Time (s)')
+        title("Velocity distribution in veins")
+    end
     % h = histogram(v_RMS(:,:,ii).*maskArtery);
     % X = h.BinCounts;
     %

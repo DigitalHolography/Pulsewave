@@ -255,7 +255,7 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
     end % ii
 
     try
-        % viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
+        viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
         % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
     catch ME
         print(ME)
