@@ -26,8 +26,11 @@ classdef GifWriter
 
         function obj = write(obj,frame)
             % Appends a frame to the gif
-
-            image = frame2im(frame);
+            if isa(frame,'struct')
+                image = frame2im(frame);
+            else
+                image = frame;
+            end
             obj.images = cat(4,obj.images,image);
 
             obj.gifLength = size(obj.images,4);

@@ -1,4 +1,4 @@
-function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, maskArtery, ToolBox)
+function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskArtery, ToolBox)
     PW_params = Parameters_json(path);
     disp('arterial resistivity...');
     
@@ -12,7 +12,7 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     meanIm = rescale(mean(videoM0_from_holowaves, 3));
     videoM0_from_holowaves = rescale(videoM0_from_holowaves);
     
-    [ARI, ARImap] = construct_resistivity_index(v_RMS_one_cycle, maskArtery);
+    [ARI, ARImap] = construct_resistivity_index(v_RMS_all, maskArtery);
     ARImap(isnan(ARImap)) = 0;
     
     if ARI > 1
@@ -24,9 +24,9 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     ARImapRGB = ARImapRGB .* maskArtery + ones(size(ARImapRGB)) .* meanIm .* ~maskArtery;
     
-    ARIvideoRGB = zeros(size(v_RMS_one_cycle, 1), size(v_RMS_one_cycle, 2), 3, size(v_RMS_one_cycle, 3));
+    ARIvideoRGB = zeros(size(v_RMS_all, 1), size(v_RMS_all, 2), 3, size(v_RMS_all, 3));
     
-    for ii = 1:size(v_RMS_one_cycle, 3)
+    for ii = 1:size(v_RMS_all, 3)
         [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, videoM0_from_holowaves(:, :, ii), maskArtery, ToolBox);
         %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
         ARIvideoRGB(:, :, :, ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
@@ -145,5 +145,5 @@ function [] = ArterialResistivityIndex(v_RMS_one_cycle, videoM0_from_holowaves, 
     
     imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_ARI_map_img.png')), 'png');
     
-    %close all
+    close all
     

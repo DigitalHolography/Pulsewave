@@ -133,7 +133,7 @@ function [] = velocity_map(maskArtery, maskVein, v_RMS, videoM0_one_cycle, ToolB
         xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
         imagesc(xAx, yAx, histo)
         set(gca, 'YDir', 'normal')
-        colormap(cmap_vein)
+        colormap('hot')
         ylabel('Velocity (mm.s^{-1})')
         xlabel('Time (s)')
         title("Velocity distribution in veins")

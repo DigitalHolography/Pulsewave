@@ -542,7 +542,7 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
         end
         
         % FIGURE IMAGE EXPORT
-        frame = getframe(f21,[40 10 500 600]);
+        frame = getframe(f21);
         gifWriter = gifWriter.write(frame);
         
     end
@@ -1222,6 +1222,6 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     % print('-f77','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_zeroLagXcorr.eps'))) ;
     % print('-f99','-depsc',fullfile(one_cycle_dir,strcat(ToolBox.main_foldername,'_timeLags.eps'))) ;
     %
-    
+
     end
     

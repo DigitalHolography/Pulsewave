@@ -642,7 +642,7 @@ classdef OneCycleClass
                     % toc
 
                     tic
-                    ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp{1}, maskArtery, ToolBox);
+                    ArterialResistivityIndex(v_RMS_all, obj.reference_interp{1}, maskArtery, ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     time_arterial_res = toc;
                     disp(time_arterial_res)
