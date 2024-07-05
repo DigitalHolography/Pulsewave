@@ -1,10 +1,10 @@
-function [ARI, ARImap] = construct_resistivity_index(video,maskArtery)
+function [ARI, ARImap] = construct_resistivity_index(v_RMS,maskArtery)
 % https://en.wikipedia.org/wiki/Arterial_resistivity_index
 % arterial resistivity
 
-video = double(video);
+v_RMS = double(v_RMS);
 
-arterialPulse = squeeze(sum(video .* maskArtery,[1 2]));
+arterialPulse = squeeze(sum(v_RMS .* maskArtery,[1 2]));
 arterialPulse = arterialPulse/nnz(maskArtery);
 
 %% avg. arterial resistivity index
@@ -31,8 +31,8 @@ ARI = (maxAP - minAP)/maxAP;
 
 %% arterial resistivity map values
 
-ARImap = squeeze( (video(:,:,maxAPidx) - video(:,:,minAPidx)) ./ video(:,:,maxAPidx) );
-ARImap(ARImap>1)=1;
+ARImap = squeeze( (v_RMS(:,:,maxAPidx) - v_RMS(:,:,minAPidx)) ./ v_RMS(:,:,maxAPidx) );
+ARImap(ARImap>1) = 1;
 ARImap = ARImap .* (ARImap.*maskArtery > 0);
 
 end

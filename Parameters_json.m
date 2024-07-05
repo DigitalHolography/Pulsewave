@@ -5,6 +5,9 @@ classdef Parameters_json
         path
         videoStartFrameIndex
         videoEndFrameIndex
+        frameWidth
+        frameHeight
+        videoLength
         k
         radius_ratio
         radius_gap
@@ -25,6 +28,8 @@ classdef Parameters_json
         arteryMask_magicwand_nb_of_area_artery
         arteryMask_ArteryCorrThreshold
         arteryMask_CorrelationMatrixThreshold
+        manualArteryDiscard
+        manualVeinDiscard
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
         centralRetinal_backgndThreshold
@@ -125,6 +130,10 @@ classdef Parameters_json
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
 
+                obj.frameWidth = parsedData.ResizeVideo.FrameWidth;
+                obj.frameHeight = parsedData.ResizeVideo.FrameHeight;
+                obj.videoLength = parsedData.ResizeVideo.VideoLength;
+
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
                 obj.radius_ratio = parsedData.RadiusRatio;
                 obj.radius_gap = parsedData.RadiusGap;
@@ -149,6 +158,8 @@ classdef Parameters_json
                 obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
                 obj.arteryMask_ArteryCorrThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
                 obj.arteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
+                obj.manualArteryDiscard = parsedData.CreationOfMasks.ManualArteryDiscard;
+                obj.manualVeinDiscard = parsedData.CreationOfMasks.ManualVeinDiscard;
 
                 obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
                 obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;

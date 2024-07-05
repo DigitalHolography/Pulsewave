@@ -3,6 +3,11 @@
         "Start frame" : 1,
         "End frame" : -1
     },
+    "Resize video" : {
+        "Frame width" : -1,
+        "Frame height" : -1,
+        "Video length" : -1
+    },
     "Value of the interpolation parameter" : 1,
     "Radius ratio" : 0.18,
     "Radius gap" : 0.01,
@@ -28,7 +33,9 @@
         "MagicWand Number of segmented area detected for vessels" : 3,
         "MagicWand Number of segmented area detected for artery" : 3,
         "Artery correlation threshold" : 0.07,
-        "ArteryCorrelationMatrixThreshold":  1.5
+        "ArteryCorrelationMatrixThreshold":  1.5,
+        "Manual Artery Discard": [],
+        "Manual Vein Discard": []
 
     },
     "Central retina mask" : {

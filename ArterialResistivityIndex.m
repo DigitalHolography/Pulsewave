@@ -1,7 +1,9 @@
-function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskArtery, ToolBox)
+function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
     PW_params = Parameters_json(path);
     disp('arterial resistivity...');
     
+    [Nx, Ny, N_frame] = size(videoM0);
+
     name_log = strcat(ToolBox.PW_folder_name, '_log.txt');
     path_file_log = fullfile(ToolBox.PW_path_log, name_log);
     
@@ -9,10 +11,10 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     fprintf(fileID, 'Arterial resistivity... \r\n');
     fclose(fileID);
     
-    meanIm = rescale(mean(videoM0_from_holowaves, 3));
-    videoM0_from_holowaves = rescale(videoM0_from_holowaves);
+    meanIm = rescale(mean(videoM0, 3));
+    videoM0 = rescale(videoM0);
     
-    [ARI, ARImap] = construct_resistivity_index(v_RMS_all, maskArtery);
+    [ARI, ARImap] = construct_resistivity_index(v_RMS, maskArtery);
     ARImap(isnan(ARImap)) = 0;
     
     if ARI > 1
@@ -22,16 +24,16 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     [hue_ARI, sat_ARI, val_ARI, cmap] = createARI_HSVmap(ARImap, ARI, meanIm, maskArtery, ToolBox);
     % arterial resistivity map RGB
     ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-    ARImapRGB = ARImapRGB .* maskArtery + ones(size(ARImapRGB)) .* meanIm .* ~maskArtery;
+    ARImapRGB = ARImapRGB .* maskArtery + ones(Nx, Ny, 3) .* meanIm .* ~maskArtery;
     
-    ARIvideoRGB = zeros(size(v_RMS_all, 1), size(v_RMS_all, 2), 3, size(v_RMS_all, 3));
+    ARIvideoRGB = zeros(Nx, Ny, 3, N_frame);
     
-    for ii = 1:size(v_RMS_all, 3)
-        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, videoM0_from_holowaves(:, :, ii), maskArtery, ToolBox);
+    for frame_idx = 1:N_frame
+        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, videoM0(:, :, frame_idx), maskArtery, ToolBox);
         %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
-        ARIvideoRGB(:, :, :, ii) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-        img_M0 = videoM0_from_holowaves(:, :, ii);
-        ARIvideoRGB(:, :, :, ii) = ARIvideoRGB(:, :, :, ii) .* maskArtery + ones(size(ARIvideoRGB(:, :, :, ii))) .* img_M0 .* ~maskArtery;
+        ARIvideoRGB(:, :, :, frame_idx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+        img_M0 = videoM0(:, :, frame_idx);
+        ARIvideoRGB(:, :, :, frame_idx) = ARIvideoRGB(:, :, :, frame_idx) .* maskArtery + ones(Nx, Ny, 3, 1) .* img_M0 .* ~maskArtery;
     end
     
     % save video
@@ -39,8 +41,8 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_ARIVideo')));
     open(w)
     
-    for jj = 1:size(ARIvideoRGB, 4)
-        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, jj)));
+    for frame_idx = 1:N_frame
+        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, frame_idx)));
     end
     
     close(w);
@@ -48,8 +50,8 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     w = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, '_ARIVideo')), 'MPEG-4');
     open(w)
     
-    for jj = 1:size(ARIvideoRGB, 4)
-        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, jj)));
+    for frame_idx = 1:N_frame
+        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, frame_idx)));
     end
     
     close(w);
@@ -67,8 +69,8 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     % w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_ARIvideoRGB.avi')));
     % open(w)
     % ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
-    % for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
-    %     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+    % for frame_idx = 1:N_frame % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
+    %     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,frame_idx))) ;
     % end
     % close(w);
     %
@@ -76,8 +78,8 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     % w = VideoWriter(fullfile(ToolBox.PW_path_mp4,strcat(ToolBox.main_foldername,'_ARIvideoRGB.mp4')),'MPEG-4');
     % open(w)
     % ARIvideoRGB = im2uint8(mat2gray(ARIvideoRGB));
-    % for jj = 1:size(ARIvideoRGB,4) % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
-    %     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,jj))) ;
+    % for frame_idx = 1:N_frame % ARIvideoRGB is four dimensional: height-by-width-by-3-by-frames
+    %     writeVideo(w,squeeze(ARIvideoRGB(:,:,:,frame_idx))) ;
     % end
     %
     % disp('done.');
@@ -117,8 +119,8 @@ function [] = ArterialResistivityIndex(v_RMS_all, videoM0_from_holowaves, maskAr
     
     gifWriter = GifWriter("Animated_ARI",0.04,ToolBox);
     
-    for tt = 1:size(ARIvideoRGB,4)
-        imagesc(ARIvideoRGB(:,:,:,tt));
+    for frame_idx = 1:N_frame
+        imagesc(ARIvideoRGB(:,:,:,frame_idx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f",ARI)));
         axis image
         axis off

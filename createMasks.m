@@ -3,23 +3,23 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     %% loading parameters and compute useful variables
     PW_params = Parameters_json(path);
 
-    [N, M, L] = size(videoM0);
+    [Nx, Ny, N_frame] = size(videoM0);
 
     meanIm = squeeze(mean(videoM0, 3));
     meanM1M0 = squeeze(mean(videoM1M0, 3));
 
     figure(666), imagesc(meanIm);
 
-    for pp = 1:L
-        videoM0(:, :, pp) = flat_field_correction(squeeze(videoM0(:, :, pp)), PW_params.flatField_gwRatio * (M + N) / 2, 0);
+    for frame_idx = 1:N_frame
+        videoM0(:, :, frame_idx) = flat_field_correction(squeeze(videoM0(:, :, frame_idx)), PW_params.flatField_gwRatio * (Ny + Nx) / 2, 0);
     end
 
     meanIm = squeeze(mean(videoM0, 3));
 
     figure(667), imagesc(meanIm);
 
-    [x, y] = meshgrid(1:M, 1:N);
-    cercle_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (M + N) / 2;
+    [x, y] = meshgrid(1:Ny, 1:Nx);
+    cercle_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
 
     videoM0_zero = videoM0 - meanIm;
 
@@ -31,12 +31,12 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     % compute pulse in 3 dimentions for correlation in all vessels
     pulse = squeeze(mean(videoM0 .* (vesselnessIm > 0), [1 2]));
     pulse_init = pulse - mean(pulse, "all");
-    pulse_init_3d = zeros(N, M, L);
+    pulse_init_3d = zeros(Nx, Ny, N_frame);
 
-    for nn = 1:N
+    for xx = 1:Nx
 
-        for mm = 1:M
-            pulse_init_3d(nn, mm, :) = pulse_init;
+        for yy = 1:Ny
+            pulse_init_3d(xx, yy, :) = pulse_init;
         end
 
     end
@@ -66,12 +66,12 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     % compute pulse in 3 dimentions for correlation in main arteries
     pulse = squeeze(mean(videoM0 .* firstMaskArtery, [1 2]));
     pulse_init = pulse - mean(pulse, "all");
-    pulse_init_3d = zeros(N, M, L);
+    pulse_init_3d = zeros(Nx, Ny, N_frame);
 
-    for nn = 1:N
+    for xx = 1:Nx
 
-        for mm = 1:M
-            pulse_init_3d(nn, mm, :) = pulse_init;
+        for yy = 1:Ny
+            pulse_init_3d(xx, yy, :) = pulse_init;
         end
 
     end
@@ -80,10 +80,10 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     CorrelationMatrix = squeeze(mean((videoM0_zero .* pulse_init_3d), 3));
 
     % compute mean correction correlation to find coroid maximums
-    meanVideoM0 = zeros(N, M, L);
+    meanVideoM0 = zeros(Nx, Ny, N_frame);
 
-    for ll = 1:L
-        meanVideoM0(:, :, L) = meanIm;
+    for frame_idx = 1:N_frame
+        meanVideoM0(:, :, frame_idx) = meanIm;
     end
 
     % Create correlation matrix to segment vein and arteries
@@ -212,8 +212,8 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
 
     %% Create Mask Section
 
-    radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (M + N) / 2;
-    radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (M + N) / 2;
+    radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (Ny + Nx) / 2;
+    radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (Ny + Nx) / 2;
 
     circle_mask1 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius1;
     circle_mask2 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius2;

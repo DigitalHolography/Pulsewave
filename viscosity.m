@@ -28,6 +28,10 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
         projVideo_std = squeeze(std(subVideo_interp, 0, 1));
         list = find(avg_profile > (0.1 * max(avg_profile, [], 'all')));
         
+        if isempty(list)
+            break
+        end
+
         x = 1:size(projVideo, 1);
         xinterp_wall2wall = linspace(list(1), list(end), n_interp);
         

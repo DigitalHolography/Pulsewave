@@ -305,6 +305,68 @@ classdef OneCycleClass
 
         end
 
+        function obj = VideoResize(obj)
+            PW_params = Parameters_json(obj.directory);
+            out_height = PW_params.frameHeight;
+            out_width = PW_params.frameHeight;
+            out_num_frames = PW_params.videoLength;
+
+            in_height = size(obj.reference{1}, 1);
+            in_width = size(obj.reference{1}, 2);
+            in_num_frames = size(obj.reference{1}, 3);
+
+            if out_height < 0 
+                out_height = in_height;
+            end
+
+            if out_width < 0 
+                out_width = in_width;
+            end
+
+            if out_num_frames < 0 
+                out_num_frames = in_num_frames;
+            end
+
+            
+
+            
+            [Xq,Yq,Zq] = meshgrid(linspace(1,in_width,out_width),linspace(1,in_height,out_height),linspace(1,in_num_frames,out_num_frames));
+            % tmp_ref = zeros(height, width, size(obj.dataM0{1}, 3));
+            
+            tmp_calc_ref = obj.reference{1}; 
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.reference{1} = single(tmp_ref);
+
+            tmp_calc_ref = obj.reference_norm{1};
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.reference_norm{1} = single(tmp_ref);
+
+            tmp_calc_ref = obj.dataM0{1}; 
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.dataM0{1} = single(tmp_ref);
+
+            tmp_calc_ref = obj.dataM1{1}; 
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.dataM1{1} = single(tmp_ref);
+
+            tmp_calc_ref = obj.dataM2{1}; 
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.dataM2{1} = single(tmp_ref);
+
+            tmp_calc_ref = obj.dataM1M0{1}; 
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.dataM1M0{1} = single(tmp_ref);
+
+            tmp_calc_ref = obj.dataM2M0{1}; 
+            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            obj.dataM2M0{1} = single(tmp_ref);
+
+            disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_num_frames)])
+            logs = obj.load_logs;
+            str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
+            logs = strcat(logs, '\r\n\n', str_tosave, '\n');
+        end
+
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
             height = size(obj.reference{1}, 1);
             width = size(obj.reference{1}, 2);
@@ -642,7 +704,7 @@ classdef OneCycleClass
                     % toc
 
                     tic
-                    ArterialResistivityIndex(v_RMS_all, obj.reference_interp{1}, maskArtery, ToolBox);
+                    ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp{1}, maskArtery, ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     time_arterial_res = toc;
                     disp(time_arterial_res)

@@ -1,4 +1,4 @@
-function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] = create_one_cycle(video, videoM0, mask, sys_index_list, Ninterp, path)
+function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] = create_one_cycle(video, videoM0, mask, sys_index_list, Ninterp, path, ToolBox)
     %   one_cycle() : identifies pulse cycles and average them to one video
     %   sys_index_list : list of systole indexes in video
 
@@ -198,5 +198,7 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
     pbaspect([1.618 1 1]);
     set(gca, 'LineWidth', 2);
     axis tight;
+
+    print('-f33', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_arterial_blood_flow_velocity_for_different_cycles.png')));
 
     disp('done.');

@@ -25,4 +25,8 @@ function [hue, mapped_sat, val, cmap] = createARI_HSVmap(ARImap, ARI, Im, mask, 
     val = adjusted_image;
     cmap = ones(256,3);
     cmap(193:256,2:3) = [linspace(1,0,64)' linspace(1,0,64)'];
+
+    
+
+
 end

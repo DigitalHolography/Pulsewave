@@ -268,12 +268,14 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     tic
     
     local_mask_artery = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
+    local_mask_artery = and(local_mask_artery, not(maskVein));
     LocalBKG_artery = zeros(size(fullVideoM2M0));
     LocalBKG_arteryM2 = zeros(size(fullVideoM2));
     LocalBKG_arteryM0 = zeros(size(fullVideoM0));
     
     if veins_analysis
         local_mask_vein = imdilate(maskVein, strel('disk', PW_params.local_background_width));
+        local_mask_vein = and(local_mask_vein, not(maskArtery));
         LocalBKG_vein = zeros(size(fullVideoM2M0));
         LocalBKG_veinM2 = zeros(size(fullVideoM2));
         LocalBKG_veinM0 = zeros(size(fullVideoM0));
@@ -569,11 +571,11 @@ function [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] =
     
     tic
     
-    [onePulseVideo, ~, ~, onePulseVideoM0] = create_one_cycle(fullVideoM2M0, fullVideoM0, maskArtery, sys_index_list, Ninterp, path);
+    [onePulseVideo, ~, ~, onePulseVideoM0] = create_one_cycle(fullVideoM2M0, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
     
     clear fullVideoM2M0
     
-    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp, path);
+    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
     v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
     % fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
     % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;

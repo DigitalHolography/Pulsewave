@@ -44,7 +44,11 @@ nb_sections_artery = max(maskSectionArtery, [], 'all');
 masksSectionsArtery = zeros(size(maskArtery, 1), size(maskArtery, 2), nb_sections_artery);
 
 for ii = 1:nb_sections_artery
-    masksSectionsArtery(:, :, ii) = (maskSectionArtery == ii);
+    if ismember(ii, PW_params.manualArteryDiscard)
+        masksSectionsArtery(:, :, ii) = zeros(size(maskArtery, 1), size(maskArtery, 2));
+    else
+        masksSectionsArtery(:, :, ii) = (maskSectionArtery == ii);
+    end
 end
 
 SubImg_locs_artery = zeros(nb_sections_artery, 2);
@@ -75,7 +79,11 @@ if veins_analysis
     masksSectionsVein = zeros(size(maskVein, 1), size(maskVein, 2), nb_sections_vein);
 
     for ii = 1:nb_sections_vein
-        masksSectionsVein(:, :, ii) = (maskSectionVein == ii);
+        if ismember(ii, PW_params.manualVeinDiscard)
+            masksSectionsVein(:, :, ii) = zeros(size(maskVein, 1), size(maskVein, 2));
+        else
+            masksSectionsVein(:, :, ii) = (maskSectionVein == ii);
+        end
     end
 
     SubImg_locs_vein = zeros(nb_sections_vein, 2);
@@ -129,6 +137,25 @@ pbaspect([1.618 1 1]);
 set(gca, 'LineWidth', 2);
 axis tight;
 
+data_to_plot_artery_all = squeeze(mean(data_to_plot_artery,1));
+data_to_plot_artery_all = smoothdata(data_to_plot_artery_all,"lowess");
+maxVelo = sum(data_to_plot_artery_all(islocalmax(data_to_plot_artery_all))) / sum(islocalmax(data_to_plot_artery_all));
+minVelo = sum(data_to_plot_artery_all(islocalmin(data_to_plot_artery_all))) / sum(islocalmin(data_to_plot_artery_all));
+meanVelo = mean(data_to_plot_artery_all);
+ARI = (maxVelo - minVelo) / maxVelo;
+
+figure(571)
+plot(fullTime, data_to_plot_artery_all, 'k', 'LineWidth', 2)
+title('Blood velocity in artery sections');
+legend(sprintf('All Artery Sections'));
+subtitle(sprintf('Vmax = %0.2f\nVmin = %0.2f\nVmean = %0.2f\nARI = %0.2f', maxVelo, minVelo, meanVelo, ARI));
+fontsize(gca, 12, "points");
+xlabel(strXlabel, 'FontSize', 14);
+ylabel(strYlabel, 'FontSize', 14);
+pbaspect([1.618 1 1]);
+set(gca, 'LineWidth', 2);
+axis tight;
+
 if veins_analysis
 
     labels_veins = {};
@@ -157,7 +184,26 @@ if veins_analysis
     set(gca, 'LineWidth', 2);
     axis tight;
 
+    data_to_plot_vein_all = squeeze(mean(data_to_plot_vein,1));
+    data_to_plot_vein_all = smoothdata(data_to_plot_vein_all,"lowess");
+    maxVelo = sum(data_to_plot_vein_all(islocalmax(data_to_plot_vein_all))) / sum(islocalmax(data_to_plot_vein_all));
+    minVelo = sum(data_to_plot_vein_all(islocalmin(data_to_plot_vein_all))) / sum(islocalmin(data_to_plot_vein_all));
+    meanVelo = mean(data_to_plot_vein_all);
+    ARI = (maxVelo - minVelo) / maxVelo;
+
+    figure(581)
+    plot(fullTime, data_to_plot_vein_all, 'k', 'LineWidth', 2)
+    title('Blood velocity in vein sections');
+    legend(sprintf('All Vein Sections'));
+    subtitle(sprintf('Vmax = %0.2f\nVmin = %0.2f\nVmean = %0.2f\nARI = %0.2f', maxVelo, minVelo, meanVelo, ARI));
+    fontsize(gca, 12, "points");
+    xlabel(strXlabel, 'FontSize', 14);
+    ylabel(strYlabel, 'FontSize', 14);
+    pbaspect([1.618 1 1]);
+    set(gca, 'LineWidth', 2);
+    axis tight;
 end
+
 
 dataM0 = mat2gray(dataM0);
 maskOnes = ones(size(maskArtery, 1), size(maskArtery, 2), size(dataM0, 3));
@@ -638,6 +684,7 @@ end
 print('-f102', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Plot_blood_volume_rate_in_arteries.png')));
 %print('-f122', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_mean_blood_volume_rate_in_veins.png'))) ;
 print('-f57', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Plot_velocity_in_artery_section.png')));
+print('-f571', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Plot_velocity_in_all_artery_section.png')));
 
 %print('-f115', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_AVG_Velocity_in_arteriy_sections.png'))) ;
 %print('-f120', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Total_blood_volume_rate_in_arteries.png'))) ;
@@ -649,6 +696,7 @@ imwrite(F_numerotation.cdata, fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_
 if veins_analysis
     print('-f103', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Plot_blood_volume_rate_in_veins.png')));
     print('-f58', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Plot_velocity_in_vein_section.png')));
+    print('-f581', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Plot_velocity_in_all_vein_section.png')));
 
     imwrite(F_Total_blood_volume_rate_vein.cdata, fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Total_blood_volume_rate_in_veins.png')));
 end
