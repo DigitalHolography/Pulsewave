@@ -21,13 +21,14 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     [x, y] = meshgrid(1:Ny, 1:Nx);
     cercle_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
     
-    radius_treshold = PW_Params.masks_radius_treshold;
+    radius_treshold = PW_params.masks_radius_treshold;
     cercle_treshold_mask = [];
+    min_dist_to_edge=min([ToolBox.x_barycentre,ToolBox.y_barycentre,Nx-ToolBox.x_barycentre,Ny-ToolBox.y_barycentre]);
     if radius_treshold == 0 
-        min_dist_to_edge=min([ToolBox.x_barycentre,ToolBox.y_barycentre,Nx-ToolBox.x_barycentre,Ny-ToolBox.y_barycentre]);
+        
         cercle_treshold_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= min_dist_to_edge;
-    else if radius_treshold > 0 
-        cercle_treshold_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius_treshold;
+    elseif  radius_treshold > 0 
+        cercle_treshold_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= (radius_treshold * min_dist_to_edge);
     else % if radius_treshold==-1
     end
 
@@ -53,16 +54,14 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
 
     % compute local-to-average pulse wave zero-lag correlation
     correlationMatrix_artery = squeeze(mean((videoM0_zero .* pulse_init_3d), 3)) .* (vesselnessIm > 0);
-
+ 
     % Create first artery mask
     firstMaskArtery = (correlationMatrix_artery > PW_params.arteryMask_CorrelationMatrixThreshold * mean2(correlationMatrix_artery(correlationMatrix_artery > 0)));
 
     if PW_params.masks_cleaningCoroid
         firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercle_mask, 1, 4);
     end
-    if ~isempty(cercle_treshold_mask)
-        firstMaskArtery = firstMaskArtery & cercle_treshold_mask;
-    end
+    
 
     firstMaskArtery = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
 
@@ -182,6 +181,10 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
 
     clear vesselness_vein vesselness_artery floor_vein floor_artery level_vein level_artery seeds_vein seeds_artery ;
     %% Cleaning coroid from masks
+
+    if ~isempty(cercle_treshold_mask)
+        mask_artery = mask_artery & cercle_treshold_mask;
+    end
 
     % if PW_params.masks_cleaningCoroid
     %

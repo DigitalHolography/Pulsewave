@@ -43,6 +43,7 @@
         "Central retina vein threshold" : -3,
         "Central retina background threshold" : 2,
         "Crop coroid radius" : 0.15,
+        "Treshold radius value" : -1,
         "Standard binarization threshold" : 0.15,
         "Minimum seed area size" : 150,
         "Cleaning Coroid or not" : 1,

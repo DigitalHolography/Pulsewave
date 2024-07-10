@@ -35,6 +35,7 @@ classdef Parameters_json
         centralRetinal_backgndThreshold
         vesselMask_BinTreshold
         masks_radius
+        masks_radius_treshold
         masks_minSize
         masks_cleaningCoroid
         masks_showIntermediateFigures
@@ -166,6 +167,7 @@ classdef Parameters_json
                 obj.centralRetinal_backgndThreshold = parsedData.CentralRetinaMask.CentralRetinaBackgroundThreshold;
                 obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold;
                 obj.masks_radius = parsedData.CentralRetinaMask.CropCoroidRadius;
+                obj.masks_radius_treshold = parsedData.CentralRetinaMask.TresholdRadiusValue;
                 obj.masks_minSize = parsedData.CentralRetinaMask.MinimumSeedAreaSize;
                 obj.masks_cleaningCoroid = parsedData.CentralRetinaMask.CleaningCoroidOrNot;
                 obj.masks_showIntermediateFigures = parsedData.CentralRetinaMask.ShowingIntermediateFiguresInTheProcess;
