@@ -20,6 +20,16 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
 
     [x, y] = meshgrid(1:Ny, 1:Nx);
     cercle_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
+    
+    radius_treshold = PW_Params.masks_radius_treshold;
+    cercle_treshold_mask = [];
+    if radius_treshold == 0 
+        min_dist_to_edge=min([ToolBox.x_barycentre,ToolBox.y_barycentre,Nx-ToolBox.x_barycentre,Ny-ToolBox.y_barycentre]);
+        cercle_treshold_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= min_dist_to_edge;
+    else if radius_treshold > 0 
+        cercle_treshold_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius_treshold;
+    else % if radius_treshold==-1
+    end
 
     videoM0_zero = videoM0 - meanIm;
 
@@ -49,6 +59,9 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
 
     if PW_params.masks_cleaningCoroid
         firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercle_mask, 1, 4);
+    end
+    if ~isempty(cercle_treshold_mask)
+        firstMaskArtery = firstMaskArtery & cercle_treshold_mask;
     end
 
     firstMaskArtery = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
