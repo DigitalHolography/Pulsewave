@@ -12,7 +12,7 @@
     "Radius ratio" : 0.18,
     "Radius gap" : 0.01,
     "Gaussian Filter Size For Barycentre" : 0.02,
-    "Veins Analysis" : 0,
+    "Veins Analysis" : 1,
     "Resistivity index" : {
         "Gaussian filter sigma" : 0.7,
         "Amplitude saturation  ponderation" : 0.75,

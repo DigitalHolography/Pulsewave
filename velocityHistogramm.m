@@ -1,4 +1,4 @@
-function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBox, path)
+function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, ImgM0, ToolBox, path)
     %% Init of histogram axis
     
     PW_params = Parameters_json(path);
@@ -7,7 +7,7 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
     [size_vRMS_1, size_vRMS_2, size_vRMS_3] = size(v_RMS_all);
     
     %%
-    [maskSection] = create_mask_section(meanIm, maskArtery, ToolBox, path);
+    [maskSection] = create_mask_section(ImgM0, maskArtery, ToolBox, path);
     maskArtery_section = maskArtery & maskSection;
     
     %or
@@ -181,6 +181,8 @@ function [] = velocityHistogramm(v_RMS_all, maskArtery, maskVein, meanIm, ToolBo
         print('-f158', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_velocity_distribution_veins_fullcycle.png')));
         imwrite(velocity_dist_veins, fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_Velocity_distribution_in_veins.png')), 'png');
     end
+    
+    close all
     
     end
     

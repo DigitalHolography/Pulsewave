@@ -668,7 +668,7 @@ classdef OneCycleClass
                     disp(time_sys_idx)
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
-                    [v_RMS_one_cycle, v_RMS_all, onePulseVideoM0, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp{n}, obj.dataM1M0_interp{n}, obj.dataM2_interp{n}, obj.dataM0_interp{n}, obj.reference_interp{1}, sys_index_list_cell{n}, meanIm, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
+                    [v_RMS_one_cycle, v_RMS_all, FlowVideoRGB, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp{n}, obj.dataM1M0_interp{n}, obj.dataM2_interp{n}, obj.dataM0_interp{n}, obj.reference_interp{1}, sys_index_list_cell{n}, meanIm, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
                     disp('PulseAnalysis timing :')
                     time_pulseanalysis = total_time;
                     disp(time_pulseanalysis)
@@ -684,19 +684,11 @@ classdef OneCycleClass
                     clear exec_times
 
                     tic
-                    velocity_map(maskArtery, maskVein, v_RMS_one_cycle, onePulseVideoM0, ToolBox); %FIXME Histo en trop, jsute pour faire la FLOWMAP ?
-                    disp('Velocity map timing :')
-                    time_vel_map = toc;
-                    disp(time_vel_map)
-                    save_time(path_file_txt_exe_times, 'Velocity map', time_vel_map)
-
-                    tic
-                    ImgM0 = rescale(mean(obj.reference_interp{1}, 3));
-                    velocityHistogramm(v_RMS_all, maskArtery, maskVein, ImgM0, ToolBox, path)
-                    disp('Velocity Histogramm timing :')
-                    time_hist = toc;
-                    disp(time_hist)
-                    save_time(path_file_txt_exe_times, 'Velocity Histogramm', time_hist)
+                    velocity(v_RMS_all, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                    disp('Velocity timing :')
+                    time_velo = toc;
+                    disp(time_velo)
+                    save_time(path_file_txt_exe_times, 'Velocity', time_velo)
 
                     % tic
                     % BKGHistogramm(obj.dataM2M0_interp{1}, maskBackground ,ToolBox)

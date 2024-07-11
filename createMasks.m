@@ -144,7 +144,11 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     %[mask_vein,RG_video_vein]  = region_growing_for_vessel(vesselness_vein, seeds_vein, condition_vein, path);
     [mask_vessel, RG_video_vessel] = region_growing_for_vessel(vesselnessIm, seeds_artery | seeds_vein, condition_vein | condition_artery, path);
 
-    mask_vessel = bwareafilt(mask_vessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
+    if isfile(fullfile(ToolBox.PW_path_main,'mask', 'maskVessel_New.png')) % import manually tuned mask if needed
+        mask_vessel = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main,'mask', 'maskVessel_New.png')),3))>0;
+    else
+        mask_vessel = bwareafilt(mask_vessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
+    end
 
     mask_artery = mask_vessel .* correlationMatrix_artery;
     mask_artery = mask_artery > PW_params.arteryMask_ArteryCorrThreshold;
@@ -194,6 +198,9 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     mask_vein = imclose(mask_vein, strel('disk', 5)) & ~mask_artery;
 
     mask_vessel = mask_artery | mask_vein;
+
+
+    
 
     if PW_params.masks_showIntermediateFigures
         figure(40), imagesc(uint8(cat(3, uint8(meanIm) + uint8(mask_artery) * 255, uint8(meanIm), uint8(meanIm) + uint8(mask_vein) * 255)));
