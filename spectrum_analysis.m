@@ -1,9 +1,9 @@
 function [] = spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, data_M0)
 
-    f1 = 1;
-    f2 = 15;
-    f3 = 30;
     fs = ToolBox.fs / 2;
+    f1 = 1;
+    f2 = fs / 2;
+    f3 = fs;
     cubeFrameLength = size(SH_cube, 4);
     batch_size = size(SH_cube, 3);
     gw = 3;
