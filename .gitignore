@@ -1,6 +1,7 @@
 *.asv
 *.avi
 *.png
+!pulsewaves_logo_temp.png
 # Prerequisites
 *.d
 
