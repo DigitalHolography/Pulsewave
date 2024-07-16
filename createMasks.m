@@ -163,12 +163,21 @@ else
     mask_vessel = bwareafilt(mask_vessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
 end
 
-mask_artery = mask_vessel .* correlationMatrix_artery;
-mask_artery = mask_artery > PW_params.arteryMask_ArteryCorrThreshold;
+if isfile(fullfile(ToolBox.PW_path_main,'mask', '_maskArtery_New.png')) % import manually tuned mask if needed
+    mask_artery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main,'mask', '_maskArtery_New.png')),3))>0;
+else
+    mask_artery = mask_vessel .* correlationMatrix_artery;
+    mask_artery = mask_artery > PW_params.arteryMask_ArteryCorrThreshold;
+end
 
+if isfile(fullfile(ToolBox.PW_path_main,'mask', '_maskVein_New.png')) % import manually tuned mask if needed
+    mask_vein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main,'mask', '_maskVein_New.png')),3))>0;
+else
+    mask_vein = mask_vessel .* correlationMatrix_vein;
+    mask_vein = mask_vein > 0;
+end
 %mask_vein = mask_vessel & ~mask_artery;
-mask_vein = mask_vessel .* correlationMatrix_vein;
-mask_vein = mask_vein > 0;
+
 
 if PW_params.masks_showIntermediateFigures
     figure(30), imagesc(vesselness_artery);
