@@ -21,7 +21,7 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     clear ratio
 
     %% Video
-    video = VideoWriter("stdTemp.avi");
+    video = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s",ToolBox.main_foldername,"stdTemp.avi")));
     open(video)
 
     for i = 1:cubeFrameLength
@@ -38,7 +38,7 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
 
     close(video)
 
-    video = VideoWriter("stdFreq.avi");
+    video = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s",ToolBox.main_foldername,"stdFreq.avi")));
     open(video)
 
     for i = 1:cubeFreqLength
