@@ -21,7 +21,7 @@ elseif n == 1
 elseif n > 1
       %Initiate recursion
       Hn=(2*x.*comp_hermite_rec(n-1,x))-(2*(n-1)*comp_hermite_rec(n-2,x));
-end  
+end
 
 end
 

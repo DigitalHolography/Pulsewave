@@ -1,15 +1,15 @@
 classdef OCTdata
-
-%     OCTdata is in PulseWave just to evitate the following Warnings : 
-
-%     Warning: Cannot load an object of class 'OCTdata':
-%     Its class cannot be found. 
-%     Warning: Cannot load an object of class 'OCTdata':
-%     Its class cannot be found. 
-
-%     When the variable 'cache' is called from the function
-%     'getTimelineParamsFromCache.m' in 'pulseAnalysis.m'
-
+    
+    %     OCTdata is in PulseWave just to evitate the following Warnings :
+    
+    %     Warning: Cannot load an object of class 'OCTdata':
+    %     Its class cannot be found.
+    %     Warning: Cannot load an object of class 'OCTdata':
+    %     Its class cannot be found.
+    
+    %     When the variable 'cache' is called from the function
+    %     'getTimelineParamsFromCache.m' in 'pulseAnalysis.m'
+    
     properties (Access = public)
         stack
         projection_xz
@@ -17,7 +17,7 @@ classdef OCTdata
         range_y
         range_z
     end
-
+    
     methods
         function obj = OCTdata()
             obj.range_y = 1:10;

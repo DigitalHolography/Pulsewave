@@ -1,10 +1,13 @@
 classdef Parameters_json
     % Class for storing parameters from an input json file
-    
+
     properties
         path
         videoStartFrameIndex
         videoEndFrameIndex
+        frameWidth
+        frameHeight
+        videoLength
         k
         radius_ratio
         radius_gap
@@ -25,11 +28,14 @@ classdef Parameters_json
         arteryMask_magicwand_nb_of_area_artery
         arteryMask_ArteryCorrThreshold
         arteryMask_CorrelationMatrixThreshold
+        manualArteryDiscard
+        manualVeinDiscard
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
         centralRetinal_backgndThreshold
         vesselMask_BinTreshold
         masks_radius
+        masks_radius_treshold
         masks_minSize
         masks_cleaningCoroid
         masks_showIntermediateFigures
@@ -59,6 +65,11 @@ classdef Parameters_json
         flowRate_minTolVal
         flowRate_maxTolVal
         flowRate_sliceHalfThickness
+        normFlag
+        normPowerCalibrationSlope
+        normPoweryIntercept
+        normRefBloodFlow
+        normActualCoefficient
         pupilRadius
         iris2retinaDist
         theta
@@ -89,26 +100,29 @@ classdef Parameters_json
         viscosity_listParamA
         viscosity_listParamB
         nbSides
+        DiffFirstCalculationsFlag
     end
-    
+
     methods
 
         function obj = Parameters_json(dir_path)
             obj.path = dir_path;
             persistent PulsewaveParams
-            if isempty(PulsewaveParams) 
+
+            if isempty(PulsewaveParams)
                 PulsewaveParams = obj.GetParameters();
             end
-           obj = PulsewaveParams;
-       end
+
+            obj = PulsewaveParams;
+        end
 
         function obj = GetParameters(obj)
-            % Constructor method     
+            % Constructor method
             %[~, filename, ~] = fileparts(obj.path);
             filename_json = 'InputPulsewaveParams.json';
-            dir_path_json = fullfile(obj.path,'json');
+            dir_path_json = fullfile(obj.path, 'pulsewave', 'json');
             jsonPath = fullfile(dir_path_json, filename_json);
-            
+
             if exist(jsonPath, 'file')
                 jsonData = fileread(jsonPath);
                 parsedData = jsondecode(jsonData);
@@ -116,6 +130,10 @@ classdef Parameters_json
                 % Recherche de chaque paramètre
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
+
+                obj.frameWidth = parsedData.ResizeVideo.FrameWidth;
+                obj.frameHeight = parsedData.ResizeVideo.FrameHeight;
+                obj.videoLength = parsedData.ResizeVideo.VideoLength;
 
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
                 obj.radius_ratio = parsedData.RadiusRatio;
@@ -141,12 +159,15 @@ classdef Parameters_json
                 obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
                 obj.arteryMask_ArteryCorrThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
                 obj.arteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
+                obj.manualArteryDiscard = parsedData.CreationOfMasks.ManualArteryDiscard;
+                obj.manualVeinDiscard = parsedData.CreationOfMasks.ManualVeinDiscard;
 
                 obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
                 obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;
                 obj.centralRetinal_backgndThreshold = parsedData.CentralRetinaMask.CentralRetinaBackgroundThreshold;
-                obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold ;
+                obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold;
                 obj.masks_radius = parsedData.CentralRetinaMask.CropCoroidRadius;
+                obj.masks_radius_treshold = parsedData.CentralRetinaMask.TresholdRadiusValue;
                 obj.masks_minSize = parsedData.CentralRetinaMask.MinimumSeedAreaSize;
                 obj.masks_cleaningCoroid = parsedData.CentralRetinaMask.CleaningCoroidOrNot;
                 obj.masks_showIntermediateFigures = parsedData.CentralRetinaMask.ShowingIntermediateFiguresInTheProcess;
@@ -182,6 +203,11 @@ classdef Parameters_json
                 obj.flowRate_maxTolVal = parsedData.FlowRate.TolerantValueMaximum;
                 obj.flowRate_sliceHalfThickness = parsedData.FlowRate.SliceHalfThickness;
 
+                obj.normFlag = parsedData.OpticalPowerNormalization.NormalizationFlag;
+                obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope;
+                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept;
+                obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow;
+
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
                 obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;
                 obj.theta = parsedData.PulseAnalysis.Theta;
@@ -198,7 +224,7 @@ classdef Parameters_json
 
                 obj.trWavelength_f0 = parsedData.Wavelength.F0;
                 obj.trWavelength_r0 = parsedData.Wavelength.R0;
-                
+
                 obj.velocity_smallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
                 obj.velocity_bigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
 
@@ -216,12 +242,14 @@ classdef Parameters_json
                 obj.viscosity_listParamB = parsedData.Viscosity.ViscosityListParameterB;
 
                 obj.nbSides = parsedData.Other.NumberOfSides;
+                obj.DiffFirstCalculationsFlag = parsedData.Other.DiffFirstCalculationsFlag;
 
             else
                 error('The json file could not be found.');
             end
+
         end
 
+    end
 
-end
 end

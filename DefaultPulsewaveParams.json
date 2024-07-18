@@ -3,11 +3,16 @@
         "Start frame" : 1,
         "End frame" : -1
     },
+    "Resize video" : {
+        "Frame width" : -1,
+        "Frame height" : -1,
+        "Video length" : -1
+    },
     "Value of the interpolation parameter" : 1,
     "Radius ratio" : 0.18,
     "Radius gap" : 0.01,
     "Gaussian Filter Size For Barycentre" : 0.02,
-    "Veins Analysis" : 0,
+    "Veins Analysis" : 1,
     "Resistivity index" : {
         "Gaussian filter sigma" : 0.7,
         "Amplitude saturation  ponderation" : 0.75,
@@ -28,7 +33,9 @@
         "MagicWand Number of segmented area detected for vessels" : 3,
         "MagicWand Number of segmented area detected for artery" : 3,
         "Artery correlation threshold" : 0.07,
-        "ArteryCorrelationMatrixThreshold":  1.5
+        "ArteryCorrelationMatrixThreshold":  1.5,
+        "Manual Artery Discard": [],
+        "Manual Vein Discard": []
 
     },
     "Central retina mask" : {
@@ -36,6 +43,7 @@
         "Central retina vein threshold" : -3,
         "Central retina background threshold" : 2,
         "Crop coroid radius" : 0.15,
+        "Treshold radius value" : -1,
         "Standard binarization threshold" : 0.15,
         "Minimum seed area size" : 150,
         "Cleaning Coroid or not" : 1,
@@ -77,13 +85,19 @@
         "Tolerant value maximum" : 0.98,
         "Slice half thickness" : 10
     },
+    "Optical Power Normalization" : {
+        "Normalization Flag" : 1,
+        "Power Calibration Curve Slope" : 0.256,
+        "Power Calibration YIntercept": 2.83,
+        "Reference Total Retinal Blood Flow" : 40
+    },
     "Pulse analysis" : {
         "Radius pupil" : 2,
         "Distance iris retina" : 20,
         "Theta" : 0.05,
         "Optical index" : 1.35,
         "Lambda" : 852e-9,
-        "Phi" : 2.5,
+        "Phi" : 0.25,
         "Data reliatibility factor" : 0.5,
         "Peak height threshold" : 0.7,
         "Out of noise threshold" : 4,
@@ -116,6 +130,7 @@
         "Viscosity list parameter b" : 0.017
     },
     "Other" : {
-        "Number of sides" : 120
+        "Number of sides" : 120,
+        "Diff First Calculations Flag" : 0
     }
 }

@@ -4,8 +4,8 @@ function [Gn] = comp_dgaussian(x,sigma,n)
 
 % INPUTS:
 %       x (double vector) - Function input values (x-axis)
-%       sigma (double scalar)  - Standard deviation 
-%       n (integer scalar) - determines the order of the derivative 
+%       sigma (double scalar)  - Standard deviation
+%       n (integer scalar) - determines the order of the derivative
 %       (n >= 0)
 
 %OUTPUTS:
