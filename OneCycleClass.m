@@ -317,56 +317,53 @@ classdef OneCycleClass
             in_width = size(obj.reference{1}, 2);
             in_num_frames = size(obj.reference{1}, 3);
 
-            if out_height < 0 
+            if out_height < 0
                 out_height = in_height;
             end
 
-            if out_width < 0 
+            if out_width < 0
                 out_width = in_width;
             end
 
-            if out_num_frames < 0 
+            if out_num_frames < 0
                 out_num_frames = in_num_frames;
             end
 
-            
-
-            
-            [Xq,Yq,Zq] = meshgrid(linspace(1,in_width,out_width),linspace(1,in_height,out_height),linspace(1,in_num_frames,out_num_frames));
+            [Xq, Yq, Zq] = meshgrid(linspace(1, in_width, out_width), linspace(1, in_height, out_height), linspace(1, in_num_frames, out_num_frames));
             % tmp_ref = zeros(height, width, size(obj.dataM0{1}, 3));
-            
-            tmp_calc_ref = obj.reference{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+
+            tmp_calc_ref = obj.reference{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.reference{1} = single(tmp_ref);
 
             tmp_calc_ref = obj.reference_norm{1};
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.reference_norm{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM0{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM0{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM0{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM1{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM1{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM1{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM2{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM2{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM2{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM1M0{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM1M0{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM1M0{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM2M0{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM2M0{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM2M0{1} = single(tmp_ref);
 
             disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_num_frames)])
-            logs = obj.load_logs;
-            str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
-            logs = strcat(logs, '\r\n\n', str_tosave, '\n');
+            % logs = obj.load_logs;
+            % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
+            % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
@@ -477,7 +474,7 @@ classdef OneCycleClass
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;
 
-            fprintf("File: %s\n",ToolBox.PW_folder_name)
+            fprintf("File: %s\n", ToolBox.PW_folder_name)
 
             meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
             meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
@@ -496,7 +493,7 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_json);
             mkdir(ToolBox.PW_path_log);
 
-            copyfile(fullfile(obj.directory, 'log','RenderingParameters.json'), ToolBox.PW_path_log)
+            copyfile(fullfile(obj.directory, 'log', 'RenderingParameters.json'), ToolBox.PW_path_log)
 
             %             path_dir_txt = fullfile(obj.directory,'txt');
             %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
@@ -620,13 +617,13 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            [maskArtery, maskVein, ~, maskBackground, maskCRA, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
 
             fileID = fopen(path_file_log, 'a+');
-            fprintf(fileID, 'CreatMasks timing : % \r\n\n');
+            fprintf(fileID, 'CreateMasks timing : % \r\n\n', time);
             fclose(fileID);
 
             save_time(path_file_txt_exe_times, 'createMasks', time)
@@ -657,12 +654,12 @@ classdef OneCycleClass
                     fprintf(fileID, 'PULSEWAVE ANALYSIS : \r\n\n');
                     fclose(fileID);
 
-                    time_sys_idx = 0;
-                    time_pulseanalysis = 0;
+                    % time_sys_idx = 0;
+                    % time_pulseanalysis = 0;
                     time_vel_map = 0;
                     time_hist = 0;
-                    time_arterial_res = 0;
-                    time_flowrate = 0;
+                    % time_arterial_res = 0;
+                    % time_flowrate = 0;
 
                     tic
                     % [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_norm_interp{n}, obj.directory,maskArtery);

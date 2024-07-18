@@ -1,4 +1,4 @@
-function [] = spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, data_M0)
+function [] = spectrum_analysis(~, ~, SH_cube, ToolBox, data_M0)
 
     fs = ToolBox.fs / 2;
     f1 = 1;
@@ -6,7 +6,7 @@ function [] = spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, da
     f3 = fs;
     cubeFrameLength = size(SH_cube, 4);
     batch_size = size(SH_cube, 3);
-    gw = 3;
+    % gw = 3;
     SH_ColorVideoRGB = zeros(size(data_M0, 1), size(data_M0, 2), 3, size(SH_cube, 4));
     ImRef = mean(data_M0, 3);
 

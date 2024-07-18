@@ -3,7 +3,7 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     cubeSize = size(SH_cube, 1);
     cubeFreqLength = size(SH_cube, 3);
     cubeFrameLength = size(SH_cube, 4);
-    f1 = ToolBox.f1;
+    % f1 = ToolBox.f1;
     f2 = ToolBox.f2;
     fs = ToolBox.fs;
     batchStride = ToolBox.stride; %convert Hz to s
@@ -60,9 +60,9 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     % Avg Spectrogram plot
     [ArterySpectrum, ~, DeltaSpectrum] = createSpectrum(maskArtery, maskBackground, SH_cube(:, :, :, 1), ToolBox);
 
-    A = zeros((cubeFreqLength - f1) * k_int, cubeFrameLength);
-    BG = zeros((cubeFreqLength - f1) * k_int, cubeFrameLength);
-    DELTA = zeros(cubeFreqLength * k_int, cubeFrameLength);
+    % A = zeros((cubeFreqLength - f1) * k_int, cubeFrameLength);
+    % BG = zeros((cubeFreqLength - f1) * k_int, cubeFrameLength);
+    % DELTA = zeros(cubeFreqLength * k_int, cubeFrameLength);
 
     A = zeros(cubeFreqLength * 2 * k_int, cubeFrameLength);
     BG = zeros(cubeFreqLength * 2 * k_int, cubeFrameLength);

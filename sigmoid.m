@@ -57,13 +57,13 @@ function y = sigmoid(x, c, a)
     if nargin < 3
         a = 1;
     else
-        assert(isscalar(a) == 1, 'a must be a scalar.')
+        assert(isscalar(a), 'a must be a scalar.')
     end
 
     if nargin < 2
         c = 0;
     else
-        assert(isscalar(c) == 1, 'c must be a scalar.')
+        assert(isscalar(c), 'c must be a scalar.')
     end
 
     %% Perform mathematics:

@@ -12,7 +12,7 @@ arteryMask_vesselness_beta = 0.9;
 arteryMask_ArteryCorrThreshold = 0.05;
 masks_radius = 0.15;
 masks_minSize = 150;
-masks_cleaningCoroid = false;
+% masks_cleaningCoroid = false;
 masks_showIntermediateFigures = true;
 RG_veinConditionThreshold = 0.45;
 RG_ArteryConditionThreshold = 3;
@@ -62,9 +62,9 @@ correlationMatrix_artery = squeeze(mean((videoM0_zero .* pulse_init_3d), 3)) .* 
 % Create first artery mask
 firstMaskArtery = (correlationMatrix_artery > 1.5 * mean2(correlationMatrix_artery(correlationMatrix_artery > 0)));
 
-if masks_cleaningCoroid
-    firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercle_mask, 1, 4);
-end
+% if masks_cleaningCoroid
+%     firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercle_mask, 1, 4);
+% end
 
 firstMaskArtery = bwareaopen(firstMaskArtery, masks_minSize);
 

@@ -13,27 +13,29 @@ classdef GifWriter
     end
 
     methods
-        function obj = GifWriter(filename,time_period_min,ToolBox)
+
+        function obj = GifWriter(filename, time_period_min, ToolBox)
             %GifWriter Construct an instance of this class
             %   filename: where want your Gif to be built
             %   time_period_min: minimal time between each frame of your GIF
 
-            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name,filename));
+            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, filename));
             obj.time_period_min = time_period_min;
             obj.time_period = ToolBox.stride / ToolBox.fs / 1000;
 
         end
 
-        function obj = write(obj,frame)
+        function obj = write(obj, frame)
             % Appends a frame to the gif
-            if isa(frame,'struct')
+            if isa(frame, 'struct')
                 image = frame2im(frame);
             else
                 image = frame;
             end
-            obj.images = cat(4,obj.images,image);
 
-            obj.gifLength = size(obj.images,4);
+            obj.images = cat(4, obj.images, image);
+
+            obj.gifLength = size(obj.images, 4);
             obj.Nx = size(image, 1);
             obj.Ny = size(image, 2);
 
