@@ -494,6 +494,8 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_json);
             mkdir(ToolBox.PW_path_log);
 
+            copyfile(fullfile(obj.directory, 'log','RenderingParameters.json'), ToolBox.PW_path_log)
+
             %             path_dir_txt = fullfile(obj.directory,'txt');
             %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
             %             copyfile(path_file_txt_params,ToolBox.PW_path_txt );

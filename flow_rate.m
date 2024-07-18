@@ -44,11 +44,9 @@ nb_sections_artery = max(maskSectionArtery, [], 'all');
 masksSectionsArtery = zeros(size(maskArtery, 1), size(maskArtery, 2), nb_sections_artery);
 
 for section_idx = 1:nb_sections_artery
-    if ismember(section_idx, PW_params.manualArteryDiscard)
-        masksSectionsArtery(:, :, section_idx) = zeros(size(maskArtery, 1), size(maskArtery, 2));
-    else
-        masksSectionsArtery(:, :, section_idx) = (maskSectionArtery == section_idx);
-    end
+
+    masksSectionsArtery(:, :, section_idx) = (maskSectionArtery == section_idx);
+
 end
 
 SubImg_locs_artery = zeros(nb_sections_artery, 2);
@@ -79,11 +77,7 @@ if veins_analysis
     masksSectionsVein = zeros(size(maskVein, 1), size(maskVein, 2), nb_sections_vein);
 
     for section_idx = 1:nb_sections_vein
-        if ismember(section_idx, PW_params.manualVeinDiscard)
-            masksSectionsVein(:, :, section_idx) = zeros(size(maskVein, 1), size(maskVein, 2));
-        else
-            masksSectionsVein(:, :, section_idx) = (maskSectionVein == section_idx);
-        end
+        masksSectionsVein(:, :, section_idx) = (maskSectionVein == section_idx);
     end
 
     SubImg_locs_vein = zeros(nb_sections_vein, 2);
