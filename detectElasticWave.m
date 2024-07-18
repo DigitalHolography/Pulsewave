@@ -1,4 +1,4 @@
-function detectElasticWave(video, mask_artery, maskCRA)
+function detectElasticWave(video, mask_artery, ~)
     % choose a number of dominant frequencies to analyse
     n_freq = 2;
     pixel_size = 6/1535;
@@ -15,9 +15,9 @@ function detectElasticWave(video, mask_artery, maskCRA)
     % dominant_freq = locs(1:n_freq);
 
     %% find center CRA
-    blurred_mask = imgaussfilt(double(mean(video, 3) .* double(maskCRA)), round(size(maskCRA, 1) / 4), 'Padding', 0);
-    [~, x_center] = findpeaks(sum(blurred_mask, 1));
-    [~, y_center] = findpeaks(sum(blurred_mask, 2));
+    % blurred_mask = imgaussfilt(double(mean(video, 3) .* double(maskCRA)), round(size(maskCRA, 1) / 4), 'Padding', 0);
+    % [~, x_center] = findpeaks(sum(blurred_mask, 1));
+    % [~, y_center] = findpeaks(sum(blurred_mask, 2));
 
     % video = circshift(video, -(ceil(size(video, 1)/2) - x_center), 1);
     % video = circshift(video, -(ceil(size(video, 2)/2) - y_center), 2);
