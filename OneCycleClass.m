@@ -109,6 +109,8 @@ classdef OneCycleClass
                     video(:, :, n) = rgb2gray(read(V, n));
                 end
 
+                clear V
+
                 obj.reference{ii} = video;
                 refvideosize = size(obj.reference{ii});
 
@@ -744,15 +746,14 @@ classdef OneCycleClass
             if obj.flag_SH_analysis
 
                 %% Import SH
-                cubeSize = 256;
-                cubeFreqLength = 32;
+
                 tmpname = strcat(ToolBox.main_foldername, '_SH');
                 ext = '.raw';
                 disp(['reading : ', fullfile(obj.directory, 'raw', [tmpname, ext])]);
                 fileID = fopen(fullfile(obj.directory, 'raw', [tmpname, ext]));
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
-                SH_cube = reshape(videoSH, cubeSize, cubeSize, cubeFreqLength, []);
+                SH_cube = reshape(videoSH, size(obj.reference{1}, 1), size(obj.reference{1}, 2), size(obj.reference{1}, 3), []);
 
                 tic
                 spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.dataM0_interp{1});
