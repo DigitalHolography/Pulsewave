@@ -103,14 +103,19 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     correlationMatrix_vein = CorrelationMatrix ./ min(CorrelationMatrix, [], 'all');
     correlationMatrix_vein(correlationMatrix_vein <- 1) = -1;
 
-    if PW_params.masks_showIntermediateFigures
-        figure(20), imagesc(correlationMatrix_artery);
-        title('Artery correlation map');
-        colorbar('southoutside');
-        figure(21), imagesc(correlationMatrix_vein);
-        title('Vein correlation map');
-        colorbar('southoutside');
-    end
+
+    figure(20), imagesc(correlationMatrix_artery);
+    title('Artery correlation map');
+    colorbar('southoutside');
+    imwrite(rescale(correlationMatrix_artery), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'correlationMatrix_artery.png')))
+
+
+    figure(21), imagesc(correlationMatrix_vein);
+    title('Vein correlation map');
+    colorbar('southoutside');
+    imwrite(rescale(correlationMatrix_vein), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'correlationMatrix_vein.png')))
+
+
 
     clear pulse pulse_init pulse_init_3d;
     %% Region growing to get a clear segmentation
