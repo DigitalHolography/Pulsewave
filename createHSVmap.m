@@ -8,7 +8,7 @@ function [hue, sat, val, cmap] = createHSVmap(Im, mask, hue_val_min, hue_val_max
     hue = (Im_hue * (hue_val_max - hue_val_min) + hue_val_min) .* mask;
     %sat = (1.0-0.5*Im).*mask;
     sat = Ones .* mask;
-    val = imgaussfilt(Im,3);
+    val = imgaussfilt(Im, 3);
     %val = Ones.*mask;
     tolVal = [0.01, 0.99];
     val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
@@ -21,7 +21,6 @@ function [hue, sat, val, cmap] = createHSVmap(Im, mask, hue_val_min, hue_val_max
     ARI_x = linspace(0, 1, 256);
     ARI_h = (ARI_x * (hue_val_max - hue_val_min) + hue_val_min);
     ARI_s = ones(1, 256);
-    ARI_v = ones(1, 256);
     ARI_v = (1 - 0.7) * sigmoid(ARI_x, 0.3, 5) + 0.7;
 
     cmap = squeeze(hsv2rgb(ARI_h, ARI_s, ARI_v));

@@ -8,7 +8,7 @@ function [heatmap, lags] = zmXCorrVideos(vid, vidRef)
 
     %compute lagged local pulse-to-average pulse xcorrelations
     C = zeros(size(vid));
-    R = zeros(size(vid));
+    % R = zeros(size(vid));
 
     for kk = 1:size(vid, 3)
         R = vid .* circshift(vidRef, kk, 3);
