@@ -270,7 +270,7 @@ classdef OneCycleClass
             if firstFrame > 0 && firstFrame < size(obj.dataM0{1}, 3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM0{1}, 3)
 
                 obj.reference{1} = obj.reference{1}(:, :, firstFrame:lastFrame);
-                obj.reference_norm{1} = obj.reference{1}(:, :, firstFrame:lastFrame);
+                obj.reference_norm{1} = obj.reference{1}; % déjà modifié ligne d'avant
                 obj.dataM0{1} = obj.dataM0{1}(:, :, firstFrame:lastFrame);
                 obj.dataM1{1} = obj.dataM1{1}(:, :, firstFrame:lastFrame);
                 obj.dataM2{1} = obj.dataM2{1}(:, :, firstFrame:lastFrame);
