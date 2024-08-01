@@ -84,7 +84,7 @@
         "Slice half thickness" : 10
     },
     "Optical Power Normalization" : {
-        "Normalization Flag" : 1,
+        "Normalization Flag" : 0,
         "Power Calibration Curve Slope" : 0.256,
         "Power Calibration YIntercept": 2.83,
         "Reference Total Retinal Blood Flow" : 40
