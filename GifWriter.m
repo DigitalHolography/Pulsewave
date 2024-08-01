@@ -10,6 +10,7 @@ classdef GifWriter
         time_period_min
         Nx
         Ny
+        isRGB
     end
 
     methods
@@ -33,6 +34,10 @@ classdef GifWriter
                 image = frame;
             end
 
+            if size(image, 3) == 3
+                obj.isRGB = true;
+            end
+
             obj.images = cat(4, obj.images, image);
 
             obj.gifLength = size(obj.images, 4);
@@ -42,27 +47,32 @@ classdef GifWriter
         end
 
         function obj = generate(obj)
-            % Generate the gif from the current array of frames
-
+            % Generate the gif from the current array of frames            
+            
             if obj.time_period < obj.time_period_min
 
                 num_T = floor(obj.gifLength * obj.time_period / obj.time_period_min);
-                images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
-                images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.Nx obj.Ny num_T], "nearest");
-                images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.Nx obj.Ny num_T], "nearest");
+
+                if obj.isRGB
+                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
+                    images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.Nx obj.Ny num_T], "nearest");
+                    images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.Nx obj.Ny num_T], "nearest");
+                else
+                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
+                end
 
                 for tt = 1:num_T
 
-                    [A, map] = rgb2ind(images_interp(:, :, :, tt), 256);
+                    if obj.isRGB
+                        [A, map] = rgb2ind(images_interp(:, :, :, tt), 256);
+                    else
+                        [A, map] = gray2ind(images_interp(:, :, :, tt), 256);
+                    end
 
                     if tt == 1
-
                         imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period_min);
-
                     else
-
                         imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period_min);
-
                     end
 
                 end
@@ -70,7 +80,11 @@ classdef GifWriter
             else
 
                 for tt = 1:obj.gifLength
-                    [A, map] = rgb2ind(obj.images(:, :, :, tt), 256);
+                    if obj.isRGB
+                        [A, map] = rgb2ind(obj.images(:, :, :, tt), 256);
+                    else
+                        [A, map] = gray2ind(obj.images(:, :, :, tt), 256);
+                    end
 
                     if tt == 1
                         imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period);

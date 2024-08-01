@@ -8,15 +8,11 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     meanIm = squeeze(mean(videoM0, 3));
     meanM1M0 = squeeze(mean(videoM1M0, 3));
 
-    figure(666), imagesc(meanIm);
+    figure(666), imagesc(meanIm), axis image, colormap gray;
 
     for frame_idx = 1:N_frame
         videoM0(:, :, frame_idx) = flat_field_correction(squeeze(videoM0(:, :, frame_idx)), PW_params.flatField_gwRatio * (Ny + Nx) / 2, 0);
     end
-
-    meanIm = squeeze(mean(videoM0, 3));
-
-    figure(667), imagesc(meanIm);
 
     [x, y] = meshgrid(1:Ny, 1:Nx);
     cercle_mask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
@@ -34,9 +30,10 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     end
 
     videoM0_zero = videoM0 - meanIm;
-
+    
     % compute vesselness response
     vesselnessIm = vesselness_filter(meanIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
+    figure(667), imagesc(vesselnessIm), axis image, colormap gray;
 
     %%  Compute first correlation to find arteries
 
@@ -167,15 +164,15 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
         mask_vessel = bwareafilt(mask_vessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
     end
 
-    if isfile(fullfile(ToolBox.PW_path_main, 'mask', '_maskArtery_New.png')) % import manually tuned mask if needed
-        mask_artery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', '_maskArtery_New.png')), 3)) > 0;
+    if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskArtery_New.png')) % import manually tuned mask if needed
+        mask_artery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskArtery_New.png')), 3)) > 0;
     else
         mask_artery = mask_vessel .* correlationMatrix_artery;
         mask_artery = mask_artery > PW_params.arteryMask_ArteryCorrThreshold;
     end
 
-    if isfile(fullfile(ToolBox.PW_path_main, 'mask', '_maskVein_New.png')) % import manually tuned mask if needed
-        mask_vein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', '_maskVein_New.png')), 3)) > 0;
+    if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskVein_New.png')) % import manually tuned mask if needed
+        mask_vein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskVein_New.png')), 3)) > 0;
     else
         mask_vein = mask_vessel .* correlationMatrix_vein;
         mask_vein = mask_vein > 0;
