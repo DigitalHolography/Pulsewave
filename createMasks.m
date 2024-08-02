@@ -32,7 +32,7 @@ function [mask_artery, mask_vein, mask_vessel, maskBackground, maskCRA, maskCRV,
     videoM0_zero = videoM0 - meanIm;
     
     % compute vesselness response
-    local_contrasted_image = adapthisteq(rescale(meanIm), 'NumTiles',[100 100]);
+    local_contrasted_image = adapthisteq(rescale(meanIm), 'NumTiles', PW_params.arteryMask_vesselnessContrastNumSlides');
     vesselnessIm = vesselness_filter(local_contrasted_image, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
     figure(667), imagesc(vesselnessIm), axis image, colormap gray;
 

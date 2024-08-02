@@ -11,7 +11,6 @@ classdef GifWriter
         Nx
         Ny
         isRGB
-        init_waitbar
     end
 
     methods
@@ -24,7 +23,6 @@ classdef GifWriter
             obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, filename));
             obj.time_period_min = time_period_min;
             obj.time_period = ToolBox.stride / ToolBox.fs / 1000;
-            obj.init_waitbar = waitbar(0, sprintf("%s GIF initialisation...", filename));
 
         end
 
@@ -49,10 +47,9 @@ classdef GifWriter
         end
 
         function obj = generate(obj)
-            % Generate the gif from the current array of frames
-            close(obj.init_waitbar)
+            % Generate the gif from the current array of frames            
             h = waitbar(0, 'Generate GIF file...');
-
+            
             if obj.time_period < obj.time_period_min
 
                 num_T = floor(obj.gifLength * obj.time_period / obj.time_period_min);
@@ -61,49 +58,42 @@ classdef GifWriter
                     images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
                     images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.Nx obj.Ny num_T], "nearest");
                     images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.Nx obj.Ny num_T], "nearest");
-
-                    images_interp_reshaped = reshape(images_interp, obj.Nx, [], 3);
-                    [A, map] = rgb2ind(images_interp_reshaped, 256);
-                    A = reshape(A, obj.Nx, obj.Ny, []);
-
                 else
                     images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
-
-                    images_interp_reshaped = reshape(images_interp, obj.Nx, [], 1);
-                    [A, map] = gray2ind(images_interp_reshaped, 256);
-                    A = reshape(A, obj.Nx, obj.Ny, []);
                 end
 
                 for tt = 1:num_T
                     waitbar((tt - 1) / num_T, h);
 
-                    if tt == 1
-                        imwrite(A(:, :, tt), map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period_min);
+                    if obj.isRGB
+                        [A, map] = rgb2ind(images_interp(:, :, :, tt), 256);
                     else
-                        imwrite(A(:, :, tt), map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period_min);
+                        [A, map] = gray2ind(images_interp(:, :, :, tt), 256);
+                    end
+
+                    if tt == 1
+                        imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period_min);
+                    else
+                        imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period_min);
                     end
 
                 end
 
             else
 
-                if obj.isRGB
-                    images_reshaped = reshape(obj.images, obj.Nx, [], 3);
-                    [A, map] = rgb2ind(images_reshaped, 256);
-                    A = reshape(A, obj.Nx, obj.Ny, []);
-                else
-                    images_reshaped = reshape(obj.images, obj.Nx, [], 1);
-                    [A, map] = gray2ind(images_reshaped, 256);
-                    A = reshape(A, obj.Nx, obj.Ny, []);
-                end
-
                 for tt = 1:obj.gifLength
+                    if obj.isRGB
+                        [A, map] = rgb2ind(obj.images(:, :, :, tt), 256);
+                    else
+                        [A, map] = gray2ind(obj.images(:, :, :, tt), 256);
+                    end
+
                     waitbar((tt - 1) / obj.gifLength, h);
 
                     if tt == 1
-                        imwrite(A(:, :, tt), map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period);
+                        imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period);
                     else
-                        imwrite(A(:, :, tt), map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period);
+                        imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period);
                     end
 
                 end

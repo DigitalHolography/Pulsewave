@@ -33,7 +33,8 @@
         "MagicWand Number of segmented area detected for vessels" : 3,
         "MagicWand Number of segmented area detected for artery" : 3,
         "Artery correlation threshold" : 0.07,
-        "ArteryCorrelationMatrixThreshold":  1.5
+        "ArteryCorrelationMatrixThreshold":  1.5,
+        "ContrastNumSlides": [100,100]
 
     },
     "Central retina mask" : {

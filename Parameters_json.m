@@ -28,6 +28,7 @@ classdef Parameters_json
         arteryMask_magicwand_nb_of_area_artery
         arteryMask_ArteryCorrThreshold
         arteryMask_CorrelationMatrixThreshold
+        arteryMask_vesselnessContrastNumSlides
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
         centralRetinal_backgndThreshold
@@ -157,6 +158,7 @@ classdef Parameters_json
                 obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
                 obj.arteryMask_ArteryCorrThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
                 obj.arteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
+                obj.arteryMask_vesselnessContrastNumSlides = parsedData.CreationOfMasks.ContrastNumSlides;
 
                 obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
                 obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;
