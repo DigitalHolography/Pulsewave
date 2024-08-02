@@ -219,7 +219,7 @@ classdef OneCycleClass
                 tmp_calc_data_M0 = obj.dataM0_interp{1};
 
                 parfor i = 1:num_frames % loop over frames
-                    tmp_dataM0(:, :, i) = flat_field_correction_old(tmp_calc_data_M0(:, :, i), gwRatio * height, flatField_border);
+                    tmp_dataM0(:, :, i) = flat_field_correction(tmp_calc_data_M0(:, :, i), gwRatio * height, flatField_border);
                 end
 
                 obj.dataM0_interp{1} = tmp_dataM0;
@@ -229,7 +229,7 @@ classdef OneCycleClass
                 tmp_calc_data_M1 = obj.dataM1_interp{1};
 
                 parfor i = 1:num_frames % loop over frames
-                    tmp_dataM1(:, :, i) = flat_field_correction_old(tmp_calc_data_M1(:, :, i), gwRatio * height, flatField_border);
+                    tmp_dataM1(:, :, i) = flat_field_correction(tmp_calc_data_M1(:, :, i), gwRatio * height, flatField_border);
                 end
 
                 obj.dataM1_interp{1} = tmp_dataM1;
@@ -239,7 +239,7 @@ classdef OneCycleClass
                 tmp_calc_data_M2 = obj.dataM2_interp{1};
 
                 parfor i = 1:num_frames % loop over frames
-                    tmp_dataM2(:, :, i) = flat_field_correction_old(tmp_calc_data_M2(:, :, i), gwRatio * height, flatField_border);
+                    tmp_dataM2(:, :, i) = flat_field_correction(tmp_calc_data_M2(:, :, i), gwRatio * height, flatField_border);
                 end
 
                 obj.dataM2_interp{1} = tmp_dataM2;
@@ -249,7 +249,7 @@ classdef OneCycleClass
                 tmp_calc_data = (obj.dataM2M0_interp{1});
 
                 parfor i = 1:num_frames
-                    tmp_dataM2M0(:, :, i) = flat_field_correction_old(tmp_calc_data(:, :, i), gwRatio * height, flatField_border);
+                    tmp_dataM2M0(:, :, i) = flat_field_correction(tmp_calc_data(:, :, i), gwRatio * height, flatField_border);
                 end
 
                 obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
@@ -548,7 +548,7 @@ classdef OneCycleClass
                     tmp_calc_data_M0 = obj.dataM0_interp{1};
 
                     parfor i = 1:N_frame % loop over frames
-                        tmp_dataM0(:, :, i) = flat_field_correction_old(tmp_calc_data_M0(:, :, i), gwRatio * Nx, flatField_border);
+                        tmp_dataM0(:, :, i) = flat_field_correction(tmp_calc_data_M0(:, :, i), gwRatio * Nx, flatField_border);
                     end
 
                     obj.dataM0_interp{1} = tmp_dataM0;
@@ -561,7 +561,7 @@ classdef OneCycleClass
                     tmp_calc_data = obj.dataM2M0_interp{1};
 
                     parfor i = 1:N_frame
-                        tmp_dataM2M0(:, :, i) = flat_field_correction_old(tmp_calc_data(:, :, i), gwRatio * Nx, flatField_border);
+                        tmp_dataM2M0(:, :, i) = flat_field_correction(tmp_calc_data(:, :, i), gwRatio * Nx, flatField_border);
                     end
 
                     obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
@@ -585,9 +585,15 @@ classdef OneCycleClass
             %% Video M0 gif
             
             gifWriter = GifWriter("VideoM0", 0.04, ToolBox);
+
+            h = waitbar(0, 'GIF initialisation...');
+            videoM0_rescaled = rescale(obj.reference_interp{1});
             for frame_idx = 1:N_frame
-                gifWriter = gifWriter.write(rescale(obj.reference_norm_interp{1}(:, :, frame_idx)));
+                waitbar((frame_idx - 1) / N_frame, h);
+                gifWriter = gifWriter.write(videoM0_rescaled(:, :, frame_idx));
             end
+            close(h)
+            
             gifWriter.generate();
 
             %% Creating Masks
@@ -698,7 +704,7 @@ classdef OneCycleClass
                     % disp('no flow rate')
 
                     %                     try
-                    %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
+                    %                         flow_rate(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
                     %                     catch
                     %                     end
 
