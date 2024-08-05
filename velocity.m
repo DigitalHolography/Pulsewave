@@ -236,8 +236,7 @@ function [] = velocity(v_RMS_all, maskArtery, maskVein, videoM0, FreqVideoRGB, T
         % hCB.Label.FontSize = 12;
         % colormap(cmap_artery);
 
-        frame = getframe(gca);
-        gifWriter = gifWriter.write(frame);
+        gifWriter = gifWriter.write(flowVideoRGB(:, :, :, frame_idx));
 
     end
 
