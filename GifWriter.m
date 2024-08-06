@@ -1,13 +1,13 @@
-classdef GifWriter
+classdef GifWriter < handle
     %GifWriter Handles the creation and management of Gifs
     %   Detailed explanation goes here
 
     properties
-        filename_gif
+        filename
         gifLength
         images
-        time_period
-        time_period_min
+        timePeriod
+        timePeriodMin
         Nx
         Ny
         isRGB
@@ -15,44 +15,51 @@ classdef GifWriter
 
     methods
 
-        function obj = GifWriter(filename, time_period_min, ToolBox)
+        function obj = GifWriter(filename, timePeriod, timePeriodMin, gifLength)
             %GifWriter Construct an instance of this class
             %   filename: where want your Gif to be built
             %   time_period_min: minimal time between each frame of your GIF
 
-            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, filename));
-            obj.time_period_min = time_period_min;
-            obj.time_period = ToolBox.stride / ToolBox.fs / 1000;
+            obj.filename = filename;
+            obj.timePeriodMin = timePeriodMin;
+            obj.timePeriod = timePeriod; % ToolBox.stride / ToolBox.fs / 1000
+            obj.gifLength = gifLength;
 
         end
 
-        function obj = write(obj, frame)
-            % Appends a frame to the gif
+        function obj = write(obj, frame, frameIdx)
+            % Sets the frame to the gif
+
+            % Checks if it is a frame obj or an image
             if isa(frame, 'struct')
                 image = frame2im(frame);
             else
                 image = frame;
             end
 
-            if size(image, 3) == 3
-                obj.isRGB = true;
+            if isempty(obj.images)
+                obj.Nx = size(image, 1);
+                obj.Ny = size(image, 2);
+                if size(image, 3) == 3
+                    obj.isRGB = true;
+                    obj.images = zeros(obj.Nx, obj.Ny, 3, obj.gifLength, 'like', image);
+                else
+
+                    obj.images = zeros(obj.Nx, obj.Ny, 1, obj.gifLength, 'like', image);
+                end
             end
 
-            obj.images = cat(4, obj.images, image);
-
-            obj.gifLength = size(obj.images, 4);
-            obj.Nx = size(image, 1);
-            obj.Ny = size(image, 2);
+            obj.images(:, :, :, frameIdx) = image;
 
         end
 
         function obj = generate(obj)
-            % Generate the gif from the current array of frames            
+            % Generate the gif from the current array of frames
             h = waitbar(0, 'Generate GIF file...');
-            
-            if obj.time_period < obj.time_period_min
 
-                num_T = floor(obj.gifLength * obj.time_period / obj.time_period_min);
+            if obj.timePeriod < obj.timePeriodMin
+
+                num_T = floor(obj.gifLength * obj.timePeriod / obj.timePeriodMin);
 
                 if obj.isRGB
                     images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
@@ -72,9 +79,9 @@ classdef GifWriter
                     end
 
                     if tt == 1
-                        imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period_min);
+                        imwrite(A, map, obj.filename, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriodMin);
                     else
-                        imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period_min);
+                        imwrite(A, map, obj.filename, "gif", "WriteMode", "append", "DelayTime", obj.timePeriodMin);
                     end
 
                 end
@@ -91,9 +98,9 @@ classdef GifWriter
                     waitbar((tt - 1) / obj.gifLength, h);
 
                     if tt == 1
-                        imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.time_period);
+                        imwrite(A, map, obj.filename, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriod);
                     else
-                        imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.time_period);
+                        imwrite(A, map, obj.filename, "gif", "WriteMode", "append", "DelayTime", obj.timePeriod);
                     end
 
                 end

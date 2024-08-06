@@ -170,35 +170,4 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
     one_cycle_videoM0 = circshift(one_cycle_videoM0, -shift, 3);
     cycles_signal = circshift(cycles_signal, -shift, 2); % shift pulse to start & end with bottom diastole
 
-    figure(33)
-
-    for ii = 1:size(cycles_signal, 1)
-
-        if ismember(ii, selectedPulseIdx)
-            plot( ...
-                movavgvar(cycles_signal(ii, :), 5), '-', ...
-                'LineWidth', 1);
-            hold on
-        else
-            plot( ...
-                movavgvar(cycles_signal(ii, :), 5), '--', ...
-                'LineWidth', 1);
-            hold on
-        end
-
-    end
-
-    hold on
-    plot(movavgvar(squeeze(mean(cycles_signal(:, :), 1)), 5), '-', ...
-        'LineWidth', 2)
-    title('arterial blood flow velocity for different cycles');
-    legend('arterial pulse');
-    fontsize(gca, 12, "points");
-    ylabel('blood flow velocity (mm/s)');
-    pbaspect([1.618 1 1]);
-    set(gca, 'LineWidth', 2);
-    axis tight;
-
-    print('-f33', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_arterial_blood_flow_velocity_for_different_cycles.png')));
-
     disp('done.');

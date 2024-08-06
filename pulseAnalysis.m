@@ -17,7 +17,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     veins_analysis = PW_params.veins_analysis;
 
-    n_frames = size(fullVideoM2M0, 3);
+    N_frame = size(fullVideoM2M0, 3);
 
     meanIm = mat2gray(meanIm);
     tolVal = [0.02, 0.98];
@@ -28,7 +28,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     strYlabel = 'frequency (kHz)';
     range0(1:2) = clim;
-    fullTime = linspace(0, n_frames * ToolBox.stride / ToolBox.fs / 1000, n_frames);
+    fullTime = linspace(0, N_frame * ToolBox.stride / ToolBox.fs / 1000, N_frame);
 
     %% Doppler AVG frequency heatmap
 
@@ -37,7 +37,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     heatmap_AVG_raw = squeeze(mean(fullVideoM1M0, 3));
 
     clear fullVideoM1M0
-    imwrite(heatmap_AVG_raw, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_heatmap_AVG_raw.png')), 'png');
+    mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
+    mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
+    imwrite(heatmap_AVG_raw, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'heatmap_AVG_raw.png')), 'png');
 
     %  Doppler AVG frequency heatmap
     figure(78)
@@ -160,8 +162,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulse.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulse.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulse.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulse.eps')))
 
     plot2txt(fullTime, fullArterialPulseMinusBackground, 'FullArterialPulseMinusBackground', ToolBox)
     plot2txt(fullTime, fullArterialPulseClean, 'FullArterialPulseClean', ToolBox)
@@ -219,8 +221,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'derivative.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'derivative.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'derivative.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'derivative.eps')))
 
     plot2txt(fullTime(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, 'FullArterialPulseDerivative', ToolBox)
     plot2txt(fullTime(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, 'FullArterialPulseCleanDerivative', ToolBox)
@@ -245,6 +247,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     titleString = 'RMS Doppler frequency (kHz)';
     set(colorTitleHandle, 'String', titleString);
 
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'RMS_frequency_colorbar.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'RMS_frequency_colorbar.eps')))
+
     figure(44)
     plot( ...
         fullTime(1:length(fullArterialPulseClean)), fullArterialPulseClean, ':k', ...
@@ -262,8 +267,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulseVsResidual.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulseVsResidual.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulseVsResidual.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulseVsResidual.eps')))
 
     plot2txt(fullTime(1:length(fullArterialPulseClean)), fullArterialPulseClean, 'FilteredArterialPulse', ToolBox)
     plot2txt(fullTime(1:length(noise)), noise, 'ResidualArterialPulse', ToolBox)
@@ -292,7 +297,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     if veins_analysis
 
-        parfor nn = 1:n_frames
+        parfor nn = 1:N_frame
             LocalBKG_artery(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_artery));
             LocalBKG_vein(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vein));
             LocalBKG_arteryM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_artery));
@@ -303,7 +308,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     else
 
-        parfor nn = 1:n_frames
+        parfor nn = 1:N_frame
             LocalBKG_artery(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_artery));
             LocalBKG_arteryM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_artery));
             LocalBKG_arteryM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_artery));
@@ -393,8 +398,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.eps')))
 
     plot2txt(fullTime(1:length(fullArterialPulseRegularized)), fullArterialPulseRegularized, 'FullArterialPulseRegularized', ToolBox)
     plot2txt(fullTime(1:length(fullArterialPulse)), fullArterialPulseMinusBackground, 'FullArterialPulseMinusBackground', ToolBox)
@@ -412,7 +417,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     c.Label.FontSize = 12;
     axis off
     axis image
-    imwrite(rescale(LocalBackground_in_arteries), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_arteries.png')))
+    imwrite(rescale(LocalBackground_in_arteries), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_arteries.png')))
 
     range(1:2) = clim;
 
@@ -432,7 +437,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         c.Label.FontSize = 12;
         axis off
         axis image
-        imwrite(rescale(LocalBackground_in_veins), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_veins.png')));
+        imwrite(rescale(LocalBackground_in_veins), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_veins.png')));
 
         range(1:2) = clim;
     end
@@ -448,8 +453,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         pbaspect([1.618 1 1]);
         set(gca, 'LineWidth', 2);
         axis tight;
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.eps')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", 'pulseAnalysis', ToolBox.main_foldername, 'pulseVsBackground.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", 'pulseAnalysis', ToolBox.main_foldername, 'pulseVsBackground.eps')))
 
         plot2txt(fullTime, fullArterialPulse, 'FullArterialPulse', ToolBox)
         plot2txt(fullTime, fullBackgroundSignal, 'FullBackgroundSignal', ToolBox)
@@ -466,8 +471,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         pbaspect([1.618 1 1]);
         set(gca, 'LineWidth', 2);
         axis tight;
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.eps')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.eps')))
 
         plot2txt(fullTime, fullArterialPulse, 'FullArterialPulse', ToolBox)
         plot2txt(fullTime, fullBackgroundSignal, 'FullBackgroundSignal', ToolBox)
@@ -482,7 +487,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     A = ones(size(fullVideoM2M0));
 
-    for pp = 1:n_frames
+    for pp = 1:N_frame
         A(:, :, pp) = A(:, :, pp) * fullBackgroundSignal(pp);
     end
 
@@ -552,7 +557,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     f21 = figure(21);
     f21.Position = [300, 300, 570, 630];
-    gifWriter = GifWriter("Animated_Flow_map", 0.04, ToolBox);
+
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")), timePeriod, 0.04, N_frame);
 
     % f_RMS_artery = sum(flowVideoRGB .* maskArtery, [1 2]) / nnz(maskArtery);
     % f_RMS_vein = sum(flowVideoRGB .* maskVein, [1 2]) / nnz(maskVein);
@@ -561,35 +568,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % f_RMS_min_Arteries = min(f_RMS_artery(:));
     % f_RMS_min_Veins = min(f_RMS_vein(:));
 
-    for tt = 1:size(flowVideoRGB, 4)
-
-        imagesc(flowVideoRGB(:, :, :, tt));
-        title('RMS Frequency Map');
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
-        % colormap(cmap_artery)
-        % hCB_artery = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(f_RMS_min_Arteries, 1)), string(round(f_RMS_max_Arteries, 1))});
-        % hCB_artery.Label.String = 'RMS Doppler Frequency (kHz)';
-        % hCB_artery.Label.FontSize = 12;
-
-        if veins_analysis
-            % colormap(cmap_vein)
-            % hCB_vein = colorbar('northoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(f_RMS_min_Veins, 1)), string(round(f_RMS_max_Veins, 1))});
-            % hCB_artery.Label.String = 'RMS Doppler Frequency (kHz)';
-        end
-
-        % FIGURE IMAGE EXPORT
-        frame = getframe(gca);
-        gifWriter = gifWriter.write(frame);
-
+    for frameIdx = 1:size(flowVideoRGB, 4)
+        gifWriter.write(flowVideoRGB(:, :, :, frameIdx), frameIdx);
     end
 
     gifWriter.generate();
+    gifWriter.delete();
 
     % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, '_flowVideo')), 'MPEG-4');
+    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')), 'MPEG-4');
     open(w)
 
     for jj = 1:size(flowVideoRGB, 4)
@@ -602,7 +589,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     exec_times_time = [exec_times_time, toc];
     total_time = total_time + toc;
 
-    %% Creation of the avg pluse for In-plane arteries ~5min
+    %% Creation of the avg pulse for In-plane arteries ~5min
 
     tic
 
@@ -611,9 +598,13 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     clear fullVideoM2M0
 
     [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
+
+    %% Velocity Calculation
+
     v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
     % fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
-    % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
+    % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane *
+    % fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
     % fprintf('Offset Normalization was performed: +%d µL/min',ToolBox.NormalizationOffset)
 
     clear fullVideoM2M0minusBKG
@@ -624,8 +615,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     v_RMS_one_cycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
 
     % avi
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, '_one_cycle.avi')));
-    wM0 = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, '_one_cycleM0.avi')));
+    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
+    wM0 = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.avi')));
     tmp = mat2gray(onePulseVideo);
     tmpM0 = mat2gray(onePulseVideoM0);
     open(w)
@@ -640,8 +631,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     close(wM0);
 
     % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, '_one_cycle.mp4')), 'MPEG-4');
-    wM0 = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, '_one_cycleM0.mp4')), 'MPEG-4');
+    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.mp4')), 'MPEG-4');
+    wM0 = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.mp4')), 'MPEG-4');
     tmp = mat2gray(onePulseVideo);
     tmpM0 = mat2gray(onePulseVideoM0);
     open(w)
@@ -684,9 +675,35 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % save average arterial pulse wave velocity to txt file
     tmp = [T(1:length(avgArterialPulseHz))', avgArterialPulseVelocityInPlane];
     %size(tmp)
-    fileID = fopen(fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, '_avgPulse.txt')), 'w');
+    fileID = fopen(fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulse.txt')), 'w');
     fprintf(fileID, '%f %f \r\n', tmp');
     fclose(fileID);
+
+    figure(33)
+
+    for ii = 1:size(cycles_signal, 1)
+
+        if ismember(ii, selectedPulseIdx)
+            plot(T, movavgvar(cycles_signal(ii, :), 5), 'k-', 'LineWidth', 1);
+            hold on
+        else
+            plot(T, movavgvar(cycles_signal(ii, :), 5), 'k--', 'LineWidth', 1);
+            hold on
+        end
+
+    end
+
+    hold on
+    plot(T, movavgvar(squeeze(mean(cycles_signal(:, :), 1)), 5), 'k-', 'LineWidth', 2)
+    fontsize(gca, 12, "points");
+    xlabel('Average cardiac cycle duration (s)')
+    ylabel('RMS Doppler Frequency (kHz)');
+    pbaspect([1.618 1 1]);
+    set(gca, 'LineWidth', 2);
+    axis tight;
+
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'RMS_Doppler_frequency_for_different_cycles.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'RMS_Doppler_frequency_for_different_cycles.eps')))
 
     exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
     exec_times_time = [exec_times_time, toc];
@@ -832,11 +849,14 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     titleString = 'AVG Doppler frequency (kHz)';
     set(colorTitleHandle, 'String', titleString);
 
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVG_frequency_colorbar.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVG_frequency_colorbar.eps')))
+
     % diastolic Doppler frequency heatmap
     figure(79)
     imagesc(heatmap_dia_raw);
     colormap gray
-    title('bottom diastole RMS frequency map RAW');
+    title('bottom diastole RMS frequency map');
     fontsize(gca, 12, "points");
     set(gca, 'LineWidth', 2);
     c = colorbar('southoutside');
@@ -845,6 +865,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     axis off
     axis image
     range(1:2) = clim;
+
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFig.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFig.eps')))
 
     clear heatmap_dia_raw
 
@@ -863,14 +886,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     f80.Position = [1100 500 380 420];
     range(1:2) = clim;
 
-    heatmap_dia_img = frame2im(getframe(gca));
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFlatfieldFig.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFlatfieldFig.eps')))
 
     % systolic Doppler frequency heatmap
     f89 = figure(89);
     f89.Position = [1100 500 380 420];
     imagesc(heatmap_sys_raw);
     colormap gray
-    title('peak systole RMS frequency map RAW');
+    title('peak systole RMS frequency map');
     fontsize(gca, 12, "points");
     set(gca, 'LineWidth', 2);
     c = colorbar('southoutside');
@@ -882,7 +906,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % same color axis for systolic and diastolic Doppler heatmaps
     clim([min(range), max(range)]);
 
-    heatmap_sys_raw_img = frame2im(getframe(gca));
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFig.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFig.eps')))
 
     % figure(85)
     % clim([min(range),max(range)]);
@@ -904,15 +929,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % same color axis for systolic and diastolic Doppler heatmaps
     clim([min(range), max(range)]);
 
-    heatmap_sys_img = frame2im(getframe(gca));
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFlatfieldFig.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFlatfieldFig.eps')))
 
     %% SAVING IMAGES
 
-    imwrite(heatmap_sys, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_heatmap_RMS_systol.png')), 'png');
-    imwrite(heatmap_dia, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_heatmap_RMS_diastole.png')), 'png');
-    imwrite(heatmap_sys_img, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_systoleHeatMap.png')), 'png');
-    imwrite(heatmap_sys_raw_img, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_systoleHeatMapRAW.png')), 'png');
-    imwrite(heatmap_dia_img, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_diastoleHeatMap.png')), 'png');
+    imwrite(heatmap_sys, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'heatmap_RMS_systol.png')), 'png');
+    imwrite(heatmap_dia, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'heatmap_RMS_diastole.png')), 'png');
+    imwrite(rescale(heatmap_sys), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMap.png')), 'png');
+    imwrite(rescale(heatmap_dia), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMap.png')), 'png');
 
     %%
     % FIXME : replace sys + dia blur by homogenous blur ?
@@ -979,17 +1004,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     text(T_syst, min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), '  (2)', 'FontSize', 14);
     xline(T(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
     text(T(idx_sys + idx_list_threshold_dia(1)), min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), '  (3)', 'FontSize', 14);
-    legend(' arterial pulse');
     fontsize(gca, 12, "points");
     xlabel(strXlabel, 'FontSize', 14);
     ylabel('blood flow velocity (mm/s)', 'FontSize', 14);
     pbaspect([1.618 1 1]);
     set(gca, 'LineWidth', 2);
     axis tight;
-    title('average blood flow velocity estimate in in-plane retinal arteries');
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.eps')))
 
     plot2txt(T(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane', ToolBox)
 
@@ -1026,6 +1049,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     m = h.YData;
     plot2txt(l, m, 'ArterialDopplerSignal', ToolBox)
 
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'all_cycles.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'all_cycles.eps')))
+
     clear cycles_signal
 
     figure(102)
@@ -1049,8 +1075,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     set(gca, 'LineWidth', 2);
     title('average background-corrected RMS frequency in retinal arteries');
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.eps')))
 
     plot2txt(T, avgArterialPulseHz, 'AvgArterialPulseHz', ToolBox)
 
@@ -1073,8 +1099,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     title('Derivative of average arterial pulse wave');
     axis tight
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.eps')))
 
     plot2txt(T(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative', ToolBox)
 
@@ -1087,38 +1113,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     clear pulse_arteries_blurred_dia
     clear diff_pulse_dia
     clear diff_avgPulse
-
-    %
-
-    %FIX ME utiliser la data brute
-    segmentation_map = zeros(size(meanIm, 1), size(meanIm, 2), 3);
-    segmentation_map(:, :, 1) = meanIm - (maskArtery + maskVein) .* meanIm + maskArtery;
-    segmentation_map(:, :, 2) = meanIm - (maskArtery + maskVein) .* meanIm;
-    segmentation_map(:, :, 3) = meanIm - (maskArtery + maskVein) .* meanIm + maskVein;
-    imwrite(segmentation_map, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'artery_vein_segmentation.png')), 'png');
-
-    %% Saving images and figures
-
-    % png
-    print('-f80', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_diastoleHeatMapFig.png')));
-    print('-f90', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_systoleHeatMapFig.png')));
-    print('-f79', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_diastoleHeatMapRAWFig.png')));
-    print('-f89', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_systoleHeatMapRAWFig.png')));
-    print('-f101', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_all_cycles.png')));
-    print('-f2410', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_RMS_frequency_colorbar.png')));
-    print('-f1230', '-dpng', fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, '_AVG_frequency_colorbar.png')));
-
-    % print('-f77','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_zeroLagXcorr.png'))) ;
-    % print('-f99','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_timeLags.png'))) ;
-
-    % eps
-    print('-f80', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_diastoleHeatMap.eps')));
-    print('-f90', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_systoleHeatMap.eps')));
-    print('-f79', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_diastoleHeatMapRAW.eps')));
-    print('-f89', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_systoleHeatMapRAW.eps')));
-    print('-f101', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_all_cycles.eps')));
-    print('-f2410', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_RMS_frequency_colorbar.eps')));
-    print('-f1230', '-depsc', fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, '_AVG_frequency_colorbar.eps')));
 
     close all
 
@@ -1224,21 +1218,21 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     %
     % % png
-    % print('-f102','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRApulseVsBackground.png'))) ;
-    % print('-f103','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRVpulseVsBackground.png'))) ;
-    % print('-f108','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRAfilteredPulse.png'))) ;
-    % print('-f110','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRVfilteredPulse.png'))) ;
-    % print('-f24','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_flattenedDopplerHeatMap.png'))) ;
-    % print('-f77','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_zeroLagXcorr.png'))) ;
-    % print('-f99','-dpng',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_timeLags.png'))) ;
+    % print('-f102','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRApulseVsBackground.png'))) ;
+    % print('-f103','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRVpulseVsBackground.png'))) ;
+    % print('-f108','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRAfilteredPulse.png'))) ;
+    % print('-f110','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRVfilteredPulse.png'))) ;
+    % print('-f24','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'flattenedDopplerHeatMap.png'))) ;
+    % print('-f77','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'zeroLagXcorr.png'))) ;
+    % print('-f99','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'timeLags.png'))) ;
     %
     % % eps
-    % print('-f102','-depsc',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRApulseVsBackground.eps'))) ;
-    % print('-f103','-depsc',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRVpulseVsBackground.eps'))) ;
-    % print('-f108','-depsc',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRAfilteredPulse.eps'))) ;
-    % print('-f110','-depsc',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_CRVfilteredPulse.eps'))) ;
-    % print('-f77','-depsc',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_zeroLagXcorr.eps'))) ;
-    % print('-f99','-depsc',fullfile(one_cycle_dir,sprintf("%s_%s",ToolBox.main_foldername,'_timeLags.eps'))) ;
+    % print('-f102','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRApulseVsBackground.eps'))) ;
+    % print('-f103','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRVpulseVsBackground.eps'))) ;
+    % print('-f108','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRAfilteredPulse.eps'))) ;
+    % print('-f110','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRVfilteredPulse.eps'))) ;
+    % print('-f77','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'zeroLagXcorr.eps'))) ;
+    % print('-f99','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'timeLags.eps'))) ;
     %
 
 end

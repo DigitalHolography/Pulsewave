@@ -1,4 +1,4 @@
-classdef pulsewave < matlab.apps.AppBase
+classdef pulse < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
@@ -15,7 +15,6 @@ classdef pulsewave < matlab.apps.AppBase
         ReferenceDirectory            matlab.ui.control.TextArea
         ErrorLabel                    matlab.ui.control.Label
         Lamp                          matlab.ui.control.Lamp
-        ApplyFlatFieldCheckBox        matlab.ui.control.CheckBox
         ClearButton                   matlab.ui.control.Button
         LoadfolderButton              matlab.ui.control.Button
         ExecuteButton                 matlab.ui.control.Button
@@ -195,8 +194,7 @@ end
             drawnow;
 
             for n = 1:length(app.files)
-              
-                app.files{n}.flag_FlatField = app.ApplyFlatFieldCheckBox.Value ;
+
                 app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
                 try
@@ -464,13 +462,6 @@ end
             app.ClearButton.Position = [63 136 100 27];
             app.ClearButton.Text = 'Clear';
 
-            % Create ApplyFlatFieldCheckBox
-            app.ApplyFlatFieldCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.ApplyFlatFieldCheckBox.Text = 'Apply Flat Field';
-            app.ApplyFlatFieldCheckBox.FontSize = 16;
-            app.ApplyFlatFieldCheckBox.FontColor = [0.9412 0.9412 0.9412];
-            app.ApplyFlatFieldCheckBox.Position = [208 221 132 22];
-
             % Create Lamp
             app.Lamp = uilamp(app.PulsewaveUIFigure);
             app.Lamp.Position = [569 182 20 20];
@@ -571,7 +562,7 @@ end
     methods (Access = public)
 
         % Construct app
-        function app = pulsewave
+        function app = pulse
 
             % Create UIFigure and components
             createComponents(app)

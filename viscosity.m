@@ -1,13 +1,13 @@
 function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
 
     nb_section = size(SubImage_cell, 2);
-    nb_frames = size(SubVideo_cell{1}, 3);
+    N_frame = size(SubVideo_cell{1}, 3);
     n_interp = 100;
     %interpolation parameter
     k = 2;
 
-    velocity_profiles = zeros(n_interp, nb_frames, nb_section);
-    velocity_profiles_std = zeros(n_interp, nb_frames, nb_section);
+    velocity_profiles = zeros(n_interp, N_frame, nb_section);
+    velocity_profiles_std = zeros(n_interp, N_frame, nb_section);
 
     for ii = 1:nb_section
         subImg = SubImage_cell{ii};
@@ -37,16 +37,16 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
 
         velocityProfileInterp = zeros(n_interp, size(projVideo, 2));
 
-        for tt = 1:size(projVideo, 2)
-            velocityProfileInterp(:, tt) = interp1(x, projVideo(:, tt), xinterp_wall2wall);
+        for frameIdx = 1:size(projVideo, 2)
+            velocityProfileInterp(:, frameIdx) = interp1(x, projVideo(:, frameIdx), xinterp_wall2wall);
         end
 
         velocity_profiles(:, :, ii) = velocityProfileInterp;
 
         velocityProfileInterp_std = zeros(n_interp, size(projVideo, 2));
 
-        for tt = 1:size(projVideo, 2)
-            velocityProfileInterp_std(:, tt) = interp1(x, projVideo_std(:, tt), xinterp_wall2wall);
+        for frameIdx = 1:size(projVideo, 2)
+            velocityProfileInterp_std(:, frameIdx) = interp1(x, projVideo_std(:, frameIdx), xinterp_wall2wall);
         end
 
         velocity_profiles_std(:, :, ii) = velocityProfileInterp_std;
@@ -66,11 +66,11 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
     % x for normalize wall length for fiting
     x = linspace(-1, 1, length(average_velocity_profile(:, 1)));
 
-    Vmax_list = zeros(nb_frames, 1);
-    alpha_list = zeros(nb_frames, 1);
-    beta_list = zeros(nb_frames, 1);
-    eta_list = zeros(nb_frames, 1);
-    viscosity_list = zeros(nb_frames, 1);
+    Vmax_list = zeros(N_frame, 1);
+    alpha_list = zeros(N_frame, 1);
+    beta_list = zeros(N_frame, 1);
+    eta_list = zeros(N_frame, 1);
+    viscosity_list = zeros(N_frame, 1);
 
     average_velocity_profile_systole = average_velocity_profile(:, idx_syst);
     average_velocity_profile_diastole = average_velocity_profile(:, end);
@@ -90,13 +90,13 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
 
     Color_std = [0.8 0.8 0.8];
     fullTime = 1:n_interp;
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityProfile")), timePeriod, 0.04, N_frame);
 
-    gifWriter = GifWriter("_Animated_viscosity", 0.04, ToolBox);
-
-    for tt = 1:nb_frames
-        tmp_velocity_profile = squeeze(average_velocity_profile(:, tt));
-        tmp_velocity_profile_plus_std = tmp_velocity_profile + 0.5 * average_velocity_profile_std(:, tt);
-        tmp_velocity_profile_minus_std = tmp_velocity_profile - 0.5 * average_velocity_profile_std(:, tt);
+    for frameIdx = 1:N_frame
+        tmp_velocity_profile = squeeze(average_velocity_profile(:, frameIdx));
+        tmp_velocity_profile_plus_std = tmp_velocity_profile + 0.5 * average_velocity_profile_std(:, frameIdx);
+        tmp_velocity_profile_minus_std = tmp_velocity_profile - 0.5 * average_velocity_profile_std(:, frameIdx);
         inBetween = [tmp_velocity_profile_plus_std', fliplr(tmp_velocity_profile_minus_std')];
         fullTime2 = [fullTime, fliplr(fullTime)];
 
@@ -133,21 +133,22 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
         drawnow
 
         frame = getframe(fifig);
-        gifWriter = gifWriter.write(frame);
+        gifWriter.write(frame, frameIdx);
 
         writeVideo(v, getframe(fifig));
         writeVideo(vMP4, getframe(fifig));
 
-        Vmax_list(tt) = tmp_fit.Vmax;
-        alpha_list(tt) = tmp_fit.alpha;
+        Vmax_list(frameIdx) = tmp_fit.Vmax;
+        alpha_list(frameIdx) = tmp_fit.alpha;
         % alpha_list(tt) = 0.13;
-        beta_list(tt) = tmp_fit.beta;
-        eta_list(tt) = (tmp_fit.beta + 1) / (tmp_fit.beta + tmp_fit.alpha);
-        viscosity_list(tt) =- (eta_list(tt) - 1.459) / 0.017;
+        beta_list(frameIdx) = tmp_fit.beta;
+        eta_list(frameIdx) = (tmp_fit.beta + 1) / (tmp_fit.beta + tmp_fit.alpha);
+        viscosity_list(frameIdx) =- (eta_list(frameIdx) - 1.459) / 0.017;
 
     end
 
     gifWriter.generate();
+    gifWriter.delete();
 
     close(v)
     close(vMP4)

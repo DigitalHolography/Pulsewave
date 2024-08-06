@@ -26,10 +26,8 @@ classdef OneCycleClass
         video_loaded
         pictureSection
         videoSection
-        flag_FlatField
         flag_SH_analysis
         flag_PulseWave_analysis
-        isdone_flatfield
         %% FIXME : relancer a chaque rendering
         ToolBoxmaster ToolBoxClass
 
@@ -83,7 +81,6 @@ classdef OneCycleClass
             PW_params = Parameters_json(obj.directory);
 
             obj.k = PW_params.k;
-            obj.isdone_flatfield = 0;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
 
             obj.load_logs = '\n=== LOADING : \r\n';
@@ -200,61 +197,6 @@ classdef OneCycleClass
 
                 obj.reference_norm{ii} = tmp_Ref;
                 clear tmp_Ref
-            end
-
-        end
-
-        function obj = MomentFlatField(obj)
-            PW_params = Parameters_json(obj.directory);
-
-            for ii = 1:obj.nbFiles
-                height = size(obj.dataM0_interp{1}, 1);
-                width = size(obj.dataM0_interp{1}, 2);
-                length = size(obj.dataM0_interp{1}, 3);
-                num_frames = size(obj.reference{1}, 3);
-                gwRatio = PW_params.flatField_gwRatio;
-                flatField_border = PW_params.flatField_border;
-
-                tmp_dataM0 = zeros(height, width, length);
-                tmp_calc_data_M0 = obj.dataM0_interp{1};
-
-                parfor i = 1:num_frames % loop over frames
-                    tmp_dataM0(:, :, i) = flat_field_correction(tmp_calc_data_M0(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM0_interp{1} = tmp_dataM0;
-                clear tmp_dataM0 tmp_calc_data_M0
-
-                tmp_dataM1 = zeros(height, width, length);
-                tmp_calc_data_M1 = obj.dataM1_interp{1};
-
-                parfor i = 1:num_frames % loop over frames
-                    tmp_dataM1(:, :, i) = flat_field_correction(tmp_calc_data_M1(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM1_interp{1} = tmp_dataM1;
-                clear tmp_dataM1 tmp_calc_data_M1
-
-                tmp_dataM2 = zeros(height, width, length);
-                tmp_calc_data_M2 = obj.dataM2_interp{1};
-
-                parfor i = 1:num_frames % loop over frames
-                    tmp_dataM2(:, :, i) = flat_field_correction(tmp_calc_data_M2(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM2_interp{1} = tmp_dataM2;
-                clear tmp_dataM2 tmp_calc_data_M2
-
-                tmp_dataM2M0 = zeros(height, width, length);
-                tmp_calc_data = (obj.dataM2M0_interp{1});
-
-                parfor i = 1:num_frames
-                    tmp_dataM2M0(:, :, i) = flat_field_correction(tmp_calc_data(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
-                clear tmp_dataM2M0 tmp_calc_data
-
             end
 
         end
@@ -468,7 +410,11 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_json);
             mkdir(ToolBox.PW_path_log);
 
-            copyfile(fullfile(obj.directory, 'log', 'RenderingParameters.json'), ToolBox.PW_path_log)
+            try
+                copyfile(fullfile(obj.directory, 'log', 'RenderingParameters.json'), ToolBox.PW_path_log)
+            catch
+                warning('no rendering parameters were found')
+            end
 
             %             path_dir_txt = fullfile(obj.directory,'txt');
             %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
@@ -523,78 +469,23 @@ classdef OneCycleClass
 
             fclose(fileID);
 
-            %% FlatField
-            % waitbar(0,progress_bar,"FlatField");
+            %% Video M0 gif
 
             [Nx, Ny, N_frame] = size(obj.reference_norm_interp{1});
-            
-            if obj.flag_FlatField && (obj.isdone_flatfield == 0)
 
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-                fprintf(fileID, 'FLATFIELD : \r\n\n');
-                fclose(fileID);
+            timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+            gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod, 0.04, N_frame);
 
-                disp("Correcting data with flat field")
-                fileID = fopen(path_file_log, 'a+');
-                fprintf(fileID, 'Correcting data with flat field \r\n');
-                fclose(fileID);
+            videoM0Rescaled = rescale(obj.reference_interp{1});
 
-                for ii = 1:obj.nbFiles
-                    gwRatio = PW_params.flatField_gwRatio;
-                    flatField_border = PW_params.flatField_border;
-
-                    tic
-                    tmp_dataM0 = zeros(Nx, Ny, N_frame);
-                    tmp_calc_data_M0 = obj.dataM0_interp{1};
-
-                    parfor i = 1:N_frame % loop over frames
-                        tmp_dataM0(:, :, i) = flat_field_correction(tmp_calc_data_M0(:, :, i), gwRatio * Nx, flatField_border);
-                    end
-
-                    obj.dataM0_interp{1} = tmp_dataM0;
-                    clear tmp_dataM0 tmp_calc_data_M0
-                    timeM0 = toc;
-                    save_time(path_file_txt_exe_times, 'FlatField M0', timeM0)
-
-                    tic
-                    tmp_dataM2M0 = zeros(Nx, Ny, N_frame);
-                    tmp_calc_data = obj.dataM2M0_interp{1};
-
-                    parfor i = 1:N_frame
-                        tmp_dataM2M0(:, :, i) = flat_field_correction(tmp_calc_data(:, :, i), gwRatio * Nx, flatField_border);
-                    end
-
-                    obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
-                    clear tmp_dataM2M0 tmp_calc_data
-                    timeM2M0 = toc;
-                    save_time(path_file_txt_exe_times, 'FlatField M2M0', timeM2M0)
-
-                    fileID = fopen(path_file_txt_exe_times, 'a+');
-                    fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', timeM2M0 + timeM0);
-                    fclose(fileID);
-                end
-
-                obj.isdone_flatfield = 1;
-            else
-                disp("no flatfield applied")
-                fileID = fopen(path_file_log, 'a+');
-                fprintf(fileID, 'No flatfield applied \r\n\n');
-                fclose(fileID);
+            for frameIdx = 1:N_frame
+                gifWriter.write(videoM0Rescaled(:, :, frameIdx), frameIdx);
             end
 
-            %% Video M0 gif
-            
-            gifWriter = GifWriter("VideoM0", 0.04, ToolBox);
-
-            h = waitbar(0, 'GIF initialisation...');
-            videoM0_rescaled = rescale(obj.reference_interp{1});
-            for frame_idx = 1:N_frame
-                waitbar((frame_idx - 1) / N_frame, h);
-                gifWriter = gifWriter.write(videoM0_rescaled(:, :, frame_idx));
-            end
-            close(h)
-            
             gifWriter.generate();
+            gifWriter.delete();
+
+            imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
 
             %% Creating Masks
             % waitbar(0.1,progress_bar,"Creating Masks");
@@ -672,8 +563,8 @@ classdef OneCycleClass
                     clear exec_times
 
                     tic
-                    velocity(v_RMS_all, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
-                    disp('Velocity timing :')
+                    velocity_figures(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                    disp('Velocity figures timing :')
                     time_velo = toc;
                     disp(time_velo)
                     save_time(path_file_txt_exe_times, 'Velocity', time_velo)
