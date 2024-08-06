@@ -34,8 +34,7 @@
         "MagicWand Number of segmented area detected for artery" : 3,
         "Artery correlation threshold" : 0.07,
         "ArteryCorrelationMatrixThreshold":  1.5,
-        "Manual Artery Discard": [],
-        "Manual Vein Discard": []
+        "ContrastNumSlides": [100,100]
 
     },
     "Central retina mask" : {
@@ -86,7 +85,7 @@
         "Slice half thickness" : 10
     },
     "Optical Power Normalization" : {
-        "Normalization Flag" : 1,
+        "Normalization Flag" : 0,
         "Power Calibration Curve Slope" : 0.256,
         "Power Calibration YIntercept": 2.83,
         "Reference Total Retinal Blood Flow" : 40

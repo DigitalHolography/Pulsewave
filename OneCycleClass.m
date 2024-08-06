@@ -26,10 +26,8 @@ classdef OneCycleClass
         video_loaded
         pictureSection
         videoSection
-        flag_FlatField
         flag_SH_analysis
         flag_PulseWave_analysis
-        isdone_flatfield
         %% FIXME : relancer a chaque rendering
         ToolBoxmaster ToolBoxClass
 
@@ -83,7 +81,6 @@ classdef OneCycleClass
             PW_params = Parameters_json(obj.directory);
 
             obj.k = PW_params.k;
-            obj.isdone_flatfield = 0;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
 
             obj.load_logs = '\n=== LOADING : \r\n';
@@ -108,6 +105,8 @@ classdef OneCycleClass
                 for n = 1:V.NumFrames
                     video(:, :, n) = rgb2gray(read(V, n));
                 end
+
+                clear V
 
                 obj.reference{ii} = video;
                 refvideosize = size(obj.reference{ii});
@@ -158,21 +157,6 @@ classdef OneCycleClass
                 fclose(fileID);
                 obj.dataM2{ii} = reshape(videoM2, refvideosize);
 
-                %                 % Import SH
-                %
-                %                 NameRawFile = strcat(obj.filenames{ii}, '_SH');
-                %                 disp(['reading : ',fullfile(dir_path_raw,[NameRawFile,ext])]);
-                %                 FilePathUnix = fullfile(dir_path_raw,[NameRawFile,ext]);
-                %                 FilePathUnix(strfind(FilePathUnix,'\'))='/';
-                %                 str_tosave = sprintf('reading : %s', FilePathUnix);
-                %                 logs = strcat(logs,'\r', str_tosave);
-                %
-                %                 fileID = fopen(fullfile(dir_path_raw,[NameRawFile,ext]));
-                %                 videoSH = fread(fileID,'float32');
-                %                 fclose(fileID);
-                %                 obj.dataSH{ii} = reshape(videoSH,refvideosize(1),refvideosize(2),[]);
-                %
-
                 obj.load_logs = logs;
 
             end
@@ -217,61 +201,6 @@ classdef OneCycleClass
 
         end
 
-        function obj = MomentFlatField(obj)
-            PW_params = Parameters_json(obj.directory);
-
-            for ii = 1:obj.nbFiles
-                height = size(obj.dataM0_interp{1}, 1);
-                width = size(obj.dataM0_interp{1}, 2);
-                length = size(obj.dataM0_interp{1}, 3);
-                num_frames = size(obj.reference{1}, 3);
-                gwRatio = PW_params.flatField_gwRatio;
-                flatField_border = PW_params.flatField_border;
-
-                tmp_dataM0 = zeros(height, width, length);
-                tmp_calc_data_M0 = obj.dataM0_interp{1};
-
-                parfor i = 1:num_frames % loop over frames
-                    tmp_dataM0(:, :, i) = flat_field_correction_old(tmp_calc_data_M0(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM0_interp{1} = tmp_dataM0;
-                clear tmp_dataM0 tmp_calc_data_M0
-
-                tmp_dataM1 = zeros(height, width, length);
-                tmp_calc_data_M1 = obj.dataM1_interp{1};
-
-                parfor i = 1:num_frames % loop over frames
-                    tmp_dataM1(:, :, i) = flat_field_correction_old(tmp_calc_data_M1(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM1_interp{1} = tmp_dataM1;
-                clear tmp_dataM1 tmp_calc_data_M1
-
-                tmp_dataM2 = zeros(height, width, length);
-                tmp_calc_data_M2 = obj.dataM2_interp{1};
-
-                parfor i = 1:num_frames % loop over frames
-                    tmp_dataM2(:, :, i) = flat_field_correction_old(tmp_calc_data_M2(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM2_interp{1} = tmp_dataM2;
-                clear tmp_dataM2 tmp_calc_data_M2
-
-                tmp_dataM2M0 = zeros(height, width, length);
-                tmp_calc_data = (obj.dataM2M0_interp{1});
-
-                parfor i = 1:num_frames
-                    tmp_dataM2M0(:, :, i) = flat_field_correction_old(tmp_calc_data(:, :, i), gwRatio * height, flatField_border);
-                end
-
-                obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
-                clear tmp_dataM2M0 tmp_calc_data
-
-            end
-
-        end
-
         function obj = cropAllVideo(obj)
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
@@ -283,7 +212,7 @@ classdef OneCycleClass
             if firstFrame > 0 && firstFrame < size(obj.dataM0{1}, 3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM0{1}, 3)
 
                 obj.reference{1} = obj.reference{1}(:, :, firstFrame:lastFrame);
-                obj.reference_norm{1} = obj.reference{1}(:, :, firstFrame:lastFrame);
+                obj.reference_norm{1} = obj.reference{1}; % déjà modifié ligne d'avant
                 obj.dataM0{1} = obj.dataM0{1}(:, :, firstFrame:lastFrame);
                 obj.dataM1{1} = obj.dataM1{1}(:, :, firstFrame:lastFrame);
                 obj.dataM2{1} = obj.dataM2{1}(:, :, firstFrame:lastFrame);
@@ -315,56 +244,53 @@ classdef OneCycleClass
             in_width = size(obj.reference{1}, 2);
             in_num_frames = size(obj.reference{1}, 3);
 
-            if out_height < 0 
+            if out_height < 0
                 out_height = in_height;
             end
 
-            if out_width < 0 
+            if out_width < 0
                 out_width = in_width;
             end
 
-            if out_num_frames < 0 
+            if out_num_frames < 0
                 out_num_frames = in_num_frames;
             end
 
-            
-
-            
-            [Xq,Yq,Zq] = meshgrid(linspace(1,in_width,out_width),linspace(1,in_height,out_height),linspace(1,in_num_frames,out_num_frames));
+            [Xq, Yq, Zq] = meshgrid(linspace(1, in_width, out_width), linspace(1, in_height, out_height), linspace(1, in_num_frames, out_num_frames));
             % tmp_ref = zeros(height, width, size(obj.dataM0{1}, 3));
-            
-            tmp_calc_ref = obj.reference{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+
+            tmp_calc_ref = obj.reference{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.reference{1} = single(tmp_ref);
 
             tmp_calc_ref = obj.reference_norm{1};
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.reference_norm{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM0{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM0{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM0{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM1{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM1{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM1{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM2{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM2{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM2{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM1M0{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM1M0{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM1M0{1} = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM2M0{1}; 
-            tmp_ref = interp3(tmp_calc_ref,Xq,Yq,Zq);
+            tmp_calc_ref = obj.dataM2M0{1};
+            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM2M0{1} = single(tmp_ref);
 
             disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_num_frames)])
-            logs = obj.load_logs;
-            str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
-            logs = strcat(logs, '\r\n\n', str_tosave, '\n');
+            % logs = obj.load_logs;
+            % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
+            % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
@@ -451,16 +377,6 @@ classdef OneCycleClass
             obj.dataM0{1} = [];
             obj.dataM1M0{1} = [];
 
-            %             if obj.flag_SH == 1
-            %                 tmp_data_SH = zeros(height, width, size(obj.dataSH{1}, 3));
-            %                 tmp_calc_data_SH = obj.dataSH{1};
-            %                 for i = 1 : size(obj.dataSH{1}, 3)
-            %                     tmp_data_SH(:,:,i) = interp2(tmp_calc_data_SH(:,:,i), k_interp);
-            %                 end
-            %                 obj.dataSH_interp{1} = tmp_data_SH;
-            %
-            %             end
-
         end
 
         function onePulse(obj, Ninterp)
@@ -475,7 +391,7 @@ classdef OneCycleClass
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;
 
-            fprintf("File: %s\n",ToolBox.PW_folder_name)
+            fprintf("File: %s\n", ToolBox.PW_folder_name)
 
             meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
             meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
@@ -493,6 +409,12 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_mp4);
             mkdir(ToolBox.PW_path_json);
             mkdir(ToolBox.PW_path_log);
+
+            try
+                copyfile(fullfile(obj.directory, 'log', 'RenderingParameters.json'), ToolBox.PW_path_log)
+            catch
+                warning('no rendering parameters were found')
+            end
 
             %             path_dir_txt = fullfile(obj.directory,'txt');
             %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
@@ -547,66 +469,23 @@ classdef OneCycleClass
 
             fclose(fileID);
 
-            %% FlatField
-            % waitbar(0,progress_bar,"FlatField");
+            %% Video M0 gif
 
-            if obj.flag_FlatField && (obj.isdone_flatfield == 0)
+            [Nx, Ny, N_frame] = size(obj.reference_norm_interp{1});
 
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-                fprintf(fileID, 'FLATFIELD : \r\n\n');
-                fclose(fileID);
+            timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+            gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod, 0.04, N_frame);
 
-                disp("Correcting data with flat field")
-                fileID = fopen(path_file_log, 'a+');
-                fprintf(fileID, 'Correcting data with flat field \r\n');
-                fclose(fileID);
+            videoM0Rescaled = rescale(obj.reference_interp{1});
 
-                for ii = 1:obj.nbFiles
-                    height = size(obj.dataM0_interp{1}, 1);
-                    width = size(obj.dataM0_interp{1}, 2);
-                    length = size(obj.dataM0_interp{1}, 3);
-                    num_frames = size(obj.reference{1}, 3);
-                    gwRatio = PW_params.flatField_gwRatio;
-                    flatField_border = PW_params.flatField_border;
-
-                    tic
-                    tmp_dataM0 = zeros(height, width, length);
-                    tmp_calc_data_M0 = obj.dataM0_interp{1};
-
-                    parfor i = 1:num_frames % loop over frames
-                        tmp_dataM0(:, :, i) = flat_field_correction_old(tmp_calc_data_M0(:, :, i), gwRatio * height, flatField_border);
-                    end
-
-                    obj.dataM0_interp{1} = tmp_dataM0;
-                    clear tmp_dataM0 tmp_calc_data_M0
-                    timeM0 = toc;
-                    save_time(path_file_txt_exe_times, 'FlatField M0', timeM0)
-
-                    tic
-                    tmp_dataM2M0 = zeros(height, width, length);
-                    tmp_calc_data = obj.dataM2M0_interp{1};
-
-                    parfor i = 1:num_frames
-                        tmp_dataM2M0(:, :, i) = flat_field_correction_old(tmp_calc_data(:, :, i), gwRatio * height, flatField_border);
-                    end
-
-                    obj.dataM2M0_interp{1} = single(tmp_dataM2M0);
-                    clear tmp_dataM2M0 tmp_calc_data
-                    timeM2M0 = toc;
-                    save_time(path_file_txt_exe_times, 'FlatField M2M0', timeM2M0)
-
-                    fileID = fopen(path_file_txt_exe_times, 'a+');
-                    fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', timeM2M0 + timeM0);
-                    fclose(fileID);
-                end
-
-                obj.isdone_flatfield = 1;
-            else
-                disp("no flatfield applied")
-                fileID = fopen(path_file_log, 'a+');
-                fprintf(fileID, 'No flatfield applied \r\n\n');
-                fclose(fileID);
+            for frameIdx = 1:N_frame
+                gifWriter.write(videoM0Rescaled(:, :, frameIdx), frameIdx);
             end
+
+            gifWriter.generate();
+            gifWriter.delete();
+
+            imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
 
             %% Creating Masks
             % waitbar(0.1,progress_bar,"Creating Masks");
@@ -616,13 +495,13 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            [maskArtery, maskVein, ~, maskBackground, maskCRA, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
             disp('CreatMasks timing :')
             time = toc;
             disp(time)
 
             fileID = fopen(path_file_log, 'a+');
-            fprintf(fileID, 'CreatMasks timing : % \r\n\n');
+            fprintf(fileID, 'CreateMasks timing : % \r\n\n', time);
             fclose(fileID);
 
             save_time(path_file_txt_exe_times, 'createMasks', time)
@@ -653,12 +532,12 @@ classdef OneCycleClass
                     fprintf(fileID, 'PULSEWAVE ANALYSIS : \r\n\n');
                     fclose(fileID);
 
-                    time_sys_idx = 0;
-                    time_pulseanalysis = 0;
+                    % time_sys_idx = 0;
+                    % time_pulseanalysis = 0;
                     time_vel_map = 0;
                     time_hist = 0;
-                    time_arterial_res = 0;
-                    time_flowrate = 0;
+                    % time_arterial_res = 0;
+                    % time_flowrate = 0;
 
                     tic
                     % [sys_index_list_cell{n}, fullPulseWave_cell{n}] = find_systole_index(obj.reference_norm_interp{n}, obj.directory,maskArtery);
@@ -684,8 +563,8 @@ classdef OneCycleClass
                     clear exec_times
 
                     tic
-                    velocity(v_RMS_all, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
-                    disp('Velocity timing :')
+                    velocity_figures(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                    disp('Velocity figures timing :')
                     time_velo = toc;
                     disp(time_velo)
                     save_time(path_file_txt_exe_times, 'Velocity', time_velo)
@@ -716,7 +595,7 @@ classdef OneCycleClass
                     % disp('no flow rate')
 
                     %                     try
-                    %                         flow_rate_old(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
+                    %                         flow_rate(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
                     %                     catch
                     %                     end
 
@@ -742,15 +621,14 @@ classdef OneCycleClass
             if obj.flag_SH_analysis
 
                 %% Import SH
-                cubeSize = 256;
-                cubeFreqLength = 32;
+
                 tmpname = strcat(ToolBox.main_foldername, '_SH');
                 ext = '.raw';
                 disp(['reading : ', fullfile(obj.directory, 'raw', [tmpname, ext])]);
                 fileID = fopen(fullfile(obj.directory, 'raw', [tmpname, ext]));
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
-                SH_cube = reshape(videoSH, cubeSize, cubeSize, cubeFreqLength, []);
+                SH_cube = reshape(videoSH, Nx, Ny, N_frame, []);
 
                 tic
                 spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.dataM0_interp{1});

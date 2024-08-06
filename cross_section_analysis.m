@@ -179,9 +179,9 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
             mask_current_slice = circshift(mask_current_slice, [shift_y shift_x]);
             mask_current_slice = mask_current_slice .* mask;
-            mask_current_slice_inverse = ~mask_current_slice;
+            % mask_current_slice_inverse = ~mask_current_slice;
             mask_current_slice = double(mask_current_slice);
-            mask_current_slice_inverse = double(mask_current_slice_inverse);
+            % mask_current_slice_inverse = double(mask_current_slice_inverse);
             cross_section_mask = cross_section_mask + mask_current_slice;
             mask_sections(:, :, section_idx) = mask_current_slice;
 
@@ -189,8 +189,6 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
         cross_section_area(section_idx) = pi * ((width_cross_section(section_idx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     end
-
-    local_velocity_pulses = zeros(size(locs, 2), T_max);
 
     for tt = 1:T_max
         current_frame = v_RMS(:, :, tt);
@@ -259,13 +257,8 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     end % section_idx
 
-    try
-        viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
-        a = 0;
-        % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
-    catch ME
-        print(ME)
-    end
+    viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
+    % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
     close all
 end

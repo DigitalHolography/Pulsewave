@@ -76,7 +76,7 @@ function [ArterySpectrum, BgSpectrum, DeltaSpectrum, sizeSHFreq, Lorenz_Arteries
 
     Lorenz_BKG = zeros(1, q);
     Lorenz_Arteries = zeros(1, q);
-    freq = linspace(1, fs / 2 - fs / sizeSHFreq, sizeSHFreq / 2);
+    % freq = linspace(1, fs / 2 - fs / sizeSHFreq, sizeSHFreq / 2);
     Lorenz_Arteries(1, :) = (ArterySpectrum(1:q) + flip(ArterySpectrum((q + 1):sizeSHFreq))) / 2;
     Lorenz_BKG(1, :) = (BgSpectrum(1:q) + flip(BgSpectrum((q + 1):sizeSHFreq))) / 2;
 
