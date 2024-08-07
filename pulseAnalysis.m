@@ -453,8 +453,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         pbaspect([1.618 1 1]);
         set(gca, 'LineWidth', 2);
         axis tight;
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", 'pulseAnalysis', ToolBox.main_foldername, 'pulseVsBackground.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", 'pulseAnalysis', ToolBox.main_foldername, 'pulseVsBackground.eps')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseVsBackground.eps')))
 
         plot2txt(fullTime, fullArterialPulse, 'FullArterialPulse', ToolBox)
         plot2txt(fullTime, fullBackgroundSignal, 'FullBackgroundSignal', ToolBox)
