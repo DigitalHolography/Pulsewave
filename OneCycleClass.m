@@ -28,6 +28,9 @@ classdef OneCycleClass
         videoSection
         flag_SH_analysis
         flag_PulseWave_analysis
+        flag_velocity_analysis
+        flag_ARI_analysis
+        flag_bloodVolumeRate_analysis
         %% FIXME : relancer a chaque rendering
         ToolBoxmaster ToolBoxClass
 
@@ -386,6 +389,7 @@ classdef OneCycleClass
             % progress_bar = waitbar(0,'');
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
+            totalTime = tic;
 
             obj.k = PW_params.k;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
@@ -500,26 +504,15 @@ classdef OneCycleClass
             time = toc;
             disp(time)
 
-            fileID = fopen(path_file_log, 'a+');
-            fprintf(fileID, 'CreateMasks timing : % \r\n\n', time);
-            fclose(fileID);
-
-            save_time(path_file_txt_exe_times, 'createMasks', time)
+            save_time(path_file_txt_exe_times, 'CreateMasks', time)
             fileID = fopen(path_file_txt_exe_times, 'a+');
             fprintf(fileID, '\r\n----------\r\n');
             fclose(fileID);
 
-            tic
-            % [maskArtery, maskVein, maskVessel,maskBackground,maskCRA,maskCRV,maskSectionArtery]= createMasks(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-            % [mask_artery, mask_vein, mask_vessel,mask_background,mask_CRA,maskCRV] = createMasks(obj.reference_interp{1} ,obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-
-            % disp('CreatMasks New timing :')
-            % time = toc;
-            % disp(time)
-            %save_time(path_file_txt_exe_times, 'createMasksNew', time)
-
             %% PulseWave Analysis
             % waitbar(0.25,progress_bar,"PulseWave analysis");
+
+            tic
 
             if obj.flag_PulseWave_analysis
                 close all
@@ -562,55 +555,40 @@ classdef OneCycleClass
                     fclose(fileID);
                     clear exec_times
 
-                    tic
-                    velocity_figures(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
-                    disp('Velocity figures timing :')
-                    time_velo = toc;
-                    disp(time_velo)
-                    save_time(path_file_txt_exe_times, 'Velocity', time_velo)
+                    if obj.flag_velocity_analysis
+                        tic
+                        bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                        disp('Blood Flow Velocity timing :')
+                        time_velo = toc;
+                        disp(time_velo)
+                        save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
+                    end
 
-                    % tic
-                    % BKGHistogramm(obj.dataM2M0_interp{1}, maskBackground ,ToolBox)
-                    % disp('BKG Histogramm timing :')
-                    % toc
+                    if obj.flag_ARI_analysis
+                        tic
+                        ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp{1}, maskArtery, ToolBox);
+                        disp('ArterialResistivityIndex timing :')
+                        time_arterial_res = toc;
+                        disp(time_arterial_res)
+                        save_time(path_file_txt_exe_times, 'Arterial Resistivity Index', time_arterial_res)
+                    end
 
-                    tic
-                    ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp{1}, maskArtery, ToolBox);
-                    disp('ArterialResistivityIndex timing :')
-                    time_arterial_res = toc;
-                    disp(time_arterial_res)
-                    save_time(path_file_txt_exe_times, 'Arterial Resistivity Index', time_arterial_res)
+                    if obj.flag_bloodVolumeRate_analysis
+                        tic
+                        bloodVolumeRate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory);
+                        disp('Blood Volume Rate timing :')
+                        time_flowrate = toc;
+                        disp(time_flowrate)
+                        save_time(path_file_txt_exe_times, 'Blood Volume rate', time_flowrate)
+                    end
 
-                    %[v] = pulseAnalysisTest(Ninterp,obj.dataM2M0_interp{n},obj.dataM1M0_interp{n},obj.reference_interp{1},sys_index_list_cell{n},maskArtery,maskVessel,maskVein,maskBackground ,ToolBox,obj.directory);
-                    %                     detectElasticWave(datacube, maskArtery, maskCRA);
-                    tic
-                    % try
-                    disp('flowrate :')
-                    flow_rate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory);
-                    disp('FlowRate timing :')
-                    time_flowrate = toc;
-                    disp(time_flowrate)
-                    save_time(path_file_txt_exe_times, 'Flow rate', time_flowrate)
-                    % catch
-                    % disp('no flow rate')
-
-                    %                     try
-                    %                         flow_rate(maskArtery, maskVein, maskCRA, v_RMS, ToolBox, obj.k,obj.directory);
-                    %                     catch
-                    %                     end
-
-                    %                         tic
-                    %                         spectrogram(maskArtery,maskBackground,  obj.dataSH_interp{n}, ToolBox);
-                    %                         disp('Spectrogram timing :')
-                    %                         time = toc;
-                    %                         disp(time)
-                    %                         save_time(path_file_txt_exe_times, '\tSpectrogram', time)
-                    %                     else
 
                     fileID = fopen(path_file_txt_exe_times, 'a+');
-                    fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', time_sys_idx + time_pulseanalysis + time_vel_map + time_hist + time_arterial_res + time_flowrate);
+                    tTotal = toc(totalTime);
+                    fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', tTotal);
                     fclose(fileID);
-                    % end
+
+
                 end
 
             end

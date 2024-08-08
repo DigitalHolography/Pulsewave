@@ -2,14 +2,10 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
 
     disp('arterial resistivity...');
 
+    mkdir(ToolBox.PW_path_png, 'arterialResistivityIndex')
+    mkdir(ToolBox.PW_path_eps, 'arterialResistivityIndex')
+
     [Nx, Ny, N_frame] = size(videoM0);
-
-    name_log = strcat(ToolBox.PW_folder_name, '_log.txt');
-    path_file_log = fullfile(ToolBox.PW_path_log, name_log);
-
-    fileID = fopen(path_file_log, 'a+');
-    fprintf(fileID, 'Arterial resistivity... \r\n');
-    fclose(fileID);
 
     meanIm = rescale(mean(videoM0, 3));
     videoM0 = rescale(videoM0);
@@ -56,11 +52,6 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
 
     close(w);
 
-    disp('done.');
-    fileID = fopen(path_file_log, 'a+');
-    fprintf(fileID, 'Done. \r\n');
-    fclose(fileID);
-
     % disp('arterial resistivity...');
     % [ARImap, ARI, ARImapRGB, ARIvideoRGB, gamma, img_avg] = construct_resistivity_index(onePulseVideo, maskArtery,path);
     % ARImap = ARImap.*maskArtery;
@@ -96,9 +87,11 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
     c.Label.String = 'Arterial resistivity index';
     c.Label.FontSize = 14;
     colormap(cmap);
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
-    imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'ARI_map.png')), 'png')
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
+
+    imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapColored.png')), 'png')
+    imwrite(ARImap, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapRaw.png')), 'png')
 
     % Save colorbar
     colorfig = figure(113);
@@ -110,14 +103,14 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
     hCB.Position = [0.10 0.3 0.81 0.35];
     colorfig.Position(4) = 0.1000;
     fontsize(gca, 14, "points");
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.eps')))
 
     f71 = figure(71);
     f71.Position = [300, 300, 570, 630];
 
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, N_frame);
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialResistivityIndex")), timePeriod, 0.04, N_frame);
 
     for frameIdx = 1:N_frame
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
