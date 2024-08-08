@@ -12,6 +12,9 @@ classdef pulse < matlab.apps.AppBase
         SHanalysisCheckBox            matlab.ui.control.CheckBox
         FolderManagementButton        matlab.ui.control.Button
         PulsewaveanalysisCheckBox     matlab.ui.control.CheckBox
+        ARICheckBox                   matlab.ui.control.CheckBox
+        velocityCheckBox              matlab.ui.control.CheckBox
+        bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
         ReferenceDirectory            matlab.ui.control.TextArea
         ErrorLabel                    matlab.ui.control.Label
         Lamp                          matlab.ui.control.Lamp
@@ -197,6 +200,9 @@ end
 
                 app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
+                app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
+                app.files{n}.flag_ARI_analysis = app.ARICheckBox.Value;
+                app.files{n}.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
                 try
                     app.files{n}.onePulse(app.NumberofframesEditField.Value);
                 catch exception
@@ -414,7 +420,7 @@ end
             % Create PulsewaveUIFigure and hide until all components are created
             app.PulsewaveUIFigure = uifigure('Visible', 'off');
             app.PulsewaveUIFigure.Color = [0.149 0.149 0.149];
-            app.PulsewaveUIFigure.Position = [100 100 640 319];
+            app.PulsewaveUIFigure.Position = [100 100 640 421];
             app.PulsewaveUIFigure.Name = 'Pulsewave';
 
             % Create NumberofframesEditFieldLabel
@@ -422,15 +428,15 @@ end
             app.NumberofframesEditFieldLabel.HorizontalAlignment = 'right';
             app.NumberofframesEditFieldLabel.FontSize = 16;
             app.NumberofframesEditFieldLabel.FontColor = [0.9412 0.9412 0.9412];
-            app.NumberofframesEditFieldLabel.Position = [406 221 138 22];
-            app.NumberofframesEditFieldLabel.Text = 'Number of frames ';
+            app.NumberofframesEditFieldLabel.Position = [230 325 300 22];
+            app.NumberofframesEditFieldLabel.Text = '# of frames in averaged cardiac cycle ';
 
             % Create NumberofframesEditField
             app.NumberofframesEditField = uieditfield(app.PulsewaveUIFigure, 'numeric');
             app.NumberofframesEditField.Limits = [1 Inf];
             app.NumberofframesEditField.FontSize = 16;
             app.NumberofframesEditField.FontColor = [0.149 0.149 0.149];
-            app.NumberofframesEditField.Position = [545 221 44 22];
+            app.NumberofframesEditField.Position = [545 325 44 22];
             app.NumberofframesEditField.Value = 256;
 
             % Create ExecuteButton
@@ -449,7 +455,7 @@ end
             app.LoadfolderButton.BackgroundColor = [0.502 0.502 0.502];
             app.LoadfolderButton.FontSize = 16;
             app.LoadfolderButton.FontColor = [0.9412 0.9412 0.9412];
-            app.LoadfolderButton.Position = [61 218 123 28];
+            app.LoadfolderButton.Position = [61 322 123 28];
             app.LoadfolderButton.Text = 'Load folder';
 
             % Create ClearButton
@@ -459,19 +465,19 @@ end
             app.ClearButton.FontSize = 16;
             app.ClearButton.FontColor = [0.9412 0.9412 0.9412];
             app.ClearButton.Enable = 'off';
-            app.ClearButton.Position = [63 136 100 27];
+            app.ClearButton.Position = [63 240 100 27];
             app.ClearButton.Text = 'Clear';
 
             % Create Lamp
             app.Lamp = uilamp(app.PulsewaveUIFigure);
-            app.Lamp.Position = [569 182 20 20];
+            app.Lamp.Position = [569 286 20 20];
 
             % Create ErrorLabel
             app.ErrorLabel = uilabel(app.PulsewaveUIFigure);
             app.ErrorLabel.HorizontalAlignment = 'center';
             app.ErrorLabel.FontSize = 16;
             app.ErrorLabel.FontColor = [1 0 0];
-            app.ErrorLabel.Position = [61 268 542 23];
+            app.ErrorLabel.Position = [61 372 542 23];
             app.ErrorLabel.Text = '';
 
             % Create ReferenceDirectory
@@ -479,14 +485,36 @@ end
             app.ReferenceDirectory.FontSize = 16;
             app.ReferenceDirectory.FontColor = [0.9412 0.9412 0.9412];
             app.ReferenceDirectory.BackgroundColor = [0.149 0.149 0.149];
-            app.ReferenceDirectory.Position = [61 180 485 24];
+            app.ReferenceDirectory.Position = [61 284 485 24];
 
             % Create PulsewaveanalysisCheckBox
             app.PulsewaveanalysisCheckBox = uicheckbox(app.PulsewaveUIFigure);
             app.PulsewaveanalysisCheckBox.Text = 'Pulse wave analysis';
             app.PulsewaveanalysisCheckBox.FontSize = 16;
             app.PulsewaveanalysisCheckBox.FontColor = [1 1 1];
-            app.PulsewaveanalysisCheckBox.Position = [63 96 199 24];
+            app.PulsewaveanalysisCheckBox.Position = [63 198 250 24];
+            app.PulsewaveanalysisCheckBox.Value = true;
+
+            % Create velocityCheckBox
+            app.velocityCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.velocityCheckBox.Text = 'Blood Flow Velocity';
+            app.velocityCheckBox.FontSize = 16;
+            app.velocityCheckBox.FontColor = [1 1 1];
+            app.velocityCheckBox.Position = [63 130 250 24];
+
+            % Create ARICheckBox
+            app.ARICheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.ARICheckBox.Text = 'Arterial Resistivity Index';
+            app.ARICheckBox.FontSize = 16;
+            app.ARICheckBox.FontColor = [1 1 1];
+            app.ARICheckBox.Position = [63 96 250 24];
+
+            % Create bloodVolumeRateCheckBox
+            app.bloodVolumeRateCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.bloodVolumeRateCheckBox.Text = 'Blood Volume Rate';
+            app.bloodVolumeRateCheckBox.FontSize = 16;
+            app.bloodVolumeRateCheckBox.FontColor = [1 1 1];
+            app.bloodVolumeRateCheckBox.Position = [63 62 250 24];
 
             % Create FolderManagementButton
             app.FolderManagementButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -494,7 +522,7 @@ end
             app.FolderManagementButton.BackgroundColor = [0.502 0.502 0.502];
             app.FolderManagementButton.FontSize = 16;
             app.FolderManagementButton.FontColor = [0.9412 0.9412 0.9412];
-            app.FolderManagementButton.Position = [431 134 158 28];
+            app.FolderManagementButton.Position = [431 238 158 28];
             app.FolderManagementButton.Text = 'Folder Management';
 
             % Create SHanalysisCheckBox
@@ -502,7 +530,7 @@ end
             app.SHanalysisCheckBox.Text = 'SH analysis';
             app.SHanalysisCheckBox.FontSize = 16;
             app.SHanalysisCheckBox.FontColor = [1 1 1];
-            app.SHanalysisCheckBox.Position = [63 62 146 25];
+            app.SHanalysisCheckBox.Position = [63 164 250 24];
 
             % Create ExecutefromtextButton
             app.ExecutefromtextButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -550,7 +578,7 @@ end
             app.EditParametersButton.BackgroundColor = [0.502 0.502 0.502];
             app.EditParametersButton.FontSize = 16;
             app.EditParametersButton.FontColor = [0.9412 0.9412 0.9412];
-            app.EditParametersButton.Position = [276 134 130 28];
+            app.EditParametersButton.Position = [276 238 130 28];
             app.EditParametersButton.Text = 'Edit Parameters';
 
             % Show the figure after all components are created
