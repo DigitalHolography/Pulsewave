@@ -90,7 +90,8 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
 
-    imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARI_map.png')), 'png')
+    imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapColored.png')), 'png')
+    imwrite(ARImap, fullfile(ToolBox.PW_path_png, 'arterialResistivityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapRaw.png')), 'png')
 
     % Save colorbar
     colorfig = figure(113);

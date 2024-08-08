@@ -557,11 +557,11 @@ classdef OneCycleClass
 
                     if obj.flag_velocity_analysis
                         tic
-                        velocity_figures(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
-                        disp('Velocity figures timing :')
+                        bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                        disp('Blood Flow Velocity timing :')
                         time_velo = toc;
                         disp(time_velo)
-                        save_time(path_file_txt_exe_times, 'Velocity', time_velo)
+                        save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
                     end
 
                     if obj.flag_ARI_analysis
@@ -576,10 +576,10 @@ classdef OneCycleClass
                     if obj.flag_bloodVolumeRate_analysis
                         tic
                         bloodVolumeRate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory);
-                        disp('FlowRate timing :')
+                        disp('Blood Volume Rate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)
-                        save_time(path_file_txt_exe_times, 'Flow rate', time_flowrate)
+                        save_time(path_file_txt_exe_times, 'Blood Volume rate', time_flowrate)
                     end
 
 

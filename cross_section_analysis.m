@@ -30,7 +30,7 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     % %% VARIABLES FOR VELOCITY PROFILE VIDEO
 
-    mkdir(ToolBox.PW_path_png, 'cross section')
+    mkdir(ToolBox.PW_path_png, 'crossSection')
     mkdir(ToolBox.PW_path_png, 'projection')
 
     tilt_angle_list = zeros(1, length(locs));
@@ -159,7 +159,7 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             f = getframe(gca); %# Capture the current
 
             %bords blancs
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'cross section', strcat(ToolBox.main_foldername, ['_' name_section num2str(section_idx) '.png'])));
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername, ['_' name_section num2str(section_idx) '.png'])));
 
             mask_slice_subImg = false(size(subImg, 1), size(subImg, 2));
             slice_center = round(size(subImg, 1) / 2);

@@ -1,7 +1,9 @@
-function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, videoM0, FreqVideoRGB, ToolBox, path)
+function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, videoM0, FreqVideoRGB, ToolBox, path)
 
     PW_params = Parameters_json(path);
     veins_analysis = PW_params.veins_analysis;
+    mkdir(ToolBox.PW_path_png, 'bloodFlowVelocity')
+    mkdir(ToolBox.PW_path_eps, 'bloodFlowVelocity')
 
     tic
 
@@ -57,7 +59,7 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein;
         flowVideoRGB_mean = hsv2rgb(hue_artery_mean + hue_vein_mean, sat_artery_mean + sat_vein_mean, val_mean);
         flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* M0_norm_mean;
-        imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
+        imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
         for frameIdx = 1:N_frame
             v = mat2gray(v_RMS_all(:, :, frameIdx));
@@ -74,7 +76,7 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         val_mean = v_mean .* (~(maskArtery)) + val_artery_mean .* maskArtery;
         flowVideoRGB_mean = hsv2rgb(hue_artery_mean, sat_artery_mean, val_mean);
         flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery) + ones(Nx, Ny, 3) .* ~(maskArtery) .* M0_norm_mean;
-        imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
+        imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
         for frameIdx = 1:N_frame
             v = mat2gray(v_RMS_all(:, :, frameIdx));
@@ -126,8 +128,8 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
     xlabel('Time (s)')
     title("Velocity histogram in arteries")
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
 
     if veins_analysis
         v_histo_veins = round(v_one_cycle .* maskVein);
@@ -165,8 +167,8 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         xlabel('Time (s)')
         title("Velocity histogram in veins")
 
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.eps')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.eps')))
 
     end
 
@@ -204,8 +206,8 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         colorfig.Position(4) = 0.1000;
         fontsize(gca, 15, "points");
 
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityArteries.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityArteries.eps')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityArteries.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityArteries.eps')))
 
         if veins_analysis
             % Save colorbar
@@ -220,8 +222,8 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
             colorfig.Position(4) = 0.1000;
             fontsize(gca, 15, "points");
 
-            exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityVeins.png')))
-            exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityVeins.eps')))
+            exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityVeins.png')))
+            exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityVeins.eps')))
 
         end
 
@@ -337,6 +339,7 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         set(gca, 'YDir', 'normal')
         ylabel('Velocity (mm.s^{-1})')
         xlabel('Time (s)')
+        title("Velocity distribution in arteries")
         set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
         f = getframe(gcf);
         histo_video_artery(:, :, :, frameIdx) = imresize(f.cdata, [M N]);
@@ -347,8 +350,8 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
     gifWriter.generate();
     gifWriter.delete();
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesFullCycle.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesFullCycle.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesFullCycle.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesFullCycle.eps')))
 
     % AVI
 
@@ -428,8 +431,8 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         gifWriter.generate();
         gifWriter.delete();
 
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsFullCycle.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsFullCycle.eps')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsFullCycle.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsFullCycle.eps')))
 
         % AVI
 
@@ -462,14 +465,14 @@ function [] = velocity_figures(v_RMS_all, v_one_cycle, maskArtery, maskVein, vid
         freq_video(:, :, 3, :) = imresize3(squeeze(FreqVideoRGB(:, :, 3, :)), [550 550 N_frame]);
         combinedGifs = cat(2, freq_video, cat(1, mat2gray(histo_video_artery), mat2gray(histo_video_vein)));
         freq_video_mean = rescale(imresize3(imread(fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png'))), [550 550 3]));
-        imwrite(cat(2, freq_video_mean, cat(1, mat2gray(histo_video_artery(:, :, :, end)), mat2gray(histo_video_vein(:, :, :, end)))), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
+        imwrite(cat(2, freq_video_mean, cat(1, mat2gray(histo_video_artery(:, :, :, end)), mat2gray(histo_video_vein(:, :, :, end)))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
     else
         freq_video(:, :, 1, :) = imresize3(squeeze(FreqVideoRGB(:, :, 1, :)), [600 600 N_frame]);
         freq_video(:, :, 2, :) = imresize3(squeeze(FreqVideoRGB(:, :, 2, :)), [600 600 N_frame]);
         freq_video(:, :, 3, :) = imresize3(squeeze(FreqVideoRGB(:, :, 3, :)), [600 600 N_frame]);
         combinedGifs = cat(1, freq_video, mat2gray(histo_video_artery));
         freq_video_mean = rescale(imresize3(imread(fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png'))), [600 600 3]));
-        imwrite(cat(1, freq_video_mean, mat2gray(histo_video_artery(:, :, :, end))), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
+        imwrite(cat(1, freq_video_mean, mat2gray(histo_video_artery(:, :, :, end))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
     end
 
     gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityHistogramCombined")), timePeriod, 0.04, N_frame);
