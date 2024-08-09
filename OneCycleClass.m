@@ -31,6 +31,7 @@ classdef OneCycleClass
         flag_velocity_analysis
         flag_ARI_analysis
         flag_bloodVolumeRate_analysis
+        flag_bloodVelocityProfile_analysis
         %% FIXME : relancer a chaque rendering
         ToolBoxmaster ToolBoxClass
 
@@ -575,7 +576,7 @@ classdef OneCycleClass
 
                     if obj.flag_bloodVolumeRate_analysis
                         tic
-                        bloodVolumeRate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory);
+                        bloodVolumeRate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                         disp('Blood Volume Rate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)

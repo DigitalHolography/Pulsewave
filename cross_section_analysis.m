@@ -1,4 +1,4 @@
-function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel)
+function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
 
@@ -257,8 +257,12 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     end % section_idx
 
-    viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
-    % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+    if flagBloodVelocityProfile
 
+        viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
+        % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+
+    end
+    
     close all
 end
