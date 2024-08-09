@@ -1,4 +1,4 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path)
+function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path, flagBloodVelocityProfile)
 
     PW_params = Parameters_json(path);
 
@@ -101,10 +101,10 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
     mask_vein = maskVein;
 
     if veins_analysis
-        [avg_bloodVolumeRate_vein, std_bloodVolumeRate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein, total_avg_bloodVolumeRate_vein, total_std_bloodVolumeRate_vein] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein');
+        [avg_bloodVolumeRate_vein, std_bloodVolumeRate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein, total_avg_bloodVolumeRate_vein, total_std_bloodVolumeRate_vein] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile);
     end
 
-    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery');
+    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile);
 
     labels_arteries = cell(nb_sections_artery, 1);
     strXlabel = 'Time(s)'; %createXlabelTime(1);

@@ -15,6 +15,7 @@ classdef pulse < matlab.apps.AppBase
         ARICheckBox                   matlab.ui.control.CheckBox
         velocityCheckBox              matlab.ui.control.CheckBox
         bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
+        bloodVelocityProfileCheckBox  matlab.ui.control.CheckBox
         ReferenceDirectory            matlab.ui.control.TextArea
         ErrorLabel                    matlab.ui.control.Label
         Lamp                          matlab.ui.control.Lamp
@@ -80,6 +81,7 @@ classdef pulse < matlab.apps.AppBase
                     app.LoadfolderButton.Enable = true ;
                     app.ExecuteButton.Enable = true ;
                     app.ClearButton.Enable = true ;
+                    app.EditParametersButton.Enable = true;
                     % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
                     app.ReferenceDirectory.Value = path ;
 
@@ -170,6 +172,7 @@ end
             if (app.flag_is_load)
                 disp("Files already loaded")
                 app.ClearButton.Enable = true ;
+                app.EditParametersButton.Enable = true;
             else
                 f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
                 selected_dir = uigetdir();
@@ -212,6 +215,7 @@ end
                 app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
                 app.files{n}.flag_ARI_analysis = app.ARICheckBox.Value;
                 app.files{n}.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
+                app.files{n}.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
                 try
                     app.files{n}.onePulse(app.NumberofframesEditField.Value);
                 catch exception
@@ -389,7 +393,8 @@ end
             if ~isempty(app.drawer_list) && ~isempty(path_to_copy)
                 for i = 1:length(app.drawer_list)
                     app.Load(app.drawer_list{i});
-                    app.ExecuteButtonPushed();
+                    % app.ExecuteButtonPushed();
+                    fprintf("%s", fullfile(path_to_copy,app.files{1}.ToolBoxmaster.PW_folder_name))
                     mkdir(fullfile(path_to_copy,app.files{1}.ToolBoxmaster.PW_folder_name))
                     copyfile(app.files{1}.ToolBoxmaster.PW_path_dir,fullfile(path_to_copy,app.files{1}.ToolBoxmaster.PW_folder_name))
                     app.ClearButtonPushed();
@@ -405,11 +410,37 @@ end
             app.ClearListButtonPushed()
             app.LoadFromTxt()
             app.ClearButton.Enable = true;
+            app.EditParametersButton.Enable = true;
         end
 
         % Button pushed function: ClearListButton
         function ClearListButtonPushed(app, event)
             app.drawer_list = {};
+        end
+
+        % Checkbox update function: ClearListButton
+        function updateCheckboxes(app, event)
+            if app.PulsewaveanalysisCheckBox.Value
+                app.velocityCheckBox.Enable = true;
+                app.bloodVelocityProfileCheckBox.Enable = true;
+                app.bloodVolumeRateCheckBox.Enable = true;
+                app.ARICheckBox.Enable = true;
+                    if app.bloodVolumeRateCheckBox.Value == true
+                        app.bloodVelocityProfileCheckBox.Visible = true;
+                    else
+                        app.bloodVelocityProfileCheckBox.Visible = false;
+                        app.bloodVelocityProfileCheckBox.Value = false;
+                    end
+            else
+                app.velocityCheckBox.Enable = false;
+                app.bloodVelocityProfileCheckBox.Visible = false;
+                app.bloodVolumeRateCheckBox.Enable = false;
+                app.ARICheckBox.Enable = false;
+                app.velocityCheckBox.Value = false;
+                app.bloodVelocityProfileCheckBox.Value = false;
+                app.bloodVolumeRateCheckBox.Value = false;
+                app.ARICheckBox.Value = false;
+            end
         end
 
         % Button pushed function: EditParametersButton
@@ -506,6 +537,7 @@ end
             app.PulsewaveanalysisCheckBox.FontColor = [1 1 1];
             app.PulsewaveanalysisCheckBox.Position = [63 198 250 24];
             app.PulsewaveanalysisCheckBox.Value = true;
+            app.PulsewaveanalysisCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create velocityCheckBox
             app.velocityCheckBox = uicheckbox(app.PulsewaveUIFigure);
@@ -513,6 +545,8 @@ end
             app.velocityCheckBox.FontSize = 16;
             app.velocityCheckBox.FontColor = [1 1 1];
             app.velocityCheckBox.Position = [63 130 250 24];
+            app.velocityCheckBox.Value = true;
+            app.velocityCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create ARICheckBox
             app.ARICheckBox = uicheckbox(app.PulsewaveUIFigure);
@@ -520,6 +554,8 @@ end
             app.ARICheckBox.FontSize = 16;
             app.ARICheckBox.FontColor = [1 1 1];
             app.ARICheckBox.Position = [63 96 250 24];
+            app.ARICheckBox.Value = true;
+            app.ARICheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create bloodVolumeRateCheckBox
             app.bloodVolumeRateCheckBox = uicheckbox(app.PulsewaveUIFigure);
@@ -527,6 +563,17 @@ end
             app.bloodVolumeRateCheckBox.FontSize = 16;
             app.bloodVolumeRateCheckBox.FontColor = [1 1 1];
             app.bloodVolumeRateCheckBox.Position = [63 62 250 24];
+            app.bloodVolumeRateCheckBox.Value = true;
+            app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
+
+            % Create bloodVelocityProfileCheckBox
+            app.bloodVelocityProfileCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.bloodVelocityProfileCheckBox.Text = 'Blood Velocity Profile';
+            app.bloodVelocityProfileCheckBox.FontSize = 16;
+            app.bloodVelocityProfileCheckBox.FontColor = [1 1 1];
+            app.bloodVelocityProfileCheckBox.Position = [250 62 250 24];
+            app.bloodVelocityProfileCheckBox.Value = true;
+            app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create FolderManagementButton
             app.FolderManagementButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -539,10 +586,11 @@ end
 
             % Create SHanalysisCheckBox
             app.SHanalysisCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.SHanalysisCheckBox.Text = 'SH analysis';
+            app.SHanalysisCheckBox.Text = 'SH analysis (WIP)';
             app.SHanalysisCheckBox.FontSize = 16;
             app.SHanalysisCheckBox.FontColor = [1 1 1];
             app.SHanalysisCheckBox.Position = [63 164 250 24];
+            app.SHanalysisCheckBox.Enable = false;
 
             % Create ExecutefromtextButton
             app.ExecutefromtextButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -550,7 +598,7 @@ end
             app.ExecutefromtextButton.BackgroundColor = [0.502 0.502 0.502];
             app.ExecutefromtextButton.FontSize = 16;
             app.ExecutefromtextButton.FontColor = [1 1 1];
-            app.ExecutefromtextButton.Position = [431 24 163 32];
+            app.ExecutefromtextButton.Position = [431 24 160 28];
             app.ExecutefromtextButton.Text = 'Execute from text';
 
             % Create LoadTextButton
@@ -559,7 +607,7 @@ end
             app.LoadTextButton.BackgroundColor = [0.502 0.502 0.502];
             app.LoadTextButton.FontSize = 16;
             app.LoadTextButton.FontColor = [1 1 1];
-            app.LoadTextButton.Position = [347 70 136 28];
+            app.LoadTextButton.Position = [431 94 160 28];
             app.LoadTextButton.Text = 'Load Text';
 
             % Create ClearListButton
@@ -568,7 +616,7 @@ end
             app.ClearListButton.BackgroundColor = [0.502 0.502 0.502];
             app.ClearListButton.FontSize = 16;
             app.ClearListButton.FontColor = [1 1 1];
-            app.ClearListButton.Position = [502 70 87 28];
+            app.ClearListButton.Position = [431 59 160 28];
             app.ClearListButton.Text = 'Clear List';
 
             % Create NumberofWorkersSpinnerLabel
@@ -592,6 +640,7 @@ end
             app.EditParametersButton.FontColor = [0.9412 0.9412 0.9412];
             app.EditParametersButton.Position = [276 238 130 28];
             app.EditParametersButton.Text = 'Edit Parameters';
+            app.EditParametersButton.Enable = 'off';
 
             % Show the figure after all components are created
             app.PulsewaveUIFigure.Visible = 'on';
