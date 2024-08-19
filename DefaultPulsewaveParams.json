@@ -1,5 +1,6 @@
 {
     "Video" : {
+        "Register" : 0,
         "Start frame" : 1,
         "End frame" : -1
     },

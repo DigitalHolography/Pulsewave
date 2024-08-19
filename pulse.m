@@ -61,6 +61,11 @@ classdef pulse < matlab.apps.AppBase
                     %% add files to the drawer list
                     app.files{end + 1} = OneCycleClass(path);
 
+                    %% register
+                    for n = 1:length(app.files)
+                        app.files{n} = app.files{n}.registerVideo();
+                    end
+
                     %% crop videos
                     for n = 1:length(app.files)
                         app.files{n} = app.files{n}.cropAllVideo();

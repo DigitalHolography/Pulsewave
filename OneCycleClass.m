@@ -205,6 +205,40 @@ classdef OneCycleClass
 
         end
 
+        function obj = registerVideo(obj)
+            % Registers the video using intensity based registration
+            PW_params = Parameters_json(obj.directory);
+            if ~PW_params.registerVideoFlag
+                return % do nothing if not required 
+            end
+
+            for ii = 1:obj.nbFiles
+                video = obj.reference{ii};
+                Nx = size(video,1);
+                Ny = size(video,2);
+                [X,Y] = meshgrid(linspace(-Nx/2,Nx/2,Nx),linspace(-Ny/2,Ny/2,Ny));
+                disc_ratio = 0.7; % parametrize this coef if needed
+                disc = X.^2+Y.^2 < (disc_ratio * min(Nx,Ny)/2)^2; 
+                video_reg = video .* disc - disc .* sum(video.* disc,[1,2])/nnz(disc); % minus the mean in the disc of each frame
+                video_reg = video_reg ./(max(abs(video_reg),[],[1,2])); % rescaling each frame but keeps mean at zero
+                 
+                image_ref = video_reg(:,:,floor(size(video,3)/2)); % ref image is the middle frame of the video
+
+                [~,shifts] = register_video_from_reference(video_reg,image_ref);
+
+                obj.reference{ii} = register_video_from_shifts(video,shifts);
+
+                obj.dataM0{ii} = register_video_from_shifts(obj.dataM0{ii},shifts);
+                obj.dataM1{ii} = register_video_from_shifts(obj.dataM1{ii},shifts);
+                obj.dataM2{ii} = register_video_from_shifts(obj.dataM2{ii},shifts);
+
+
+            end
+
+
+
+        end
+
         function obj = cropAllVideo(obj)
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
