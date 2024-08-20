@@ -284,7 +284,68 @@ classdef OneCycleClass
             in_width = size(obj.reference{1}, 2);
             in_num_frames = size(obj.reference{1}, 3);
 
-            if out_height < 0 && out_width < 0 && out_num_frames < 0
+            if out_num_frames < 0
+                return % do nothing if not required
+            end
+
+            if out_num_frames < in_num_frames
+                % we average the input images to get out_num_frames frames
+
+                batch = floor(in_num_frames/out_num_frames);
+                
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.reference{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.reference{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.reference_norm{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.reference_norm{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM0{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM0{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM1{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM1{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM2{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM2{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM1M0{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM1M0{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM2M0{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM2M0{1} = single(tmp_ref);
+                
+
+            end
+
+            if out_height < 0 && out_width < 0
                 return % do nothing if not required
             end
 
