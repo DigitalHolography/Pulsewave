@@ -1,6 +1,8 @@
 {
     "Video" : {
         "Register" : 0,
+        "RefStart" : 10,
+        "RefEnd" : 20,
         "Start frame" : 1,
         "End frame" : -1
     },

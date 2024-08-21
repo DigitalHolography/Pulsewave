@@ -224,8 +224,7 @@ classdef OneCycleClass
 
                 video_reg = video_reg ./(max(abs(video_reg),[],[1,2])); % rescaling each frame but keeps mean at zero
                  
-                image_ref = video_reg(:,:,floor(size(video,3)/2)); % ref image is the middle frame of the video
-
+                image_ref = mean(video_reg(:,:,PW_params.refAvgStart:PW_params.refAvgEnd),3); % ref image is from 10 to 20
                 [~,shifts] = register_video_from_reference(video_reg,image_ref);
 
                 obj.reference{ii} = register_video_from_shifts(video,shifts);
