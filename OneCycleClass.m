@@ -501,7 +501,6 @@ classdef OneCycleClass
             meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
             meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
             
-            clear blurred_mask
 
             mkdir(ToolBox.PW_path_dir);
             mkdir(ToolBox.PW_path_png);
@@ -568,12 +567,17 @@ classdef OneCycleClass
 
             fprintf(fileID, obj.load_logs);
 
-            fprintf(fileID, '\r\n=== EXECUTION :\r\n\n');
+            fprintf(fileID, '\r\n=== EXECUTION \r\n\n');
 
             fclose(fileID);
 
             %% Video M0 gif
 
+            fileID = fopen(path_file_txt_exe_times, 'a+');
+            fprintf(fileID, '\r\n');
+            fclose(fileID);
+            
+            tic
             [Nx, Ny, N_frame] = size(obj.reference_norm_interp{1});
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
@@ -589,6 +593,15 @@ classdef OneCycleClass
             gifWriter.delete();
 
             imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
+
+            disp('M0 gif animation timing :')
+            time = toc;
+            disp(time)
+
+            save_time(path_file_txt_exe_times, 'M0 Gif', time)
+            fileID = fopen(path_file_txt_exe_times, 'a+');
+            fprintf(fileID, '\r\n----------\r\n');
+            fclose(fileID);
 
             %% Creating Masks
             % waitbar(0.1,progress_bar,"Creating Masks");
