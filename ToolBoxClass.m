@@ -1,4 +1,4 @@
-classdef ToolBoxClass
+classdef ToolBoxClass < handle
 
     properties
         %Path of the PW dir and the output dir inside

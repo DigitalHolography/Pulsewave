@@ -500,9 +500,7 @@ classdef OneCycleClass
 
             meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
             meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
-            blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0), PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);
-            [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
-
+            
             clear blurred_mask
 
             mkdir(ToolBox.PW_path_dir);
