@@ -555,9 +555,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     close(w);
 
-    f21 = figure(21);
-    f21.Position = [300, 300, 570, 630];
-
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
     gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")), timePeriod, 0.04, N_frame);
 

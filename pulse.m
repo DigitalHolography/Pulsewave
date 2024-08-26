@@ -98,7 +98,7 @@ classdef pulse < matlab.apps.AppBase
 
                     if exception.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
 
-                        fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler")
+                        fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
 
                     else
 
