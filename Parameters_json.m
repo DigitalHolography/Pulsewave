@@ -3,6 +3,9 @@ classdef Parameters_json
 
     properties
         path
+        registerVideoFlag
+        refAvgStart
+        refAvgEnd
         videoStartFrameIndex
         videoEndFrameIndex
         frameWidth
@@ -127,6 +130,11 @@ classdef Parameters_json
                 parsedData = jsondecode(jsonData);
 
                 % Recherche de chaque paramètre
+                obj.registerVideoFlag = parsedData.Video.Register;
+                obj.refAvgStart = parsedData.Video.RefStart;
+                obj.refAvgEnd = parsedData.Video.RefEnd;
+
+
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
 

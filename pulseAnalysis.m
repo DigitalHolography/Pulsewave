@@ -546,17 +546,13 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     % save video
     % avi
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
-    open(w)
 
-    for jj = 1:size(flowVideoRGB, 4)
-        writeVideo(w, squeeze(flowVideoRGB(:, :, :, jj)));
-    end
-
-    close(w);
+    parfeval(backgroundPool,@writeVideoOnDisc,0,flowVideoRGB,fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
 
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")), timePeriod, 0.04, N_frame);
+
+    parfeval(backgroundPool,@writeGifOnDisc,0,flowVideoRGB,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")),timePeriod);
+
 
     % f_RMS_artery = sum(flowVideoRGB .* maskArtery, [1 2]) / nnz(maskArtery);
     % f_RMS_vein = sum(flowVideoRGB .* maskVein, [1 2]) / nnz(maskVein);
@@ -565,22 +561,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % f_RMS_min_Arteries = min(f_RMS_artery(:));
     % f_RMS_min_Veins = min(f_RMS_vein(:));
 
-    for frameIdx = 1:size(flowVideoRGB, 4)
-        gifWriter.write(flowVideoRGB(:, :, :, frameIdx), frameIdx);
-    end
-
-    gifWriter.generate();
-    gifWriter.delete();
-
     % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')), 'MPEG-4');
-    open(w)
+    parfeval(backgroundPool,@writeVideoOnDisc,0,flowVideoRGB,fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')),'MPEG-4');
 
-    for jj = 1:size(flowVideoRGB, 4)
-        writeVideo(w, squeeze(flowVideoRGB(:, :, :, jj)));
-    end
-
-    close(w);
 
     exec_times_id = [exec_times_id, "Construct velocity video"];
     exec_times_time = [exec_times_time, toc];
@@ -612,39 +595,16 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     v_RMS_one_cycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
 
     % avi
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
-    wM0 = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.avi')));
-    tmp = mat2gray(onePulseVideo);
-    tmpM0 = mat2gray(onePulseVideoM0);
-    open(w)
-    open(wM0)
+    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideo),fullfile(ToolBox.PW_path_avi,sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
+    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideoM0),fullfile(ToolBox.PW_path_avi,sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.avi')));
 
-    for j = 1:size(onePulseVideo, 3)
-        writeVideo(w, tmp(:, :, j));
-        writeVideo(wM0, tmpM0(:, :, j));
-    end
-
-    close(w);
-    close(wM0);
 
     % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.mp4')), 'MPEG-4');
-    wM0 = VideoWriter(fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.mp4')), 'MPEG-4');
-    tmp = mat2gray(onePulseVideo);
-    tmpM0 = mat2gray(onePulseVideoM0);
-    open(w)
-    open(wM0)
+    
+    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideo),fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.mp4')), 'MPEG-4');
+    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideoM0),fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.mp4')), 'MPEG-4');
 
-    for j = 1:size(onePulseVideo, 3)
-        writeVideo(w, tmp(:, :, j));
-        writeVideo(wM0, tmpM0(:, :, j));
-    end
-
-    close(w);
-    close(wM0);
-
-    clear tmp
-    clear tmpM0
+    
 
     %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 

@@ -205,6 +205,41 @@ classdef OneCycleClass
 
         end
 
+        function obj = registerVideo(obj)
+            % Registers the video using intensity based registration
+            PW_params = Parameters_json(obj.directory);
+            if ~PW_params.registerVideoFlag
+                return % do nothing if not required 
+            end
+
+            for ii = 1:obj.nbFiles
+                video = obj.reference{ii};
+                Nx = size(video,1);
+                Ny = size(video,2);
+                [X,Y] = meshgrid(linspace(-Nx/2,Nx/2,Nx),linspace(-Ny/2,Ny/2,Ny));
+                disc_ratio = 0.7; % parametrize this coef if needed
+                disc = X.^2+Y.^2 < (disc_ratio * min(Nx,Ny)/2)^2; 
+                video_reg = video .* disc - disc .* sum(video.* disc,[1,2])/nnz(disc); % minus the mean in the disc of each frame
+                video_reg = reshape(video_reg,size(video,1),size(video,2),1,size(video,3)); % insert a dimension to match reegistration functions
+
+                video_reg = video_reg ./(max(abs(video_reg),[],[1,2])); % rescaling each frame but keeps mean at zero
+                 
+                image_ref = mean(video_reg(:,:,PW_params.refAvgStart:PW_params.refAvgEnd),3); % ref image is from 10 to 20
+                [~,shifts] = register_video_from_reference(video_reg,image_ref);
+
+                obj.reference{ii} = register_video_from_shifts(video,shifts);
+
+                obj.dataM0{ii} = register_video_from_shifts(obj.dataM0{ii},shifts);
+                obj.dataM1{ii} = register_video_from_shifts(obj.dataM1{ii},shifts);
+                obj.dataM2{ii} = register_video_from_shifts(obj.dataM2{ii},shifts);
+
+
+            end
+
+
+
+        end
+
         function obj = cropAllVideo(obj)
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
@@ -247,6 +282,71 @@ classdef OneCycleClass
             in_height = size(obj.reference{1}, 1);
             in_width = size(obj.reference{1}, 2);
             in_num_frames = size(obj.reference{1}, 3);
+
+            if out_num_frames < 0
+                return % do nothing if not required
+            end
+
+            if out_num_frames < in_num_frames
+                % we average the input images to get out_num_frames frames
+
+                batch = floor(in_num_frames/out_num_frames);
+                
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.reference{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.reference{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.reference_norm{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.reference_norm{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM0{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM0{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM1{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM1{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM2{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM2{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM1M0{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM1M0{1} = single(tmp_ref);
+    
+                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_calc = obj.dataM2M0{1};
+                for i=1:out_num_frames
+                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                end
+                obj.dataM2M0{1} = single(tmp_ref);
+                
+
+            end
+
+            if out_height < 0 && out_width < 0
+                return % do nothing if not required
+            end
 
             if out_height < 0
                 out_height = in_height;
@@ -400,10 +500,7 @@ classdef OneCycleClass
 
             meanIm = squeeze(mean(obj.reference_interp{1}, 3)); % Because highest intensities in CRA usually
             meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp{1}, 3)); % Because velocities coming from the CRA are out-of-plane
-            blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0), PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);
-            [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
-
-            clear blurred_mask
+            
 
             mkdir(ToolBox.PW_path_dir);
             mkdir(ToolBox.PW_path_png);
@@ -470,12 +567,17 @@ classdef OneCycleClass
 
             fprintf(fileID, obj.load_logs);
 
-            fprintf(fileID, '\r\n=== EXECUTION :\r\n\n');
+            fprintf(fileID, '\r\n=== EXECUTION \r\n\n');
 
             fclose(fileID);
 
             %% Video M0 gif
 
+            fileID = fopen(path_file_txt_exe_times, 'a+');
+            fprintf(fileID, '\r\n');
+            fclose(fileID);
+            
+            tic
             [Nx, Ny, N_frame] = size(obj.reference_norm_interp{1});
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
@@ -491,6 +593,15 @@ classdef OneCycleClass
             gifWriter.delete();
 
             imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
+
+            disp('M0 gif animation timing :')
+            time = toc;
+            disp(time)
+
+            save_time(path_file_txt_exe_times, 'M0 Gif', time)
+            fileID = fopen(path_file_txt_exe_times, 'a+');
+            fprintf(fileID, '\r\n----------\r\n');
+            fclose(fileID);
 
             %% Creating Masks
             % waitbar(0.1,progress_bar,"Creating Masks");
