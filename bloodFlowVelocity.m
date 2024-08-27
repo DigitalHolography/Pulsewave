@@ -261,7 +261,7 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
     %% Init of histogram axis
 
     %%
-    [maskSection] = create_mask_section(ImgM0, maskArtery, ToolBox, path);
+    [maskSection] = createMaskSection(ImgM0, maskArtery, ToolBox, path);
     maskArtery_section = maskArtery & maskSection;
 
     %or

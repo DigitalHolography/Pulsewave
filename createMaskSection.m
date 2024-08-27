@@ -1,4 +1,4 @@
-function [maskSection, VesselImageRGB] = create_mask_section(meanIm, maskArtery, ToolBox, path)
+function [maskSection, VesselImageRGB] = createMaskSection(meanIm, maskArtery, ToolBox, path)
 
     PW_params = Parameters_json(path);
 
