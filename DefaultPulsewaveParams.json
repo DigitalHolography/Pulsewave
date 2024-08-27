@@ -133,6 +133,8 @@
     },
     "Other" : {
         "Number of sides" : 120,
-        "Diff First Calculations Flag" : 0
+        "Diff First Calculations Flag" : 0,
+        "All Circles" : 0,
+        "Number Of Circles" : 8
     }
 }

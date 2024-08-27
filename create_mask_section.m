@@ -1,4 +1,4 @@
-function [maskSection, VesselImageRGB] = create_mask_section(meanIm, maskArtery, ToolBox, path)
+function [maskSection, VesselImageRGB] = create_mask_section(meanIm, maskArtery,radius1,radius2,name_, ToolBox, path)
 
     PW_params = Parameters_json(path);
 
@@ -61,8 +61,7 @@ function [maskSection, VesselImageRGB] = create_mask_section(meanIm, maskArtery,
     % % cercle_mask1 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*1.1;
     % % cercle_mask2 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*0.9;
 
-    radius1 = PW_params.velocity_bigRadiusRatio * (M + N) / 2;
-    radius2 = PW_params.velocity_smallRadiusRatio * (M + N) / 2;
+    
 
     cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= radius1;
     cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= radius2;
@@ -89,6 +88,6 @@ function [maskSection, VesselImageRGB] = create_mask_section(meanIm, maskArtery,
     axis off
     axis image
 
-    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', strcat(ToolBox.main_foldername, '_mask_artery_section_rgb.png')), 'png');
+    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', strcat(ToolBox.main_foldername, name_)), 'png');
 
 end
