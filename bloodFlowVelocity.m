@@ -264,7 +264,7 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
     [N, M] = size(maskArtery);
     radius1 = PW_params.velocity_bigRadiusRatio * (M + N) / 2;
     radius2 = PW_params.velocity_smallRadiusRatio * (M + N) / 2;    
-    [maskSection] = create_mask_section(ImgM0, maskArtery,radius1,radius2,'_mask_artery_section_rgb.png', ToolBox, path);
+    [maskSection] = createMaskSection(ImgM0, maskArtery,radius1,radius2,'_mask_artery_section_rgb.png', ToolBox, path);
     maskArtery_section = maskArtery & maskSection;
 
     %or
