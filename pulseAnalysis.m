@@ -551,7 +551,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
 
-    parfeval(backgroundPool,@writeGifOnDisc,0,flowVideoRGB,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")),timePeriod);
+    writeGifOnDisc(flowVideoRGB,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")),timePeriod);
 
 
     % f_RMS_artery = sum(flowVideoRGB .* maskArtery, [1 2]) / nnz(maskArtery);
