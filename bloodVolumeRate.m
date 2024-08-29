@@ -697,7 +697,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
     % for the all circles output
     nbCircles = PW_params.nbCircles;
     maskSectionCircles = cell(1,nbCircles);
-    deltr = PW_params.radius_ratio; %PW_params.radius_gap * (M + N) /nbCircles;
+    deltr = PW_params.radius_ratio* (M + N) /nbCircles; %PW_params.radius_gap 
     for i = 1:nbCircles
         rad1 = (PW_params.radius_ratio - PW_params.radius_ratio) * (M + N) / 2 + (i-1) * deltr ; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * deltr ;
         rad2 = rad1 + deltr ;
@@ -958,10 +958,10 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
         %parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(Plot_volume_rate_video_artery),fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, 'circle_',num2str(i),'_plot_volume_rate_video_artery.avi')));
     
     
-        timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+        %timePeriod = ToolBox.stride / ToolBox.fs / 1000;
         
-        combined_Gif_artery = cat(1, mat2gray(volume_rate_video_artery), mat2gray(Plot_volume_rate_video_artery));
-        writeGifOnDisc(combined_Gif_artery,fullfile(ToolBox.PW_path_gif, sprintf("%s_circle_%d_%s.gif", ToolBox.PW_folder_name,i, "volumeRateArtery")),timePeriod);
+        %combined_Gif_artery = cat(1, mat2gray(volume_rate_video_artery), mat2gray(Plot_volume_rate_video_artery));
+        %writeGifOnDisc(combined_Gif_artery,fullfile(ToolBox.PW_path_gif, sprintf("%s_circle_%d_%s.gif", ToolBox.PW_folder_name,i, "volumeRateArtery")),timePeriod);
     
         imwrite(mat2gray(Plot_volume_rate_video_artery(:,:,:,end)), fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i, "bloodVolumeRateVideoArtery.png")));
 
