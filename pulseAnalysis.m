@@ -150,11 +150,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     %% PLOTS
 
     figure(30)
-    plot(fullTime, fullArterialPulseMinusBackground, ':k', ...
-        fullTime, fullArterialPulseClean, '-k', ...
-        'LineWidth', 2);
-    title('arterial pulse minus background vs. filtered pulse');
-    legend('<p(t)> - <b(t)>', 'local linear regression');
+    plot(fullTime, fullArterialPulseMinusBackground, '-k', fullTime, fullArterialPulseClean, '-k', 'LineWidth', 2);
+    %title('arterial pulse minus background vs. filtered pulse');
+    %legend('<p(t)> - <b(t)>', 'local linear regression');
     fontsize(gca, 12, "points");
     xlabel(strXlabel, 'FontSize', 14);
     ylabel(strYlabel, 'FontSize', 14);
