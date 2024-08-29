@@ -15,20 +15,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
         videoM0(:, :, frame_idx) = flat_field_correction(squeeze(videoM0(:, :, frame_idx)), PW_params.flatField_gwRatio * (Ny + Nx) / 2, 0);
     end
 
-    [x, y] = meshgrid(1:Ny, 1:Nx);
-    cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
-
-    radiusTreshold = PW_params.masks_radius_treshold;
-    cercleTresholdMask = [];
-    minDistToEdge = min([ToolBox.x_barycentre, ToolBox.y_barycentre, Nx - ToolBox.x_barycentre, Ny - ToolBox.y_barycentre]);
-
-    if radiusTreshold == 0
-
-        cercleTresholdMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= minDistToEdge;
-    elseif radiusTreshold > 0
-        cercleTresholdMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= (radiusTreshold * minDistToEdge);
-    else % if radius_treshold==-1
-    end
+    
 
     videoM0_zero = videoM0 - meanIm;
 
@@ -59,7 +46,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     firstMaskArtery = (correlationMatrixArtery > PW_params.arteryMask_CorrelationMatrixThreshold * mean2(correlationMatrixArtery(correlationMatrixArtery > 0)));
 
     if PW_params.masks_cleaningCoroid
-        firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery | cercleMask, 1, 4);
+        firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery , 1, 4);
     end
 
     firstMaskArtery = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
@@ -113,6 +100,29 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     imwrite(rescale(correlationMatrixVein), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'correlationMatrix_vein.png')))
 
     clear pulse pulseInit pulseInit3d;
+
+    %% Circles Sectioning
+
+    meanIm = squeeze(mean(videoM0, 3)); % Because highest intensities in CRA usually
+    meanIm_M1M0 = squeeze(mean(videoM1M0, 3)); % Because velocities coming from the CRA are out-of-plane
+    blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0).*correlationMatrixArtery, PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);
+    [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
+
+    [x, y] = meshgrid(1:Ny, 1:Nx);
+    cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
+
+    radiusTreshold = PW_params.masks_radius_treshold;
+    cercleTresholdMask = [];
+    minDistToEdge = min([ToolBox.x_barycentre, ToolBox.y_barycentre, Nx - ToolBox.x_barycentre, Ny - ToolBox.y_barycentre]);
+
+    if radiusTreshold == 0
+
+        cercleTresholdMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= minDistToEdge;
+    elseif radiusTreshold > 0
+        cercleTresholdMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= (radiusTreshold * minDistToEdge);
+    else % if radius_treshold==-1
+    end
+
     %% Region growing to get a clear segmentation
 
     % cleaning correlation matrix

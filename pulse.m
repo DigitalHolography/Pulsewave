@@ -61,6 +61,11 @@ classdef pulse < matlab.apps.AppBase
                     %% add files to the drawer list
                     app.files{end + 1} = OneCycleClass(path);
 
+                    %% register
+                    for n = 1:length(app.files)
+                        app.files{n} = app.files{n}.registerVideo();
+                    end
+
                     %% crop videos
                     for n = 1:length(app.files)
                         app.files{n} = app.files{n}.cropAllVideo();
@@ -98,7 +103,7 @@ classdef pulse < matlab.apps.AppBase
 
                     if exception.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
 
-                        fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler")
+                        fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
 
                     else
 
@@ -148,6 +153,15 @@ end
 
         % Code that executes after component creation
         function startupFcn(app)
+            if exist("version.txt",'file')
+                v = readlines('version.txt');
+                fprintf("==========================================\n " + ...
+                    "Welcome to Pulsewave %s\n" + ...
+                    "------------------------------------------\n" + ...
+                    "Developed by the DigitalHolographyFoundation\n" + ...
+                    "==========================================\n",v(1));
+            end
+            app.PulsewaveUIFigure.Name = ['Pulsewave ',char(v(1))];
             displaySplashScreen();
         end
 
@@ -448,11 +462,14 @@ end
         % Create UIFigure and components
         function createComponents(app)
 
+            pathToMLAPP = fileparts(mfilename('fullpath'));
+
             % Create PulsewaveUIFigure and hide until all components are created
             app.PulsewaveUIFigure = uifigure('Visible', 'off');
             app.PulsewaveUIFigure.Color = [0.149 0.149 0.149];
             app.PulsewaveUIFigure.Position = [100 100 640 421];
             app.PulsewaveUIFigure.Name = 'Pulsewave';
+            app.PulsewaveUIFigure.Icon = fullfile(pathToMLAPP, 'pulsewave_logo_temp.png');
 
             % Create NumberofframesEditFieldLabel
             app.NumberofframesEditFieldLabel = uilabel(app.PulsewaveUIFigure);

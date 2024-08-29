@@ -1,4 +1,4 @@
-function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile)
+function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile,circle)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
 
@@ -115,8 +115,12 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             hold off;
             set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
             f = getframe(gca); %# Capture the current window
-
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, ['_proj_' name_section num2str(section_idx) '.png'])));
+            
+            insert = '';
+            if ~isempty(circle)
+                insert = sprintf('_circle_%d',circle);
+            end
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername,insert, ['_proj_' name_section num2str(section_idx) '.png'])));
 
             % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(section_idx)]);
             w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(section_idx) '.avi'])));
@@ -257,12 +261,14 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     end % section_idx
 
-    if flagBloodVelocityProfile
+    if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
 
         viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
         % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
     end
+
+    
     
     close all
 end
