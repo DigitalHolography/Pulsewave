@@ -10,11 +10,8 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
     meanIm = rescale(mean(videoM0, 3));
     videoM0 = rescale(videoM0);
 
-    v_RMS_no_outliers = filloutliers(v_RMS, 'linear');
-    v_RMS_smooth = smoothdata(v_RMS_no_outliers, 'rlowess');
-
-    [ARI, ARImap] = construct_resistivity_index(v_RMS_smooth, maskArtery);
-    [API, APImap] = construct_pulsatility_index(v_RMS_smooth, maskArtery);
+    [ARI, ARImap] = construct_resistivity_index(v_RMS, maskArtery);
+    [API, APImap] = construct_pulsatility_index(v_RMS, maskArtery);
 
     %% Arterial Resisitivity Index
 

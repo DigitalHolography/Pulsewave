@@ -1,13 +1,16 @@
 function [API, APImap] = construct_pulsatility_index(v_RMS, maskArtery)
 
-    % arterial resistivity
+    % arterial pulsatility
 
     v_RMS = double(v_RMS);
 
     arterialPulse = squeeze(sum(v_RMS .* maskArtery, [1 2]));
     arterialPulse = arterialPulse / nnz(maskArtery);
 
-    %% avg. arterial resistivity index
+    arterialPulse = filloutliers(arterialPulse, "linear");
+    arterialPulse = smoothdata(arterialPulse, 'rlowess');
+
+    %% avg. arterial pulsatility index
 
     [maxAP, maxAPidx] = max(arterialPulse(:));
     [minAP, minAPidx] = min(arterialPulse(:));
@@ -19,6 +22,7 @@ function [API, APImap] = construct_pulsatility_index(v_RMS, maskArtery)
 
     APImap = squeeze((v_RMS(:, :, maxAPidx) - v_RMS(:, :, minAPidx)) ./ mean(v_RMS, 3));
     APImap(APImap > 1) = 1;
+    APImap(APImap < 0) = 0;
     APImap = APImap .* (APImap .* maskArtery > 0);
     APImap(isnan(APImap)) = 0;
 
