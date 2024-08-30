@@ -6,7 +6,7 @@ function [sys_index_list, fullPulseWave] = find_systole_index(video, path, maskA
     pulse_init = detrend(fullPulseWave);
     pulse_init = pulse_init - mean(pulse_init, "all");
 
-    [~, fullArterialPulseRmOut] = discardPulseWaveOutliers(pulse_init, 3);
+    fullArterialPulseRmOut = filloutliers(pulse_init, 'linear');
     fullArterialPulseClean = smoothdata(fullArterialPulseRmOut, 'lowess');
 
     diff_signal = diff(fullArterialPulseClean);

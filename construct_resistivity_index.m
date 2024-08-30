@@ -33,5 +33,6 @@ function [ARI, ARImap] = construct_resistivity_index(v_RMS, maskArtery)
     ARImap = squeeze((v_RMS(:, :, maxAPidx) - v_RMS(:, :, minAPidx)) ./ v_RMS(:, :, maxAPidx));
     ARImap(ARImap > 1) = 1;
     ARImap = ARImap .* (ARImap .* maskArtery > 0);
+    ARImap(isnan(ARImap)) = 0;
 
 end
