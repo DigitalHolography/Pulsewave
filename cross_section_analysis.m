@@ -197,9 +197,6 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     %% Blood Volume Rate computation
 
-    total_avg_blood_volume_rate(tt) = 0;
-    total_std_blood_volume_rate(tt) = 0;
-
     for section_idx = 1:nb_section
 
         for tt = 1:T_max
@@ -263,7 +260,7 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
 
-        viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
+        bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
         % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
     end

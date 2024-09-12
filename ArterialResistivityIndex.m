@@ -123,7 +123,7 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
         img_M0 = videoM0(:, :, frameIdx);
         APIvideoRGB(:, :, :, frameIdx) = APIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(Nx, Ny, 3, 1) .* img_M0 .* ~maskArtery;
     end
-
+    APIvideoRGB (APIvideoRGB < 0) = 0;
     % save video
     % avi
     w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_APIVideo')));
@@ -146,7 +146,7 @@ function [] = ArterialResistivityIndex(v_RMS, videoM0, maskArtery, ToolBox)
 
     %% ARTERIAL PULSATILITY FIGURES
 
-    igure(72)
+    figure(72)
     imagesc(APImapRGB);
     title(strcat('Arterial Pulsatility Index avg. : ', sprintf(" %3.2f", API)));
     axis image

@@ -1,4 +1,4 @@
-function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
+function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
 
     nb_section = size(SubImage_cell, 2);
     N_frame = size(SubVideo_cell{1}, 3);
@@ -177,11 +177,11 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
     fill(fullTime2, inBetween_diast, Color_std);
 
     plot(average_velocity_profile_systole, '-k', 'LineWidth', 2);
-    plot(average_velocity_profile_systole_plus_std, "Color", Color_std, 'LineWidth', 2)
-    plot(average_velocity_profile_systole_minus_std, "Color", Color_std, 'LineWidth', 2)
+    % plot(average_velocity_profile_systole_plus_std, "Color", Color_std, 'LineWidth', 2)
+    % plot(average_velocity_profile_systole_minus_std, "Color", Color_std, 'LineWidth', 2)
     plot(average_velocity_profile_diastole, '-k', 'LineWidth', 2);
-    plot(average_velocity_profile_diastole_plus_std, "Color", Color_std, 'LineWidth', 2)
-    plot(average_velocity_profile_diastole_minus_std, "Color", Color_std, 'LineWidth', 2)
+    % plot(average_velocity_profile_diastole_plus_std, "Color", Color_std, 'LineWidth', 2)
+    % plot(average_velocity_profile_diastole_minus_std, "Color", Color_std, 'LineWidth', 2)
     plot(fit_velocity_profile_diastole, '-r', 'LineWidth', 2);
     plot(fit_velocity_profile_systole, '-r', 'LineWidth', 2);
     title('Systole and diastole arterial velocity profile');
@@ -195,10 +195,17 @@ function [] = viscosity(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
     ylim([0.9 * mimin 1.1 * mamax]);
     ylabel('velocity (mm/s)', 'FontSize', 14);
 
+    fullTime = linspace(0, N_frame * ToolBox.stride / ToolBox.fs / 1000, N_frame);
+
     figure(666)
-    plot(viscosity_list)
+    plot(fullTime, viscosity_list,'k-','LineWidth', 2)
     pbaspect([1.618 1 1]);
-    xlabel('Frame', 'FontSize', 14);
+    if strcmp(type_of_vessel, 'artery')
+        title("Viscosity in arteries")
+    else
+        title("Viscosity in veins")
+    end
+    xlabel('Time (s)', 'FontSize', 14);
     ylabel('Viscosity (cP)', 'FontSize', 14);
     set(gca, 'LineWidth', 2);
     axis tight;

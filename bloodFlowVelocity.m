@@ -467,14 +467,14 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
         freq_video(:, :, 2, :) = imresize3(squeeze(FreqVideoRGB(:, :, 2, :)), [550 550 N_frame]);
         freq_video(:, :, 3, :) = imresize3(squeeze(FreqVideoRGB(:, :, 3, :)), [550 550 N_frame]);
         combinedGifs = cat(2, freq_video, cat(1, mat2gray(histo_video_artery), mat2gray(histo_video_vein)));
-        freq_video_mean = rescale(imresize3(imread(fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png'))), [550 550 3]));
+        freq_video_mean = rescale(imresize3(imread(fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png'))), [550 550 3]));
         imwrite(cat(2, freq_video_mean, cat(1, mat2gray(histo_video_artery(:, :, :, end)), mat2gray(histo_video_vein(:, :, :, end)))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
     else
         freq_video(:, :, 1, :) = imresize3(squeeze(FreqVideoRGB(:, :, 1, :)), [600 600 N_frame]);
         freq_video(:, :, 2, :) = imresize3(squeeze(FreqVideoRGB(:, :, 2, :)), [600 600 N_frame]);
         freq_video(:, :, 3, :) = imresize3(squeeze(FreqVideoRGB(:, :, 3, :)), [600 600 N_frame]);
         combinedGifs = cat(1, freq_video, mat2gray(histo_video_artery));
-        freq_video_mean = rescale(imresize3(imread(fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png'))), [600 600 3]));
+        freq_video_mean = rescale(imresize3(imread(fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png'))), [600 600 3]));
         imwrite(cat(1, freq_video_mean, mat2gray(histo_video_artery(:, :, :, end))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
     end
 
