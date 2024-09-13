@@ -118,7 +118,12 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
         plot(tmp_velocity_profile_plus_std, "Color", Color_std, 'LineWidth', 2)
         plot(tmp_velocity_profile_minus_std, "Color", Color_std, 'LineWidth', 2)
         plot(tmp_fit(x), '-r', 'LineWidth', 2);
-        title('average wall-to-wall arterial velocity profile');
+        if strcmp(type_of_vessel, 'artery')
+            title('average wall-to-wall arterial velocity profile');
+        else
+            title('average wall-to-wall venous velocity profile');
+        end
+
         legend(strcat('R² = ', string(round(R2_tmp_fit, 2)), ' Vmax = ', string(round(tmp_fit.Vmax, 1)), ' alpha = ', string(round(tmp_fit.alpha, 1)), ' beta = ', string(round(tmp_fit.beta, 1))));
         fontsize(gca, 12, "points");
         xticks(x);
@@ -172,19 +177,25 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
     % x_section,average_velocity_profile_diastole,'-k',...
     %     x_section,fit_velocity_profile_systole,'-r',...
     %     x_section,fit_velocity_profile_diastole,'-r', 'LineWidth',2)
-    fill(fullTime2, inBetween_syst, Color_std);
+    fill(fullTime2, inBetween_syst, Color_std,'FaceAlpha',0.5);
     hold on
-    fill(fullTime2, inBetween_diast, Color_std);
+    fill(fullTime2, inBetween_diast, Color_std,'FaceAlpha',0.5);
 
-    plot(average_velocity_profile_systole, '-k', 'LineWidth', 2);
-    % plot(average_velocity_profile_systole_plus_std, "Color", Color_std, 'LineWidth', 2)
-    % plot(average_velocity_profile_systole_minus_std, "Color", Color_std, 'LineWidth', 2)
-    plot(average_velocity_profile_diastole, '-k', 'LineWidth', 2);
-    % plot(average_velocity_profile_diastole_plus_std, "Color", Color_std, 'LineWidth', 2)
-    % plot(average_velocity_profile_diastole_minus_std, "Color", Color_std, 'LineWidth', 2)
+    plot(average_velocity_profile_systole, '--k', 'LineWidth', 2);
+    plot(average_velocity_profile_systole_plus_std, "Color", Color_std, 'LineWidth', 2)
+    plot(average_velocity_profile_systole_minus_std, "Color", Color_std, 'LineWidth', 2)
+
+    plot(average_velocity_profile_diastole, ':k', 'LineWidth', 2);
+    plot(average_velocity_profile_diastole_plus_std, "Color", Color_std, 'LineWidth', 2)
+    plot(average_velocity_profile_diastole_minus_std, "Color", Color_std, 'LineWidth', 2)
+
     plot(fit_velocity_profile_diastole, '-r', 'LineWidth', 2);
     plot(fit_velocity_profile_systole, '-r', 'LineWidth', 2);
-    title('Systole and diastole arterial velocity profile');
+    if strcmp(type_of_vessel, 'artery')
+        title('Systole and diastole arterial velocity profile');
+    else
+        title('Systole and diastole venous velocity profile');
+    end
     fontsize(gca, 12, "points");
     % xticks(x);
     xticklabels({'section'});
@@ -205,6 +216,7 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
     else
         title("Viscosity in veins")
     end
+    ylim([-150 150])
     xlabel('Time (s)', 'FontSize', 14);
     ylabel('Viscosity (cP)', 'FontSize', 14);
     set(gca, 'LineWidth', 2);
