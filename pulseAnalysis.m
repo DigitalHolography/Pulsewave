@@ -185,11 +185,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     disp('remove outliers... 1st pass.');
     [fullArterialSignalRmOut, idxOutArtery] = filloutliers(fullArterialSignal, 'linear');
     [fullBackgroundSignalRmOut, idxOutBkg] = filloutliers(fullBackgroundSignal, 'linear');
-
-    if veins_analysis
-        [fullVenousSignalRmOut, idxOutVein] = filloutliers(fullVenousSignal, 'linear');
-    end
-
     fullArterialSignalMinusBackground = fullArterialSignalRmOut - fullBackgroundSignalRmOut;
     
     if veins_analysis
@@ -198,11 +193,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutArtery) / length(fullArterialSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
     disp(['data reliability index 1 (artery) : ' num2str(dataReliabilityIndex1) ' %']);
-    
+
     if veins_analysis
+        [fullVenousSignalRmOut, idxOutVein] = filloutliers(fullVenousSignal, 'linear');
+        fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
+
         dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutVein) / length(fullVenousSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
         disp(['data reliability index 1 (vein) : ' num2str(dataReliabilityIndex1) ' %']);
     end
+
     % smooth trendline data by iterative local linear regression.
 
     fullArterialSignalClean = smoothdata(fullArterialSignalMinusBackground, 'lowess');
@@ -434,7 +433,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     exec_times_time = [exec_times_time, toc];
     total_time = total_time + toc;
 
-    %% FIXME : compute true regularied cube by replacing bad frames
+    tic
+    fprintf("Outlier Cleaning:\n")
+    [nX, nY, ~] = size(fullVideoM2M0minusBKG);
+    for varX = 1:nX
+        for varY = 1:nY
+            fullVideoM2M0minusBKG(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :) , 'linear');
+        end
+    end
+    toc
 
     fullArterialPulseRegularized = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
 
@@ -586,6 +593,10 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     %% Velocity Calculation
 
     v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
+
+
+    
+    
     % fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
     % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane *
     % fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
