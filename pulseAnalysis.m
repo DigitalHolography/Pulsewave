@@ -191,14 +191,18 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     end
 
     fullArterialSignalMinusBackground = fullArterialSignalRmOut - fullBackgroundSignalRmOut;
-    fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
+    
+    if veins_analysis
+        fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
+    end
 
     dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutArtery) / length(fullArterialSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
     disp(['data reliability index 1 (artery) : ' num2str(dataReliabilityIndex1) ' %']);
-
-    dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutVein) / length(fullVenousSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
-    disp(['data reliability index 1 (vein) : ' num2str(dataReliabilityIndex1) ' %']);
-
+    
+    if veins_analysis
+        dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutVein) / length(fullVenousSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
+        disp(['data reliability index 1 (vein) : ' num2str(dataReliabilityIndex1) ' %']);
+    end
     % smooth trendline data by iterative local linear regression.
 
     fullArterialSignalClean = smoothdata(fullArterialSignalMinusBackground, 'lowess');
@@ -478,25 +482,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
 
     clear local_mask_artery
-
-    if veins_analysis
-        f19 = figure(19);
-        f19.Position = [1100 485 350 420];
-        LocalBackground_in_veins = mean(LocalBKG_vein, 3) .* local_mask_vein + ones(size(LocalBKG_vein, 1)) * mean(LocalBKG_vein, 'all') .* ~local_mask_vein;
-        imagesc(LocalBackground_in_veins);
-        colormap gray
-        title('Local Background in vein');
-        fontsize(gca, 14, "points");
-        set(gca, 'LineWidth', 2);
-        c = colorbar('southoutside');
-        c.Label.String = 'RMS Doppler frequency (kHz)';
-        c.Label.FontSize = 12;
-        axis off
-        axis image
-        imwrite(rescale(LocalBackground_in_veins), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_veins.png')));
-
-        range(1:2) = clim;
-    end
 
     clear LocalBKG_vessel
 
