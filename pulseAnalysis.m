@@ -338,37 +338,31 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     tic
 
-    local_mask_artery = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
-    % local_mask_artery = and(local_mask_artery, not(maskVein));
-    LocalBKG_artery = zeros(size(fullVideoM2M0));
-    LocalBKG_arteryM2 = zeros(size(fullVideoM2));
-    LocalBKG_arteryM0 = zeros(size(fullVideoM0));
-
-    if veins_analysis
-        local_mask_vein = imdilate(maskVein, strel('disk', PW_params.local_background_width));
-        % local_mask_vein = and(local_mask_vein, not(maskArtery));
-        LocalBKG_vein = zeros(size(fullVideoM2M0));
-        LocalBKG_veinM2 = zeros(size(fullVideoM2));
-        LocalBKG_veinM0 = zeros(size(fullVideoM0));
+    if veins_analysis 
+        local_mask_vessel = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
+    else
+        local_mask_vessel = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
     end
+
+    % local_mask_artery = and(local_mask_artery, not(maskVein));
+    LocalBKG_vessel = zeros(size(fullVideoM2M0));
+    LocalBKG_vesselM2 = zeros(size(fullVideoM2));
+    LocalBKG_vesselM0 = zeros(size(fullVideoM0));
 
     if veins_analysis
 
         parfor nn = 1:N_frame
-            LocalBKG_artery(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_artery));
-            LocalBKG_vein(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vein));
-            LocalBKG_arteryM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_artery));
-            LocalBKG_veinM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vein));
-            LocalBKG_arteryM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_artery));
-            LocalBKG_veinM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vein));
+            LocalBKG_vessel(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vessel));
         end
 
     else
 
         parfor nn = 1:N_frame
-            LocalBKG_artery(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_artery));
-            LocalBKG_arteryM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_artery));
-            LocalBKG_arteryM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_artery));
+            LocalBKG_vessel(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vessel));
         end
 
     end
@@ -377,27 +371,27 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         % Remove arteries (always calculated) from local BKG
         if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-            tmp = fullVideoM2M0 .^ 2 - (LocalBKG_vein .* ~local_mask_artery + LocalBKG_artery .* local_mask_artery) .^ 2;
+            tmp = fullVideoM2M0 .^ 2 - (LocalBKG_vessel .* ~local_mask_vessel) .^ 2;
             fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
             clear tmp
 
         elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
-            tmp = fullVideoM2M0 .^ 2 - (LocalBKG_vein .* ~local_mask_artery + LocalBKG_artery .* local_mask_artery) .^ 2;
+            tmp = fullVideoM2M0 .^ 2 - (LocalBKG_vessel .* ~local_mask_vessel) .^ 2;
             tmp = tmp .* (tmp > 0);
             fullVideoM2M0minusBKG = sqrt(abs(tmp));
             clear tmp
 
         elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
-            fullVideoM2eff = fullVideoM2 - (LocalBKG_veinM2 .* ~local_mask_artery + LocalBKG_arteryM2 .* local_mask_artery);
-            fullVideoM0eff = fullVideoM0 - (LocalBKG_veinM0 .* ~local_mask_artery + LocalBKG_arteryM0 .* local_mask_artery);
+            fullVideoM2eff = fullVideoM2 - (LocalBKG_vesselM2 .* ~local_mask_vessel);
+            fullVideoM0eff = fullVideoM0 - (LocalBKG_vesselM0 .* ~local_mask_vessel);
             fullVideoM2M0eff = fullVideoM2eff ./ fullVideoM0eff;
             fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff .* (fullVideoM2M0eff > 0));
 
         else % DIFFERENCE LAST
 
-            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vein .* ~local_mask_artery + LocalBKG_artery .* local_mask_artery);
+            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vessel .* ~local_mask_vessel);
 
         end
 
@@ -405,27 +399,27 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
         if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-            tmp = fullVideoM2M0 .^ 2 - LocalBKG_artery .^ 2;
+            tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
             fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
             clear tmp
 
         elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
-            tmp = fullVideoM2M0 .^ 2 - LocalBKG_artery .^ 2;
+            tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
             tmp = tmp .* (tmp > 0);
             fullVideoM2M0minusBKG = sqrt(tmp);
             clear tmp
 
         elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
-            fullVideoM2eff = fullVideoM2 - LocalBKG_arteryM2;
-            fullVideoM0eff = fullVideoM0 - LocalBKG_arteryM0;
+            fullVideoM2eff = fullVideoM2 - LocalBKG_vesselM2;
+            fullVideoM0eff = fullVideoM0 - LocalBKG_vesselM0;
             fullVideoM2M0eff = fullVideoM2eff ./ fullVideoM0eff;
             fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff .* (fullVideoM2M0eff > 0));
 
         else % DIFFERENCE LAST
 
-            fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_artery;
+            fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_vessel;
 
         end
 
@@ -471,10 +465,10 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     f18 = figure(18);
     f18.Position = [1100 485 350 420];
-    LocalBackground_in_arteries = mean(LocalBKG_artery, 3) .* local_mask_artery + ones(size(LocalBKG_artery, 1)) * mean(LocalBKG_artery, 'all') .* ~local_mask_artery;
-    imagesc(LocalBackground_in_arteries);
+    LocalBackground_in_vessels = mean(LocalBKG_vessel, 3) .* local_mask_vessel + ones(size(LocalBKG_vessel, 1)) * mean(LocalBKG_vessel, 'all') .* ~local_mask_vessel;
+    imagesc(LocalBackground_in_vessels);
     colormap gray
-    title('Local Background in arteries');
+    title('Local Background in vessels');
     fontsize(gca, 14, "points");
     set(gca, 'LineWidth', 2);
     c = colorbar('southoutside');
@@ -482,9 +476,13 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     c.Label.FontSize = 12;
     axis off
     axis image
-    imwrite(rescale(LocalBackground_in_arteries), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_arteries.png')))
+    imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_vessels.png')))
 
     range(1:2) = clim;
+
+    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(LocalBKG_vessel),fullfile(ToolBox.PW_path_avi,sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.avi')));
+    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(LocalBKG_vessel),fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.mp4')), 'MPEG-4');
+
 
     clear local_mask_artery
 
@@ -507,7 +505,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         range(1:2) = clim;
     end
 
-    clear LocalBKG_artery LocalBKG_vein
+    clear LocalBKG_vessel
 
     % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane*fullVideoM2M0minusBKG;
 
