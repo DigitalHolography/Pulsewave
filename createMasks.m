@@ -247,13 +247,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
         end
 
     catch
-        warning("There was an error with the manual import of the masks, check if the dimensions of the mask match the ones of the video.\n Normal procedure will follow.")
-        [maskVessel, rgVideoVessel] = region_growing_for_vessel(vesselnessIm, seedsArtery | seedsVein, condition_vein | conditionArtery, path);
-        maskVessel = bwareafilt(maskVessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
-        maskArtery = maskVessel .* correlationMatrixArtery;
-        maskArtery = maskArtery > PW_params.arteryMask_ArteryCorrThreshold;
-        maskVein = maskVessel .* correlationMatrixVein;
-        maskVein = maskVein > 0;
+        warning("There was an error with the manual import of the masks, check if the dimensions of the mask match the ones of the video.\n Normal procedure will follow.")        
     end
 
     %% Creat Background Mask
