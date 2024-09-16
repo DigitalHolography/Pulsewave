@@ -330,10 +330,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     plot2txt(T(1:length(fullArterialSignalClean)), fullArterialSignalClean, 'FilteredArterialPulse', ToolBox)
     plot2txt(T(1:length(noise)), noise, 'ResidualArterialPulse', ToolBox)
 
-    % % C'EST QUOI?
-    % figure(85)
-    % clim([min(range),max(range)]);
-
     %% Local BKG Artery and Veins %~1min
 
     tic
@@ -367,63 +363,33 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     end
 
-    if veins_analysis
-        % Remove arteries (always calculated) from local BKG
-        if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
+    if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-            tmp = fullVideoM2M0 .^ 2 - (LocalBKG_vessel .* ~local_mask_vessel) .^ 2;
-            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
-            clear tmp
+        tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
+        fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
+        clear tmp
 
-        elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
+    elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
-            tmp = fullVideoM2M0 .^ 2 - (LocalBKG_vessel .* ~local_mask_vessel) .^ 2;
-            tmp = tmp .* (tmp > 0);
-            fullVideoM2M0minusBKG = sqrt(abs(tmp));
-            clear tmp
+        tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
+        tmp = tmp .* (tmp > 0);
+        fullVideoM2M0minusBKG = sqrt(tmp);
+        clear tmp
 
-        elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
+    elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
-            fullVideoM2eff = fullVideoM2 - (LocalBKG_vesselM2 .* ~local_mask_vessel);
-            fullVideoM0eff = fullVideoM0 - (LocalBKG_vesselM0 .* ~local_mask_vessel);
-            fullVideoM2M0eff = fullVideoM2eff ./ fullVideoM0eff;
-            fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff .* (fullVideoM2M0eff > 0));
+        fullVideoM2eff = fullVideoM2 - LocalBKG_vesselM2;
+        fullVideoM0eff = fullVideoM0 - LocalBKG_vesselM0;
+        fullVideoM2M0eff = fullVideoM2eff ./ fullVideoM0eff;
+        fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff .* (fullVideoM2M0eff > 0));
 
-        else % DIFFERENCE LAST
+    else % DIFFERENCE LAST
 
-            fullVideoM2M0minusBKG = fullVideoM2M0 - (LocalBKG_vessel .* ~local_mask_vessel);
-
-        end
-
-    else
-
-        if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
-
-            tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
-            fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
-            clear tmp
-
-        elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
-
-            tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
-            tmp = tmp .* (tmp > 0);
-            fullVideoM2M0minusBKG = sqrt(tmp);
-            clear tmp
-
-        elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
-
-            fullVideoM2eff = fullVideoM2 - LocalBKG_vesselM2;
-            fullVideoM0eff = fullVideoM0 - LocalBKG_vesselM0;
-            fullVideoM2M0eff = fullVideoM2eff ./ fullVideoM0eff;
-            fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff .* (fullVideoM2M0eff > 0));
-
-        else % DIFFERENCE LAST
-
-            fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_vessel;
-
-        end
+        fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_vessel;
 
     end
+
+    % end
 
     exec_times_id = [exec_times_id, "Local Backgrounds"];
     exec_times_time = [exec_times_time, toc];
@@ -486,24 +452,24 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     clear local_mask_artery
 
-    if veins_analysis
-        f19 = figure(19);
-        f19.Position = [1100 485 350 420];
-        LocalBackground_in_veins = mean(LocalBKG_vein, 3) .* local_mask_vein + ones(size(LocalBKG_vein, 1)) * mean(LocalBKG_vein, 'all') .* ~local_mask_vein;
-        imagesc(LocalBackground_in_veins);
-        colormap gray
-        title('Local Background in vein');
-        fontsize(gca, 14, "points");
-        set(gca, 'LineWidth', 2);
-        c = colorbar('southoutside');
-        c.Label.String = 'RMS Doppler frequency (kHz)';
-        c.Label.FontSize = 12;
-        axis off
-        axis image
-        imwrite(rescale(LocalBackground_in_veins), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_veins.png')));
-
-        range(1:2) = clim;
-    end
+    % if veins_analysis
+    %     f19 = figure(19);
+    %     f19.Position = [1100 485 350 420];
+    %     LocalBackground_in_veins = mean(LocalBKG_vessel, 3) .* local_mask_vein + ones(size(LocalBKG_vessel, 1)) * mean(LocalBKG_vessel, 'all') .* ~local_mask_vein;
+    %     imagesc(LocalBackground_in_veins);
+    %     colormap gray
+    %     title('Local Background in vein');
+    %     fontsize(gca, 14, "points");
+    %     set(gca, 'LineWidth', 2);
+    %     c = colorbar('southoutside');
+    %     c.Label.String = 'RMS Doppler frequency (kHz)';
+    %     c.Label.FontSize = 12;
+    %     axis off
+    %     axis image
+    %     imwrite(rescale(LocalBackground_in_veins), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_veins.png')));
+    % 
+    %     range(1:2) = clim;
+    % end
 
     clear LocalBKG_vessel
 
