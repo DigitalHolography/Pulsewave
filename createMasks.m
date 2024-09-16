@@ -166,37 +166,11 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     %[maskVein,RG_video_vein]  = region_growing_for_vessel(vesselness_vein, seeds_vein, condition_vein, path);
     [maskVessel, rgVideoVessel] = region_growing_for_vessel(vesselnessIm, seedsArtery | seedsVein, condition_vein | conditionArtery, path);
 
-    try
-
-        if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskVessel_New.png')) % import manually tuned mask if needed
-            maskVessel = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskVessel_New.png')), 3)) > 0;
-        else
-            maskVessel = bwareafilt(maskVessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
-        end
-
-        if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskArtery_New.png')) % import manually tuned mask if needed
-            maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskArtery_New.png')), 3)) > 0;
-        else
-            maskArtery = maskVessel .* correlationMatrixArtery;
-            maskArtery = maskArtery > PW_params.arteryMask_ArteryCorrThreshold;
-        end
-
-        if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskVein_New.png')) % import manually tuned mask if needed
-            maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskVein_New.png')), 3)) > 0;
-        else
-            maskVein = maskVessel .* correlationMatrixVein;
-            maskVein = maskVein > 0;
-        end
-
-    catch
-        warning("There was an error with the manual import of the masks, check if the dimensions of the mask match the ones of the video.\n Normal procedure will follow.")
-        [maskVessel, rgVideoVessel] = region_growing_for_vessel(vesselnessIm, seedsArtery | seedsVein, condition_vein | conditionArtery, path);
-        maskVessel = bwareafilt(maskVessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
-        maskArtery = maskVessel .* correlationMatrixArtery;
-        maskArtery = maskArtery > PW_params.arteryMask_ArteryCorrThreshold;
-        maskVein = maskVessel .* correlationMatrixVein;
-        maskVein = maskVein > 0;
-    end
+    maskVessel = bwareafilt(maskVessel, PW_params.arteryMask_magicwand_nb_of_area_vessels, 4);
+    maskArtery = maskVessel .* correlationMatrixArtery;
+    maskArtery = maskArtery > PW_params.arteryMask_ArteryCorrThreshold;
+    maskVein = maskVessel .* correlationMatrixVein;
+    maskVein = maskVein > 0;
 
     %maskVein = maskVessel & ~maskArtery;
 
@@ -256,6 +230,25 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     stdM1M0 = std2(meanM1M0);
     maskCRA = meanM1M0 > (PW_params.CRACRV_Threshold * stdM1M0);
     maskCRV = meanM1M0 < (-PW_params.CRACRV_Threshold * stdM1M0);
+
+    %import manual mask if provided
+    try
+
+        if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskVessel_New.png')) % import manually tuned mask if needed
+            maskVessel = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskVessel_New.png')), 3)) > 0;
+        end
+
+        if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskArtery_New.png')) % import manually tuned mask if needed
+            maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskArtery_New.png')), 3)) > 0;
+        end
+
+        if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'maskVein_New.png')) % import manually tuned mask if needed
+            maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'maskVein_New.png')), 3)) > 0;
+        end
+
+    catch
+        warning("There was an error with the manual import of the masks, check if the dimensions of the mask match the ones of the video.\n Normal procedure will follow.")        
+    end
 
     %% Creat Background Mask
 

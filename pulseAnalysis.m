@@ -187,6 +187,10 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     [fullBackgroundSignalRmOut, idxOutBkg] = filloutliers(fullBackgroundSignal, 'linear');
     fullArterialSignalMinusBackground = fullArterialSignalRmOut - fullBackgroundSignalRmOut;
 
+    if veins_analysis
+        fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
+    end
+
     dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutArtery) / length(fullArterialSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
     disp(['data reliability index 1 (artery) : ' num2str(dataReliabilityIndex1) ' %']);
 
@@ -207,6 +211,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     end
 
     figure(30)
+
     if veins_analysis
         plot(T, fullArterialSignalClean, '-k', T, fullVenousSignalClean, '-.k', 'LineWidth', 2);
         title('Cleaned Arterial Signal and Venous Signal'); % averaged outside of segmented vessels
@@ -219,6 +224,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         legend('Arterial Signal');
         plot2txt(T, fullArterialSignalClean, 'FullArterialSignalCleaned', ToolBox)
     end
+
     fontsize(gca, 14, "points");
     xlabel(strXlabel, 'FontSize', 14);
     ylabel(strYlabel, 'FontSize', 14);
@@ -241,7 +247,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseArteryFiltered.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseArteryFiltered.eps')))
-
 
     if veins_analysis
         figure(32)
@@ -334,7 +339,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     tic
 
-    if veins_analysis 
+    if veins_analysis
         local_mask_vessel = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
     else
         local_mask_vessel = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
@@ -398,11 +403,15 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     tic
     fprintf("Outlier Cleaning:\n")
     [nX, nY, ~] = size(fullVideoM2M0minusBKG);
+
     for varX = 1:nX
+
         for varY = 1:nY
-            fullVideoM2M0minusBKG(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :) , 'linear');
+            fullVideoM2M0minusBKG(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :), 'linear');
         end
+
     end
+
     toc
 
     fullArterialPulseRegularized = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
@@ -446,9 +455,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     range(1:2) = clim;
 
-    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(LocalBKG_vessel),fullfile(ToolBox.PW_path_avi,sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.avi')));
-    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(LocalBKG_vessel),fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.mp4')), 'MPEG-4');
-
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(LocalBKG_vessel), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.avi')));
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(LocalBKG_vessel), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.mp4')), 'MPEG-4');
 
     clear local_mask_artery
 
@@ -467,7 +475,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     %     axis off
     %     axis image
     %     imwrite(rescale(LocalBackground_in_veins), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_veins.png')));
-    % 
+    %
     %     range(1:2) = clim;
     % end
 
@@ -539,12 +547,11 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % save video
     % avi
 
-    parfeval(backgroundPool,@writeVideoOnDisc,0,flowVideoRGB,fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, flowVideoRGB, fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
 
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
 
-    writeGifOnDisc(flowVideoRGB,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")),timePeriod);
-
+    writeGifOnDisc(flowVideoRGB, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")), timePeriod);
 
     % f_RMS_artery = sum(flowVideoRGB .* maskArtery, [1 2]) / nnz(maskArtery);
     % f_RMS_vein = sum(flowVideoRGB .* maskVein, [1 2]) / nnz(maskVein);
@@ -554,8 +561,7 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     % f_RMS_min_Veins = min(f_RMS_vein(:));
 
     % mp4
-    parfeval(backgroundPool,@writeVideoOnDisc,0,flowVideoRGB,fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')),'MPEG-4');
-
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, flowVideoRGB, fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')), 'MPEG-4');
 
     exec_times_id = [exec_times_id, "Construct velocity video"];
     exec_times_time = [exec_times_time, toc];
@@ -575,9 +581,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     v_RMS_all = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKG * ToolBox.NormalizationFactor;
 
-
-    
-    
     % fprintf('Factor Normalization was performed: %f\n',ToolBox.NormalizationFactor)
     % v_RMS_all = ToolBox.ScalingFactorVelocityInPlane *
     % fullVideoM2M0minusBKG + ToolBox.NormalizationOffset;
@@ -591,16 +594,13 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     v_RMS_one_cycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
 
     % avi
-    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideo),fullfile(ToolBox.PW_path_avi,sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
-    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideoM0),fullfile(ToolBox.PW_path_avi,sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.avi')));
-
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideo), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideoM0), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.avi')));
 
     % mp4
-    
-    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideo),fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.mp4')), 'MPEG-4');
-    parfeval(backgroundPool,@writeVideoOnDisc,0,mat2gray(onePulseVideoM0),fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.mp4')), 'MPEG-4');
 
-    
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideo), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.mp4')), 'MPEG-4');
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideoM0), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycleM0.mp4')), 'MPEG-4');
 
     %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 

@@ -484,6 +484,8 @@ classdef OneCycleClass
         end
 
         function onePulse(obj, Ninterp)
+            %  ------- This is the app main routine. --------
+
             % PW_params = Parameters_json(obj.directory);
             % ToolBox = obj.ToolBoxmaster;
 
@@ -581,19 +583,12 @@ classdef OneCycleClass
             [Nx, Ny, N_frame] = size(obj.reference_norm_interp{1});
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-            gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod, 0.04, N_frame);
-
             videoM0Rescaled = rescale(obj.reference_interp{1});
-
-            for frameIdx = 1:N_frame
-                gifWriter.write(videoM0Rescaled(:, :, frameIdx), frameIdx);
-            end
-
-            gifWriter.generate();
-            gifWriter.delete();
+            writeGifOnDisc(videoM0Rescaled,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")),timePeriod)
 
             imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
-
+            
+            clear videoM0Rescaled;
             disp('M0 gif animation timing :')
             time = toc;
             disp(time)
@@ -619,7 +614,7 @@ classdef OneCycleClass
             save_time(path_file_txt_exe_times, 'CreateMasks', time)
             fileID = fopen(path_file_txt_exe_times, 'a+');
             fprintf(fileID, '\r\n----------\r\n');
-            fclose(fileID);
+              fclose(fileID);
 
             %% PulseWave Analysis
             % waitbar(0.25,progress_bar,"PulseWave analysis");
