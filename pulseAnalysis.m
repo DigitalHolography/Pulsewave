@@ -187,10 +187,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     [fullBackgroundSignalRmOut, idxOutBkg] = filloutliers(fullBackgroundSignal, 'linear');
     fullArterialSignalMinusBackground = fullArterialSignalRmOut - fullBackgroundSignalRmOut;
 
-    if veins_analysis
-        fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
-    end
-
     dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutArtery) / length(fullArterialSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
     disp(['data reliability index 1 (artery) : ' num2str(dataReliabilityIndex1) ' %']);
 
@@ -403,25 +399,27 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     tic
     fprintf("Outlier Cleaning:\n")
     [nX, nY, ~] = size(fullVideoM2M0minusBKG);
+    fullVideoM2M0minusBKGClean = zeros(nX, nY, N_frame);
 
-    for varX = 1:nX
+    parfor varX = 1:nX
 
         for varY = 1:nY
-            fullVideoM2M0minusBKG(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :), 'linear');
+            fullVideoM2M0minusBKGClean(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :), 'linear');
         end
 
     end
 
     toc
-
-    fullArterialPulseRegularized = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
+       
+    fullPulse = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
+    fullPulseRegularized = squeeze(sum(fullVideoM2M0minusBKGClean .* maskArtery, [1 2])) / nnz(maskArtery);
 
     %% PLOT
 
     figure(43)
     plot( ...
-        T(1:length(fullArterialPulseRegularized)), fullArterialPulseRegularized, '-k', ...
-        T(1:length(fullArterialSignal)), fullArterialSignalMinusBackground, ':k', ...
+        T(1:length(fullPulseRegularized)), fullPulseRegularized, '-k', ...
+        T(1:length(fullPulse)), fullPulse, ':k', ...
         'LineWidth', 2);
     yline(0, ':', {''}, LineWidth = 2);
     title('Regularized pulse wave signal averaged in retinal arteries');
@@ -435,8 +433,8 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.eps')))
 
-    plot2txt(T(1:length(fullArterialPulseRegularized)), fullArterialPulseRegularized, 'FullArterialPulseRegularized', ToolBox)
-    plot2txt(T(1:length(fullArterialSignal)), fullArterialSignalMinusBackground, 'FullArterialPulseMinusBackground', ToolBox)
+    plot2txt(T(1:length(fullPulseRegularized)), fullPulseRegularized, 'fullPulseRegularized', ToolBox)
+    plot2txt(T(1:length(fullPulse)), fullPulse, 'fullPulse', ToolBox)
 
     f18 = figure(18);
     f18.Position = [1100 485 350 420];
@@ -571,11 +569,11 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     tic
 
-    [onePulseVideo, ~, ~, onePulseVideoM0] = create_one_cycle(fullVideoM2M0, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
+    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(fullVideoM2M0, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
 
     clear fullVideoM2M0
 
-    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = create_one_cycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
+    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
 
     %% Velocity Calculation
 

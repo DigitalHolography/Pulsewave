@@ -1,4 +1,4 @@
-function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] = create_one_cycle(video, videoM0, mask, sys_index_list, Ninterp, path, ToolBox)
+function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(video, videoM0, mask, sys_index_list, Ninterp, path, ToolBox)
     %   one_cycle() : identifies pulse cycles and average them to one video
     %   sys_index_list : list of systole indexes in video
 
@@ -9,15 +9,18 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
     disp('over one cardiac cycle...');
 
     M = length(sys_index_list) - 1; % M : pulse #
-    one_cycle_video = zeros(size(video, 1), size(video, 2), Ninterp, M);
-    one_cycle_videoM0 = zeros(size(video, 1), size(video, 2), Ninterp, M);
+    oneCycleVideo = zeros(size(video, 1), size(video, 2), Ninterp, M);
+    oneCycleVideoM0 = zeros(size(video, 1), size(video, 2), Ninterp, M);
+
 
     Nx = size(video, 1);
     Ny = size(video, 2);
 
     if M > 0 % we have detected at least two systoles
         %calculate the signal
-        cycles_signal = zeros(M, Ninterp);
+        cyclesSignal = zeros(M, Ninterp);
+        peak2Peak = zeros(1, M);
+        meanSignal = zeros(1, M); 
 
         for ii = 1:M
             interp_range = linspace(sys_index_list(ii), sys_index_list(ii + 1) - 1, Ninterp);
@@ -25,14 +28,18 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
             tmp = squeeze(sum(video(:, :, frame_range) .* mask, [1 2]) / nnz(mask));
             %        [idxOutPw, tmp] = discardPulseWaveOutliers( tmp,3);
             %       tmp= smoothdata( tmp,'lowess');
-            cycles_signal(ii, :) = interp1(frame_range, tmp, interp_range);
-
+            cyclesSignal(ii, :) = interp1(frame_range, tmp, interp_range);
+            peak2Peak(ii) = max(cyclesSignal(ii, :)) - min(cyclesSignal(ii, :));
+            % meanSignal(ii) = mean(meanSignal(ii, :));
         end
+        
+        medianPeak2Peak = median(peak2Peak);
+        cyclesSignal = cyclesSignal ./ peak2Peak' .* medianPeak2Peak;
 
         %check pulse integrity
         pulseMatrix = zeros(M, Ninterp);
         %     cleanSignal = squeeze(mean(one_cycle(:,:,:,:),[1 2 4]));
-        cleanSignal = squeeze(mean(cycles_signal, 1));
+        cleanSignal = squeeze(mean(cyclesSignal, 1));
         cleanSignal = cleanSignal - mean(cleanSignal(:));
 
         % FIXME
@@ -52,7 +59,7 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
 
         for ii = 1:M % for each detected pulse, loop
             %         signal = squeeze(mean(one_cycle(:,:,:,ii),[1 2]));
-            signal = cycles_signal(ii, :);
+            signal = cyclesSignal(ii, :);
             signal = signal - mean(signal(:));
 
             C = sum(signal .* cleanSignal) / Ninterp;
@@ -131,7 +138,7 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
                 interp_range = linspace(sys_index_list(ii), sys_index_list(ii + 1) - 1, Ninterp);
                 frame_range = sys_index_list(ii):sys_index_list(ii + 1) - 1;
 
-                for id_x = 1:Nx
+                parfor id_x = 1:Nx
 
                     for id_y = 1:Ny
                         %                 one_cycle_video(id_x,id_y,:,ii) = interp1((sys_index_list(ii):sys_index_list(ii+1)-1),squeeze(video(id_x, id_y,sys_index_list(ii):sys_index_list(ii+1)-1)),interp_range);
@@ -151,8 +158,8 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
 
     else % if M = 0
         fprintf("Less than two systoles were detected");
-        cycles_signal = squeeze(sum(video(:, :, :) .* mask, [1 2]) / nnz(mask));
-        cycles_signal = interp1(cycles_signal, 1:Ninterp);
+        cyclesSignal = squeeze(sum(video(:, :, :) .* mask, [1 2]) / nnz(mask));
+        cyclesSignal = interp1(cyclesSignal, 1:Ninterp);
         tmp = interp3(video, size(video, 1), size(video, 2), Ninterp);
         tmpM0 = interp3(videoM0, size(video, 1), size(video, 2), Ninterp);
         selectedPulseIdx = 0;
@@ -161,13 +168,13 @@ function [one_cycle_video, selectedPulseIdx, cycles_signal, one_cycle_videoM0] =
 
     % FIXME : create zerolag correlation matrix between all zero-mean pulses,
     % then svd, to identify the most correlated pulses
-    one_cycle_video = tmp; % average all detected cycles
-    one_cycle_videoM0 = tmpM0; % average all detected cycles
+    oneCycleVideo = tmp; % average all detected cycles
+    oneCycleVideoM0 = tmpM0; % average all detected cycles
 
-    oneP = squeeze(sum(one_cycle_video .* mask, [1 2]) / nnz(mask));
-    [min_val, shift] = min(oneP); % find bottom systole
-    one_cycle_video = circshift(one_cycle_video, -shift, 3);
-    one_cycle_videoM0 = circshift(one_cycle_videoM0, -shift, 3);
-    cycles_signal = circshift(cycles_signal, -shift, 2); % shift pulse to start & end with bottom diastole
+    oneP = squeeze(sum(oneCycleVideo .* mask, [1 2]) / nnz(mask));
+    [minVal, shift] = min(oneP); % find bottom systole
+    oneCycleVideo = circshift(oneCycleVideo, -shift, 3);
+    oneCycleVideoM0 = circshift(oneCycleVideoM0, -shift, 3);
+    cyclesSignal = circshift(cyclesSignal, -shift, 2); % shift pulse to start & end with bottom diastole
 
     disp('done.');

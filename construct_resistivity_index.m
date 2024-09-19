@@ -6,15 +6,18 @@ function [ARI, ARImap] = construct_resistivity_index(v_RMS, maskArtery)
 
     arterialPulse = squeeze(sum(v_RMS .* maskArtery, [1 2]));
     arterialPulse = arterialPulse / nnz(maskArtery);
-
-    arterialPulse = filloutliers(arterialPulse, "linear");
-    arterialPulse = smoothdata(arterialPulse, 'rlowess');
+    % arterialPulse = smoothdata(arterialPulse, 'rlowess');
 
     %% avg. arterial resistivity index
 
     [maxAP, maxAPidx] = max(arterialPulse(:));
     [minAP, minAPidx] = min(arterialPulse(:));
 
+    figure, plot(arterialPulse), hold on
+    scatter(maxAPidx, maxAP);
+    scatter(minAPidx, minAP);
+    yline(maxAP), yline(minAP)
+    hold off
     ARI = (maxAP - minAP) / maxAP;
 
     %% arterial resistivity map values

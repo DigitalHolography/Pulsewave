@@ -77,7 +77,7 @@ figure(75);
 imagesc(U_x)
 
 ft_U_x = fft(U_x,[],2);
-ph = ifft(exp(1j*angle(ft_U_x)));
+ph = angle(ft_U_x);
 % xc = xcorr(U_x')'; % calculates all the time cross correlations between all the sections
 % midpoint = round(numpoints/2);
 % rr = ones(2*numpoints-1)<0;
@@ -94,7 +94,7 @@ ph = ifft(exp(1j*angle(ft_U_x)));
 % 
 %     xc_averaged(i,:) = mean(xc(rows,:),1); % averages all cross correlations between sections with an DX=(midpoint-i) distance between them
 
-xc = reshape(xcorr(U_x')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
+xc = reshape(phxcorr(ph),numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
 
 rr = ones(3*numpoints-1);
 rr(2*numpoints-1) = 1;
@@ -103,7 +103,18 @@ for i=1:2*numpoints-1
     c = rr(1:numpoints);
     toep = toeplitz(c,r);
     rr = circshift(rr,-1);
-    xc_averaged(i,:) = mean(xc.*toep ,[1,2]);
+    xc_averaged(i,:) = mean(xc.*toep ,[1,2]); % moyenne sur tous les points qui on le meme décalage
+end
+figure(777)
+imagesc(xc_averaged);
+function pxc = phxcorr(M)
+    pxc = zeros([size(M,1)^2,size(M,2)]);
+    for i=1:size(M,1)
+        for j=1:size(M,1)
+            pxc(i*size(M,1),:) = cos(M(i,:)-M(j,:));
+        end
+    end
+
 end
 
 end
