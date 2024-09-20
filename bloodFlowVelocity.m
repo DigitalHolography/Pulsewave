@@ -32,8 +32,10 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
     if veins_analysis
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(Im, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein, sat_vein, val_vein, cmap_vein] = createHSVmap(Im, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-        val = Im .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
-        flowImageRGB = hsv2rgb(hue_artery + hue_vein, sat_artery + sat_vein, val);
+        val = Im .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein - (val_artery + val_vein)./2.*(maskArtery&maskVein);
+        hue = (hue_artery + hue_vein)  - (hue_artery + hue_vein)./2.*(maskArtery&maskVein);
+        sat = (sat_artery + sat_vein)  - (sat_artery + sat_vein)./2.*(maskArtery&maskVein);
+        flowImageRGB = hsv2rgb(hue, sat, val);
         flowImageRGB = flowImageRGB .* (maskArtery + maskVein) + ones(Nx, Ny) .* ImgM0 .* ~(maskArtery + maskVein);
     else
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(Im, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
@@ -56,18 +58,22 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
 
         [hue_artery_mean, sat_artery_mean, val_artery_mean, cmap_artery] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein_mean, sat_vein_mean, val_vein_mean, cmap_vein] = createHSVmap(v_mean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-        val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein;
-        flowVideoRGB_mean = hsv2rgb(hue_artery_mean + hue_vein_mean, sat_artery_mean + sat_vein_mean, val_mean);
-        flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* M0_norm_mean;
+        val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein  - (val_artery_mean + val_vein_mean)./2.*(maskArtery&maskVein);
+        hue_mean = (hue_artery_mean + hue_vein_mean)  - (hue_artery_mean + hue_vein_mean)./2.*(maskArtery&maskVein);
+        sat_mean = (sat_artery_mean + sat_vein_mean)  - (sat_artery_mean + sat_vein_mean)./2.*(maskArtery&maskVein);
+        flowVideoRGB_mean = hsv2rgb(hue_mean, sat_mean, val_mean);
+        flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein - maskArtery&maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* M0_norm_mean;
         imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
-        for frameIdx = 1:N_frame
+        parfor frameIdx = 1:N_frame
             v = mat2gray(v_RMS_all(:, :, frameIdx));
             [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-            val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
-            flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_artery + hue_vein, sat_artery + sat_vein, val);
-            flowVideoRGB(:, :, :, frameIdx) = flowVideoRGB(:, :, :, frameIdx) .* (maskArtery + maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* videoM0_norm(:, :, frameIdx);
+            val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein - (val_artery + val_vein)./2.*(maskArtery&maskVein);
+            hue = hue_artery + hue_vein - (hue_artery + hue_vein)./2.*(maskArtery&maskVein);
+            sat = sat_artery + sat_vein - (sat_artery + sat_vein)./2.*(maskArtery&maskVein);
+            flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue, sat, val);
+            flowVideoRGB(:, :, :, frameIdx) = flowVideoRGB(:, :, :, frameIdx) .* (maskArtery | maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery | maskVein) .* videoM0_norm(:, :, frameIdx);
         end
 
     else
@@ -78,7 +84,7 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
         flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery) + ones(Nx, Ny, 3) .* ~(maskArtery) .* M0_norm_mean;
         imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
-        for frameIdx = 1:N_frame
+        parfor frameIdx = 1:N_frame
             v = mat2gray(v_RMS_all(:, :, frameIdx));
             [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             val = v .* (~(maskArtery)) + val_artery .* maskArtery;

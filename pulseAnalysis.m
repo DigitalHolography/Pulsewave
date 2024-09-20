@@ -346,47 +346,51 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     LocalBKG_vesselM2 = zeros(size(fullVideoM2));
     LocalBKG_vesselM0 = zeros(size(fullVideoM0));
 
+    flatfield_M2M0 = flat_field_correction(fullVideoM2M0, ceil(PW_params.flatField_gwRatio * size(fullVideoM2M0, 1)), PW_params.flatField_border);
+    flatfield_M2 = flat_field_correction(fullVideoM2, ceil(PW_params.flatField_gwRatio * size(fullVideoM2, 1)), PW_params.flatField_border);
+    flatfield_M0 = flat_field_correction(fullVideoM0, ceil(PW_params.flatField_gwRatio * size(fullVideoM0, 1)), PW_params.flatField_border);
+
     if veins_analysis
 
         parfor nn = 1:N_frame
-            LocalBKG_vessel(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vessel));
-            LocalBKG_vesselM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vessel));
-            LocalBKG_vesselM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vessel));
+            LocalBKG_vessel(:, :, nn) = single(regionfill(flatfield_M2M0(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM2(:, :, nn) = single(regionfill(flatfield_M2(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM0(:, :, nn) = single(regionfill(flatfield_M0(:, :, nn), local_mask_vessel));
         end
 
     else
 
         parfor nn = 1:N_frame
-            LocalBKG_vessel(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vessel));
-            LocalBKG_vesselM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vessel));
-            LocalBKG_vesselM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vessel));
+            LocalBKG_vessel(:, :, nn) = single(regionfill(flatfield_M2M0(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM2(:, :, nn) = single(regionfill(flatfield_M2(:, :, nn), local_mask_vessel));
+            LocalBKG_vesselM0(:, :, nn) = single(regionfill(flatfield_M0(:, :, nn), local_mask_vessel));
         end
 
     end
 
     if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-        tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
+        tmp = flatfield_M2M0 .^ 2 - LocalBKG_vessel .^ 2;
         fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
         clear tmp
 
     elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
-        tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
+        tmp = flatfield_M2M0 .^ 2 - LocalBKG_vessel .^ 2;
         tmp = tmp .* (tmp > 0);
         fullVideoM2M0minusBKG = sqrt(tmp);
         clear tmp
 
     elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
-        fullVideoM2eff = fullVideoM2 - LocalBKG_vesselM2;
-        fullVideoM0eff = fullVideoM0 - LocalBKG_vesselM0;
+        fullVideoM2eff = flatfield_M2 - LocalBKG_vesselM2;
+        fullVideoM0eff = flatfield_M0- LocalBKG_vesselM0;
         fullVideoM2M0eff = fullVideoM2eff ./ fullVideoM0eff;
         fullVideoM2M0minusBKG = sqrt(fullVideoM2M0eff .* (fullVideoM2M0eff > 0));
 
     else % DIFFERENCE LAST
 
-        fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_vessel;
+        fullVideoM2M0minusBKG = flatfield_M2M0 - LocalBKG_vessel;
 
     end
 
@@ -483,13 +487,13 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     %% Global BKG for beautiful images
 
-    A = ones(size(fullVideoM2M0));
+    A = ones(size(flatfield_M2M0));
 
     parfor pp = 1:N_frame
         A(:, :, pp) = A(:, :, pp) * fullBackgroundSignal(pp);
     end
 
-    fullVideoM2M0 = fullVideoM2M0 - A;
+    flatfield_M2M0 = flatfield_M2M0 - A;
 
     clear fullBackgroundSignal fullVenousSignal A
 
@@ -497,32 +501,36 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     tic
 
-    flowVideoRGB = zeros(size(fullVideoM2M0, 1), size(fullVideoM2M0, 2), 3, size(fullVideoM2M0, 3));
-    fullVideoM0_norm = rescale(fullVideoM0);
+    flowVideoRGB = zeros(size(flatfield_M2M0, 1), size(flatfield_M2M0, 2), 3, size(flatfield_M2M0, 3));
+    fullVideoM0_norm = rescale(flatfield_M0);
 
     if veins_analysis
 
-        v_mean = mat2gray(squeeze(mean(fullVideoM2M0(:, :, :), 3)));
+        v_mean = mat2gray(squeeze(mean(flatfield_M2M0(:, :, :), 3)));
         fullVideoM0_normMean = mean(fullVideoM0_norm, 3);
         [hue_artery_mean, sat_artery_mean, val_artery_mean, ~] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein_mean, sat_vein_mean, val_vein_mean, ~] = createHSVmap(v_mean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-        val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein;
-        flowVideoRGB_mean = hsv2rgb(hue_artery_mean + hue_vein_mean, sat_artery_mean + sat_vein_mean, val_mean);
+        val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein  - (val_artery_mean + val_vein_mean)./2.*(maskArtery&maskVein);
+        hue_mean = (hue_artery_mean + hue_vein_mean)  - (hue_artery_mean + hue_vein_mean)./2.*(maskArtery&maskVein);
+        sat_mean = (sat_artery_mean + sat_vein_mean)  - (sat_artery_mean + sat_vein_mean)./2.*(maskArtery&maskVein);
+        flowVideoRGB_mean = hsv2rgb(hue_mean, sat_mean, val_mean);
         flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + ones(size(flowVideoRGB_mean)) .* fullVideoM0_normMean .* ~(maskArtery + maskVein);
         imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png')))
 
-        parfor ii = 1:size(fullVideoM2M0, 3)
-            v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
+        parfor ii = 1:size(flatfield_M2M0, 3)
+            v = mat2gray(squeeze(flatfield_M2M0(:, :, ii)));
             [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-            val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
-            flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery + hue_vein, sat_artery + sat_vein, val);
-            flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery + maskVein) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery + maskVein);
+            val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein - (val_artery + val_vein)./2.*(maskArtery&maskVein);
+            hue = (hue_artery + hue_vein)  - (hue_artery + hue_vein)./2.*(maskArtery&maskVein);
+            sat = (sat_artery + sat_vein)  - (sat_artery + sat_vein)./2.*(maskArtery&maskVein);
+            flowVideoRGB(:, :, :, ii) = hsv2rgb(hue, sat, val);
+            flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery + maskVein - maskArtery&maskVein) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery + maskVein);
         end
 
     else
 
-        v_mean = mat2gray(squeeze(mean(fullVideoM2M0(:, :, :), 3)));
+        v_mean = mat2gray(squeeze(mean(flatfield_M2M0(:, :, :), 3)));
         fullVideoM0_normMean = mean(fullVideoM0_norm, 3);
         [hue_artery_mean, sat_artery_mean, val_artery_mean, ~] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         val_mean = v_mean .* ~maskArtery + val_artery_mean .* maskArtery;
@@ -530,10 +538,10 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
         flowVideoRGB_mean = flowVideoRGB_mean .* maskArtery + ones(size(flowVideoRGB_mean)) .* fullVideoM0_normMean .* ~maskArtery;
         imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png')))
 
-        parfor ii = 1:size(fullVideoM2M0, 3)
-            v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
+        parfor ii = 1:size(flatfield_M2M0, 3)
+            v = mat2gray(squeeze(flatfield_M2M0(:, :, ii)));
             [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-            val = v .* ~maskArtery + val_artery .* maskArtery;
+            val = v .* (~(maskArtery)) + val_artery .* maskArtery;
             flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery, sat_artery, val);
             flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery) + ones(size(flowVideoRGB(:, :, :, ii))) .* fullVideoM0_norm(:, :, ii) .* ~(maskArtery);
         end
@@ -569,9 +577,9 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
 
     tic
 
-    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(fullVideoM2M0, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
+    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(flatfield_M2M0, flatfield_M0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
 
-    clear fullVideoM2M0
+    clear flatfield_M2M0 fullVideoM2M0
 
     [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sys_index_list, Ninterp, path, ToolBox);
 

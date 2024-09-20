@@ -27,7 +27,7 @@
         "Number of interpolation" : 64,
         "Out of noise threshold" : 85,
         "Data reliability index threshold" : 50,
-        "Local background width" : 15
+        "Local background width" : 2
     },
     "Creation of masks" : {
         "Vesselnes parameter sigma" : 3,

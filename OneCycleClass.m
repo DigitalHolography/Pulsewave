@@ -606,15 +606,22 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [maskArtery, maskVein, ~, maskBackground, maskCRA, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-            disp('CreatMasks timing :')
+
+            try 
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = forceCreateMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            catch
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            end
+
+
+            disp('CreateMasks timing :')
             time = toc;
             disp(time)
 
             save_time(path_file_txt_exe_times, 'CreateMasks', time)
             fileID = fopen(path_file_txt_exe_times, 'a+');
             fprintf(fileID, '\r\n----------\r\n');
-              fclose(fileID);
+            fclose(fileID);
 
             %% PulseWave Analysis
             % waitbar(0.25,progress_bar,"PulseWave analysis");
@@ -682,7 +689,7 @@ classdef OneCycleClass
 
                     if obj.flag_bloodVolumeRate_analysis
                         tic
-                        bloodVolumeRate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                        bloodVolumeRate(maskArtery, maskVein, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                         disp('Blood Volume Rate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)

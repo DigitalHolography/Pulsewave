@@ -250,7 +250,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
         warning("There was an error with the manual import of the masks, check if the dimensions of the mask match the ones of the video.\n Normal procedure will follow.")        
     end
 
-    %% Creat Background Mask
+    %% Create Background Mask
 
     maskBackground = not(maskVessel);
 

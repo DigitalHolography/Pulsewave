@@ -1,4 +1,4 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path, flagBloodVelocityProfile)
+function [] = bloodVolumeRate(maskArtery, maskVein, ~, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path, flagBloodVelocityProfile)
 
     PW_params = Parameters_json(path);
 
