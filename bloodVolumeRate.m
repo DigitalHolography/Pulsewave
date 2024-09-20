@@ -558,7 +558,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
 
             ylabel('Blood volume rate (µL/min)')
             xlabel('Time (s)')
-            title(sprintf("Total blood volume rate in veins : %02.0f", round(mean_volume_rate_vein)))
+            title(sprintf("Total blood volume rate in veins : %02.0f µL/min", round(mean_volume_rate_vein)))
             axis([ax_vol_rate_vein(1) ax_vol_rate_vein(2) ax_vol_rate_vein(3) ax_vol_rate_vein(4)]);
             fontsize(gca, 14, "points");
             set(gca, 'Linewidth', 2)
@@ -928,7 +928,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
     
             ylabel('Blood volume rate (µL/min)')
             xlabel('Time (s)')
-            title(sprintf("Total blood volume rate in arteries : %02.0f", round(mean_volume_rate_artery)))
+            title(sprintf("Total blood volume rate in arteries : %02.0f µL/min", round(mean_volume_rate_artery)))
             axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
             fontsize(gca, 14, "points");
             set(gca, 'Linewidth', 2)
