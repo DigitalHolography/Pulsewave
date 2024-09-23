@@ -8,15 +8,8 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
     meanIm = squeeze(mean(videoM0, 3));
     meanM1M0 = squeeze(mean(videoM1M0, 3));
-
     figure(666), imagesc(meanIm), axis image, colormap gray;
-
-    for frame_idx = 1:N_frame
-        videoM0(:, :, frame_idx) = flat_field_correction(squeeze(videoM0(:, :, frame_idx)), PW_params.flatField_gwRatio * (Ny + Nx) / 2, 0);
-    end
-
     
-
     videoM0_zero = videoM0 - meanIm;
 
     % compute vesselness response
