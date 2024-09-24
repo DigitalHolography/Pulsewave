@@ -11,6 +11,8 @@ implay(rescale(U).*mask);
 N_frame = size(U, 3);
 [x, y] = meshgrid(1:M, 1:N);
 
+timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+
 x_bary = ToolBox.x_barycentre;
 y_bary = ToolBox.y_barycentre;
 
@@ -43,11 +45,13 @@ k = dsearchn([interpoints_x,interpoints_y],[x_bary,y_bary]); % get the nearest p
 
 absx = zeros(numpoints); % x and y position register
 absy = zeros(numpoints);
+abs_dist = zeros(numpoints); % vessel curvilign absis
 
 absx(1) = interpoints_x(k); % nearest point to the center
 absy(1) = interpoints_y(k);
-interpoints_x(k) = [];
+ (k) = [];
 interpoints_y(k) = [];
+abs_dist(1) = 0;
 
 for kb = 2:numpoints
     k = dsearchn([interpoints_x,interpoints_y],[absx(kb-1),absy(kb-1)]);
@@ -56,6 +60,12 @@ for kb = 2:numpoints
     interpoints_x(k) = []; % deleting point from list
     interpoints_y(k) = [];
 end
+for kb = 2:numpoints
+    abs_dist(kb) = abs_dist(kb-1) + sqrt((absx(kb)-absx(kb-1))^2+(absy(kb)-absy(kb-1))^2)*PW_params.cropSection_pixelSize / 2 ^ PW_params.k;
+end
+
+figure(73)
+plot(abs_dist);
 
 L = single(zeros(size(mask)));
 U_x = single(zeros([numpoints,N_frame]));
@@ -76,8 +86,9 @@ title('Selected sections along the artery')
 figure(75);
 imagesc(U_x)
 
+
 ft_U_x = fft(U_x,[],2);
-ph = ifft(exp(1j*angle(ft_U_x)));
+ph = angle(ft_U_x);
 % xc = xcorr(U_x')'; % calculates all the time cross correlations between all the sections
 % midpoint = round(numpoints/2);
 % rr = ones(2*numpoints-1)<0;
@@ -93,8 +104,34 @@ ph = ifft(exp(1j*angle(ft_U_x)));
 %     rr = circshift(rr,-i);
 % 
 %     xc_averaged(i,:) = mean(xc(rows,:),1); % averages all cross correlations between sections with an DX=(midpoint-i) distance between them
-
-xc = reshape(xcorr(U_x')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
+figure(99)
+imagesc(U_x);
+Ux = rescale(U_x,0,1,'InputMin',min(U_x,[],2),'InputMax',max(U_x,[],2));
+figure(100)
+imagesc(Ux);
+% U_x = hilbert(U_x);
+% xc = reshape(xcorr(U_x')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
+% 
+% rr = ones(3*numpoints-1);
+% rr(2*numpoints-1) = 1;
+% for i=1:2*numpoints-1
+%     r = rr(numpoints:2*numpoints-1);
+%     c = rr(1:numpoints);
+%     toep = toeplitz(c,r);
+%     rr = circshift(rr,-1);
+%     xc_averaged(i,:) = mean(xc.*toep ,[1,2]);
+% end
+% figure(76);
+% imagesc((xc_averaged));
+% end
+Ux = Ux - mean(Ux,2);
+hU_x = hilbert(Ux')';
+figure(101)
+plot(Ux(50,:));hold on;
+plot(real(hUx(50,:)));
+plot(imag(hUx(50,:)));
+title('rescaled and centered U(50,t) and its hilbert transform')
+hxc = reshape(xcorr(hU_x')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
 
 rr = ones(3*numpoints-1);
 rr(2*numpoints-1) = 1;
@@ -103,8 +140,9 @@ for i=1:2*numpoints-1
     c = rr(1:numpoints);
     toep = toeplitz(c,r);
     rr = circshift(rr,-1);
-    xc_averaged(i,:) = mean(xc.*toep ,[1,2]);
+    hxc_averaged(i,:) = mean(real(hxc).*toep ,[1,2]);
 end
-
+figure(76);
+imagesc((hxc_averaged));
 end
 

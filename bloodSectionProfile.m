@@ -29,7 +29,7 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
         list = find(avg_profile > (0.1 * max(avg_profile, [], 'all')));
 
         if isempty(list)
-            break
+            continue
         end
 
         x = 1:size(projVideo, 1);
@@ -55,13 +55,14 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
 
     average_velocity_profile = squeeze(mean(velocity_profiles, 3));
     average_velocity_profile_std = squeeze(mean(velocity_profiles_std, 3));
+    mimin = min(average_velocity_profile(:));
+    [mamax, idx_mamax] = max(average_velocity_profile(:));
     video_name = strcat('_velocity_profile_', type_of_vessel);
     v = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, strcat(video_name, '.avi')))); % avi
     vMP4 = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, strcat(video_name, '.mp4'))), 'MPEG-4'); % mp4
     open(v);
     open(vMP4);
-    mimin = min(average_velocity_profile(:));
-    [mamax, idx_mamax] = max(average_velocity_profile(:));
+    
     [~, idx_syst] = ind2sub(size(average_velocity_profile), idx_mamax);
     % x for normalize wall length for fiting
     x = linspace(-1, 1, length(average_velocity_profile(:, 1)));
@@ -132,7 +133,7 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
         pbaspect([1.618 1 1]);
         set(gca, 'LineWidth', 2);
         axis tight;
-        ylim([mimin mamax]);
+        ylim([0.9* mimin 1.1*mamax]);
         ylabel('quantitative velocity mm/s', 'FontSize', 14);
         hold off
         drawnow

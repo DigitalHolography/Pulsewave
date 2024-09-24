@@ -56,18 +56,20 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
 
         [hue_artery_mean, sat_artery_mean, val_artery_mean, cmap_artery] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein_mean, sat_vein_mean, val_vein_mean, cmap_vein] = createHSVmap(v_mean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-        val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein;
+        val_mean = v_mean .* (~(maskArtery | maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein;
         flowVideoRGB_mean = hsv2rgb(hue_artery_mean + hue_vein_mean, sat_artery_mean + sat_vein_mean, val_mean);
-        flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* M0_norm_mean;
+        flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery | maskVein) .* M0_norm_mean;
         imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
         for frameIdx = 1:N_frame
             v = mat2gray(v_RMS_all(:, :, frameIdx));
             [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-            val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
-            flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_artery + hue_vein, sat_artery + sat_vein, val);
-            flowVideoRGB(:, :, :, frameIdx) = flowVideoRGB(:, :, :, frameIdx) .* (maskArtery + maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* videoM0_norm(:, :, frameIdx);
+            val = v .* (~(maskArtery | maskVein)) + val_artery .* maskArtery + val_vein .* maskVein;
+            val(val<0)=0;
+            val(val>1)=1;
+            flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_artery | hue_vein, sat_artery + sat_vein, val);
+            flowVideoRGB(:, :, :, frameIdx) = rescale(flowVideoRGB(:, :, :, frameIdx) .* (maskArtery | maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery | maskVein) .* videoM0_norm(:, :, frameIdx));
         end
 
     else
@@ -82,8 +84,10 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
             v = mat2gray(v_RMS_all(:, :, frameIdx));
             [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
             val = v .* (~(maskArtery)) + val_artery .* maskArtery;
+            val(val<0)=0;
+            val(val>1)=1;
             flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_artery, sat_artery, val);
-            flowVideoRGB(:, :, :, frameIdx) = flowVideoRGB(:, :, :, frameIdx) .* (maskArtery) + ones(Nx, Ny, 3) .* ~(maskArtery) .* videoM0_norm(:, :, frameIdx);
+            flowVideoRGB(:, :, :, frameIdx) = rescale(flowVideoRGB(:, :, :, frameIdx) .* (maskArtery) + ones(Nx, Ny, 3) .* ~(maskArtery) .* videoM0_norm(:, :, frameIdx));
         end
 
     end
@@ -264,7 +268,7 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
     [N, M] = size(maskArtery);
     radius1 = PW_params.velocity_bigRadiusRatio * (M + N) / 2;
     radius2 = PW_params.velocity_smallRadiusRatio * (M + N) / 2;    
-    [maskSection] = createMaskSection(ImgM0, maskArtery,radius1,radius2,'_mask_artery_section_rgb.png', ToolBox, path);
+    [maskSection] = createMaskSection(ImgM0, maskArtery,radius1,radius2,'_mask_artery_section_velocity_rgb.png', ToolBox, path);
     maskArtery_section = maskArtery & maskSection;
 
     %or
@@ -328,7 +332,7 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
             for yy = 1:Ny
 
                 if (v_histo_artery(xx, yy, frameIdx) ~= 0)
-                    i = find(X == v_histo_artery(xx, yy, frameIdx));
+                    i = find(X == v_histo_artery(xx, yy, frameIdx)); % find the velocity range index
                     histo_artery(i, frameIdx) = histo_artery(i, frameIdx) + 1;
                 end
 
@@ -487,6 +491,114 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
     gifWriter.generate();
     gifWriter.delete();
 
-    close all
+     close all
+%% Velocity funnel Histogram in arteries (exactly the same but with an increasing number of points)
+    %FIXME prctile 10% Y = percentil(X,[5 95])
 
+    if PW_params.AllCirclesFlag 
+        radius0 = 0;
+        radiusmid = (radius1+radius2)/2;
+        radiusend = (M+N)/2;
+        deltar = radiusend/100;
+        deltarcentral = (radius1-radius2)/100; % two times radius1-radius2 in total
+    
+        Color_std = [0.7 0.7 0.7];
+       
+        v_RMS_frame = mean(v_RMS_all,3);
+    
+        X = linspace(v_min_all, v_max_all, v_max_all - v_min_all + 1);
+        histo_artery = zeros(size(X, 2), 100);
+        for j = 1:100 % to parforize (change createMaskSection)
+    
+            r1 = radiusmid+j*deltarcentral;
+            r2 = radiusmid-j*deltarcentral;
+            if mod(j,10)==0 % save one on 10
+                [maskSection] = createMaskSection(ImgM0, maskArtery,r1,r2,sprintf('_mask_artery_section_velocity_rgb%d.png',j), ToolBox, path);
+            else
+                [maskSection] = createMaskSection(ImgM0, maskArtery,r1,r2,'_mask_artery_section_velocity_rgb100.png', ToolBox, path); 
+            end
+            maskArtery_section = maskArtery & maskSection;
+            v_histo_artery = round(v_RMS_frame.*maskArtery_section);
+            for xx = 1:Nx
+    
+                for yy = 1:Ny
+                    
+                    if (v_histo_artery(xx, yy) ~= 0)
+                        i = find(X == v_histo_artery(xx, yy));
+                        histo_artery(i, j) = histo_artery(i, j) + 1;
+                    end
+    
+                end
+    
+            end
+            histo_artery(:, j) = histo_artery(:, j)/sum(maskArtery_section,[1,2]);
+    
+            number_of_points(j)=sum(maskArtery_section,[1,2]);
+    
+            r1 = radius0+j*deltar;
+            r2 = radius0+(j-1)*deltar;
+            if mod(j,10)==0 % save one on 10
+                [maskSection] = createMaskSection(ImgM0, maskArtery,r1,r2,sprintf('_mask_artery_section_velocity_rgb%d.png',j), ToolBox, path);
+            else
+                [maskSection] = createMaskSection(ImgM0, maskArtery,r1,r2,'_mask_artery_section_velocity_rgb100.png', ToolBox, path); 
+            end
+            maskArtery_section_only = maskArtery & maskSection;
+            
+            non_zero_points = find(maskArtery_section_only);
+            mean_velocity_in_section_only(j) = mean(v_RMS_frame(non_zero_points),[1,2]);
+            std_velocity_in_section_only(j) = std(v_RMS_frame(non_zero_points));
+    
+            rad(j)=sum(r1);
+    
+    
+           
+        end
+        plot_velocity_funnel = figure(164);
+    
+        
+        %
+        xAx = number_of_points;
+        
+    
+        f_distrib_artery = figure(197);
+        f_distrib_artery.Position(3:4) = [500 275];
+        index_min = find(X == v_min_all_display);
+        index_max = find(X == v_max_all_display);
+        imagesc(xAx, yAx_display, histo_artery(index_min:index_max, :))
+        set(gca, 'YDir', 'normal')
+        set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
+        colormap("hot")
+     
+        
+        ylabel('Velocity (mm.s^{-1})')
+        xlabel('Number of points')
+        title("Velocity distribution in a growing artery section")
+        
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf('bloodVelocityinArteriesxNumpoints.png')))
+        
+        
+    
+        plot_velocity_in_sections = figure(164);
+    
+        curve1 = mean_velocity_in_section_only + 0.5 * std_velocity_in_section_only;
+        curve2 = mean_velocity_in_section_only - 0.5 * std_velocity_in_section_only;
+        rad2 = [rad, fliplr(rad)];
+        inBetween = [curve1, fliplr(curve2)];
+        
+        fill(rad2, inBetween, Color_std);
+        hold on;
+        plot(rad, curve1, "Color", Color_std, 'LineWidth', 2);
+        plot(rad, curve2, "Color", Color_std, 'LineWidth', 2);
+        plot(rad, mean_velocity_in_section_only, '-k', 'LineWidth', 2);
+        axis tight;
+        hold off
+        
+        ylabel('Velocity (mm.s^{-1})')
+        xlabel('radius ratio')
+        title("Velocity in arteries sections with the radius to center")
+        set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
+    
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf('bloodVelocityinArteriesxradius.png')))
+    end
+    
 end

@@ -58,9 +58,20 @@ classdef ToolBoxClass < handle
 
             PW_folder_name = strcat(obj.main_foldername, '_PW');
 
-            while (exist(fullfile(obj.PW_path_main, sprintf('%s_%d', PW_folder_name, idx)), 'dir'))
-                idx = idx + 1;
+            list_dir = dir(obj.PW_path_main);
+            for i=1:length(list_dir)
+                if contains(list_dir(i).name, PW_folder_name)
+                    match = regexp(list_dir(i).name, '\d+$', 'match'); 
+                    if str2double(match{1}) >= idx
+                        idx = str2double(match{1}) + 1; %suffix
+                    end
+                end
             end
+
+            % for naming with the minimum possible suffix
+            %while (exist(fullfile(obj.PW_path_main, sprintf('%s_%d', PW_folder_name, idx)), 'dir'))
+            %    idx = idx + 1;
+            %end
 
             obj.PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
             obj.PW_path_dir = fullfile(obj.PW_path_main, obj.PW_folder_name);

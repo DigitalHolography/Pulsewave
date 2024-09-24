@@ -187,9 +187,6 @@ function [v_RMS_one_cycle, v_RMS_all, flowVideoRGB, exec_times, total_time] = pu
     [fullBackgroundSignalRmOut, idxOutBkg] = filloutliers(fullBackgroundSignal, 'linear');
     fullArterialSignalMinusBackground = fullArterialSignalRmOut - fullBackgroundSignalRmOut;
 
-    if veins_analysis
-        fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
-    end
 
     dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutArtery) / length(fullArterialSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
     disp(['data reliability index 1 (artery) : ' num2str(dataReliabilityIndex1) ' %']);
