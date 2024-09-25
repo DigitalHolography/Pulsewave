@@ -1,5 +1,7 @@
 function PWV = pulseWaveVelocity(U,mask,ToolBox,path)
 % Computes the pulse wave velocity based on a cross correlation computation
+% U is the field over which we compute the velocity and mask is the mask of
+% the selected retinal artery
 
 % U(x,y,t) usually M0
 % center the [x,y] barycenter (the center of the CRA)
@@ -31,6 +33,8 @@ y_bary = ToolBox.y_barycentre;
 % U_r = U_r(~isnan(U_r));
 % U_r = reshape(U_r,[],N_frame);
 
+%% create a grid of points to select points along the skeletton of the artery mask
+% 
 dxx = 5;
 skel = bwskel(mask);
 grid = ones([M,N])<0;
@@ -40,16 +44,18 @@ interpoints = grid& skel; % get points interpolating with grid
 
 numpoints = sum(interpoints,'all'); % get the number of points
 
+%% register the positions of points stating by the one closest to the CRA then going from closest to closest
+
 [interpoints_y,interpoints_x] = ind2sub(size(interpoints),find(interpoints)); % y first
 k = dsearchn([interpoints_x,interpoints_y],[x_bary,y_bary]); % get the nearest point to the center
 
-absx = zeros(numpoints); % x and y position register
-absy = zeros(numpoints);
-abs_dist = zeros(numpoints); % vessel curvilign absis
+absx = zeros([1,numpoints]); % x and y position register
+absy = zeros([1,numpoints]);
+abs_dist = zeros([1,numpoints]); % vessel curvilign absis
 
 absx(1) = interpoints_x(k); % nearest point to the center
 absy(1) = interpoints_y(k);
- (k) = [];
+interpoints_x(k) = [];
 interpoints_y(k) = [];
 abs_dist(1) = 0;
 
@@ -109,6 +115,9 @@ imagesc(U_x);
 Ux = rescale(U_x,0,1,'InputMin',min(U_x,[],2),'InputMax',max(U_x,[],2));
 figure(100)
 imagesc(Ux);
+% Ux = rescale(Ux,0,1,'InputMin',min(U_x,[],1),'InputMax',max(U_x,[],1));
+% figure(100)
+% imagesc(Ux);
 % U_x = hilbert(U_x);
 % xc = reshape(xcorr(U_x')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
 % 
@@ -119,22 +128,22 @@ imagesc(Ux);
 %     c = rr(1:numpoints);
 %     toep = toeplitz(c,r);
 %     rr = circshift(rr,-1);
-%     xc_averaged(i,:) = mean(xc.*toep ,[1,2]);
+%     xc_averaged(i,:) = mean(xc.*toep ,[1,2]);1
 % end
 % figure(76);
 % imagesc((xc_averaged));
 % end
 Ux = Ux - mean(Ux,2);
-hU_x = hilbert(Ux')';
+hUx = hilbert(Ux')';
 figure(101)
 plot(Ux(50,:));hold on;
 plot(real(hUx(50,:)));
 plot(imag(hUx(50,:)));
 title('rescaled and centered U(50,t) and its hilbert transform')
-hxc = reshape(xcorr(hU_x')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
+hxc = reshape(xcorr(hUx')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
 
 rr = ones(3*numpoints-1);
-rr(2*numpoints-1) = 1;
+rr(2*numpoints-1) = 1;  
 for i=1:2*numpoints-1
     r = rr(numpoints:2*numpoints-1);
     c = rr(1:numpoints);
