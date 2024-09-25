@@ -669,6 +669,14 @@ classdef OneCycleClass
                     fclose(fileID);
                     clear exec_times
 
+                    pulseVelocity(obj.dataM0_interp{n},maskArtery,ToolBox,obj.directory)
+                    disp('PulseVelocity timing :')
+                    time_pulsevelocity = total_time;
+                    disp(time_pulsevelocity)
+                    save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
+                    %exec time details
+                    fileID = fopen(path_file_txt_exe_times, 'a+');
+
                     if obj.flag_velocity_analysis
                         tic
                         bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)

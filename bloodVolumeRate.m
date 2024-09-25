@@ -694,9 +694,9 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, v_RMS, dataM0, videoM0_fr
     % for the all circles output
     nbCircles = PW_params.nbCircles;
     maskSectionCircles = cell(1,nbCircles);
-    deltr = PW_params.radius_ratio* (M + N) /nbCircles; %PW_params.radius_gap 
+    deltr = (PW_params.velocity_bigRadiusRatio - PW_params.velocity_smallRadiusRatio) * (M + N)/2 /nbCircles; %PW_params.radius_gap 
     for i = 1:nbCircles
-        rad1 = (PW_params.radius_ratio - PW_params.radius_ratio) * (M + N) / 2 + (i-1) * deltr ; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * deltr ;
+        rad1 = (PW_params.velocity_smallRadiusRatio) * (M + N) / 2 + (i-1) * deltr ; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * deltr ;
         rad2 = rad1 + deltr ;
         c1 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= rad1;
         c2 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= rad2;
