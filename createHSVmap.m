@@ -2,6 +2,7 @@ function [hue, sat, val, cmap] = createHSVmap(Im, mask, hue_val_min, hue_val_max
 
     %Im grayscale image with value between 0 and 1
     [N, M] = size(Im);
+    Im = rescale(Im);
     Ones = ones(N, M);
     min_hue = min(Im .* mask + Ones .* (~mask), [], 'all');
     Im_hue = mat2gray(Im .* mask + Ones .* (~mask) .* min_hue);

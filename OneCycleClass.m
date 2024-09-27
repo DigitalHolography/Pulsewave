@@ -1,9 +1,9 @@
 classdef OneCycleClass
 
     properties
-        reference (1, :) cell % M0 AVI
-        reference_norm (1, :) cell % M0 norm AVI
-        reference_interp (1, :) cell % M0 AVI
+        reference % M0 AVI
+        reference_norm % M0 norm AVI
+        reference_interp % M0 AVI
         reference_norm_interp % M0 norm AVI
 
         dataM2M0 % RMS M2/M0
@@ -21,7 +21,7 @@ classdef OneCycleClass
         dataSH_interp % SH raw
 
         directory char
-        filenames 
+        filenames
         k double %interpolaton parameter
         load_logs char
         % For sectioning
@@ -167,7 +167,7 @@ classdef OneCycleClass
 
             obj.dataM2M0 = sqrt(obj.dataM2 ./ avgM0);
             obj.dataM1M0 = obj.dataM1 ./ avgM0;
-            obj.reference_norm = obj.reference ./ avgRef;
+            obj.reference_norm = obj.reference ./ avgM0;
 
         end
 
@@ -201,11 +201,10 @@ classdef OneCycleClass
 
         end
 
-        function obj = flatfieldMoments(obj)
+        function obj = flatfieldRef(obj)
+            PW_params = Parameters_json(obj.directory);
+
             obj.reference = flat_field_correction(obj.reference, ceil(PW_params.flatField_gwRatio * size(obj.reference, 1)), PW_params.flatField_border);
-            obj.dataM0 = flat_field_correction(obj.dataM0, ceil(PW_params.flatField_gwRatio * size(obj.dataM0, 1)), PW_params.flatField_border);
-            obj.dataM1 = flat_field_correction(obj.dataM1, ceil(PW_params.flatField_gwRatio * size(obj.dataM1, 1)), PW_params.flatField_border);
-            obj.dataM2 = flat_field_correction(obj.dataM2, ceil(PW_params.flatField_gwRatio * size(obj.dataM2, 1)), PW_params.flatField_border);
         end
 
         function obj = cropAllVideo(obj)
@@ -468,10 +467,6 @@ classdef OneCycleClass
 
             fprintf("File: %s\n", ToolBox.PW_folder_name)
 
-            meanIm = squeeze(mean(obj.reference_interp, 3)); % Because highest intensities in CRA usually
-            meanIm_M1M0 = squeeze(mean(obj.dataM1M0_interp, 3)); % Because velocities coming from the CRA are out-of-plane
-
-
             mkdir(ToolBox.PW_path_dir);
             mkdir(ToolBox.PW_path_png);
             mkdir(ToolBox.PW_path_eps);
@@ -599,27 +594,18 @@ classdef OneCycleClass
             if obj.flag_PulseWave_analysis
                 close all
 
-
                 fileID = fopen(path_file_txt_exe_times, 'a+');
                 fprintf(fileID, 'PULSEWAVE ANALYSIS : \r\n\n');
                 fclose(fileID);
 
-                % time_sys_idx = 0;
-                % time_pulseanalysis = 0;
-                time_vel_map = 0;
-                time_hist = 0;
-                % time_arterial_res = 0;
-                % time_flowrate = 0;
-
                 tic
-                % [sys_index_list_cell, ~] = find_systole_index(obj.reference_norm_interp, obj.directory,maskArtery);
                 [sys_index_list_cell, ~] = find_systole_index(obj.reference_interp, obj.directory, maskArtery);
                 disp('FindSystoleIndex timing :')
                 time_sys_idx = toc;
                 disp(time_sys_idx)
                 save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
-                [v_RMS_one_cycle, v_RMS_all, FlowVideoRGB, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp, obj.dataM1M0_interp, obj.dataM2_interp, obj.dataM0_interp, obj.reference_interp, sys_index_list_cell, meanIm, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
+                [v_RMS_one_cycle, v_RMS_all, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp, obj.dataM1M0_interp, obj.dataM2_interp, obj.dataM0_interp, obj.reference_interp, sys_index_list_cell, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
                 disp('PulseAnalysis timing :')
                 time_pulseanalysis = total_time;
                 disp(time_pulseanalysis)
@@ -636,7 +622,7 @@ classdef OneCycleClass
 
                 if obj.flag_velocity_analysis
                     tic
-                    bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp, FlowVideoRGB, ToolBox, path)
+                    bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.reference_interp, ToolBox, path)
                     disp('Blood Flow Velocity timing :')
                     time_velo = toc;
                     disp(time_velo)
@@ -654,23 +640,18 @@ classdef OneCycleClass
 
                 if obj.flag_bloodVolumeRate_analysis
                     tic
-                    bloodVolumeRate(maskArtery, maskVein, maskSectionArtery, v_RMS_all, obj.dataM0_interp, obj.reference_interp, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRate(maskArtery, maskVein, v_RMS_all, obj.reference_interp, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                     disp('Blood Volume Rate timing :')
                     time_flowrate = toc;
                     disp(time_flowrate)
                     save_time(path_file_txt_exe_times, 'Blood Volume rate', time_flowrate)
                 end
 
-
                 fileID = fopen(path_file_txt_exe_times, 'a+');
                 tTotal = toc(totalTime);
                 fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', tTotal);
                 fclose(fileID);
-
-
             end
-
-
 
             %% Spectrum Analysis
             % waitbar(0.9,progress_bar,"Spectrum analysis");

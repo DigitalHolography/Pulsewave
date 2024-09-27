@@ -1,16 +1,16 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(videoM0, videoM1M0, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(reference, videoM1M0, path, ToolBox)
 
     %% loading parameters and compute useful variables
     PW_params = Parameters_json(path);
     mkdir(ToolBox.PW_path_png, 'mask')
 
-    [Nx, Ny, N_frame] = size(videoM0);
+    [Nx, Ny, N_frame] = size(reference);
 
-    meanIm = squeeze(mean(videoM0, 3));
+    meanIm = squeeze(mean(reference, 3));
     meanM1M0 = squeeze(mean(videoM1M0, 3));
     figure(666), imagesc(meanIm), axis image, colormap gray;
     
-    videoM0_zero = videoM0 - meanIm;
+    reference_zero = reference - meanIm;
 
     % compute vesselness response
     localContrastedIm = adapthisteq(rescale(meanIm), 'NumTiles', PW_params.arteryMask_vesselnessContrastNumSlides');
@@ -20,7 +20,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     %%  Compute first correlation to find arteries
 
     % compute pulse in 3 dimentions for correlation in all vessels
-    pulse = squeeze(mean(videoM0 .* (vesselnessIm > 0), [1 2]));
+    pulse = squeeze(mean(reference .* (vesselnessIm > 0), [1 2]));
     pulseInit = pulse - mean(pulse, "all");
     pulseInit3d = zeros(Nx, Ny, N_frame);
 
@@ -33,7 +33,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     end
 
     % compute local-to-average pulse wave zero-lag correlation
-    correlationMatrixArtery = squeeze(mean((videoM0_zero .* pulseInit3d), 3)) .* (vesselnessIm > 0);
+    correlationMatrixArtery = squeeze(mean((reference_zero .* pulseInit3d), 3)) .* (vesselnessIm > 0);
 
     % Create first artery mask
     firstMaskArtery = (correlationMatrixArtery > PW_params.arteryMask_CorrelationMatrixThreshold * mean2(correlationMatrixArtery(correlationMatrixArtery > 0)));
@@ -55,11 +55,11 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     %% Compute correlation to segment veins and arteries
 
     % compute pulse in 3 dimentions for correlation in main arteries
-    pulse = squeeze(mean(videoM0 .* firstMaskArtery, [1 2]));
+    pulse = squeeze(mean(reference .* firstMaskArtery, [1 2]));
     pulseInit = pulse - mean(pulse, "all");
     pulseInit3d = zeros(Nx, Ny, N_frame);
 
-    for xx = 1:Nx
+    parfor xx = 1:Nx
 
         for yy = 1:Ny
             pulseInit3d(xx, yy, :) = pulseInit;
@@ -68,15 +68,8 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     end
 
     % compute local-to-average pulse wave zero-lag correlation
-    correlationMatrix = squeeze(mean((videoM0_zero .* pulseInit3d), 3));
-
-    % compute mean correction correlation to find coroid maximums
-    meanVideoM0 = zeros(Nx, Ny, N_frame);
-
-    for frame_idx = 1:N_frame
-        meanVideoM0(:, :, frame_idx) = meanIm;
-    end
-
+    correlationMatrix = squeeze(mean((reference_zero .* pulseInit3d), 3));
+    
     % Create correlation matrix to segment vein and arteries
     correlationMatrixArtery = correlationMatrix ./ max(correlationMatrix, [], 'all');
     correlationMatrixVein = correlationMatrix ./ min(correlationMatrix, [], 'all');
@@ -96,9 +89,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
     %% Circles Sectioning
 
-    meanIm = squeeze(mean(videoM0, 3)); % Because highest intensities in CRA usually
-    meanIm_M1M0 = squeeze(mean(videoM1M0, 3)); % Because velocities coming from the CRA are out-of-plane
-    blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0).*correlationMatrixArtery, PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);
+    blurred_mask = imgaussfilt(double(meanIm .* meanM1M0).*correlationMatrixArtery, PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanM1M0, 1), 'Padding', 0);
     [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
 
     [x, y] = meshgrid(1:Ny, 1:Nx);

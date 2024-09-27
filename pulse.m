@@ -74,7 +74,7 @@ classdef pulse < matlab.apps.AppBase
 
                     %% flatfield correction
                     for n = 1:length(app.files)
-                        app.files{n} = app.files{n}.flatfieldMoments();
+                        app.files{n} = app.files{n}.flatfieldRef();
                     end
 
                     %% moment normalize
