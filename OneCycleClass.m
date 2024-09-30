@@ -543,7 +543,7 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [Nx, Ny, N_frame] = size(obj.reference_norm_interp);
+            [nX, nY, nFrame] = size(obj.reference_norm_interp);
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
             videoM0Rescaled = rescale(obj.reference_interp);
@@ -573,7 +573,7 @@ classdef OneCycleClass
             try
                 [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = forceCreateMasks(obj.reference_norm_interp, obj.dataM1M0_interp, obj.directory, ToolBox);
             catch
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp, obj.dataM1M0_interp, obj.directory, ToolBox);
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp, obj.dataM0_interp, obj.dataM1M0_interp, obj.directory, ToolBox);
             end
 
 
@@ -666,7 +666,7 @@ classdef OneCycleClass
                 fileID = fopen(fullfile(obj.directory, 'raw', [tmpname, ext]));
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
-                SH_cube = reshape(videoSH, Nx, Ny, N_frame, []);
+                SH_cube = reshape(videoSH, nX, nY, nFrame, []);
 
                 tic
                 spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.dataM0_interp);

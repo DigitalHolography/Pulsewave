@@ -248,7 +248,7 @@ if veins_analysis
     figure(32)
     hold on
     plot(T, fullVenousSignalMinusBackground, ':k', T, fullVenousSignalClean, '-k', 'LineWidth', 2);
-    title('Cleaned arterial and venous signal');
+    title('Cleaned venous signal');
     % legend('Noisy signal', 'Robust linear regression');
     fontsize(gca, 12, "points");
     xlabel(strXlabel, 'FontSize', 14);
@@ -262,22 +262,6 @@ if veins_analysis
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseVeinFiltered.eps')))
 end
 
-exec_times_id = [exec_times_id, "Cleaning signals"];
-exec_times_time = [exec_times_time, toc];
-total_time = total_time + toc;
-
-%% 4) Calculate the pulse derivative and finding/cleaning pulses
-
-tic
-
-fullArterialPulseDerivative = diff(fullArterialSignal);
-fullArterialPulseCleanDerivative = diff(fullArterialSignalClean);
-
-
-% now cleanup dataCube to create_one_cycle()
-% strategy : use average pulse profiles to detect and
-% find  noisy frames @ >3 std from zero-mean
-% replace them with cleaned data
 
 noise = sqrt(abs(fullArterialSignalMinusBackground .^ 2 - fullArterialSignalClean .^ 2));
 idxOutNoise = find(noise > PW_params.pulseAnal_outNoiseThreshold * std(noise));
@@ -286,20 +270,37 @@ dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(fullArteri
 disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 
 if veins_analysis
-    fullVenousPulseDerivative = diff(fullVenousSignal);
-    fullVenousPulseCleanDerivative = diff(fullVenousSignalClean);
-    noise = sqrt(abs(fullVenousPulseDerivative .^ 2 - fullVenousPulseCleanDerivative .^ 2));
+    noise = sqrt(abs(fullVenousSignalMinusBackground .^ 2 - fullVenousSignalClean .^ 2));
     idxOutNoise = find(noise > PW_params.pulseAnal_outNoiseThreshold * std(noise));
 
     dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(fullArterialSignalClean))));
     disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 end
 
+exec_times_id = [exec_times_id, "Cleaning signals"];
+exec_times_time = [exec_times_time, toc];
+total_time = total_time + toc;
+
+%% 4) Calculation of pulse signal derivative and finding/cleaning pulses
+
+tic
+
+fullArterialPulseDerivative = diff(fullArterialSignal);
+fullArterialPulseCleanDerivative = diff(fullArterialSignalClean);
+
+if veins_analysis
+    fullVenousPulseDerivative = diff(fullVenousSignal);
+    fullVenousPulseCleanDerivative = diff(fullVenousSignalClean);
+end
+
 exec_times_id = [exec_times_id, "Calculate pulse derivative"];
 exec_times_time = [exec_times_time, toc];
 total_time = total_time + toc;
 
-%% PLOTS
+% now cleanup dataCube to create_one_cycle()
+% strategy : use average pulse profiles to detect and
+% find  noisy frames @ >3 std from zero-mean
+% replace them with cleaned data
 
 figure(40)
 
@@ -417,10 +418,16 @@ exec_times_id = [exec_times_id, "Local Backgrounds"];
 exec_times_time = [exec_times_time, toc];
 total_time = total_time + toc;
 
+%% Outlier Cleaning
 tic
 fprintf("Outlier Cleaning:\n")
+fullVideoM2M0minusBKGClean = zeros(nX, nY, nFrame);
 window_size = 10;
-fullVideoM2M0minusBKGClean = filloutliers(fullVideoM2M0minusBKG, 'linear', 'movmedian', window_size, 3);
+parfor varX = 1:nX
+    for varY = 1:nY
+        fullVideoM2M0minusBKGClean(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :) , 'linear', 'movmedian', window_size);
+    end
+end
 toc
 
 fullPulse = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);

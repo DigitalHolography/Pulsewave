@@ -1,39 +1,46 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(reference, videoM1M0, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(reference, videoM0, videoM1M0, path, ToolBox)
 
     %% loading parameters and compute useful variables
     PW_params = Parameters_json(path);
     mkdir(ToolBox.PW_path_png, 'mask')
 
-    [Nx, Ny, N_frame] = size(reference);
+    [nX, nY, nFrame] = size(reference);
 
     meanIm = squeeze(mean(reference, 3));
+    meanM0 = squeeze(mean(videoM0, 3));
     meanM1M0 = squeeze(mean(videoM1M0, 3));
     figure(666), imagesc(meanIm), axis image, colormap gray;
     
-    reference_zero = reference - meanIm;
+    videoM0Centered = videoM0 - meanM0;
 
     % compute vesselness response
     localContrastedIm = adapthisteq(rescale(meanIm), 'NumTiles', PW_params.arteryMask_vesselnessContrastNumSlides');
     vesselnessIm = vesselness_filter(localContrastedIm, PW_params.arteryMask_vesselness_sigma, PW_params.arteryMask_vesselness_beta);
     figure(667), imagesc(vesselnessIm), axis image, colormap gray;
 
+    %% Create CRA and CRV Mask
+
+    stdM1M0 = std2(meanM1M0);
+    maskCRA = meanM1M0 > (PW_params.CRACRV_Threshold * stdM1M0);
+    maskCRV = meanM1M0 < (-PW_params.CRACRV_Threshold * stdM1M0);
+
     %%  Compute first correlation to find arteries
 
     % compute pulse in 3 dimentions for correlation in all vessels
-    pulse = squeeze(mean(reference .* (vesselnessIm > 0), [1 2]));
+    pulse = squeeze(mean(videoM0 .* (vesselnessIm > 0), [1 2]));
     pulseInit = pulse - mean(pulse, "all");
-    pulseInit3d = zeros(Nx, Ny, N_frame);
+    pulseInit3d = zeros(nX, nY, nFrame);
 
-    for xx = 1:Nx
+    parfor xx = 1:nX
 
-        for yy = 1:Ny
+        for yy = 1:nY
             pulseInit3d(xx, yy, :) = pulseInit;
         end
 
     end
 
     % compute local-to-average pulse wave zero-lag correlation
-    correlationMatrixArtery = squeeze(mean((reference_zero .* pulseInit3d), 3)) .* (vesselnessIm > 0);
+    correlationMatrixArtery = squeeze(mean((videoM0Centered .* pulseInit3d), 3)) .* (vesselnessIm > 0);
 
     % Create first artery mask
     firstMaskArtery = (correlationMatrixArtery > PW_params.arteryMask_CorrelationMatrixThreshold * mean2(correlationMatrixArtery(correlationMatrixArtery > 0)));
@@ -44,31 +51,29 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
     firstMaskArtery = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
 
-    if PW_params.masks_showIntermediateFigures
-        figure(10), imagesc(vesselnessIm);
-        title('Vesselness map');
-        colorbar('southoutside');
-        figure(11), imshow(firstMaskArtery)
-    end
+    figure(10), imagesc(vesselnessIm);
+    title('Vesselness map');
+    colorbar('southoutside');
+    figure(11), imshow(firstMaskArtery)
 
     clear pulse pulseInit pulseInit3d correlationMatrixArtery;
     %% Compute correlation to segment veins and arteries
 
     % compute pulse in 3 dimentions for correlation in main arteries
-    pulse = squeeze(mean(reference .* firstMaskArtery, [1 2]));
+    pulse = squeeze(mean(videoM0 .* firstMaskArtery, [1 2]));
     pulseInit = pulse - mean(pulse, "all");
-    pulseInit3d = zeros(Nx, Ny, N_frame);
+    pulseInit3d = zeros(nX, nY, nFrame);
 
-    parfor xx = 1:Nx
+    parfor xx = 1:nX
 
-        for yy = 1:Ny
+        for yy = 1:nY
             pulseInit3d(xx, yy, :) = pulseInit;
         end
 
     end
 
     % compute local-to-average pulse wave zero-lag correlation
-    correlationMatrix = squeeze(mean((reference_zero .* pulseInit3d), 3));
+    correlationMatrix = squeeze(mean((videoM0Centered .* pulseInit3d), 3));
     
     % Create correlation matrix to segment vein and arteries
     correlationMatrixArtery = correlationMatrix ./ max(correlationMatrix, [], 'all');
@@ -89,15 +94,15 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
     %% Circles Sectioning
 
-    blurred_mask = imgaussfilt(double(meanIm .* meanM1M0).*correlationMatrixArtery, PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanM1M0, 1), 'Padding', 0);
+    blurred_mask = imgaussfilt(double(meanM0 .* meanM1M0).*correlationMatrixArtery, PW_params.gauss_filt_size_for_barycentre * nX, 'Padding', 0);
     [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
 
-    [x, y] = meshgrid(1:Ny, 1:Nx);
-    cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (Ny + Nx) / 2;
+    [x, y] = meshgrid(1:nY, 1:nX);
+    cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (nY + nX) / 2;
 
     radiusTreshold = PW_params.masks_radius_treshold;
     cercleTresholdMask = [];
-    minDistToEdge = min([ToolBox.x_barycentre, ToolBox.y_barycentre, Nx - ToolBox.x_barycentre, Ny - ToolBox.y_barycentre]);
+    minDistToEdge = min([ToolBox.x_barycentre, ToolBox.y_barycentre, nX - ToolBox.x_barycentre, nY - ToolBox.y_barycentre]);
 
     if radiusTreshold == 0
 
@@ -209,12 +214,6 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
         title('Artery/Vein region growing segmentation');
     end
 
-    %% Create CRA and CRV Mask
-
-    stdM1M0 = std2(meanM1M0);
-    maskCRA = meanM1M0 > (PW_params.CRACRV_Threshold * stdM1M0);
-    maskCRV = meanM1M0 < (-PW_params.CRACRV_Threshold * stdM1M0);
-
     %import manual mask if provided
     try
 
@@ -240,8 +239,8 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
     %% Create Mask Section
 
-    radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (Ny + Nx) / 2;
-    radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (Ny + Nx) / 2;
+    radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (nY + nX) / 2;
+    radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (nY + nX) / 2;
 
     circleMask1 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius1;
     circleMask2 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius2;
@@ -275,7 +274,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
     %% Create Segmentation Map
 
-    segmentationMap = zeros(Nx, Ny, 3);
+    segmentationMap = zeros(nX, nY, 3);
     segmentationMap(:, :, 1) = meanIm - (maskArtery + maskVein) .* meanIm + maskArtery;
     segmentationMap(:, :, 2) = meanIm - (maskArtery + maskVein) .* meanIm;
     segmentationMap(:, :, 3) = meanIm - (maskArtery + maskVein) .* meanIm + maskVein;

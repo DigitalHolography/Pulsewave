@@ -31,9 +31,9 @@ if veins_analysis
     val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein  - (val_artery_mean + val_vein_mean)./2.*(maskArtery&maskVein);
     hue_mean = (hue_artery_mean + hue_vein_mean)  - (hue_artery_mean + hue_vein_mean)./2.*(maskArtery&maskVein);
     sat_mean = (sat_artery_mean + sat_vein_mean)  - (sat_artery_mean + sat_vein_mean)./2.*(maskArtery&maskVein);
-    flowVideoRGB_mean = hsv2rgb(hue_mean, sat_mean, val_mean);
-    flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein - maskArtery&maskVein) + ~(maskArtery + maskVein) .* rescale(Im);
-    imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
+    flowVideoRGBMean = hsv2rgb(hue_mean, sat_mean, val_mean);
+    flowVideoRGBMean = flowVideoRGBMean .* (maskArtery + maskVein - maskArtery&maskVein) + ~(maskArtery + maskVein) .* rescale(Im);
+    imwrite(flowVideoRGBMean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
     parfor frameIdx = 1:nFrame
         v = mat2gray(v_RMS_all(:, :, frameIdx));
@@ -50,9 +50,9 @@ else
 
     [hue_artery_mean, sat_artery_mean, val_artery_mean, cmap_artery] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
     val_mean = v_mean .* (~(maskArtery)) + val_artery_mean .* maskArtery;
-    flowVideoRGB_mean = hsv2rgb(hue_artery_mean, sat_artery_mean, val_mean);
-    flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery) + ~(maskArtery) .* rescale(Im);
-    imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
+    flowVideoRGBMean = hsv2rgb(hue_artery_mean, sat_artery_mean, val_mean);
+    flowVideoRGBMean = flowVideoRGBMean .* (maskArtery) + ~(maskArtery) .* rescale(Im);
+    imwrite(flowVideoRGBMean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
     parfor frameIdx = 1:nFrame
         v = mat2gray(v_RMS_all(:, :, frameIdx));
