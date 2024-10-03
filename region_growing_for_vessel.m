@@ -1,4 +1,4 @@
-function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMask, path)
+function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMask, path,PW_params)
     % Input
     %   img (double, NxM) : filtered image to segment
     %   seed_map (logical, NxM)  : initialisation of the region growing
@@ -8,8 +8,9 @@ function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMa
     %   mask (logical, NxM) : result of the region growing segmentation
 
     %% INITIALISATION
-    PW_params = Parameters_json(path);
-
+    if nargin <5
+        PW_params = Parameters_json(path);
+    end
     [N, M] = size(img);
     mask = seed_map; % will be update at each step ;  represents the pixels already visited
     max_iter = round(N / 4);
