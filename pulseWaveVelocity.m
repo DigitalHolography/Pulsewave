@@ -92,9 +92,18 @@ title('Selected sections along the artery')
 figure(75);
 imagesc(U_x)
 
+Ux = filloutliers(U_x',"linear","movmedian",20,ThresholdFactor=1)';
+figure(76);
+imagesc(Ux)
 
-ft_U_x = fft(U_x,[],2);
-ph = angle(ft_U_x);
+Ux = rescale(Ux,0,1,'InputMin',min(Ux,[],2),'InputMax',max(Ux,[],2));
+figure(77);imagesc(Ux);
+
+% Ux = rescale(U_x,0,1,'InputMin',min(Ux,[],2),'InputMax',max(Ux,[],2));
+% figure(100);imagesc(Ux);
+
+ft_Ux = fft(Ux,[],2);
+ph = angle(ft_Ux);
 % xc = xcorr(U_x')'; % calculates all the time cross correlations between all the sections
 % midpoint = round(numpoints/2);
 % rr = ones(2*numpoints-1)<0;
@@ -110,11 +119,7 @@ ph = angle(ft_U_x);
 %     rr = circshift(rr,-i);
 % 
 %     xc_averaged(i,:) = mean(xc(rows,:),1); % averages all cross correlations between sections with an DX=(midpoint-i) distance between them
-figure(99)
-imagesc(U_x);
-Ux = rescale(U_x,0,1,'InputMin',min(U_x,[],2),'InputMax',max(U_x,[],2));
-figure(100)
-imagesc(Ux);
+
 % Ux = rescale(Ux,0,1,'InputMin',min(U_x,[],1),'InputMax',max(U_x,[],1));
 % figure(100)
 % imagesc(Ux);
@@ -140,18 +145,23 @@ plot(Ux(50,:));hold on;
 plot(real(hUx(50,:)));
 plot(imag(hUx(50,:)));
 title('rescaled and centered U(50,t) and its hilbert transform')
-hxc = reshape(xcorr(hUx')',numpoints,numpoints,[]); % calculates all the time cross correlations between all the sections
 
-rr = ones(3*numpoints-1);
-rr(2*numpoints-1) = 1;  
-for i=1:2*numpoints-1
-    r = rr(numpoints:2*numpoints-1);
-    c = rr(1:numpoints);
-    toep = toeplitz(c,r);
-    rr = circshift(rr,-1);
-    hxc_averaged(i,:) = mean(real(hxc).*toep ,[1,2]);
-end
-figure(76);
-imagesc((hxc_averaged));
+
+hxc = reshape(real(xcorr(exp(1j*angle(hUx')))'),[],numpoints,numpoints); % calculates all the time cross correlations between all the sections
+
+imagesc(mean(squeeze(hxc(:,:,:)),3))
+
+% hxc = permute(hxc,[2,3,1]);
+% rr = ones([1 3*numpoints-1]);
+% rr(2*numpoints-1) = 1;  
+% for i=1:2*numpoints+1 
+%     r = rr(numpoints:2*numpoints-1);
+%     c = rr(1:numpoints);
+%     toep = toeplitz(c,r);
+%     rr = circshift(rr,-1);
+%     hxc_averaged(i,:) = mean((hxc).*toep ,[1,2]);
+% end
+% figure(76);
+% imagesc((hxc_averaged));
 end
 

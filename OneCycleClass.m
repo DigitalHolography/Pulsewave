@@ -669,7 +669,7 @@ classdef OneCycleClass
                     fclose(fileID);
                     clear exec_times
 
-                    pulseVelocity(obj.dataM0_interp{n},maskArtery,ToolBox,obj.directory)
+                    pulseVelocity,maskArtery,ToolBox,obj.directory)
                     disp('PulseVelocity timing :')
                     time_pulsevelocity = total_time;
                     disp(time_pulsevelocity)
