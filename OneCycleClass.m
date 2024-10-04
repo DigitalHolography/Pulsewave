@@ -206,6 +206,8 @@ classdef OneCycleClass
         end
 
         function obj = registerVideo(obj)
+            disp('registering')
+            tic
             % Registers the video using intensity based registration
             PW_params = Parameters_json(obj.directory);
             if ~PW_params.registerVideoFlag
@@ -234,13 +236,17 @@ classdef OneCycleClass
                 obj.dataM2{ii} = register_video_from_shifts(obj.dataM2{ii},shifts);
 
 
+
             end
+            toc
 
 
 
         end
 
         function obj = cropAllVideo(obj)
+             disp('cropping videos')
+             tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
@@ -270,10 +276,13 @@ classdef OneCycleClass
             end
 
             obj.load_logs = logs;
+            toc
 
         end
 
         function obj = VideoResize(obj)
+             disp('resizing')
+             tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;
             out_width = PW_params.frameHeight;
@@ -395,9 +404,12 @@ classdef OneCycleClass
             % logs = obj.load_logs;
             % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
             % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
+            toc
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
+            disp('interpolating')
+            tic
             height = size(obj.reference{1}, 1);
             width = size(obj.reference{1}, 2);
             num_frames = size(obj.reference{1}, 3);
@@ -480,6 +492,7 @@ classdef OneCycleClass
             obj.dataM2M0{1} = [];
             obj.dataM0{1} = [];
             obj.dataM1M0{1} = [];
+            toc
 
         end
 
@@ -669,7 +682,7 @@ classdef OneCycleClass
                     fclose(fileID);
                     clear exec_times
 
-                    pulseVelocity,maskArtery,ToolBox,obj.directory)
+                    pulseVelocity(obj.dataM0_interp{n},maskArtery,ToolBox,obj.directory)
                     disp('PulseVelocity timing :')
                     time_pulsevelocity = total_time;
                     disp(time_pulsevelocity)
