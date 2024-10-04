@@ -1,4 +1,4 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k, path, flagBloodVelocityProfile)
+function [] = bloodVolumeRate(maskArtery, maskVein, vRMS, flatfieldM0, ToolBox, k, path, flagBloodVelocityProfile)
 
     PW_params = Parameters_json(path);
 
@@ -7,13 +7,13 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k
     mkdir(ToolBox.PW_path_png, 'bloodVolumeRate')
     mkdir(ToolBox.PW_path_eps, 'bloodVolumeRate')
 
-    [numX, numY, numFrames] = size(v_RMS);
+    [numX, numY, numFrames] = size(vRMS);
     [x, y] = meshgrid(1:numY, 1:numX);
 
     %maskArtery = imdilate(maskArtery, strel('disk', 5));
     %FIXME function velocity map
 
-    v_RMS_AVG = mean(v_RMS, 3);
+    v_RMS_AVG = mean(vRMS, 3);
     fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
     %% change mask section ?
@@ -104,10 +104,10 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k
     mask_vein = maskVein;
 
     if veins_analysis
-        [avgBloodVolumeRateVein, stdBloodVolumeRateVein, crossSectionAreaVein, avgBloodVelocityVein, crossSectionMaskVein, totalAvgBloodVolumeRateVein, totalStdBloodVolumeRateVein] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile,[]);
+        [avgBloodVolumeRateVein, stdBloodVolumeRateVein, crossSectionAreaVein, avgBloodVelocityVein, crossSectionMaskVein, totalAvgBloodVolumeRateVein, totalStdBloodVolumeRateVein] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, vRMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile,[]);
     end
 
-    [avgBloodVolumeRateArtery, stdBloodVolumeRateArtery, crossSectionAreaArtery, avgBloodVelocityArtery, crossSectionMaskArtery, totalAvgBloodVolumeRateArtery, totalStdBloodVolumeRateArtery] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,[]);
+    [avgBloodVolumeRateArtery, stdBloodVolumeRateArtery, crossSectionAreaArtery, avgBloodVelocityArtery, crossSectionMaskArtery, totalAvgBloodVolumeRateArtery, totalStdBloodVolumeRateArtery] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, vRMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,[]);
 
     labels_arteries = cell(nb_sections_artery, 1);
     strXlabel = 'Time(s)'; %createXlabelTime(1);
@@ -198,7 +198,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k
 
     maskOnes = ones(numX, numY, numFrames);
     fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
-    referenceMean = rescale(mean(reference, 3));
+    referenceMean = rescale(mean(flatfieldM0, 3));
     ratio_etiquette = 1.2;
     %% Saving Vein and artery data in txt
 
@@ -320,7 +320,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k
 
     end
 
-    videoM0_from_holowaves_norm = rescale(reference);
+    videoM0_from_holowaves_norm = rescale(flatfieldM0);
 
     for frameIdx = 1:numFrames
 
@@ -736,7 +736,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k
     % for all circles output 
 
     for i = 1:nbCircles
-        [avgBloodVolumeRateArtery, ~, ~, avgBloodVelocityArtery, crossSectionMaskArtery, totalAvgBloodVolumeRateArtery, totalStdBloodVolumeRateArtery] = cross_section_analysis(reshape(nonzeros(SubImg_locs_artery_Circles(i,:,:)),[],2), nonzeros(SubImg_width_artery_Circles(i,:,:)), mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,i);
+        [avgBloodVolumeRateArtery, ~, ~, avgBloodVelocityArtery, crossSectionMaskArtery, totalAvgBloodVolumeRateArtery, totalStdBloodVolumeRateArtery] = cross_section_analysis(reshape(nonzeros(SubImg_locs_artery_Circles(i,:,:)),[],2), nonzeros(SubImg_width_artery_Circles(i,:,:)), mask_artery, vRMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,i);
         if length(avgBloodVolumeRateArtery)<1
             continue
         end
@@ -812,7 +812,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, reference, ToolBox, k
     
         
     
-        videoM0_from_holowaves_norm = rescale(reference);
+        videoM0_from_holowaves_norm = rescale(flatfieldM0);
     
         for frameIdx = numFrames:numFrames
     

@@ -1,24 +1,16 @@
 classdef OneCycleClass
 
     properties
-        reference % M0 AVI
-        reference_norm % M0 norm AVI
-        reference_interp % M0 AVI
-        reference_norm_interp % M0 norm AVI
+        referenceM0 % M0 AVI
 
         dataM2M0 % RMS M2/M0
         dataM1M0 % AVG M1/M0
-        dataM2M0_interp % RMS M2/M0
-        dataM1M0_interp % AVG M1/M0
 
         dataM0 % M0 raw
-        dataM0_interp % M0 raw
         dataM1 % M1 raw
-        dataM1_interp % M1 raw
         dataM2 % M2 raw
-        dataM2_interp % M2 raw
+
         dataSH % SH raw
-        dataSH_interp % SH raw
 
         directory char
         filenames
@@ -90,19 +82,19 @@ classdef OneCycleClass
             logs = strcat(logs, '\r', str_tosave);
 
             V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
-            video = zeros(V.Height, V.Width, V.NumFrames);
+            videoRefM0 = zeros(V.Height, V.Width, V.NumFrames);
 
             for n = 1:V.NumFrames
-                video(:, :, n) = rgb2gray(read(V, n));
+                videoRefM0(:, :, n) = rgb2gray(read(V, n));
             end
 
-            clear V
+            obj.referenceM0 = videoRefM0;
 
-            obj.reference = video;
+            clear V videoRefM0
 
             %% File loading
 
-            refvideosize = size(obj.reference);
+            refvideosize = size(obj.referenceM0);
             dir_path_raw = fullfile(obj.directory, 'raw');
             ext = '.raw';
 
@@ -162,12 +154,12 @@ classdef OneCycleClass
 
         function obj = MomentNormalize(obj)
 
+            PW_params = Parameters_json(obj.directory);
             avgM0 = mean(obj.dataM0, [1 2]);
-            avgRef = mean(obj.reference, [1 2]);
-
+            
             obj.dataM2M0 = sqrt(obj.dataM2 ./ avgM0);
             obj.dataM1M0 = obj.dataM1 ./ avgM0;
-            obj.reference_norm = obj.reference ./ avgM0;
+            obj.referenceM0 = flat_field_correction(obj.referenceM0, ceil(PW_params.flatField_gwRatio * size(obj.referenceM0, 1)), PW_params.flatField_border);
 
         end
 
@@ -176,44 +168,42 @@ classdef OneCycleClass
             tic
             % Registers the video using intensity based registration
             PW_params = Parameters_json(obj.directory);
+
             if ~PW_params.registerVideoFlag
                 return % do nothing if not required
             end
 
-            video = obj.reference;
-            numX = size(video,1);
-            numY = size(video,2);
-            x = linspace(-numX/2, numX/2, numX);
-            y = linspace(-numY/2, numY/2, numY);
-            [X,Y] = meshgrid(x, y);
+            video = obj.referenceM0;
+            numX = size(video, 1);
+            numY = size(video, 2);
+            x = linspace(-numX / 2, numX / 2, numX);
+            y = linspace(-numY / 2, numY / 2, numY);
+            [X, Y] = meshgrid(x, y);
 
             disc_ratio = 0.7; % parametrize this coef if needed
-            disc = X.^2+Y.^2 < (disc_ratio * min(numX,numY)/2)^2;
-            video_reg = video .* disc - disc .* sum(video.* disc,[1,2])/nnz(disc); % minus the mean in the disc of each frame
-            video_reg = reshape(video_reg,size(video,1),size(video,2),1,size(video,3)); % insert a dimension to match reegistration functions
+            disc = X .^ 2 + Y .^ 2 < (disc_ratio * min(numX, numY) / 2) ^ 2;
+            video_reg = video .* disc - disc .* sum(video .* disc, [1, 2]) / nnz(disc); % minus the mean in the disc of each frame
+            video_reg = reshape(video_reg, size(video, 1), size(video, 2), 1, size(video, 3)); % insert a dimension to match reegistration functions
 
-            video_reg = video_reg ./(max(abs(video_reg),[],[1,2])); % rescaling each frame but keeps mean at zero
+            video_reg = video_reg ./ (max(abs(video_reg), [], [1, 2])); % rescaling each frame but keeps mean at zero
 
-            image_ref = mean(video_reg(:,:,PW_params.refAvgStart:PW_params.refAvgEnd),3); % ref image is from 10 to 20
-            [~,shifts] = register_video_from_reference(video_reg,image_ref);
+            image_ref = mean(video_reg(:, :, PW_params.refAvgStart:PW_params.refAvgEnd), 3); % ref image is from 10 to 20
+            [~, shifts] = register_video_from_reference(video_reg, image_ref);
 
-            obj.reference = register_video_from_shifts(video,shifts);
+            obj.referenceM0 = register_video_from_shifts(video, shifts);
 
-            obj.dataM0 = register_video_from_shifts(obj.dataM0,shifts);
-            obj.dataM1 = register_video_from_shifts(obj.dataM1,shifts);
-            obj.dataM2 = register_video_from_shifts(obj.dataM2,shifts);
+            obj.dataM0 = register_video_from_shifts(obj.dataM0, shifts);
+            obj.dataM1 = register_video_from_shifts(obj.dataM1, shifts);
+            obj.dataM2 = register_video_from_shifts(obj.dataM2, shifts);
 
         end
 
         function obj = flatfieldRef(obj)
-            PW_params = Parameters_json(obj.directory);
-
-            obj.reference = flat_field_correction(obj.reference, ceil(PW_params.flatField_gwRatio * size(obj.reference, 1)), PW_params.flatField_border);
         end
 
         function obj = cropAllVideo(obj)
-             disp('cropping videos')
-             tic
+            disp('cropping videos')
+            tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
@@ -221,24 +211,23 @@ classdef OneCycleClass
 
             logs = obj.load_logs;
 
-            if firstFrame > 0 && firstFrame < size(obj.dataM0, 3) && lastFrame > firstFrame && lastFrame <= size(obj.dataM0, 3)
+            if firstFrame > 0 && firstFrame < numFrames && lastFrame > firstFrame && lastFrame <= numFrames
 
-                obj.reference = obj.reference(:, :, firstFrame:lastFrame);
-                obj.reference_norm = obj.reference; % déjà modifié ligne d'avant
+                obj.referenceM0 = obj.referenceM0(:, :, firstFrame:lastFrame);
                 obj.dataM0 = obj.dataM0(:, :, firstFrame:lastFrame);
                 obj.dataM1 = obj.dataM1(:, :, firstFrame:lastFrame);
                 obj.dataM2 = obj.dataM2(:, :, firstFrame:lastFrame);
 
-                disp(['Data cube frame: ', num2str(firstFrame), '/', num2str(size(obj.dataM0, 3)), ' to ', num2str(lastFrame), '/', num2str(size(obj.dataM0, 3))])
+                disp(['Data cube frame: ', num2str(firstFrame), '/', num2str(numFrames), ' to ', num2str(lastFrame), '/', num2str(numFrames)])
 
-                str_tosave = sprintf('Data cube frame: %s/%s to %s/%s', num2str(firstFrame), num2str(size(obj.dataM0, 3)), num2str(lastFrame), num2str(size(obj.dataM0, 3)));
+                str_tosave = sprintf('Data cube frame: %s/%s to %s/%s', num2str(firstFrame), num2str(numFrames), num2str(lastFrame), num2str(numFrames));
                 logs = strcat(logs, '\r', str_tosave);
             else
                 disp('Wrong value for the first frame. Set as 1.')
                 disp('Wrong value for the last frame. Set as the end.')
-                disp(['Data cube frame: 1/', num2str(size(obj.dataM0, 3)), ' to ', num2str(size(obj.dataM0, 3)), '/', num2str(size(obj.dataM0, 3))])
+                disp(['Data cube frame: 1/', num2str(numFrames), ' to ', num2str(numFrames), '/', num2str(numFrames)])
 
-                str_tosave = sprintf('Wrong value for the first frame. Set as 1. \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s', num2str(size(obj.dataM0, 3)), num2str(size(obj.dataM0, 3)), num2str(size(obj.dataM0, 3)));
+                str_tosave = sprintf('Wrong value for the first frame. Set as 1. \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s', num2str(numFrames), num2str(numFrames), num2str(numFrames));
                 logs = strcat(logs, '\r\n\n', str_tosave, '\n');
             end
 
@@ -248,75 +237,75 @@ classdef OneCycleClass
         end
 
         function obj = VideoResize(obj)
-             disp('resizing')
-             tic
+            disp('resizing')
+            tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;
             out_width = PW_params.frameHeight;
-            out_num_frames = PW_params.videoLength;
+            out_numFrames = PW_params.videoLength;
 
-            in_height = size(obj.reference, 1);
-            in_width = size(obj.reference, 2);
-            in_num_frames = size(obj.reference, 3);
-
-            if out_num_frames < 0
+            if out_numFrames < 0
                 return % do nothing if not required
             end
 
-            if out_num_frames < in_num_frames
-                % we average the input images to get out_num_frames frames
+            if out_numFrames < numFrames
+                % we average the input images to get out_numFrames frames
 
-                batch = floor(in_num_frames/out_num_frames);
+                batch = floor(numFrames / out_numFrames);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
-                tmp_calc = obj.reference;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+                tmp_ref = zeros([numX, numY, out_numFrames]);
+                tmp_calc = obj.referenceM0;
+
+                for i = 1:out_numFrames
+                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
-                obj.reference = single(tmp_ref);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
-                tmp_calc = obj.reference_norm;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
-                end
-                obj.reference_norm = single(tmp_ref);
+                obj.referenceM0 = single(tmp_ref);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_ref = zeros([numX, numY, out_numFrames]);
                 tmp_calc = obj.dataM0;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+
+                for i = 1:out_numFrames
+                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
+
                 obj.dataM0 = single(tmp_ref);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_ref = zeros([numX, numY, out_numFrames]);
                 tmp_calc = obj.dataM1;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+
+                for i = 1:out_numFrames
+                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
+
                 obj.dataM1 = single(tmp_ref);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_ref = zeros([numX, numY, out_numFrames]);
                 tmp_calc = obj.dataM2;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+
+                for i = 1:out_numFrames
+                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
+
                 obj.dataM2 = single(tmp_ref);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_ref = zeros([numX, numY, out_numFrames]);
                 tmp_calc = obj.dataM1M0;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
+
+                for i = 1:out_numFrames
+                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
+
                 obj.dataM1M0 = single(tmp_ref);
 
-                tmp_ref = zeros([in_height,in_width,out_num_frames]);
+                tmp_ref = zeros([numX, numY, out_numFrames]);
                 tmp_calc = obj.dataM2M0;
-                for i=1:out_num_frames
-                    tmp_ref(:,:,i) = mean(tmp_calc(:,:,floor(i/out_num_frames*in_num_frames):floor((i+1)/out_num_frames*in_num_frames)),3);
-                end
-                obj.dataM2M0 = single(tmp_ref);
 
+                for i = 1:out_numFrames
+                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
+                end
+
+                obj.dataM2M0 = single(tmp_ref);
 
             end
 
@@ -325,27 +314,23 @@ classdef OneCycleClass
             end
 
             if out_height < 0
-                out_height = in_height;
+                out_height = numX;
             end
 
             if out_width < 0
-                out_width = in_width;
+                out_width = numY;
             end
 
-            if out_num_frames < 0
-                out_num_frames = in_num_frames;
+            if out_numFrames < 0
+                out_numFrames = numFrames;
             end
 
-            [Xq, Yq, Zq] = meshgrid(linspace(1, in_width, out_width), linspace(1, in_height, out_height), linspace(1, in_num_frames, out_num_frames));
-            % tmp_ref = zeros(height, width, size(obj.dataM0, 3));
+            [Xq, Yq, Zq] = meshgrid(linspace(1, numY, out_width), linspace(1, numX, out_height), linspace(1, numFrames, out_numFrames));
+            % tmp_ref = zeros(numX, numY, numFrames);
 
-            tmp_calc_ref = obj.reference;
+            tmp_calc_ref = obj.referenceM0;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.reference = single(tmp_ref);
-
-            tmp_calc_ref = obj.reference_norm;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.reference_norm = single(tmp_ref);
+            obj.referenceM0 = single(tmp_ref);
 
             tmp_calc_ref = obj.dataM0;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
@@ -367,96 +352,84 @@ classdef OneCycleClass
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
             obj.dataM2M0 = single(tmp_ref);
 
-            disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_num_frames)])
+            disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_numFrames)])
             % logs = obj.load_logs;
-            % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
+            % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_numFrames));
             % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
             toc
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
-            height = size(obj.reference, 1);
-            width = size(obj.reference, 2);
-            num_frames = size(obj.reference, 3);
-            k_interp = obj.k;
-            height = (height - 1) * (2 ^ k_interp - 1) + height;
-            width = (width - 1) * (2 ^ k_interp - 1) + width;
+            [numX, numY, numFrames] = size(obj.referenceM0);
+            kInterp = obj.k;
+            numX = (numX - 1) * (2 ^ kInterp - 1) + numX;
+            numY = (numY - 1) * (2 ^ kInterp - 1) + numY;
 
-            tmp_ref = zeros(height, width, size(obj.dataM0, 3));
-            tmp_calc_ref = obj.reference;
+            % Reference M0
+            tmpReferenceM0 = zeros(numX, numY, numFrames);
+            tmpCalcRef = obj.referenceM0;
 
-            parfor i = 1:num_frames
-                tmp_ref(:, :, i) = interp2(tmp_calc_ref(:, :, i), k_interp);
+            parfor frameIdx = 1:numFrames
+                tmpReferenceM0(:, :, frameIdx) = interp2(tmpCalcRef(:, :, frameIdx), kInterp);
             end
 
-            obj.reference_interp = tmp_ref;
-            clear tmp_ref tmp_calc_ref
+            obj.referenceM0 = tmpReferenceM0;
+            clear tmpReferenceM0 tmpCalcRef
 
-            tmp_ref_norm = zeros(height, width, size(obj.dataM0, 3));
-            tmp_calc_ref_norm = obj.reference_norm;
+            % M0
+            tmpM0 = zeros(numX, numY, numFrames);
+            tmpCalcM0 = obj.dataM0;
 
-            parfor i = 1:num_frames
-                tmp_ref_norm(:, :, i) = interp2(tmp_calc_ref_norm(:, :, i), k_interp);
+            parfor frameIdx = 1:numFrames % loop over frames
+                tmpM0(:, :, frameIdx) = interp2(tmpCalcM0(:, :, frameIdx), kInterp);
             end
 
-            obj.reference_norm_interp = tmp_ref_norm;
-            clear tmp_ref_norm tmp_calc_ref_norm
+            obj.dataM0 = tmpM0;
+            clear tmpM0 tmpCalcM0
 
-            tmp_dataM2M0 = zeros(height, width, size(obj.dataM0, 3));
-            tmp_calc_data = obj.dataM2M0;
+            % M1
+            tmpM1 = zeros(numX, numY, numFrames);
+            tmpCalcM1 = obj.dataM1;
 
-            parfor i = 1:num_frames
-                tmp_dataM2M0(:, :, i) = interp2(tmp_calc_data(:, :, i), k_interp);
+            parfor frameIdx = 1:numFrames % loop over frames
+                tmpM1(:, :, frameIdx) = interp2(tmpCalcM1(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM2M0_interp = single(tmp_dataM2M0);
-            clear tmp_dataM2M0 tmp_calc_data
+            obj.dataM1 = tmpM1;
+            clear tmpM1 tmpCalcM1
 
-            tmp_dataM0 = zeros(height, width, size(obj.dataM0, 3));
-            tmp_calc_data_M0 = obj.dataM0;
+            % M2
+            tmpM2 = zeros(numX, numY, numFrames);
+            tmpCalcM2 = obj.dataM2;
 
-            parfor i = 1:num_frames % loop over frames
-                tmp_dataM0(:, :, i) = interp2(tmp_calc_data_M0(:, :, i), k_interp);
+            parfor frameIdx = 1:numFrames % loop over frames
+                tmpM2(:, :, frameIdx) = interp2(tmpCalcM2(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM0_interp = tmp_dataM0;
-            clear tmp_dataM0 tmp_calc_data_M0
+            obj.dataM2 = tmpM2;
+            clear tmpM2 tmpCalcM2
 
-            tmp_dataM1 = zeros(height, width, size(obj.dataM1, 3));
-            tmp_calc_data_M1 = obj.dataM1;
+            % M1M0
+            tmpM1M0 = zeros(numX, numY, numFrames);
+            tmpCalcM1M0 = obj.dataM1M0;
 
-            parfor i = 1:num_frames % loop over frames
-                tmp_dataM1(:, :, i) = interp2(tmp_calc_data_M1(:, :, i), k_interp);
+            parfor frameIdx = 1:numFrames
+                tmpM1M0(:, :, frameIdx) = interp2(tmpCalcM1M0(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM1_interp = tmp_dataM1;
-            clear tmp_dataM1 tmp_calc_data_M1
+            obj.dataM1M0 = tmpM1M0;
+            clear tmpM1M0 tmpCalcM1M0
 
-            tmp_dataM2 = zeros(height, width, size(obj.dataM2, 3));
-            tmp_calc_data_M2 = obj.dataM2;
+            % M2M0
+            tmpM2M0 = zeros(numX, numY, numFrames);
+            tmpCalcM2M0 = obj.dataM2M0;
 
-            parfor i = 1:num_frames % loop over frames
-                tmp_dataM2(:, :, i) = interp2(tmp_calc_data_M2(:, :, i), k_interp);
+            parfor frameIdx = 1:numFrames
+                tmpM2M0(:, :, frameIdx) = interp2(tmpCalcM2M0(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM2_interp = tmp_dataM2;
-            clear tmp_dataM2 tmp_calc_data_M2
-
-            tmp_data_M1M0 = zeros(height, width, size(obj.dataM0, 3));
-            tmp_calc_data_M1M0 = obj.dataM1M0;
-
-            parfor i = 1:num_frames
-                tmp_data_M1M0(:, :, i) = interp2(tmp_calc_data_M1M0(:, :, i), k_interp);
-            end
-
-            obj.dataM1M0_interp = tmp_data_M1M0;
-            clear tmp_data_M1M0 tmp_calc_data_M1M0
-
-            % obj.reference = []; %need n frames ; maybe stock in obj ?
-            obj.reference_norm = [];
-            obj.dataM2M0 = [];
-            obj.dataM0 = [];
-            obj.dataM1M0 = [];
+            obj.dataM2M0 = single(tmpM2M0);
+            clear tmpM2M0 tmpCalcM2M0
 
         end
 
@@ -553,11 +526,11 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [numX, numY, numFrames] = size(obj.reference_norm_interp);
+            [numX, numY, numFrames] = size(obj.referenceM0);
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-            videoM0Rescaled = rescale(obj.reference_interp);
-            writeGifOnDisc(videoM0Rescaled,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")),timePeriod)
+            videoM0Rescaled = rescale(obj.referenceM0);
+            writeGifOnDisc(videoM0Rescaled, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod)
 
             imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
 
@@ -581,11 +554,10 @@ classdef OneCycleClass
             tic
 
             try
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = forceCreateMasks(obj.reference_norm_interp, obj.dataM1M0_interp, obj.directory, ToolBox);
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.referenceM0, obj.dataM1M0, obj.directory, ToolBox);
             catch
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp, obj.dataM0_interp, obj.dataM1M0_interp, obj.directory, ToolBox);
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.referenceM0, obj.dataM0, obj.dataM1M0, obj.directory, ToolBox);
             end
-
 
             disp('CreateMasks timing :')
             time = toc;
@@ -609,13 +581,13 @@ classdef OneCycleClass
                 fclose(fileID);
 
                 tic
-                [sys_index_list_cell, ~] = find_systole_index(obj.reference_interp, obj.directory, maskArtery);
+                [sysIdxList, ~] = find_systole_index(obj.referenceM0, obj.directory, maskArtery);
                 disp('FindSystoleIndex timing :')
                 time_sys_idx = toc;
                 disp(time_sys_idx)
                 save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
-                [v_RMS_one_cycle, v_RMS_all, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp, obj.dataM1M0_interp, obj.dataM2_interp, obj.dataM0_interp, obj.reference_interp, sys_index_list_cell, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
+                [vOneCycle, vRMS, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0, obj.dataM1M0, obj.dataM2, obj.dataM0, obj.referenceM0, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
                 disp('PulseAnalysis timing :')
                 time_pulseanalysis = total_time;
                 disp(time_pulseanalysis)
@@ -627,20 +599,20 @@ classdef OneCycleClass
                     fprintf(fileID, '\t%s : %.0fs \r\n', exec_times(1, i), exec_times(2, i));
                 end
 
-                    fclose(fileID);
-                    clear exec_times
+                fclose(fileID);
+                clear exec_times
 
-                    pulseVelocity(obj.dataM0_interp,maskArtery,ToolBox,obj.directory)
-                    disp('PulseVelocity timing :')
-                    time_pulsevelocity = total_time;
-                    disp(time_pulsevelocity)
-                    save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
-                    %exec time details
-                    fileID = fopen(path_file_txt_exe_times, 'a+');
+                pulseVelocity(obj.dataM0, maskArtery, ToolBox, obj.directory)
+                disp('PulseVelocity timing :')
+                time_pulsevelocity = total_time;
+                disp(time_pulsevelocity)
+                save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
+                %exec time details
+                fileID = fopen(path_file_txt_exe_times, 'a+');
 
                 if obj.flag_velocity_analysis
                     tic
-                    bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.reference_interp, ToolBox, path)
+                    bloodFlowVelocity(vRMS, vOneCycle, maskArtery, maskVein, obj.referenceM0, ToolBox, path)
                     disp('Blood Flow Velocity timing :')
                     time_velo = toc;
                     disp(time_velo)
@@ -649,7 +621,7 @@ classdef OneCycleClass
 
                 if obj.flag_ARI_analysis
                     tic
-                    ArterialResistivityIndex(v_RMS_one_cycle, obj.reference_interp, maskArtery, ToolBox);
+                    ArterialResistivityIndex(vOneCycle, obj.referenceM0, maskArtery, ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     time_arterial_res = toc;
                     disp(time_arterial_res)
@@ -658,7 +630,7 @@ classdef OneCycleClass
 
                 if obj.flag_bloodVolumeRate_analysis
                     tic
-                    bloodVolumeRate(maskArtery, maskVein, v_RMS_all, obj.reference_interp, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRate(maskArtery, maskVein, vRMS, obj.referenceM0, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                     disp('Blood Volume Rate timing :')
                     time_flowrate = toc;
                     disp(time_flowrate)
@@ -687,7 +659,7 @@ classdef OneCycleClass
                 SH_cube = reshape(videoSH, numX, numY, numFrames, []);
 
                 tic
-                spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.dataM0_interp);
+                spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.dataM0);
                 disp('Spectrum analysis :')
                 time = toc;
                 disp(time)

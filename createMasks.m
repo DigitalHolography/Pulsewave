@@ -1,12 +1,12 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(reference, videoM0, videoM1M0, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(flatfieldM0, videoM0, videoM1M0, path, ToolBox)
 
     %% loading parameters and compute useful variables
     PW_params = Parameters_json(path);
     mkdir(ToolBox.PW_path_png, 'mask')
 
-    [numX, numY, numFrames] = size(reference);
+    [numX, numY, numFrames] = size(flatfieldM0);
 
-    meanIm = squeeze(mean(reference, 3));
+    meanIm = squeeze(mean(flatfieldM0, 3));
     meanM0 = squeeze(mean(videoM0, 3));
     meanM1M0 = squeeze(mean(videoM1M0, 3));
     figure(666), imagesc(meanIm), axis image, colormap gray;
@@ -27,23 +27,23 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     %%  Compute first correlation to find arteries
 
     % compute pulse in 3 dimentions for correlation in all vessels
-    pulse = squeeze(mean(videoM0 .* (vesselnessIm > 0), [1 2]));
-    pulseInit = pulse - mean(pulse, "all");
-    pulseInit3d = zeros(numX, numY, numFrames);
+    vesselPulse = squeeze(mean(videoM0 .* (vesselnessIm > 0), [1 2]));
+    vesselPulseInit = vesselPulse - mean(vesselPulse, "all");
+    vesselPulseInit3d = zeros(numX, numY, numFrames);
 
     parfor xx = 1:numX
 
         for yy = 1:numY
-            pulseInit3d(xx, yy, :) = pulseInit;
+            vesselPulseInit3d(xx, yy, :) = vesselPulseInit;
         end
 
     end
 
     % compute local-to-average pulse wave zero-lag correlation
-    correlationMatrixArtery = squeeze(mean((videoM0Centered .* pulseInit3d), 3)) .* (vesselnessIm > 0);
+    R_VesselPulse = squeeze(mean((videoM0Centered .* vesselPulseInit3d), 3)) .* (vesselnessIm > 0);
 
     % Create first artery mask
-    firstMaskArtery = (correlationMatrixArtery > PW_params.arteryMask_CorrelationMatrixThreshold * mean2(correlationMatrixArtery(correlationMatrixArtery > 0)));
+    firstMaskArtery = (R_VesselPulse > PW_params.arteryMask_CorrelationMatrixThreshold * mean2(R_VesselPulse(R_VesselPulse > 0)));
 
     if PW_params.masks_cleaningCoroid
         firstMaskArtery = firstMaskArtery & bwareafilt(firstMaskArtery , 1, 4);
@@ -56,7 +56,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
     colorbar('southoutside');
     figure(11), imshow(firstMaskArtery)
 
-    clear pulse pulseInit pulseInit3d correlationMatrixArtery;
+    clear vesselPulse vesselPulseInit vesselPulseInit3d R_VesselPulse;
     %% Compute correlation to segment veins and arteries
 
     % compute pulse in 3 dimentions for correlation in main arteries

@@ -34,125 +34,117 @@ classdef pulse < matlab.apps.AppBase
 
     methods (Access = private)
         function Load(app, path)
-       
-                % for n = 1:length(app.files)
-                %     if length(app.files)~=app.files{n}.nbFiles 
-                %         app.ErrorLabel.Text = "Error: number of files not correct";
-                %         return ; 
-                %     end 
-                % end
-                
-                app.Lamp.Color = [1, 0, 0];
-                drawnow;
-                path = strcat(path, '\');
-                
-                parfor_arg = app.NumberofWorkersSpinner.Value ;
 
-                poolobj = gcp('nocreate'); % check if a pool already exist
-                if isempty(poolobj)
-                    parpool(parfor_arg); % create a new pool
-                elseif poolobj.NumWorkers ~= parfor_arg
-                    delete(poolobj); %close the current pool to create a new one with correct num of workers
-                    parpool(parfor_arg);
-                end
-
-                tic
-
-                try
-                    %% add files to the drawer list
-                    app.files{end + 1} = OneCycleClass(path);
-
-                    %% register
-                    for n = 1:length(app.files)
-                        app.files{n} = app.files{n}.registerVideo();
-                    end
-
-                    %% crop videos
-                    for n = 1:length(app.files)
-                        app.files{n} = app.files{n}.cropAllVideo();
-                    end
-
-                    %% flatfield correction
-                    for n = 1:length(app.files)
-                        app.files{n} = app.files{n}.flatfieldRef();
-                    end
-
-                    %% moment normalize
-                    for n = 1:length(app.files)
-                        app.files{n} = app.files{n}.MomentNormalize();
-                    end
-
-                    %% Video resize (preprocess interpolation interpolate)
-                    app.files{1} = app.files{1}.VideoResize();
-
-                    %% interpolate
-                    app.files{1} = app.files{1}.Interpolate();
-
-                    %% End
-                    app.LoadfolderButton.Enable = true ;
-                    app.ExecuteButton.Enable = true ;
-                    app.ClearButton.Enable = true ;
-                    app.EditParametersButton.Enable = true;
-                    % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
-                    app.ReferenceDirectory.Value = path ;
-
-                catch exception
-
-                    fprintf("==============================\nERROR\n==============================\n")
-                    fprintf('Error while loading : %s\n', path)
-                    fprintf("%s\n",exception.identifier)
-                    fprintf("%s\n",exception.message)
-                    % for i = 1:size(exception.stack,1)
-                    %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
-                    %     fprintf(stack);
-                    % end
-
-                    if exception.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
-
-                        fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
-
-                    else
-
-                        for i = 1:numel(exception.stack)
-                            disp(exception.stack(i))
-                        end
-
-                    end
-
-                    fprintf("==============================\n")
-
-
-                    app.Lamp.Color = [1, 1/2, 0];
-
-                end
-
-                disp('Load timing :')
-                toc
-                
-        end
-    end
-methods (Access = private)
-
-    function LoadFromTxt(app)
-
-        [selected_file,path] = uigetfile('*.txt');
-        if (selected_file)
-            fileID = fopen(fullfile(path,selected_file),'r');
-            % filecontent = fscanf(fileID,'%s');
-            % files_cell = strsplit(filecontent,'\n');
-
-            filecontent = fileread(fullfile(path,selected_file));
-            files_cell = strsplit(filecontent,'\n');
-            for nn = 1:length(files_cell)
-                if ~isempty(files_cell{1,nn})
-                    app.drawer_list{end + 1} = files_cell{1,nn};
+            for n = 1:length(app.files)
+                if length(app.files)~=app.files{n}.nbFiles
+                    app.ErrorLabel.Text = "Error: number of files not correct";
+                    return ;
                 end
             end
-            fclose(fileID);
-        end
 
+            app.Lamp.Color = [1, 0, 0];
+            drawnow;
+            path = strcat(path, '\');
+
+            parfor_arg = app.NumberofWorkersSpinner.Value ;
+
+            poolobj = gcp('nocreate'); % check if a pool already exist
+            if isempty(poolobj)
+                parpool(parfor_arg); % create a new pool
+            elseif poolobj.NumWorkers ~= parfor_arg
+                delete(poolobj); %close the current pool to create a new one with correct num of workers
+                parpool(parfor_arg);
+            end
+
+            tic
+
+            try
+                % add files to the drawer list
+                app.files{end + 1} = OneCycleClass(path);
+
+                % register
+                app.files{end} = app.files{end}.registerVideo();
+
+                % crop videos
+                app.files{end} = app.files{end}.cropAllVideo();
+
+                % flatfield correction
+                app.files{end} = app.files{end}.flatfieldRef();
+
+                % moment normalize
+                app.files{end} = app.files{end}.MomentNormalize();
+
+                % Video resize (preprocess interpolation interpolate)
+                app.files{end} = app.files{end}.VideoResize();
+
+                % interpolate
+                app.files{end} = app.files{end}.Interpolate();
+
+                %% End
+                app.LoadfolderButton.Enable = true ;
+                app.ExecuteButton.Enable = true ;
+                app.ClearButton.Enable = true ;
+                app.EditParametersButton.Enable = true;
+                % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
+                app.ReferenceDirectory.Value = path ;
+
+            catch exception
+
+                fprintf("==============================\nERROR\n==============================\n")
+                fprintf('Error while loading : %s\n', path)
+                fprintf("%s\n",exception.identifier)
+                fprintf("%s\n",exception.message)
+                % for i = 1:size(exception.stack,1)
+                %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
+                %     fprintf(stack);
+                % end
+
+                if exception.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
+
+                    fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
+
+                else
+
+                    for i = 1:numel(exception.stack)
+                        disp(exception.stack(i))
+                    end
+
+                end
+
+                fprintf("==============================\n")
+
+
+                app.Lamp.Color = [1, 1/2, 0];
+
+            end
+
+            disp('Load timing :')
+            toc
+
+        end
     end
-end
+    methods (Access = private)
+
+        function LoadFromTxt(app)
+
+            [selected_file,path] = uigetfile('*.txt');
+            if (selected_file)
+                fileID = fopen(fullfile(path,selected_file),'r');
+                % filecontent = fscanf(fileID,'%s');
+                % files_cell = strsplit(filecontent,'\n');
+
+                filecontent = fileread(fullfile(path,selected_file));
+                files_cell = strsplit(filecontent,'\n');
+                for nn = 1:length(files_cell)
+                    if ~isempty(files_cell{1,nn})
+                        app.drawer_list{end + 1} = files_cell{1,nn};
+                    end
+                end
+                fclose(fileID);
+            end
+
+        end
+    end
 
     % Callbacks that handle component events
     methods (Access = private)
@@ -178,7 +170,7 @@ end
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
-            
+
             clear Parameters_json
             if (app.flag_is_load)
                 disp("Files already loaded")
@@ -190,7 +182,7 @@ end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(selected_dir);
-                
+
             end
 
             app.ErrorLabel.Text = "" ;
@@ -199,7 +191,7 @@ end
 
         % Button pushed function: ExecuteButton
         function ExecuteButtonPushed(app, event)
-           
+
             %             delete(gcp('nocreate')); % closeparallel CPU pool
             %             parpool;% launch parallel CPU pool
 
@@ -213,7 +205,7 @@ end
                 delete(poolobj); %close the current pool to create a new one with correct num of workers
                 parpool(parfor_arg);
             end
-            
+
             clear Parameters_json
             app.Lamp.Color = [1, 0, 0];
             app.ErrorLabel.Text = "" ;
@@ -227,15 +219,19 @@ end
                 app.files{n}.flag_ARI_analysis = app.ARICheckBox.Value;
                 app.files{n}.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
                 app.files{n}.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
+
                 try
+
                     app.files{n}.onePulse(app.NumberofframesEditField.Value);
-                catch exception
+
+                catch ME
+
                     fprintf("==============================\nERROR\n==============================\n")
                     disp(['Error with file : ', app.files{n}.directory])
-                    disp(exception.identifier)
-                    disp(exception.message)
-                    for i = 1:size(exception.stack,1)
-                        fprintf('%s : %s, line : %d \n',exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
+                    disp(ME.identifier)
+                    disp(ME.message)
+                    for i = 1:size(ME.stack,1)
+                        fprintf('%s : %s, line : %d \n',ME.stack(i).file, ME.stack(i).name, ME.stack(i).line);
                     end
                     fprintf("==============================\n")
                 end
@@ -249,9 +245,9 @@ end
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
-            
+
             clear Parameters_json
-            
+
         end
 
         % Button pushed function: FolderManagementButton
@@ -280,7 +276,7 @@ end
                 'String', 'Select folder',...
                 'Callback', @select);
 
-           uicontrol('Parent', d,...
+            uicontrol('Parent', d,...
                 'Position', [140, 20, 100, 25],...
                 'FontName', 'Helvetica',...
                 'BackgroundColor', [0.5, 0.5, 0.5],...
@@ -321,18 +317,18 @@ end
             uiwait(d);
 
             function select_all(~, ~)
-%                 %% selection of one processed folder with uigetdir
-%                 selected_dir = uigetdir();
-%                 if (selected_dir)
-%                     app.drawer_list{end + 1} = selected_dir;
-%                 end
-%                 txt.String = app.drawer_list;
-%                 d.Position(4) = 100 + length(app.drawer_list) * 14;
-%                 txt.Position(4) = length(app.drawer_list) * 14;
-                
+                %                 %% selection of one processed folder with uigetdir
+                %                 selected_dir = uigetdir();
+                %                 if (selected_dir)
+                %                     app.drawer_list{end + 1} = selected_dir;
+                %                 end
+                %                 txt.String = app.drawer_list;
+                %                 d.Position(4) = 100 + length(app.drawer_list) * 14;
+                %                 txt.Position(4) = length(app.drawer_list) * 14;
+
                 %% selection of the measurement folder with uigetdir to analyze all processed folders
                 selected_dir = uigetdir();
-                [~,folder_name,~] = fileparts(selected_dir); 
+                [~,folder_name,~] = fileparts(selected_dir);
                 % List of Subfolders within the measurement folder
                 tmp_dir = dir(selected_dir);
                 % remove all files (isdir property is 0)
@@ -379,7 +375,7 @@ end
                         fprintf(fileID,'%s \n',app.drawer_list{i});
                     end
                 end
-                
+
                 fclose(fileID);
             end
 
@@ -392,7 +388,7 @@ end
                     app.ClearButtonPushed();
                     toc
                 end
-%                 clear app.drawer_list
+                %                 clear app.drawer_list
             end
             delete(d);
         end
@@ -405,9 +401,9 @@ end
                 for i = 1:length(app.drawer_list)
                     app.Load(app.drawer_list{i});
                     % app.ExecuteButtonPushed();
-                    fprintf("%s", fullfile(path_to_copy,app.files{1}.ToolBoxmaster.PW_folder_name))
-                    mkdir(fullfile(path_to_copy,app.files{1}.ToolBoxmaster.PW_folder_name))
-                    copyfile(app.files{1}.ToolBoxmaster.PW_path_dir,fullfile(path_to_copy,app.files{1}.ToolBoxmaster.PW_folder_name))
+                    fprintf("%s", fullfile(path_to_copy,app.files{i}.ToolBoxmaster.PW_folder_name))
+                    mkdir(fullfile(path_to_copy,app.files{i}.ToolBoxmaster.PW_folder_name))
+                    copyfile(app.files{i}.ToolBoxmaster.PW_path_dir,fullfile(path_to_copy,app.files{i}.ToolBoxmaster.PW_folder_name))
                     app.ClearButtonPushed();
                 end
             end
@@ -436,12 +432,12 @@ end
                 app.bloodVelocityProfileCheckBox.Enable = true;
                 app.bloodVolumeRateCheckBox.Enable = true;
                 app.ARICheckBox.Enable = true;
-                    if app.bloodVolumeRateCheckBox.Value == true
-                        app.bloodVelocityProfileCheckBox.Visible = true;
-                    else
-                        app.bloodVelocityProfileCheckBox.Visible = false;
-                        app.bloodVelocityProfileCheckBox.Value = false;
-                    end
+                if app.bloodVolumeRateCheckBox.Value == true
+                    app.bloodVelocityProfileCheckBox.Visible = true;
+                else
+                    app.bloodVelocityProfileCheckBox.Visible = false;
+                    app.bloodVelocityProfileCheckBox.Value = false;
+                end
             else
                 app.velocityCheckBox.Enable = false;
                 app.bloodVelocityProfileCheckBox.Visible = false;
@@ -457,7 +453,7 @@ end
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, event)
             if (app.flag_is_load)
-                winopen(fullfile(app.files{1}.ToolBoxmaster.PW_path_main,'json','InputPulsewaveParams.json'));
+                winopen(fullfile(app.files{end}.ToolBoxmaster.PW_path_main,'json','InputPulsewaveParams.json'));
             end
         end
     end

@@ -1,14 +1,14 @@
-function [] = ArterialResistivityIndex(v_RMS, reference, maskArtery, ToolBox)
+function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox)
 
     disp('arterial resistivity and pulsatility...');
 
     mkdir(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex')
     mkdir(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex')
 
-    [numX, numY, numFrames] = size(reference);
+    [numX, numY, numFrames] = size(flatfieldM0);
 
-    meanIm = rescale(mean(reference, 3));
-    reference = rescale(reference);
+    meanIm = rescale(mean(flatfieldM0, 3));
+    flatfieldM0 = rescale(flatfieldM0);
 
     [ARI, ARImap] = construct_resistivity_index(v_RMS, maskArtery);
     [API, APImap] = construct_pulsatility_index(v_RMS, maskArtery);
@@ -23,10 +23,10 @@ function [] = ArterialResistivityIndex(v_RMS, reference, maskArtery, ToolBox)
     ARIvideoRGB = zeros(numX, numY, 3, numFrames);
 
     for frameIdx = 1:numFrames
-        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, reference(:, :, frameIdx), maskArtery, ToolBox);
+        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARImap, ARI, flatfieldM0(:, :, frameIdx), maskArtery, ToolBox);
         %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-        img_M0 = reference(:, :, frameIdx);
+        img_M0 = flatfieldM0(:, :, frameIdx);
         ARIvideoRGB(:, :, :, frameIdx) = ARIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(numX, numY, 3, 1) .* img_M0 .* ~maskArtery;
     end
 
@@ -118,9 +118,9 @@ function [] = ArterialResistivityIndex(v_RMS, reference, maskArtery, ToolBox)
     APIvideoRGB = zeros(numX, numY, 3, numFrames);
 
     for frameIdx = 1:numFrames
-        [hue_API, sat_API, val_API] = createARI_HSVmap(APImap, API, reference(:, :, frameIdx), maskArtery, ToolBox);
+        [hue_API, sat_API, val_API] = createARI_HSVmap(APImap, API, flatfieldM0(:, :, frameIdx), maskArtery, ToolBox);
         APIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_API, sat_API, val_API);
-        img_M0 = reference(:, :, frameIdx);
+        img_M0 = flatfieldM0(:, :, frameIdx);
         APIvideoRGB(:, :, :, frameIdx) = APIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(numX, numY, 3, 1) .* img_M0 .* ~maskArtery;
     end
     APIvideoRGB (APIvideoRGB < 0) = 0;
