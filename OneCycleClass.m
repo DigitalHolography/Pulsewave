@@ -172,6 +172,8 @@ classdef OneCycleClass
         end
 
         function obj = registerVideo(obj)
+            disp('registering')
+            tic
             % Registers the video using intensity based registration
             PW_params = Parameters_json(obj.directory);
             if ~PW_params.registerVideoFlag
@@ -210,6 +212,8 @@ classdef OneCycleClass
         end
 
         function obj = cropAllVideo(obj)
+             disp('cropping videos')
+             tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
@@ -239,10 +243,13 @@ classdef OneCycleClass
             end
 
             obj.load_logs = logs;
+            toc
 
         end
 
         function obj = VideoResize(obj)
+             disp('resizing')
+             tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;
             out_width = PW_params.frameHeight;
@@ -364,6 +371,7 @@ classdef OneCycleClass
             % logs = obj.load_logs;
             % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
             % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
+            toc
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
@@ -619,8 +627,16 @@ classdef OneCycleClass
                     fprintf(fileID, '\t%s : %.0fs \r\n', exec_times(1, i), exec_times(2, i));
                 end
 
-                fclose(fileID);
-                clear exec_times
+                    fclose(fileID);
+                    clear exec_times
+
+                    pulseVelocity(obj.dataM0_interp,maskArtery,ToolBox,obj.directory)
+                    disp('PulseVelocity timing :')
+                    time_pulsevelocity = total_time;
+                    disp(time_pulsevelocity)
+                    save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
+                    %exec time details
+                    fileID = fopen(path_file_txt_exe_times, 'a+');
 
                 if obj.flag_velocity_analysis
                     tic
