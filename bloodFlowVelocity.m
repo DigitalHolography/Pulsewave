@@ -1,4 +1,4 @@
-function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, reference, ToolBox, path)
+function [] = bloodFlowVelocity(vRMS, vOneCycle, maskArtery, maskVein, flatfieldIm, ToolBox, path)
 
 PW_params = Parameters_json(path);
 veins_analysis = PW_params.veins_analysis;
@@ -9,82 +9,82 @@ mkdir(ToolBox.PW_path_eps, 'bloodFlowVelocity')
 tic
 
 % TRUE MIN and MAX V_RMS but not realistic
-Im = rescale(mean(reference, 3));
-[nX, nY, nFrame] = size(v_RMS_all);
+Im = rescale(mean(flatfieldIm, 3));
+[numX, numY, numFrames] = size(vRMS);
 
-v_artery = sum(v_RMS_all .* maskArtery, [1 2]) / nnz(maskArtery);
-v_vein = sum(v_RMS_all .* maskVein, [1 2]) / nnz(maskVein);
-Vmax_Arteries = max(v_artery(:));
-Vmax_Veins = max(v_vein(:));
-Vmin_Arteries = min(v_artery(:));
-Vmin_Veins = min(v_vein(:));
+vArtery = sum(vRMS .* maskArtery, [1 2]) / nnz(maskArtery);
+vVein = sum(vRMS .* maskVein, [1 2]) / nnz(maskVein);
+VmaxArteries = max(vArtery(:));
+VmaxVeins = max(vVein(:));
+VminArteries = min(vArtery(:));
+VminVeins = min(vVein(:));
 
 %% Construct Velocity video
-flowVideoRGB = zeros(nX, nY, 3, nFrame);
-reference_norm = rescale(reference);
-v_mean = mean(v_RMS_all, 3);
+flowVideoRGB = zeros(numX, numY, 3, numFrames);
+reference_norm = rescale(flatfieldIm);
+vMean = mean(vRMS, 3);
 
 if veins_analysis
 
-    [hue_artery_mean, sat_artery_mean, val_artery_mean, cmap_artery] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-    [hue_vein_mean, sat_vein_mean, val_vein_mean, cmap_vein] = createHSVmap(v_mean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-    val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein  - (val_artery_mean + val_vein_mean)./2.*(maskArtery&maskVein);
-    hue_mean = (hue_artery_mean + hue_vein_mean)  - (hue_artery_mean + hue_vein_mean)./2.*(maskArtery&maskVein);
-    sat_mean = (sat_artery_mean + sat_vein_mean)  - (sat_artery_mean + sat_vein_mean)./2.*(maskArtery&maskVein);
-    flowVideoRGBMean = hsv2rgb(hue_mean, sat_mean, val_mean);
-    flowVideoRGBMean = flowVideoRGBMean .* (maskArtery + maskVein - maskArtery&maskVein) + ~(maskArtery + maskVein) .* rescale(Im);
+    [hueArteryMean, satArteryMean, valArteryMean, cmapArtery] = createHSVmap(vMean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+    [hueVeinMean, satVeinMean, valVeinMean, cmapVein] = createHSVmap(vMean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
+    valMean = vMean .* (~(maskArtery + maskVein)) + valArteryMean .* maskArtery + valVeinMean .* maskVein - (valArteryMean + valVeinMean) ./ 2 .* (maskArtery & maskVein);
+    hueMean = (hueArteryMean + hueVeinMean) - (hueArteryMean + hueVeinMean) ./ 2 .* (maskArtery & maskVein);
+    satMean = (satArteryMean + satVeinMean) - (satArteryMean + satVeinMean) ./ 2 .* (maskArtery & maskVein);
+    flowVideoRGBMean = hsv2rgb(hueMean, satMean, valMean);
+    flowVideoRGBMean = flowVideoRGBMean .* (maskArtery + maskVein - maskArtery & maskVein) + ~(maskArtery + maskVein) .* rescale(Im);
     imwrite(flowVideoRGBMean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
-    parfor frameIdx = 1:nFrame
-        v = mat2gray(v_RMS_all(:, :, frameIdx));
-        [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-        [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
-        val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein - (val_artery + val_vein)./2.*(maskArtery&maskVein);
-        hue = hue_artery + hue_vein - (hue_artery + hue_vein)./2.*(maskArtery&maskVein);
-        sat = sat_artery + sat_vein - (sat_artery + sat_vein)./2.*(maskArtery&maskVein);
+    parfor frameIdx = 1:numFrames
+        v = mat2gray(vRMS(:, :, frameIdx));
+        [hueArtery, satArtery, valArtery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+        [hueVein, satVein, valVein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
+        val = v .* (~(maskArtery + maskVein)) + valArtery .* maskArtery + valVein .* maskVein - (valArtery + valVein) ./ 2 .* (maskArtery & maskVein);
+        hue = hueArtery + hueVein - (hueArtery + hueVein) ./ 2 .* (maskArtery & maskVein);
+        sat = satArtery + satVein - (satArtery + satVein) ./ 2 .* (maskArtery & maskVein);
         flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue, sat, val);
         flowVideoRGB(:, :, :, frameIdx) = flowVideoRGB(:, :, :, frameIdx) .* (maskArtery | maskVein) + ~(maskArtery | maskVein) .* rescale(reference_norm(:, :, frameIdx));
     end
 
 else
 
-    [hue_artery_mean, sat_artery_mean, val_artery_mean, cmap_artery] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-    val_mean = v_mean .* (~(maskArtery)) + val_artery_mean .* maskArtery;
-    flowVideoRGBMean = hsv2rgb(hue_artery_mean, sat_artery_mean, val_mean);
+    [hueArteryMean, satArteryMean, valArteryMean, cmapArtery] = createHSVmap(vMean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+    valMean = vMean .* (~(maskArtery)) + valArteryMean .* maskArtery;
+    flowVideoRGBMean = hsv2rgb(hueArteryMean, satArteryMean, valMean);
     flowVideoRGBMean = flowVideoRGBMean .* (maskArtery) + ~(maskArtery) .* rescale(Im);
     imwrite(flowVideoRGBMean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
-    parfor frameIdx = 1:nFrame
-        v = mat2gray(v_RMS_all(:, :, frameIdx));
-        [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-        val = v .* (~(maskArtery)) + val_artery .* maskArtery;
-        flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_artery, sat_artery, val);
+    parfor frameIdx = 1:numFrames
+        v = mat2gray(vRMS(:, :, frameIdx));
+        [hueArtery, satArtery, valArtery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+        val = v .* (~(maskArtery)) + valArtery .* maskArtery;
+        flowVideoRGB(:, :, :, frameIdx) = hsv2rgb(hueArtery, satArtery, val);
         flowVideoRGB(:, :, :, frameIdx) = flowVideoRGB(:, :, :, frameIdx) .* (maskArtery) + ~(maskArtery) .* rescale(reference_norm(:, :, frameIdx));
     end
 
 end
 
-clear hue_artery sat_artery val_artery hue_vein sat_vein val_vein
+clear hueArtery satArtery valArtery hueVein satVein valVein
 
 %% Histogram of One_Cycle
 
-N_interp = size(v_one_cycle, 3);
-v_histo_artery = round(v_one_cycle .* maskArtery);
-v_min = min(v_histo_artery, [], 'all');
-v_max = max(v_histo_artery, [], 'all');
+nInterpFrames = size(vOneCycle, 3);
+vHistoArtery = round(vOneCycle .* maskArtery);
+vMin = min(vHistoArtery, [], 'all');
+vMax = max(vHistoArtery, [], 'all');
 
-X = linspace(v_min, v_max, v_max - v_min + 1);
+X = linspace(vMin, vMax, vMax - vMin + 1);
 n = size(X, 2);
-histo = zeros(size(X, 2), N_interp);
+histo = zeros(size(X, 2), nInterpFrames);
 
-for frameIdx = 1:N_interp
+for frameIdx = 1:nInterpFrames
 
-    for xx = 1:nX
+    for xx = 1:numX
 
-        for yy = 1:nY
+        for yy = 1:numY
 
-            if (v_histo_artery(xx, yy, frameIdx) ~= 0)
-                i = find(X == v_histo_artery(xx, yy, frameIdx));
+            if (vHistoArtery(xx, yy, frameIdx) ~= 0)
+                i = find(X == vHistoArtery(xx, yy, frameIdx));
                 histo(i, frameIdx) = histo(i, frameIdx) + 1;
             end
 
@@ -95,7 +95,7 @@ for frameIdx = 1:N_interp
 end
 
 figure(156)
-yAx = [v_min v_max];
+yAx = [vMin vMax];
 xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
 imagesc(xAx, yAx, histo)
 set(gca, 'YDir', 'normal')
@@ -108,22 +108,22 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
 
 if veins_analysis
-    v_histo_veins = round(v_one_cycle .* maskVein);
-    v_min = min(v_histo_veins, [], 'all');
-    v_max = max(v_histo_veins, [], 'all');
+    vHistoVeins = round(vOneCycle .* maskVein);
+    vMin = min(vHistoVeins, [], 'all');
+    vMax = max(vHistoVeins, [], 'all');
 
-    X = linspace(v_min, v_max, v_max - v_min + 1);
+    X = linspace(vMin, vMax, vMax - vMin + 1);
     n = size(X, 2);
-    histo = zeros(size(X, 2), N_interp);
+    histo = zeros(size(X, 2), nInterpFrames);
 
-    for frameIdx = 1:N_interp
+    for frameIdx = 1:nInterpFrames
 
-        for xx = 1:nX
+        for xx = 1:numX
 
-            for yy = 1:nY
+            for yy = 1:numY
 
-                if (v_histo_veins(xx, yy, frameIdx) ~= 0)
-                    i = find(X == v_histo_veins(xx, yy, frameIdx));
+                if (vHistoVeins(xx, yy, frameIdx) ~= 0)
+                    i = find(X == vHistoVeins(xx, yy, frameIdx));
                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
                 end
 
@@ -134,7 +134,7 @@ if veins_analysis
     end
 
     figure(157)
-    yAx = [v_min v_max];
+    yAx = [vMin vMax];
     xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
     imagesc(xAx, yAx, histo)
     set(gca, 'YDir', 'normal')
@@ -154,7 +154,7 @@ w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_fold
 
 open(w)
 
-for frameIdx = 1:nFrame
+for frameIdx = 1:numFrames
     writeVideo(w, squeeze(flowVideoRGB(:, :, :, frameIdx)));
 end
 
@@ -163,7 +163,7 @@ close(w);
 w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "vRMS.mp4")), 'MPEG-4');
 open(w)
 
-for frameIdx = 1:nFrame
+for frameIdx = 1:numFrames
     writeVideo(w, squeeze(flowVideoRGB(:, :, :, frameIdx)));
 end
 
@@ -173,9 +173,9 @@ try
     % Save colorbar
     colorfig = figure(116);
     colorfig.Units = 'normalized';
-    colormap(cmap_artery)
+    colormap(cmapArtery)
     %hCB = colorbar('north');
-    hCB = colorbar('north', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
+    hCB = colorbar('north', 'Ticks', [0, 1], 'TickLabels', {string(round(VminArteries, 1)), string(round(VmaxArteries, 1))});
     set(gca, 'Visible', false)
     set(gca, 'LineWidth', 3);
     hCB.Position = [0.10 0.3 0.81 0.35];
@@ -189,9 +189,9 @@ try
         % Save colorbar
         colorfig = figure(117);
         colorfig.Units = 'normalized';
-        colormap(cmap_vein)
+        colormap(cmapVein)
         %hCB = colorbar('north');
-        hCB = colorbar('north', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Veins, 1)), string(round(Vmax_Veins, 1))});
+        hCB = colorbar('north', 'Ticks', [0, 1], 'TickLabels', {string(round(VminVeins, 1)), string(round(VmaxVeins, 1))});
         set(gca, 'Visible', false)
         set(gca, 'LineWidth', 3);
         hCB.Position = [0.10 0.3 0.81 0.35];
@@ -210,19 +210,19 @@ end
 f158 = figure(158);
 f158.Position = [300, 300, 600, 630];
 timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "vRMS")), timePeriod, 0.04, nFrame);
+gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "vRMS")), timePeriod, 0.04, numFrames);
 
-for frameIdx = 1:nFrame
+for frameIdx = 1:numFrames
     imagesc(flowVideoRGB(:, :, :, frameIdx));
     title('Flow Map');
     axis image
     axis off
     set(gca, 'LineWidth', 2);
     fontsize(gca, 14, "points");
-    % hCB = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(Vmin_Arteries, 1)), string(round(Vmax_Arteries, 1))});
+    % hCB = colorbar('southoutside', 'Ticks', [0, 1], 'TickLabels', {string(round(VminArteries, 1)), string(round(VmaxArteries, 1))});
     % hCB.Label.String = 'Velocity (mm.s^{-1})';
     % hCB.Label.FontSize = 12;
-    % colormap(cmap_artery);
+    % colormap(cmapArtery);
 
     gifWriter.write(flowVideoRGB(:, :, :, frameIdx), frameIdx);
 
@@ -236,92 +236,90 @@ toc
 
 %% Init of histogram axis
 
-%%
-[N, M] = size(maskArtery);
-radius1 = PW_params.velocity_bigRadiusRatio * (M + N) / 2;
-radius2 = PW_params.velocity_smallRadiusRatio * (M + N) / 2;
-[maskSection] = createMaskSection(Im, maskArtery,radius1,radius2,'_mask_artery_section_rgb.png', ToolBox, path);
-maskArtery_section = maskArtery & maskSection;
+radius1 = PW_params.velocityBigRadiusRatio * (numY + numX) / 2;
+radius2 = PW_params.velocitySmallRadiusRatio * (numY + numX) / 2;
+[maskSection] = createMaskSection(Im, maskArtery, radius1, radius2, '_maskArterySection_rgb.png', ToolBox, path);
+maskArterySection = maskArtery & maskSection;
 
 %or
 
-% maskArtery_section = maskArtery;
+% maskArterySection = maskArtery;
 %%
 
-v_histo_artery = round(v_RMS_all .* maskArtery_section);
-v_min_artery = min(v_histo_artery, [], 'all');
-v_max_artery = max(v_histo_artery, [], 'all');
+vHistoArtery = round(vRMS .* maskArterySection);
+vMinArtery = min(vHistoArtery, [], 'all');
+vMaxArtery = max(vHistoArtery, [], 'all');
 
 if veins_analysis
-    v_histo_vein = round(v_RMS_all .* maskVein);
-    v_min_vein = min(v_histo_vein, [], 'all');
-    v_max_vein = max(v_histo_vein, [], 'all');
-    v_max_all = max(v_max_artery, v_max_vein);
-    v_min_all = min(v_min_artery, v_min_vein);
+    vHistoVein = round(vRMS .* maskVein);
+    vMinVein = min(vHistoVein, [], 'all');
+    vMaxVein = max(vHistoVein, [], 'all');
+    vMaxAll = max(vMaxArtery, vMaxVein);
+    vMinAll = min(vMinArtery, vMinVein);
 else
-    v_max_all = v_max_artery;
-    v_min_all = v_min_artery;
+    vMaxAll = vMaxArtery;
+    vMinAll = vMinArtery;
 end
 
-v_max_all_display = round(0.8 * v_max_all);
-v_min_all_display = round(0.8 * v_min_all);
+vMaxAllDisplay = round(0.8 * vMaxAll);
+vMinAllDisplay = round(0.8 * vMinAll);
 
-yAx = [v_min_all v_max_all];
-%yAx_display = [-20  80] ;
-yAx_display = yAx;
+yAx = [vMinAll vMaxAll];
+%yAxDisplay = [-20  80] ;
+yAxDisplay = yAx;
 %FIXME trouver un moyen de croper proprement sans décaler le zéro
 
 %% Velocity Histogram in arteries
 %FIXME prctile 10% Y = percentil(X,[5 95])
 
-X = linspace(v_min_all, v_max_all, v_max_all - v_min_all + 1);
+X = linspace(vMinAll, vMaxAll, vMaxAll - vMinAll + 1);
 % n = size(X, 2);
-xAx = [0 nFrame * ToolBox.stride / (1000 * ToolBox.fs)];
-histo_artery = zeros(size(X, 2), nFrame);
-%histo_video_artery = zeros(size(X,2),size(dataCubeM2M0,3),3,size(dataCubeM2M0,3));
+xAx = [0 numFrames * ToolBox.stride / (1000 * ToolBox.fs)];
+histoArtery = zeros(size(X, 2), numFrames);
+%histoVideoArtery = zeros(size(X,2),size(dataCubeM2M0,3),3,size(dataCubeM2M0,3));
 
-f_distrib_artery = figure(157);
-f_distrib_artery.Position(3:4) = [600 275];
-index_min = find(X == v_min_all_display);
-index_max = find(X == v_max_all_display);
-imagesc(xAx, yAx_display, histo_artery(index_min:index_max, :))
+fDistribArtery = figure(157);
+fDistribArtery.Position(3:4) = [600 275];
+indexMin = find(X == vMinAllDisplay);
+indexMax = find(X == vMaxAllDisplay);
+imagesc(xAx, yAxDisplay, histoArtery(indexMin:indexMax, :))
 set(gca, 'YDir', 'normal')
 set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
 colormap("hot")
 f = getframe(gcf);
-[M, N, ~] = size(f.cdata);
-histo_video_artery = zeros(M, N, 3, nFrame);
+[numY, numX, ~] = size(f.cdata);
+histoVideoArtery = zeros(numY, numX, 3, numFrames);
 
 %FIXME avoir une ligne à zéro de trois pixel
 %FIXME getframe pour la couleur
 
-gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, nFrame);
+gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, numFrames);
 
-for frameIdx = 1:nFrame
+for frameIdx = 1:numFrames
 
-    for xx = 1:nX
+    for xx = 1:numX
 
-        for yy = 1:nY
+        for yy = 1:numY
 
-            if (v_histo_artery(xx, yy, frameIdx) ~= 0)
-                i = find(X == v_histo_artery(xx, yy, frameIdx));
-                histo_artery(i, frameIdx) = histo_artery(i, frameIdx) + 1;
+            if (vHistoArtery(xx, yy, frameIdx) ~= 0)
+                i = find(X == vHistoArtery(xx, yy, frameIdx));
+                histoArtery(i, frameIdx) = histoArtery(i, frameIdx) + 1;
             end
 
         end
 
     end
 
-    %histo_video_artery(:,:,t) = flip(histo_artery,1);
+    %histoVideoArtery(:,:,t) = flip(histoArtery,1);
     figure(157)
-    imagesc(xAx, yAx_display, histo_artery(index_min:index_max, :))
+    imagesc(xAx, yAxDisplay, histoArtery(indexMin:indexMax, :))
     set(gca, 'YDir', 'normal')
     ylabel('Velocity (mm.s^{-1})')
     xlabel('Time (s)')
     title("Velocity distribution in arteries")
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     f = getframe(gcf);
-    histo_video_artery(:, :, :, frameIdx) = imresize(f.cdata, [M N]);
+    histoVideoArtery(:, :, :, frameIdx) = imresize(f.cdata, [numY numX]);
     gifWriter.write(f, frameIdx);
 
 end
@@ -336,9 +334,10 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "histogramVelocityArtery.avi")));
 
-tmp = mat2gray(histo_video_artery);
+tmp = mat2gray(histoVideoArtery);
 open(w)
-for frameIdx = 1:nFrame
+
+for frameIdx = 1:numFrames
     writeVideo(w, tmp(:, :, :, frameIdx));
 end
 
@@ -347,10 +346,10 @@ close(w);
 % MP4
 
 w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "histogramVelocityArtery.mp4")), 'MPEG-4');
-tmp = mat2gray(histo_video_artery);
+tmp = mat2gray(histoVideoArtery);
 open(w)
 
-for frameIdx = 1:nFrame
+for frameIdx = 1:numFrames
     writeVideo(w, tmp(:, :, :, frameIdx));
 end
 
@@ -360,50 +359,50 @@ close(w);
 
 if veins_analysis
 
-    X = linspace(v_min_all, v_max_all, v_max_all - v_min_all + 1);
+    X = linspace(vMinAll, vMaxAll, vMaxAll - vMinAll + 1);
     % n = size(X, 2);
-    xAx = [0 nFrame * ToolBox.stride / (1000 * ToolBox.fs)];
-    histo_vein = zeros(size(X, 2), nFrame);
-    %histo_video_vein = zeros(size(X,2),size(dataCubeM2M0,3),size(dataCubeM2M0,3));
+    xAx = [0 numFrames * ToolBox.stride / (1000 * ToolBox.fs)];
+    histoVein = zeros(size(X, 2), numFrames);
+    %histoVideoVein = zeros(size(X,2),size(dataCubeM2M0,3),size(dataCubeM2M0,3));
     f = getframe(gcf);
-    [M, N, ~] = size(f.cdata);
-    histo_video_vein = zeros(M, N, 3, nFrame);
+    [height, width, ~] = size(f.cdata);
+    histoVideoVein = zeros(height, width, 3, numFrames);
 
-    f_distrib_vein = figure(158);
-    f_distrib_vein.Position(3:4) = [600 275];
-    imagesc(xAx, yAx_display, histo_vein(index_min:index_max, :))
+    fDistribVein = figure(158);
+    fDistribVein.Position(3:4) = [600 275];
+    imagesc(xAx, yAxDisplay, histoVein(indexMin:indexMax, :))
     set(gca, 'YDir', 'reverse')
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     colormap("bone")
 
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityVeins")), timePeriod, 0.04, nFrame);
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityVeins")), timePeriod, 0.04, numFrames);
 
-    for frameIdx = 1:nFrame
+    for frameIdx = 1:numFrames
 
-        for xx = 1:nX
+        for xx = 1:width
 
-            for yy = 1:nY
+            for yy = 1:height
 
-                if (v_histo_vein(xx, yy, frameIdx) ~= 0)
-                    i = find(X == v_histo_vein(xx, yy, frameIdx));
-                    histo_vein(i, frameIdx) = histo_vein(i, frameIdx) + 1;
+                if (vHistoVein(xx, yy, frameIdx) ~= 0)
+                    i = find(X == vHistoVein(xx, yy, frameIdx));
+                    histoVein(i, frameIdx) = histoVein(i, frameIdx) + 1;
                 end
 
             end
 
         end
 
-        %histo_video_vein(:,:,t) = flip(histo_vein,1);
+        %histoVideoVein(:,:,t) = flip(histoVein,1);
         figure(158)
-        imagesc(xAx, yAx_display, histo_vein(index_min:index_max, :))
+        imagesc(xAx, yAxDisplay, histoVein(indexMin:indexMax, :))
         set(gca, 'YDir', 'normal')
         ylabel('Velocity (mm.s^{-1})')
         xlabel('Time (s)')
         title("Velocity distribution in veins")
         set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
         f = getframe(gcf);
-        %histo_video_vein(:,:,:,t) = imresize(f.cdata,[M N]);
-        histo_video_vein(:, :, :, frameIdx) = f.cdata;
+        %histoVideoVein(:,:,:,t) = imresize(f.cdata,[M N]);
+        histoVideoVein(:, :, :, frameIdx) = f.cdata;
         gifWriter.write(f, frameIdx);
     end
 
@@ -417,9 +416,10 @@ if veins_analysis
 
     w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "histogramVelocityVein.avi")));
 
-    tmp = mat2gray(histo_video_vein);
+    tmp = mat2gray(histoVideoVein);
     open(w)
-    for frameIdx = 1:nFrame
+
+    for frameIdx = 1:numFrames
         writeVideo(w, tmp(:, :, :, frameIdx));
     end
 
@@ -430,7 +430,7 @@ if veins_analysis
     w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "histogramVelocityVein.mp4")), 'MPEG-4');
     open(w)
 
-    for frameIdx = 1:nFrame
+    for frameIdx = 1:numFrames
         writeVideo(w, tmp(:, :, :, frameIdx));
     end
 
@@ -439,24 +439,24 @@ if veins_analysis
 end
 
 if veins_analysis
-    flowVideoRGB4Gif(:, :, 1, :) = imresize3(squeeze(flowVideoRGB(:, :, 1, :)), [550 550 nFrame]);
-    flowVideoRGB4Gif(:, :, 2, :) = imresize3(squeeze(flowVideoRGB(:, :, 2, :)), [550 550 nFrame]);
-    flowVideoRGB4Gif(:, :, 3, :) = imresize3(squeeze(flowVideoRGB(:, :, 3, :)), [550 550 nFrame]);
-    combinedGifs = cat(2, flowVideoRGB4Gif, cat(1, mat2gray(histo_video_artery), mat2gray(histo_video_vein)));
+    flowVideoRGB4Gif(:, :, 1, :) = imresize3(squeeze(flowVideoRGB(:, :, 1, :)), [550 550 numFrames]);
+    flowVideoRGB4Gif(:, :, 2, :) = imresize3(squeeze(flowVideoRGB(:, :, 2, :)), [550 550 numFrames]);
+    flowVideoRGB4Gif(:, :, 3, :) = imresize3(squeeze(flowVideoRGB(:, :, 3, :)), [550 550 numFrames]);
+    combinedGifs = cat(2, flowVideoRGB4Gif, cat(1, mat2gray(histoVideoArtery), mat2gray(histoVideoVein)));
     flowVideoRGBMean4Gif = rescale(imresize3(flowVideoRGBMean));
-    imwrite(cat(2, flowVideoRGBMean4Gif, cat(1, mat2gray(histo_video_artery(:, :, :, end)), mat2gray(histo_video_vein(:, :, :, end)))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
+    imwrite(cat(2, flowVideoRGBMean4Gif, cat(1, mat2gray(histoVideoArtery(:, :, :, end)), mat2gray(histoVideoVein(:, :, :, end)))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
 else
-    flowVideoRGB4Gif(:, :, 1, :) = imresize3(squeeze(flowVideoRGB(:, :, 1, :)), [600 600 nFrame]);
-    flowVideoRGB4Gif(:, :, 2, :) = imresize3(squeeze(flowVideoRGB(:, :, 2, :)), [600 600 nFrame]);
-    flowVideoRGB4Gif(:, :, 3, :) = imresize3(squeeze(flowVideoRGB(:, :, 3, :)), [600 600 nFrame]);
-    combinedGifs = cat(1, flowVideoRGB4Gif, mat2gray(histo_video_artery));
+    flowVideoRGB4Gif(:, :, 1, :) = imresize3(squeeze(flowVideoRGB(:, :, 1, :)), [600 600 numFrames]);
+    flowVideoRGB4Gif(:, :, 2, :) = imresize3(squeeze(flowVideoRGB(:, :, 2, :)), [600 600 numFrames]);
+    flowVideoRGB4Gif(:, :, 3, :) = imresize3(squeeze(flowVideoRGB(:, :, 3, :)), [600 600 numFrames]);
+    combinedGifs = cat(1, flowVideoRGB4Gif, mat2gray(histoVideoArtery));
     flowVideoRGBMean4Gif = rescale(imresize3(flowVideoRGBMean, [600 600 3]));
-    imwrite(cat(1, flowVideoRGBMean4Gif, mat2gray(histo_video_artery(:, :, :, end))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
+    imwrite(cat(1, flowVideoRGBMean4Gif, mat2gray(histoVideoArtery(:, :, :, end))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
 end
 
-gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityHistogramCombined")), timePeriod, 0.04, nFrame);
+gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityHistogramCombined")), timePeriod, 0.04, numFrames);
 
-for frameIdx = 1:nFrame
+for frameIdx = 1:numFrames
     gifWriter.write(combinedGifs(:, :, :, frameIdx), frameIdx);
 end
 

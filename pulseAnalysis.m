@@ -15,7 +15,7 @@ total_time = 0;
 
 PW_params = Parameters_json(path);
 veins_analysis = PW_params.veins_analysis;
-[nX, nY, nFrame] = size(fullVideoM2M0);
+[width, height, nFrames] = size(fullVideoM2M0);
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -24,7 +24,7 @@ mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
 
 strXlabel = 'Time(s)'; %createXlabelTime(1);
 strYlabel = 'frequency (kHz)';
-T = linspace(0, nFrame * ToolBox.stride / ToolBox.fs / 1000, nFrame);
+T = linspace(0, nFrames * ToolBox.stride / ToolBox.fs / 1000, nFrames);
 
 %% 1) 1) Doppler AVG frequency heatmap
 
@@ -371,9 +371,9 @@ else
     local_mask_vessel = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
 end
 
-LocalBKG_vessel = zeros(nX, nY, nFrame);
+LocalBKG_vessel = zeros(width, height, nFrames);
 
-parfor nn = 1:nFrame
+parfor nn = 1:nFrames
     LocalBKG_vessel(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vessel));
 end
 
@@ -392,10 +392,10 @@ elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
 elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
-    LocalBKG_vesselM2 = zeros(nX, nY, nFrame);
-    LocalBKG_vesselM0 = zeros(nX, nY, nFrame);
+    LocalBKG_vesselM2 = zeros(width, height, nFrames);
+    LocalBKG_vesselM0 = zeros(width, height, nFrames);
 
-    parfor nn = 1:nFrame
+    parfor nn = 1:nFrames
         LocalBKG_vesselM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vessel));
         LocalBKG_vesselM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vessel));
     end
@@ -421,10 +421,10 @@ total_time = total_time + toc;
 %% Outlier Cleaning
 tic
 fprintf("Outlier Cleaning:\n")
-fullVideoM2M0minusBKGClean = zeros(nX, nY, nFrame);
+fullVideoM2M0minusBKGClean = zeros(width, height, nFrames);
 window_size = 10;
-parfor varX = 1:nX
-    for varY = 1:nY
+parfor varX = 1:width
+    for varY = 1:height
         fullVideoM2M0minusBKGClean(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :) , 'linear', 'movmedian', window_size);
     end
 end
@@ -457,7 +457,7 @@ plot2txt(T(1:length(fullPulse)), fullPulse, 'fullPulse', ToolBox)
 
 f18 = figure(18);
 f18.Position = [1100 485 350 420];
-LocalBackground_in_vessels = mean(LocalBKG_vessel, 3) .* local_mask_vessel + ones(nX, nY) * mean(LocalBKG_vessel, 'all') .* ~local_mask_vessel;
+LocalBackground_in_vessels = mean(LocalBKG_vessel, 3) .* local_mask_vessel + ones(width, height) * mean(LocalBKG_vessel, 'all') .* ~local_mask_vessel;
 imagesc(LocalBackground_in_vessels);
 colormap gray
 title('Local Background in vessels');
@@ -479,9 +479,9 @@ clear LocalBKG_vessel
 
 %% Global BKG for beautiful images
 
-% A = ones(nX, nY, nFrame);
+% A = ones(numX, numY, numFrames);
 
-% parfor pp = 1:nFrame
+% parfor pp = 1:numFrames
 %     A(:, :, pp) = A(:, :, pp) * fullBackgroundSignal(pp);
 % end
 % 
@@ -493,7 +493,7 @@ clear LocalBKG_vessel
 
 tic
 
-flowVideoRGB = zeros(nX, nY, 3, nFrame);
+flowVideoRGB = zeros(width, height, 3, nFrames);
 referenceMean = mean(reference, 3);
 v_mean = mat2gray(squeeze(mean(fullVideoM2M0(:, :, :), 3)));
 
@@ -507,7 +507,7 @@ if veins_analysis
     flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + rescale(referenceMean) .* ~(maskArtery + maskVein);
     imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png')))
 
-    parfor ii = 1:nFrame
+    parfor ii = 1:nFrames
         v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
@@ -525,7 +525,7 @@ else
     flowVideoRGB_mean = flowVideoRGB_mean .* maskArtery + rescale(referenceMean) .* ~maskArtery;
     imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png')))
 
-    parfor ii = 1:nFrame
+    parfor ii = 1:nFrames
         v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         val = v .* (~(maskArtery)) + val_artery .* maskArtery;

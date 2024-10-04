@@ -1,18 +1,18 @@
 function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMask, path)
     % Input
-    %   img (double, NxM) : filtered image to segment
-    %   seed_map (logical, NxM)  : initialisation of the region growing
+    %   img (double, numX x numY) : filtered image to segment
+    %   seed_map (logical, numX x numY)  : initialisation of the region growing
     %   alpha (double) : adjust the region growing
     %   conditionMask : pixels were we follow positive gradient
     % Output :
-    %   mask (logical, NxM) : result of the region growing segmentation
+    %   mask (logical, numX x numY) : result of the region growing segmentation
 
     %% INITIALISATION
     PW_params = Parameters_json(path);
 
-    [N, M] = size(img);
+    [numX, numY] = size(img);
     mask = seed_map; % will be update at each step ;  represents the pixels already visited
-    max_iter = round(N / 4);
+    max_iter = round(numX / 4);
     floor = PW_params.RG_FloorThreshold * mean2(img(conditionMask));
     alpha = PW_params.RG_alpha;
 
@@ -27,7 +27,7 @@ function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMa
     moves = [1 0; -1 0; 0 1; 0 -1; 1 1; 1 -1; -1 1; -1 -1];
 
     %% REGION GROWING
-    RG_video = zeros(N, M, max_iter);
+    RG_video = zeros(numX, numY, max_iter);
 
     for n = 1:max_iter
 
@@ -45,7 +45,7 @@ function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMa
                 x = new_coord(1, 1);
                 y = new_coord(1, 2);
 
-                if (x >= 1 && x <= N && y >= 1 && y <= M && mask(x, y) == 0) %Checks if seed point is valid or not
+                if (x >= 1 && x <= numX && y >= 1 && y <= numY && mask(x, y) == 0) %Checks if seed point is valid or not
 
                     neighbour_value = img(x, y); %value of neighbour
                     d = seed_value - neighbour_value;
