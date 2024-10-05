@@ -68,9 +68,6 @@ classdef pulse < matlab.apps.AppBase
                 % crop videos
                 app.files{end} = app.files{end}.cropAllVideo();
 
-                % flatfield correction
-                app.files{end} = app.files{end}.flatfieldRef();
-
                 % moment normalize
                 app.files{end} = app.files{end}.MomentNormalize();
 
@@ -79,6 +76,9 @@ classdef pulse < matlab.apps.AppBase
 
                 % interpolate
                 app.files{end} = app.files{end}.Interpolate();
+
+                % remove outliers
+                app.files{end} = app.files{end}.RemoveOutliers();
 
                 %% End
                 app.LoadfolderButton.Enable = true ;

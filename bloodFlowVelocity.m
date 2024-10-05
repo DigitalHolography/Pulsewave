@@ -98,6 +98,7 @@ figure(156)
 yAx = [vMin vMax];
 xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
 imagesc(xAx, yAx, histo)
+pbaspect([1.618 1 1]);
 set(gca, 'YDir', 'normal')
 colormap('hot')
 ylabel('Velocity (mm.s^{-1})')
@@ -287,7 +288,7 @@ set(gca, 'YDir', 'normal')
 set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
 colormap("hot")
 f = getframe(gcf);
-[numY, numX, ~] = size(f.cdata);
+[numX_fig, numY_fig, ~] = size(f.cdata);
 histoVideoArtery = zeros(numY, numX, 3, numFrames);
 
 %FIXME avoir une ligne à zéro de trois pixel
@@ -295,11 +296,11 @@ histoVideoArtery = zeros(numY, numX, 3, numFrames);
 
 gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, N_frame);
 
-for frameIdx = 1:N_frame
+for frameIdx = 1:numFrames
 
-    for xx = 1:numX
+    for xx = 1:numX_fig
 
-        for yy = 1:numY
+        for yy = 1:numY_fig
 
             if (vHistoArtery(xx, yy, frameIdx) ~= 0)
                 i = find(X == vHistoArtery(xx, yy, frameIdx));
@@ -366,7 +367,7 @@ if veins_analysis
     histoVein = zeros(size(X, 2), numFrames);
     %histoVideoVein = zeros(size(X,2),size(dataCubeM2M0,3),size(dataCubeM2M0,3));
     f = getframe(gcf);
-    [height, width, ~] = size(f.cdata);
+    [numX_fig, numY_fig, ~] = size(f.cdata);
     histoVideoVein = zeros(height, width, 3, numFrames);
 
     fDistribVein = figure(158);
@@ -380,9 +381,9 @@ if veins_analysis
 
     for frameIdx = 1:numFrames
 
-        for xx = 1:width
+        for xx = 1:numX_fig
 
-            for yy = 1:height
+            for yy = 1:numY_fig
 
                 if (vHistoVein(xx, yy, frameIdx) ~= 0)
                     i = find(X == vHistoVein(xx, yy, frameIdx));
@@ -496,9 +497,9 @@ if PW_params.AllCirclesFlag
         maskArtery_section = maskArtery & maskSection;
         v_histo_artery = round(v_RMS_frame .* maskArtery_section);
 
-        for xx = 1:Nx
+        for xx = 1:numX
 
-            for yy = 1:Ny
+            for yy = 1:numY
 
                 if (v_histo_artery(xx, yy) ~= 0)
                     i = find(X == v_histo_artery(xx, yy));

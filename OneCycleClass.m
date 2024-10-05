@@ -1,16 +1,16 @@
 classdef OneCycleClass
 
     properties
-        referenceM0 % M0 AVI
 
-        dataM2M0 % RMS M2/M0
-        dataM1M0 % AVG M1/M0
+        M0_data_video % M0 raw
+        M1_data_video % M1 raw
+        M2_data_video % M2 raw
+        M0_disp_video % M0 AVI
 
-        dataM0 % M0 raw
-        dataM1 % M1 raw
-        dataM2 % M2 raw
+        f_RMS_video % RMS M2/M0
+        f_AVG_video % AVG M1/M0
 
-        dataSH % SH raw
+        SH_data_hypervideo % SH raw
 
         directory char
         filenames
@@ -70,7 +70,7 @@ classdef OneCycleClass
             obj.load_logs = '\n=== LOADING : \r\n';
             logs = obj.load_logs;
 
-            %% Ref loading
+            %% Display Video loading
             dir_path_avi = fullfile(obj.directory, 'avi');
             NameRefAviFile = strcat(obj.filenames, '_M0');
             RefAviFilePath = fullfile(dir_path_avi, NameRefAviFile);
@@ -82,19 +82,19 @@ classdef OneCycleClass
             logs = strcat(logs, '\r', str_tosave);
 
             V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
-            videoRefM0 = zeros(V.Height, V.Width, V.NumFrames);
+            M0_disp_video = zeros(V.Height, V.Width, V.NumFrames);
 
             for n = 1:V.NumFrames
-                videoRefM0(:, :, n) = rgb2gray(read(V, n));
+                M0_disp_video(:, :, n) = rgb2gray(read(V, n));
             end
 
-            obj.referenceM0 = videoRefM0;
+            obj.M0_disp_video = M0_disp_video;
 
-            clear V videoRefM0
+            clear V M0_disp_video
 
-            %% File loading
+            %% Data Videos loading
 
-            refvideosize = size(obj.referenceM0);
+            refvideosize = size(obj.M0_disp_video);
             dir_path_raw = fullfile(obj.directory, 'raw');
             ext = '.raw';
 
@@ -109,9 +109,9 @@ classdef OneCycleClass
                 logs = strcat(logs, '\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM0 = fread(fileID, 'float32');
+                M0_data_video = fread(fileID, 'float32');
                 fclose(fileID);
-                obj.dataM0 = reshape(videoM0, refvideosize);
+                obj.M0_data_video = reshape(M0_data_video, refvideosize);
 
                 % Import Moment 1
 
@@ -123,9 +123,9 @@ classdef OneCycleClass
                 logs = strcat(logs, '\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM1 = fread(fileID, 'float32');
+                M1_data_video = fread(fileID, 'float32');
                 fclose(fileID);
-                obj.dataM1 = reshape(videoM1, refvideosize);
+                obj.M1_data_video = reshape(M1_data_video, refvideosize);
 
                 % Import Moment 2
 
@@ -137,9 +137,9 @@ classdef OneCycleClass
                 logs = strcat(logs, '\r', str_tosave);
 
                 fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM2 = fread(fileID, 'float32');
+                M2_data_video = fread(fileID, 'float32');
                 fclose(fileID);
-                obj.dataM2 = reshape(videoM2, refvideosize);
+                obj.M2_data_video = reshape(M2_data_video, refvideosize);
 
             catch ME
                 disp(['ID: ' ME.identifier])
@@ -155,11 +155,10 @@ classdef OneCycleClass
         function obj = MomentNormalize(obj)
 
             PW_params = Parameters_json(obj.directory);
-            avgM0 = mean(obj.dataM0, [1 2]);
-            
-            obj.dataM2M0 = sqrt(obj.dataM2 ./ avgM0);
-            obj.dataM1M0 = obj.dataM1 ./ avgM0;
-            obj.referenceM0 = flat_field_correction(obj.referenceM0, ceil(PW_params.flatField_gwRatio * size(obj.referenceM0, 1)), PW_params.flatField_border);
+            M0_data_mean = mean(obj.M0_data_video, [1 2]);
+            obj.f_RMS_video = sqrt(obj.M2_data_video ./ M0_data_mean);
+            obj.f_AVG_video = obj.M1_data_video ./ M0_data_mean;
+            obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
 
         end
 
@@ -173,7 +172,7 @@ classdef OneCycleClass
                 return % do nothing if not required
             end
 
-            video = obj.referenceM0;
+            video = obj.M0_disp_video;
             numX = size(video, 1);
             numY = size(video, 2);
             x = linspace(-numX / 2, numX / 2, numX);
@@ -190,15 +189,12 @@ classdef OneCycleClass
             image_ref = mean(video_reg(:, :, PW_params.refAvgStart:PW_params.refAvgEnd), 3); % ref image is from 10 to 20
             [~, shifts] = register_video_from_reference(video_reg, image_ref);
 
-            obj.referenceM0 = register_video_from_shifts(video, shifts);
+            obj.M0_disp_video = register_video_from_shifts(video, shifts);
 
-            obj.dataM0 = register_video_from_shifts(obj.dataM0, shifts);
-            obj.dataM1 = register_video_from_shifts(obj.dataM1, shifts);
-            obj.dataM2 = register_video_from_shifts(obj.dataM2, shifts);
+            obj.M0_data_video = register_video_from_shifts(obj.M0_data_video, shifts);
+            obj.M1_data_video = register_video_from_shifts(obj.M1_data_video, shifts);
+            obj.M2_data_video = register_video_from_shifts(obj.M2_data_video, shifts);
 
-        end
-
-        function obj = flatfieldRef(obj)
         end
 
         function obj = cropAllVideo(obj)
@@ -213,10 +209,10 @@ classdef OneCycleClass
 
             if firstFrame > 0 && firstFrame < numFrames && lastFrame > firstFrame && lastFrame <= numFrames
 
-                obj.referenceM0 = obj.referenceM0(:, :, firstFrame:lastFrame);
-                obj.dataM0 = obj.dataM0(:, :, firstFrame:lastFrame);
-                obj.dataM1 = obj.dataM1(:, :, firstFrame:lastFrame);
-                obj.dataM2 = obj.dataM2(:, :, firstFrame:lastFrame);
+                obj.M0_disp_video = obj.M0_disp_video(:, :, firstFrame:lastFrame);
+                obj.M0_data_video = obj.M0_data_video(:, :, firstFrame:lastFrame);
+                obj.M1_data_video = obj.M1_data_video(:, :, firstFrame:lastFrame);
+                obj.M2_data_video = obj.M2_data_video(:, :, firstFrame:lastFrame);
 
                 disp(['Data cube frame: ', num2str(firstFrame), '/', num2str(numFrames), ' to ', num2str(lastFrame), '/', num2str(numFrames)])
 
@@ -254,58 +250,58 @@ classdef OneCycleClass
                 batch = floor(numFrames / out_numFrames);
 
                 tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.referenceM0;
+                tmp_calc = obj.M0_disp_video;
 
                 for i = 1:out_numFrames
                     tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
 
-                obj.referenceM0 = single(tmp_ref);
+                obj.M0_disp_video = single(tmp_ref);
 
                 tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.dataM0;
+                tmp_calc = obj.M0_data_video;
 
                 for i = 1:out_numFrames
                     tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
 
-                obj.dataM0 = single(tmp_ref);
+                obj.M0_data_video = single(tmp_ref);
 
                 tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.dataM1;
+                tmp_calc = obj.M1_data_video;
 
                 for i = 1:out_numFrames
                     tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
 
-                obj.dataM1 = single(tmp_ref);
+                obj.M1_data_video = single(tmp_ref);
 
                 tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.dataM2;
+                tmp_calc = obj.M2_data_video;
 
                 for i = 1:out_numFrames
                     tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
 
-                obj.dataM2 = single(tmp_ref);
+                obj.M2_data_video = single(tmp_ref);
 
                 tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.dataM1M0;
+                tmp_calc = obj.f_AVG_video;
 
                 for i = 1:out_numFrames
                     tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
 
-                obj.dataM1M0 = single(tmp_ref);
+                obj.f_AVG_video = single(tmp_ref);
 
                 tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.dataM2M0;
+                tmp_calc = obj.f_RMS_video;
 
                 for i = 1:out_numFrames
                     tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
                 end
 
-                obj.dataM2M0 = single(tmp_ref);
+                obj.f_RMS_video = single(tmp_ref);
 
             end
 
@@ -328,29 +324,29 @@ classdef OneCycleClass
             [Xq, Yq, Zq] = meshgrid(linspace(1, numY, out_width), linspace(1, numX, out_height), linspace(1, numFrames, out_numFrames));
             % tmp_ref = zeros(numX, numY, numFrames);
 
-            tmp_calc_ref = obj.referenceM0;
+            tmp_calc_ref = obj.M0_disp_video;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.referenceM0 = single(tmp_ref);
+            obj.M0_disp_video = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM0;
+            tmp_calc_ref = obj.M0_data_video;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.dataM0 = single(tmp_ref);
+            obj.M0_data_video = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM1;
+            tmp_calc_ref = obj.M1_data_video;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.dataM1 = single(tmp_ref);
+            obj.M1_data_video = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM2;
+            tmp_calc_ref = obj.M2_data_video;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.dataM2 = single(tmp_ref);
+            obj.M2_data_video = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM1M0;
+            tmp_calc_ref = obj.f_AVG_video;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.dataM1M0 = single(tmp_ref);
+            obj.f_AVG_video = single(tmp_ref);
 
-            tmp_calc_ref = obj.dataM2M0;
+            tmp_calc_ref = obj.f_RMS_video;
             tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.dataM2M0 = single(tmp_ref);
+            obj.f_RMS_video = single(tmp_ref);
 
             disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_numFrames)])
             % logs = obj.load_logs;
@@ -359,76 +355,99 @@ classdef OneCycleClass
             toc
         end
 
+        function obj = RemoveOutliers(obj)
+            %% Outlier Cleaning
+            
+            window_size = int(numFrames/ 50);
+
+            tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);
+            tmp_f_AVG_cleaned = zeros(numX, numY, numFrames);
+            tmp_f_RMS = obj.f_RMS_video;
+            tmp_f_AVG = obj.f_AVG_video;
+
+            parfor xx = 1:numX
+                for yy = 1:numY
+                    tmp_f_RMS_cleaned(xx, yy, :) = filloutliers(tmp_f_RMS(xx, yy, :) , 'linear', 'movmedian', window_size);
+                    tmp_f_AVG_cleaned(xx, yy, :) = filloutliers(tmp_f_AVG(xx, yy, :) , 'linear', 'movmedian', window_size);
+                end
+            end
+
+            obj.f_RMS_video = tmp_f_RMS_cleaned;
+            obj.f_AVG_video = tmp_f_AVG_cleaned;
+
+            clear tmp_f_RMS_cleaned tmp_f_AVG_cleaned tmp_f_RMS tmp_f_AVG
+        end
+
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
-            [numX, numY, numFrames] = size(obj.referenceM0);
+            [numX, numY, numFrames] = size(obj.M0_disp_video);
             kInterp = obj.k;
             numX = (numX - 1) * (2 ^ kInterp - 1) + numX;
             numY = (numY - 1) * (2 ^ kInterp - 1) + numY;
 
             % Reference M0
             tmpReferenceM0 = zeros(numX, numY, numFrames);
-            tmpCalcRef = obj.referenceM0;
+            tmpCalcRef = obj.M0_disp_video;
 
             parfor frameIdx = 1:numFrames
                 tmpReferenceM0(:, :, frameIdx) = interp2(tmpCalcRef(:, :, frameIdx), kInterp);
             end
 
-            obj.referenceM0 = tmpReferenceM0;
+            obj.M0_disp_video = tmpReferenceM0;
             clear tmpReferenceM0 tmpCalcRef
 
             % M0
             tmpM0 = zeros(numX, numY, numFrames);
-            tmpCalcM0 = obj.dataM0;
+            tmpCalcM0 = obj.M0_data_video;
 
             parfor frameIdx = 1:numFrames % loop over frames
                 tmpM0(:, :, frameIdx) = interp2(tmpCalcM0(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM0 = tmpM0;
+            obj.M0_data_video = tmpM0;
             clear tmpM0 tmpCalcM0
 
             % M1
             tmpM1 = zeros(numX, numY, numFrames);
-            tmpCalcM1 = obj.dataM1;
+            tmpCalcM1 = obj.M1_data_video;
 
             parfor frameIdx = 1:numFrames % loop over frames
                 tmpM1(:, :, frameIdx) = interp2(tmpCalcM1(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM1 = tmpM1;
+            obj.M1_data_video = tmpM1;
             clear tmpM1 tmpCalcM1
 
             % M2
             tmpM2 = zeros(numX, numY, numFrames);
-            tmpCalcM2 = obj.dataM2;
+            tmpCalcM2 = obj.M2_data_video;
 
             parfor frameIdx = 1:numFrames % loop over frames
                 tmpM2(:, :, frameIdx) = interp2(tmpCalcM2(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM2 = tmpM2;
+            obj.M2_data_video = tmpM2;
             clear tmpM2 tmpCalcM2
 
             % M1M0
             tmpM1M0 = zeros(numX, numY, numFrames);
-            tmpCalcM1M0 = obj.dataM1M0;
+            tmpCalcM1M0 = obj.f_AVG_video;
 
             parfor frameIdx = 1:numFrames
                 tmpM1M0(:, :, frameIdx) = interp2(tmpCalcM1M0(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM1M0 = tmpM1M0;
+            obj.f_AVG_video = tmpM1M0;
             clear tmpM1M0 tmpCalcM1M0
 
             % M2M0
             tmpM2M0 = zeros(numX, numY, numFrames);
-            tmpCalcM2M0 = obj.dataM2M0;
+            tmpCalcM2M0 = obj.f_RMS_video;
 
             parfor frameIdx = 1:numFrames
                 tmpM2M0(:, :, frameIdx) = interp2(tmpCalcM2M0(:, :, frameIdx), kInterp);
             end
 
-            obj.dataM2M0 = single(tmpM2M0);
+            obj.f_RMS_video = single(tmpM2M0);
             clear tmpM2M0 tmpCalcM2M0
 
         end
@@ -526,10 +545,10 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [numX, numY, numFrames] = size(obj.referenceM0);
+            [numX, numY, numFrames] = size(obj.M0_disp_video);
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-            videoM0Rescaled = rescale(obj.referenceM0);
+            videoM0Rescaled = rescale(obj.M0_disp_video);
             writeGifOnDisc(videoM0Rescaled, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod)
 
             imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
@@ -553,10 +572,12 @@ classdef OneCycleClass
 
             tic
 
+            f_AVG_Mean = squeeze(mean(obj.f_AVG_video, 3));
+
             try
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.referenceM0, obj.dataM1M0, obj.directory, ToolBox);
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.M0_disp_video, f_AVG_Mean, obj.directory, ToolBox);
             catch
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.referenceM0, obj.dataM0, obj.dataM1M0, obj.directory, ToolBox);
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.f_RMS_video, f_AVG_Mean, obj.directory, ToolBox);
             end
 
             disp('CreateMasks timing :')
@@ -581,13 +602,13 @@ classdef OneCycleClass
                 fclose(fileID);
 
                 tic
-                [sysIdxList, ~] = find_systole_index(obj.referenceM0, obj.directory, maskArtery);
+                [sysIdxList, ~] = find_systole_index(obj.M0_disp_video, obj.directory, maskArtery);
                 disp('FindSystoleIndex timing :')
                 time_sys_idx = toc;
                 disp(time_sys_idx)
                 save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
-                [vOneCycle, vRMS, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0, obj.dataM1M0, obj.dataM2, obj.dataM0, obj.referenceM0, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
+                [vOneCycle, vRMS, exec_times, total_time] = pulseAnalysis(Ninterp, obj.f_RMS_video, f_AVG_Mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
                 disp('PulseAnalysis timing :')
                 time_pulseanalysis = total_time;
                 disp(time_pulseanalysis)
@@ -602,7 +623,7 @@ classdef OneCycleClass
                 fclose(fileID);
                 clear exec_times
 
-                pulseVelocity(obj.dataM0, maskArtery, ToolBox, obj.directory)
+                pulseVelocity(obj.M0_data_video, maskArtery, ToolBox, obj.directory)
                 disp('PulseVelocity timing :')
                 time_pulsevelocity = total_time;
                 disp(time_pulsevelocity)
@@ -612,7 +633,7 @@ classdef OneCycleClass
 
                 if obj.flag_velocity_analysis
                     tic
-                    bloodFlowVelocity(vRMS, vOneCycle, maskArtery, maskVein, obj.referenceM0, ToolBox, path)
+                    bloodFlowVelocity(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_disp_video, ToolBox, path)
                     disp('Blood Flow Velocity timing :')
                     time_velo = toc;
                     disp(time_velo)
@@ -621,7 +642,7 @@ classdef OneCycleClass
 
                 if obj.flag_ARI_analysis
                     tic
-                    ArterialResistivityIndex(vOneCycle, obj.referenceM0, maskArtery, ToolBox);
+                    ArterialResistivityIndex(vOneCycle, obj.M0_disp_video, maskArtery, ToolBox);
                     disp('ArterialResistivityIndex timing :')
                     time_arterial_res = toc;
                     disp(time_arterial_res)
@@ -630,7 +651,7 @@ classdef OneCycleClass
 
                 if obj.flag_bloodVolumeRate_analysis
                     tic
-                    bloodVolumeRate(maskArtery, maskVein, vRMS, obj.referenceM0, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                     disp('Blood Volume Rate timing :')
                     time_flowrate = toc;
                     disp(time_flowrate)
@@ -659,7 +680,7 @@ classdef OneCycleClass
                 SH_cube = reshape(videoSH, numX, numY, numFrames, []);
 
                 tic
-                spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.dataM0);
+                spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.M0_data_video);
                 disp('Spectrum analysis :')
                 time = toc;
                 disp(time)

@@ -1,4 +1,4 @@
-function [vOneCycle, vRMS, exec_times, total_time] = pulseAnalysis(nInterp, fullVideoM2M0, fullVideoM1M0, fullVideoM2, fullVideoM0, flatfieldM0, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, path)
+function [v_OneCycle, v_RMS, exec_times, total_time] = pulseAnalysis(numFramesInterp, f_RMS_video, f_AVG_video, M2_data_video, M0_data_video, M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : fullVideoM1M0, Taille : 10631287200 bytes (DEBUT)
@@ -14,8 +14,8 @@ exec_times_time = [];
 total_time = 0;
 
 PW_params = Parameters_json(path);
-veins_analysis = PW_params.veins_analysis;
-[width, height, nFrames] = size(fullVideoM2M0);
+veinsAnalysis = PW_params.veins_analysis;
+[numX, numY, numFrames] = size(f_RMS_video);
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -24,19 +24,15 @@ mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
 
 strXlabel = 'Time(s)'; %createXlabelTime(1);
 strYlabel = 'frequency (kHz)';
-T = linspace(0, nFrames * ToolBox.stride / ToolBox.fs / 1000, nFrames);
+t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
 %% 1) 1) Doppler AVG frequency heatmap
 
 tic
 
-heatmap_AVG_raw = squeeze(mean(fullVideoM1M0, 3));
-
-clear fullVideoM1M0
-
 %  Doppler AVG frequency heatmap
 figure(10)
-imagesc(heatmap_AVG_raw);
+imagesc(f_AVG_video);
 colormap gray
 title('AVG frequency map RAW');
 fontsize(gca, 12, "points");
@@ -47,28 +43,28 @@ c.Label.FontSize = 12;
 axis off
 axis image
 range(1:2) = clim;
-imwrite(rescale(heatmap_AVG_raw), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'heatmapAVG.png')), 'png');
+imwrite(rescale(f_AVG_video), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'frequency_AVG.png')), 'png');
 
-clear heatmap_AVG_raw
+clear f_AVG_video
 
 % Colorbar for AVG image
 colorfig = figure(11);
 colorfig.Units = 'normalized';
 colormap(c);
 colormap gray
-hCB = colorbar('north');
+f_AVG_colorbar = colorbar('north');
 clim(range)
 set(gca, 'Visible', false)
 set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
+f_AVG_colorbar.Position = [0.10 0.3 0.81 0.35];
 colorfig.Position(4) = 0.1000;
 fontsize(gca, 15, "points");
-colorTitleHandle = get(hCB, 'Title');
+colorTitleHandle = get(f_AVG_colorbar, 'Title');
 titleString = 'AVG Doppler frequency (kHz)';
 set(colorTitleHandle, 'String', titleString);
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarAVGFrequency.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarAVGFrequency.eps')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'frequency_AVG_colorbar.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'frequency_AVG_colorbar.eps')))
 
 exec_times_id = [exec_times_id, "Doppler AVG frequency heatmap"];
 exec_times_time = [exec_times_time, toc];
@@ -78,11 +74,11 @@ total_time = total_time + toc;
 
 tic
 
-heatmap_RMS_raw = squeeze(mean(fullVideoM2M0, 3));
+f_RMS = squeeze(mean(f_RMS_video, 3));
 
 %  Doppler AVG frequency heatmap
 figure(20)
-imagesc(heatmap_RMS_raw);
+imagesc(f_RMS);
 colormap gray
 title('RMS frequency map RAW');
 fontsize(gca, 12, "points");
@@ -93,23 +89,23 @@ c.Label.FontSize = 12;
 axis off
 axis image
 range(1:2) = clim;
-imwrite(rescale(heatmap_RMS_raw), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'heatmapRMS.png')), 'png');
+imwrite(rescale(f_RMS), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'frequency_RMS.png')), 'png');
 
-clear heatmap_RMS_raw
+clear f_RMS
 
 % Colorbar for AVG image
 colorfig = figure(21);
 colorfig.Units = 'normalized';
 colormap(c);
 colormap gray
-hCB = colorbar('north');
+f_RMS_colorbar = colorbar('north');
 clim(range)
 set(gca, 'Visible', false)
 set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
+f_RMS_colorbar.Position = [0.10 0.3 0.81 0.35];
 colorfig.Position(4) = 0.1000;
 fontsize(gca, 15, "points");
-colorTitleHandle = get(hCB, 'Title');
+colorTitleHandle = get(f_RMS_colorbar, 'Title');
 titleString = 'RMS Doppler frequency (kHz)';
 set(colorTitleHandle, 'String', titleString);
 
@@ -124,20 +120,20 @@ total_time = total_time + toc;
 
 tic
 
-fullBackgroundSignal = fullVideoM2M0 .* maskBackground;
-fullBackgroundSignal = squeeze(sum(fullBackgroundSignal, [1 2])) / nnz(maskBackground);
+background_signal = f_RMS_video .* maskBackground;
+background_signal = squeeze(sum(background_signal, [1 2])) / nnz(maskBackground);
 
-fullArterialSignal = fullVideoM2M0 .* maskArtery;
-fullArterialSignal = squeeze(sum(fullArterialSignal, [1 2])) / nnz(maskArtery);
+arterial_signal = f_RMS_video .* maskArtery;
+arterial_signal = squeeze(sum(arterial_signal, [1 2])) / nnz(maskArtery);
 
-if veins_analysis
-    fullVenousSignal = fullVideoM2M0 .* maskVein;
-    fullVenousSignal = squeeze(sum(fullVenousSignal, [1 2])) / nnz(maskVein);
+if veinsAnalysis
+    venous_signal = f_RMS_video .* maskVein;
+    venous_signal = squeeze(sum(venous_signal, [1 2])) / nnz(maskVein);
 end
 
-if veins_analysis
+if veinsAnalysis
     figure(20)
-    plot(T, fullArterialSignal, '-k', T, fullBackgroundSignal, ':k', T, fullVenousSignal, '-.k', 'LineWidth', 2);
+    plot(t, arterial_signal, '-k', t, background_signal, ':k', t, venous_signal, '-.k', 'LineWidth', 2);
     title('Arterial Pulse Waveform and Background Signal'); % averaged outside of segmented vessels
     legend('Arterial Pulse', 'Background', 'Venous Signal');
     fontsize(gca, 14, "points");
@@ -149,13 +145,13 @@ if veins_analysis
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsRaw.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsRaw.eps')))
 
-    plot2txt(T, fullArterialSignal, 'FullArterialSignal', ToolBox)
-    plot2txt(T, fullBackgroundSignal, 'FullBackgroundSignal', ToolBox)
-    plot2txt(T, fullVenousSignal, 'FullVenousSignal', ToolBox)
+    plot2txt(t, arterial_signal, 'arterial_signal', ToolBox)
+    plot2txt(t, background_signal, 'background_signal', ToolBox)
+    plot2txt(t, venous_signal, 'venous_signal', ToolBox)
 
 else
     figure(20)
-    plot(T, fullArterialSignal, '-k', T, fullBackgroundSignal, ':k', 'LineWidth', 2);
+    plot(t, arterial_signal, '-k', t, background_signal, ':k', 'LineWidth', 2);
     title('Arterial Pulse Waveform and Background Signal'); % averaged outside of segmented vessels
     legend('Arterial Pulse', 'Background');
     fontsize(gca, 14, "points");
@@ -167,8 +163,8 @@ else
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsRaw.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsRaw.eps')))
 
-    plot2txt(T, fullArterialSignal, 'FullArterialSignal', ToolBox)
-    plot2txt(T, fullBackgroundSignal, 'FullBackgroundSignal', ToolBox)
+    plot2txt(t, arterial_signal, 'FullArterialSignal', ToolBox)
+    plot2txt(t, background_signal, 'FullBackgroundSignal', ToolBox)
 
 end
 
@@ -176,49 +172,37 @@ exec_times_id = [exec_times_id, "Calculate raw signals"];
 exec_times_time = [exec_times_time, toc];
 total_time = total_time + toc;
 
-%% 3) Cleaning signals
+%% 3) Smoothing signals
 
 tic
 
-% Remove outliers
-% 1st pass
-disp('remove outliers... 1st pass.');
-[fullArterialSignalRmOut, idxOutArtery] = filloutliers(fullArterialSignal, 'linear');
-[fullBackgroundSignalRmOut, idxOutBkg] = filloutliers(fullBackgroundSignal, 'linear');
-fullArterialSignalMinusBackground = fullArterialSignalRmOut - fullBackgroundSignalRmOut;
+delta_f_arterial_signal = arterial_signal - background;
 
-dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutArtery) / length(fullArterialSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
-disp(['data reliability index 1 (artery) : ' num2str(dataReliabilityIndex1) ' %']);
-
-if veins_analysis
-    [fullVenousSignalRmOut, idxOutVein] = filloutliers(fullVenousSignal, 'linear');
-    fullVenousSignalMinusBackground = fullVenousSignalRmOut - fullBackgroundSignalRmOut;
-
-    dataReliabilityIndex1 = ceil(100 * (1 - PW_params.pulseAnal_dataReliabilityFactor * (sum(idxOutVein) / length(fullVenousSignal) + sum(idxOutBkg) / length(fullBackgroundSignal))));
-    disp(['data reliability index 1 (vein) : ' num2str(dataReliabilityIndex1) ' %']);
+if veinsAnalysis
+    delta_f_venous_signal = venous_signal - background_signal;
 end
 
 % smooth trendline data by iterative local linear regression.
 
-fullArterialSignalClean = smoothdata(fullArterialSignalMinusBackground, 'lowess');
+delta_f_artery_smooth = smoothdata(delta_f_arterial_signal, 'lowess');
 
-if veins_analysis
-    fullVenousSignalClean = smoothdata(fullVenousSignalMinusBackground, 'lowess');
+if veinsAnalysis
+    delta_f_vein_smooth = smoothdata(delta_f_venous_signal, 'lowess');
 end
 
 figure(30)
 
-if veins_analysis
-    plot(T, fullArterialSignalClean, '-k', T, fullVenousSignalClean, '-.k', 'LineWidth', 2);
-    title('Cleaned Arterial Signal and Venous Signal'); % averaged outside of segmented vessels
+if veinsAnalysis
+    plot(t, delta_f_artery_smooth, '-k', t, delta_f_vein_smooth, '-.k', 'LineWidth', 2);
+    title('Smoothed Arterial Signal and Venous Signal'); % averaged outside of segmented vessels
     legend('Arterial Signal', 'Venous Signal');
-    plot2txt(T, fullArterialSignalClean, 'FullArterialSignalCleaned', ToolBox)
-    plot2txt(T, fullVenousSignalClean, 'FullVenousSignalCleaned', ToolBox)
+    plot2txt(t, delta_f_artery_smooth, 'FullArterialSignalSmoothed', ToolBox)
+    plot2txt(t, delta_f_vein_smooth, 'FullVenousSignalCleaned', ToolBox)
 else
-    plot(T, fullArterialSignalClean, '-k', 'LineWidth', 2);
-    title('Cleaned Arterial Signal'); % averaged outside of segmented vessels
+    plot(t, delta_f_artery_smooth, '-k', 'LineWidth', 2);
+    title('Smoothed Arterial Signal'); % averaged outside of segmented vessels
     legend('Arterial Signal');
-    plot2txt(T, fullArterialSignalClean, 'FullArterialSignalCleaned', ToolBox)
+    plot2txt(t, delta_f_artery_smooth, 'FullArterialSignalSmoothed', ToolBox)
 end
 
 fontsize(gca, 14, "points");
@@ -227,11 +211,11 @@ ylabel(strYlabel, 'FontSize', 14);
 pbaspect([1.618 1 1]);
 set(gca, 'LineWidth', 2);
 axis tight;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsCleaned.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsCleaned.eps')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsSmoothed.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'signalsSmoothed.eps')))
 
 figure(31)
-plot(T, fullArterialSignalMinusBackground, ':k', T, fullArterialSignalClean, '-k', 'LineWidth', 2);
+plot(t, delta_f_artery_clean, ':k', t, delta_f_artery_smooth, '-k', 'LineWidth', 2);
 title('Cleaned arterial signal');
 % legend('Noisy signal', 'Robust linear regression');
 fontsize(gca, 12, "points");
@@ -244,10 +228,10 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseArteryFiltered.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'pulseArteryFiltered.eps')))
 
-if veins_analysis
+if veinsAnalysis
     figure(32)
     hold on
-    plot(T, fullVenousSignalMinusBackground, ':k', T, fullVenousSignalClean, '-k', 'LineWidth', 2);
+    plot(t, delta_f_vein_clean, ':k', t, delta_f_vein_smooth, '-k', 'LineWidth', 2);
     title('Cleaned venous signal');
     % legend('Noisy signal', 'Robust linear regression');
     fontsize(gca, 12, "points");
@@ -263,17 +247,17 @@ if veins_analysis
 end
 
 
-noise = sqrt(abs(fullArterialSignalMinusBackground .^ 2 - fullArterialSignalClean .^ 2));
+noise = sqrt(abs(delta_f_artery_clean .^ 2 - delta_f_artery_smooth .^ 2));
 idxOutNoise = find(noise > PW_params.pulseAnal_outNoiseThreshold * std(noise));
 
-dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(fullArterialSignalClean))));
+dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(delta_f_artery_smooth))));
 disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 
-if veins_analysis
-    noise = sqrt(abs(fullVenousSignalMinusBackground .^ 2 - fullVenousSignalClean .^ 2));
+if veinsAnalysis
+    noise = sqrt(abs(delta_f_vein_clean .^ 2 - delta_f_vein_smooth .^ 2));
     idxOutNoise = find(noise > PW_params.pulseAnal_outNoiseThreshold * std(noise));
 
-    dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(fullArterialSignalClean))));
+    dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(delta_f_artery_smooth))));
     disp(['data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 end
 
@@ -285,12 +269,12 @@ total_time = total_time + toc;
 
 tic
 
-fullArterialPulseDerivative = diff(fullArterialSignal);
-fullArterialPulseCleanDerivative = diff(fullArterialSignalClean);
+fullArterialPulseDerivative = diff(arterial_signal);
+fullArterialPulseCleanDerivative = diff(delta_f_artery_smooth);
 
-if veins_analysis
-    fullVenousPulseDerivative = diff(fullVenousSignal);
-    fullVenousPulseCleanDerivative = diff(fullVenousSignalClean);
+if veinsAnalysis
+    fullVenousPulseDerivative = diff(venous_signal);
+    fullVenousPulseCleanDerivative = diff(delta_f_vein_smooth);
 end
 
 exec_times_id = [exec_times_id, "Calculate pulse derivative"];
@@ -304,17 +288,17 @@ total_time = total_time + toc;
 
 figure(40)
 
-if veins_analysis
+if veinsAnalysis
     hold on
-    plot(T(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, ':k', T(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, '-k', 'LineWidth', 2);
-    text(T(sysIdxList) - 0.3, fullArterialPulseCleanDerivative(sysIdxList) + 0.03, num2str((1:numel(sysIdxList))'))
-    plot(T(1:length(fullVenousPulseDerivative)), fullVenousPulseCleanDerivative, ':k', T(1:length(fullVenousPulseCleanDerivative)), fullVenousPulseCleanDerivative, '-k', 'LineWidth', 2);
-    text(T(sysIdxList) - 0.3, fullVenousPulseCleanDerivative(sysIdxList) + 0.03, num2str((1:numel(sysIdxList))'))
+    plot(t(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, ':k', t(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, '-k', 'LineWidth', 2);
+    text(t(sysIdxList) - 0.3, fullArterialPulseCleanDerivative(sysIdxList) + 0.03, num2str((1:numel(sysIdxList))'))
+    plot(t(1:length(fullVenousPulseDerivative)), fullVenousPulseCleanDerivative, ':k', t(1:length(fullVenousPulseCleanDerivative)), fullVenousPulseCleanDerivative, '-k', 'LineWidth', 2);
+    text(t(sysIdxList) - 0.3, fullVenousPulseCleanDerivative(sysIdxList) + 0.03, num2str((1:numel(sysIdxList))'))
     title('derivative of the arterial and venous pulse waveform');
     legend('\delta <p(t)> - <b(t)>', 'from smoothed data');
 else
-    plot(T(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, ':k', T(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, '-k', 'LineWidth', 2);
-    text(T(sysIdxList) - 0.3, fullArterialPulseCleanDerivative(sysIdxList) + 0.03, num2str((1:numel(sysIdxList))'))
+    plot(t(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, ':k', t(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, '-k', 'LineWidth', 2);
+    text(t(sysIdxList) - 0.3, fullArterialPulseCleanDerivative(sysIdxList) + 0.03, num2str((1:numel(sysIdxList))'))
     title('derivative of the arterial pulse waveform');
     legend('\delta <p(t)> - <b(t)>', 'from smoothed data');
 end
@@ -329,19 +313,19 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'derivative.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'derivative.eps')))
 
-plot2txt(T(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, 'FullArterialPulseDerivative', ToolBox)
-plot2txt(T(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, 'FullArterialPulseCleanDerivative', ToolBox)
+plot2txt(t(1:length(fullArterialPulseDerivative)), fullArterialPulseDerivative, 'FullArterialPulseDerivative', ToolBox)
+plot2txt(t(1:length(fullArterialPulseCleanDerivative)), fullArterialPulseCleanDerivative, 'FullArterialPulseCleanDerivative', ToolBox)
 
 clear fullArterialPulseDerivative fullArterialPulseCleanDerivative
 
-if veins_analysis
-    plot2txt(T(1:length(fullVenousPulseDerivative)), fullVenousPulseDerivative, 'FullVenousPulseDerivative', ToolBox)
-    plot2txt(T(1:length(fullVenousPulseCleanDerivative)), fullVenousPulseCleanDerivative, 'FullVenousPulseCleanDerivative', ToolBox)
+if veinsAnalysis
+    plot2txt(t(1:length(fullVenousPulseDerivative)), fullVenousPulseDerivative, 'FullVenousPulseDerivative', ToolBox)
+    plot2txt(t(1:length(fullVenousPulseCleanDerivative)), fullVenousPulseCleanDerivative, 'FullVenousPulseCleanDerivative', ToolBox)
     clear fullVenousPulseDerivative fullVenousPulseCleanDerivative
 end
 
 figure(41)
-plot(T(1:length(fullArterialSignalClean)), fullArterialSignalClean, ':k', T(1:length(noise)), noise, '-k', ...
+plot(t(1:length(delta_f_artery_smooth)), delta_f_artery_smooth, ':k', t(1:length(noise)), noise, '-k', ...
     'LineWidth', 2);
 yline(0, ':', {''}, LineWidth = 2);
 yline(std(noise), ':', {'1 std'}, LineWidth = 2);
@@ -358,106 +342,67 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulseVsResidual.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'filteredPulseVsResidual.eps')))
 
-plot2txt(T(1:length(fullArterialSignalClean)), fullArterialSignalClean, 'FilteredArterialPulse', ToolBox)
-plot2txt(T(1:length(noise)), noise, 'ResidualArterialPulse', ToolBox)
+plot2txt(t(1:length(delta_f_artery_smooth)), delta_f_artery_smooth, 'FilteredArterialPulse', ToolBox)
+plot2txt(t(1:length(noise)), noise, 'ResidualArterialPulse', ToolBox)
 
 %% Local BKG Artery and Veins %~1min
 
 tic
 
-if veins_analysis
+if veinsAnalysis
     local_mask_vessel = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
 else
     local_mask_vessel = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
 end
 
-LocalBKG_vessel = zeros(width, height, nFrames);
+LocalBKG_vessel = zeros(numX, numY, numFrames);
 
-parfor nn = 1:nFrames
-    LocalBKG_vessel(:, :, nn) = single(regionfill(fullVideoM2M0(:, :, nn), local_mask_vessel));
+parfor nn = 1:numFrames
+    LocalBKG_vessel(:, :, nn) = single(regionfill(f_RMS_video(:, :, nn), local_mask_vessel));
 end
 
 if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
-    tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
+    tmp = f_RMS_video .^ 2 - LocalBKG_vessel .^ 2;
     fullVideoM2M0minusBKG = sign(tmp) .* sqrt(abs(tmp));
     clear tmp
 
 elseif PW_params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
 
-    tmp = fullVideoM2M0 .^ 2 - LocalBKG_vessel .^ 2;
+    tmp = f_RMS_video .^ 2 - LocalBKG_vessel .^ 2;
     tmp = tmp .* (tmp > 0);
     fullVideoM2M0minusBKG = sqrt(tmp);
     clear tmp
 
 elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
-    LocalBKG_vesselM2 = zeros(width, height, nFrames);
-    LocalBKG_vesselM0 = zeros(width, height, nFrames);
+    LocalBKG_vesselM2 = zeros(numX, numY, numFrames);
+    LocalBKG_vesselM0 = zeros(numX, numY, numFrames);
 
-    parfor nn = 1:nFrames
-        LocalBKG_vesselM2(:, :, nn) = single(regionfill(fullVideoM2(:, :, nn), local_mask_vessel));
-        LocalBKG_vesselM0(:, :, nn) = single(regionfill(fullVideoM0(:, :, nn), local_mask_vessel));
+    parfor nn = 1:numFrames
+        LocalBKG_vesselM2(:, :, nn) = single(regionfill(M2_data_video(:, :, nn), local_mask_vessel));
+        LocalBKG_vesselM0(:, :, nn) = single(regionfill(M0_data_video(:, :, nn), local_mask_vessel));
     end
 
-    tmpM2 = fullVideoM2 - LocalBKG_vesselM2;
-    tmpM0 = fullVideoM0 - LocalBKG_vesselM0;
+    tmpM2 = M2_data_video - LocalBKG_vesselM2;
+    tmpM0 = M0_data_video - LocalBKG_vesselM0;
     tmpM2M0 = tmpM2 ./ tmpM0;
     fullVideoM2M0minusBKG = sign(tmpM2M0) .* sqrt(abs(tmpM2M0));
     clear tmpM2 tmpM0 tmpM2M0
 
 else % DIFFERENCE LAST
 
-    fullVideoM2M0minusBKG = fullVideoM2M0 - LocalBKG_vessel;
+    fullVideoM2M0minusBKG = f_RMS_video - LocalBKG_vessel;
 
 end
-
-% end
 
 exec_times_id = [exec_times_id, "Local Backgrounds"];
 exec_times_time = [exec_times_time, toc];
 total_time = total_time + toc;
 
-%% Outlier Cleaning
-tic
-fprintf("Outlier Cleaning:\n")
-fullVideoM2M0minusBKGClean = zeros(width, height, nFrames);
-window_size = 10;
-parfor varX = 1:width
-    for varY = 1:height
-        fullVideoM2M0minusBKGClean(varX, varY, :) = filloutliers(fullVideoM2M0minusBKG(varX, varY, :) , 'linear', 'movmedian', window_size);
-    end
-end
-toc
-
-fullPulse = squeeze(sum(fullVideoM2M0minusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
-fullPulseRegularized = squeeze(sum(fullVideoM2M0minusBKGClean .* maskArtery, [1 2])) / nnz(maskArtery);
-
-%% PLOT
-
-figure(43)
-plot( ...
-    T(1:length(fullPulseRegularized)), fullPulseRegularized, '-k', ...
-    T(1:length(fullPulse)), fullPulse, ':k', ...
-    'LineWidth', 2);
-yline(0, ':', {''}, LineWidth = 2);
-title('Regularized pulse wave signal averaged in retinal arteries');
-legend('Regularized arterial pulse', '<p(t)> - <b(t)>');
-fontsize(gca, 12, "points");
-xlabel(strXlabel, 'FontSize', 14);
-pbaspect([1.618 1 1]);
-set(gca, 'LineWidth', 2);
-axis tight;
-
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'regularizedPulse.eps')))
-
-plot2txt(T(1:length(fullPulseRegularized)), fullPulseRegularized, 'fullPulseRegularized', ToolBox)
-plot2txt(T(1:length(fullPulse)), fullPulse, 'fullPulse', ToolBox)
-
 f18 = figure(18);
 f18.Position = [1100 485 350 420];
-LocalBackground_in_vessels = mean(LocalBKG_vessel, 3) .* local_mask_vessel + ones(width, height) * mean(LocalBKG_vessel, 'all') .* ~local_mask_vessel;
+LocalBackground_in_vessels = mean(LocalBKG_vessel, 3) .* local_mask_vessel + ones(numX, numY) * mean(LocalBKG_vessel, 'all') .* ~local_mask_vessel;
 imagesc(LocalBackground_in_vessels);
 colormap gray
 title('Local Background in vessels');
@@ -493,11 +438,11 @@ clear LocalBKG_vessel
 
 tic
 
-flowVideoRGB = zeros(width, height, 3, nFrames);
-referenceMean = mean(flatfieldM0, 3);
-v_mean = mat2gray(squeeze(mean(fullVideoM2M0(:, :, :), 3)));
+flowVideoRGB = zeros(numX, numY, 3, numFrames);
+referenceMean = mean(M0_disp_video, 3);
+v_mean = mat2gray(squeeze(mean(f_RMS_video(:, :, :), 3)));
 
-if veins_analysis
+if veinsAnalysis
     [hue_artery_mean, sat_artery_mean, val_artery_mean, ~] = createHSVmap(v_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
     [hue_vein_mean, sat_vein_mean, val_vein_mean, ~] = createHSVmap(v_mean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
     val_mean = v_mean .* (~(maskArtery + maskVein)) + val_artery_mean .* maskArtery + val_vein_mean .* maskVein  - (val_artery_mean + val_vein_mean)./2.*(maskArtery&maskVein);
@@ -507,15 +452,15 @@ if veins_analysis
     flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein) + rescale(referenceMean) .* ~(maskArtery + maskVein);
     imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png')))
 
-    parfor ii = 1:nFrames
-        v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
+    parfor ii = 1:numFrames
+        v = mat2gray(squeeze(f_RMS_video(:, :, ii)));
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         [hue_vein, sat_vein, val_vein, ~] = createHSVmap(v, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
         val = v .* (~(maskArtery + maskVein)) + val_artery .* maskArtery + val_vein .* maskVein - (val_artery + val_vein)./2.*(maskArtery&maskVein);
         hue = (hue_artery + hue_vein)  - (hue_artery + hue_vein)./2.*(maskArtery&maskVein);
         sat = (sat_artery + sat_vein)  - (sat_artery + sat_vein)./2.*(maskArtery&maskVein);
         flowVideoRGB(:, :, :, ii) = hsv2rgb(hue, sat, val);
-        flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery + maskVein - maskArtery&maskVein) + rescale(flatfieldM0(:, :, ii)) .* ~(maskArtery + maskVein);
+        flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery + maskVein - maskArtery&maskVein) + rescale(M0_disp_video(:, :, ii)) .* ~(maskArtery + maskVein);
     end
 
 else
@@ -525,12 +470,12 @@ else
     flowVideoRGB_mean = flowVideoRGB_mean .* maskArtery + rescale(referenceMean) .* ~maskArtery;
     imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideo.png')))
 
-    parfor ii = 1:nFrames
-        v = mat2gray(squeeze(fullVideoM2M0(:, :, ii)));
+    parfor ii = 1:numFrames
+        v = mat2gray(squeeze(f_RMS_video(:, :, ii)));
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
         val = v .* (~(maskArtery)) + val_artery .* maskArtery;
         flowVideoRGB(:, :, :, ii) = hsv2rgb(hue_artery, sat_artery, val);
-        flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery) + rescale(flatfieldM0(:, :, ii)) .* ~(maskArtery);
+        flowVideoRGB(:, :, :, ii) = flowVideoRGB(:, :, :, ii) .* (maskArtery) + rescale(M0_disp_video(:, :, ii)) .* ~(maskArtery);
     end
 
 end
@@ -564,15 +509,15 @@ total_time = total_time + toc;
 
 tic
 
-[onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(fullVideoM2M0, fullVideoM0, maskArtery, sysIdxList, nInterp, path, ToolBox);
+[onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(f_RMS_video, M0_data_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
 
-clear fullVideoM2M0 fullVideoM2M0
+clear f_RMS_video f_RMS_video
 
-[onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(fullVideoM2M0minusBKG, fullVideoM0, maskArtery, sysIdxList, nInterp, path, ToolBox);
+[onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(fullVideoM2M0minusBKG, M0_data_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
 
 %% Velocity Calculation
 
-vRMS = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKGClean * ToolBox.NormalizationFactor;
+v_RMS = ToolBox.ScalingFactorVelocityInPlane * fullVideoM2M0minusBKGClean * ToolBox.NormalizationFactor;
 
 clear fullVideoM2M0minusBKGClean fullVideoM2M0minusBKG
 
@@ -581,7 +526,7 @@ clear fullVideoM2M0minusBKGClean fullVideoM2M0minusBKG
 avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
 avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
 
-vOneCycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
+v_OneCycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
 
 % avi
 parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideo), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
@@ -594,14 +539,14 @@ parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideoM0), fullfi
 
 %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 
-blur_time_sys = ceil(nInterp / PW_params.pulseAnal_blurScaleFactor);
-blur_time_dia = ceil(nInterp / PW_params.pulseAnal_blurScaleFactor);
+blur_time_sys = ceil(numFramesInterp / PW_params.pulseAnal_blurScaleFactor);
+blur_time_dia = ceil(numFramesInterp / PW_params.pulseAnal_blurScaleFactor);
 
 average_cycle_length = 0;
 nb_of_averaged_cycles = 0;
 
 if size(sysIdxList, 2) == 1
-    average_cycle_length = nInterp;
+    average_cycle_length = numFramesInterp;
     nb_of_averaged_cycles = 1;
 else
 
@@ -613,10 +558,10 @@ else
     average_cycle_length = average_cycle_length / (length(sysIdxList) - 1);
 end
 
-T = linspace(0, (ToolBox.stride / ToolBox.fs * average_cycle_length) / 1000, nInterp); % /1000 to get time in s
+t = linspace(0, (ToolBox.stride / ToolBox.fs * average_cycle_length) / 1000, numFramesInterp); % /1000 to get time in s
 
 % save average arterial pulse wave velocity to txt file
-tmp = [T(1:length(avgArterialPulseHz))', avgArterialPulseVelocityInPlane];
+tmp = [t(1:length(avgArterialPulseHz))', avgArterialPulseVelocityInPlane];
 %size(tmp)
 fileID = fopen(fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulse.txt')), 'w');
 fprintf(fileID, '%f %f \r\n', tmp');
@@ -627,17 +572,17 @@ figure(33)
 for ii = 1:size(cycles_signal, 1)
 
     if ismember(ii, selectedPulseIdx)
-        plot(T, movavgvar(cycles_signal(ii, :), 5), 'k-', 'LineWidth', 1);
+        plot(t, movavgvar(cycles_signal(ii, :), 5), 'k-', 'LineWidth', 1);
         hold on
     else
-        plot(T, movavgvar(cycles_signal(ii, :), 5), 'k--', 'LineWidth', 1);
+        plot(t, movavgvar(cycles_signal(ii, :), 5), 'k--', 'LineWidth', 1);
         hold on
     end
 
 end
 
 hold on
-plot(T, movavgvar(squeeze(mean(cycles_signal(:, :), 1)), 5), 'k-', 'LineWidth', 2)
+plot(t, movavgvar(squeeze(mean(cycles_signal(:, :), 1)), 5), 'k-', 'LineWidth', 2)
 fontsize(gca, 12, "points");
 xlabel('Average cardiac cycle duration (s)')
 ylabel('RMS Doppler Frequency (kHz)');
@@ -750,7 +695,7 @@ if ~isnan(onePulseVideoM0)
 %% diastolic Doppler frequency heatmap : 10% of frames before minimum of diastole
 
 
-heatmap_dia_raw = squeeze(mean(onePulseVideominusBKG(:, :, floor(0.9 * nInterp):nInterp), 3));
+heatmap_dia_raw = squeeze(mean(onePulseVideominusBKG(:, :, floor(0.9 * numFramesInterp):numFramesInterp), 3));
 % onePulseVideo2 : no background correction
 % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*Ninterp):Ninterp),3));
 % heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
@@ -761,8 +706,8 @@ clear heatmap_sys_raw
 
 %% systolic Doppler frequency heatmap : 10% of frames around peak systole
 
-a = max(ceil(idx_sys - 0.05 * nInterp), 1);
-b = min(ceil(idx_sys + 0.05 * nInterp), nInterp);
+a = max(ceil(idx_sys - 0.05 * numFramesInterp), 1);
+b = min(ceil(idx_sys + 0.05 * numFramesInterp), numFramesInterp);
 heatmap_sys_raw = squeeze(mean(onePulseVideominusBKG(:, :, a:b), 3));
 % onePulseVideo2 : no background correction
 % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
@@ -872,20 +817,20 @@ pulse_arteries_blurred_sys = movavgvar(avgArterialPulseHz(1:idx_sys), blur_time_
 diff_pulse_sys = diff(pulse_arteries_blurred_sys);
 pulse_arteries_blurred_dia = movavgvar(avgArterialPulseHz(idx_sys:end), blur_time_dia);
 % diff_pulse_dia = diff(pulse_arteries_blurred_dia);
-diff_avgPulse = diff(movavgvar(avgArterialPulseHz, blur_time_sys)) * ToolBox.ScalingFactorVelocityInPlane * nInterp / T(end);
+diff_avgPulse = diff(movavgvar(avgArterialPulseHz, blur_time_sys)) * ToolBox.ScalingFactorVelocityInPlane * numFramesInterp / t(end);
 delta = max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:));
 thr = max(pulse_arteries_blurred_dia(:)) - delta ./ exp(1);
 idx_list_threshold_dia = find(pulse_arteries_blurred_dia(:) < thr);
 [max_diff_pulse, idx_T_diff_max] = max(diff_pulse_sys); %faire ca mieux
 
 if idx_T_diff_max == 1
-    acc = abs(max_diff_pulse / (T(idx_T_diff_max) - T(idx_T_diff_max + 1)));
+    acc = abs(max_diff_pulse / (t(idx_T_diff_max) - t(idx_T_diff_max + 1)));
 else
-    acc = max_diff_pulse / (T(idx_T_diff_max) - T(idx_T_diff_max - 1));
+    acc = max_diff_pulse / (t(idx_T_diff_max) - t(idx_T_diff_max - 1));
 end
 
 % computation of average arterial pulse wave parameters
-T_syst = T(idx_sys);
+T_syst = t(idx_sys);
 systole_area = sum(avgArterialPulseHz(1:idx_sys));
 diastole_area = sum(avgArterialPulseHz(idx_sys:end));
 tmp = systole_area;
@@ -911,9 +856,9 @@ fprintf(fileID, [ ...
     'Area under the diastolic descent curve  :\n%d\n'], ...
     max_diff_pulse, ...
     acc, ...
-    T(idx_T_diff_max + 1), ...
+    t(idx_T_diff_max + 1), ...
     T_syst, ...
-    T(idx_sys + idx_list_threshold_dia(1)), ...
+    t(idx_sys + idx_list_threshold_dia(1)), ...
     nb_of_detected_systoles, ...
     nb_of_averaged_cycles, ...
     systole_area, ...
@@ -923,14 +868,14 @@ fclose(fileID);
 %
 figure(100)
 plot( ...
-    T(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'k-', ...
+    t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'k-', ...
     LineWidth = 2);
-xline(T(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
-text(T(idx_T_diff_max + 1), min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
+xline(t(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
+text(t(idx_T_diff_max + 1), min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
 xline(T_syst, ':', {}, LineWidth = 2);
 text(T_syst, min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), '  (2)', 'FontSize', 14);
-xline(T(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
-text(T(idx_sys + idx_list_threshold_dia(1)), min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), '  (3)', 'FontSize', 14);
+xline(t(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
+text(t(idx_sys + idx_list_threshold_dia(1)), min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), '  (3)', 'FontSize', 14);
 fontsize(gca, 12, "points");
 xlabel(strXlabel, 'FontSize', 14);
 ylabel('blood flow velocity (mm/s)', 'FontSize', 14);
@@ -941,7 +886,7 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.eps')))
 
-plot2txt(T(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane', ToolBox)
+plot2txt(t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane', ToolBox)
 
 figure(101)
 
@@ -949,12 +894,12 @@ for ii = 1:size(cycles_signal, 1)
 
     if ismember(ii, selectedPulseIdx)
         plot( ...
-            T, movavgvar(cycles_signal(ii, :), 5), 'k-', ...
+            t, movavgvar(cycles_signal(ii, :), 5), 'k-', ...
             'LineWidth', 2);
         hold on
     else
         plot( ...
-            T, movavgvar(cycles_signal(ii, :), 5), 'k--', ...
+            t, movavgvar(cycles_signal(ii, :), 5), 'k--', ...
             'LineWidth', 1);
         hold on
     end
@@ -982,16 +927,16 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%
 clear cycles_signal
 
 figure(102)
-plot(T, avgArterialPulseHz, 'k.', ...
-    T(1:idx_sys), pulse_arteries_blurred_sys(1:idx_sys), 'k-', ...
-    T(idx_sys:nInterp), pulse_arteries_blurred_dia(1:(nInterp - idx_sys + 1)), 'k-', ...
+plot(t, avgArterialPulseHz, 'k.', ...
+    t(1:idx_sys), pulse_arteries_blurred_sys(1:idx_sys), 'k-', ...
+    t(idx_sys:numFramesInterp), pulse_arteries_blurred_dia(1:(numFramesInterp - idx_sys + 1)), 'k-', ...
     LineWidth = 2);
-xline(T(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
-text(T(idx_T_diff_max + 1), min(pulse_arteries_blurred_dia(:)) + 0.1 * (max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
+xline(t(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
+text(t(idx_T_diff_max + 1), min(pulse_arteries_blurred_dia(:)) + 0.1 * (max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
 xline(T_syst, ':', {}, LineWidth = 2);
 text(T_syst, min(pulse_arteries_blurred_dia(:)) + 0.1 * (max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:))), '  (2)', 'FontSize', 14);
-xline(T(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
-text(T(idx_sys + idx_list_threshold_dia(1)), min(pulse_arteries_blurred_dia(:)) + 0.1 * (max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:))), '  (3)', 'FontSize', 14);
+xline(t(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
+text(t(idx_sys + idx_list_threshold_dia(1)), min(pulse_arteries_blurred_dia(:)) + 0.1 * (max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:))), '  (3)', 'FontSize', 14);
 %                 yline(1/exp(1),':',LineWidth=2);
 legend('arterial pulse', 'smoothed line');
 fontsize(gca, 12, "points");
@@ -1005,18 +950,18 @@ title('average background-corrected RMS frequency in retinal arteries');
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.eps')))
 
-plot2txt(T, avgArterialPulseHz, 'AvgArterialPulseHz', ToolBox)
+plot2txt(t, avgArterialPulseHz, 'AvgArterialPulseHz', ToolBox)
 
 figure(103)
-plot(T(1:end - 1), diff_avgPulse, 'k-', LineWidth = 2);
+plot(t(1:end - 1), diff_avgPulse, 'k-', LineWidth = 2);
 x = 0;
 yline(x, ':', LineWidth = 2);
-xline(T(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
-text(T(idx_T_diff_max + 1), min(diff_avgPulse(:)) + 0.1 * (max(diff_avgPulse(:)) - min(diff_avgPulse(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
+xline(t(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
+text(t(idx_T_diff_max + 1), min(diff_avgPulse(:)) + 0.1 * (max(diff_avgPulse(:)) - min(diff_avgPulse(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
 xline(T_syst, ':', {}, LineWidth = 2);
 text(T_syst, min(diff_avgPulse(:)) + 0.1 * (max(diff_avgPulse(:)) - min(diff_avgPulse(:))), '  (2)', 'FontSize', 14);
-xline(T(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
-text(T(idx_sys + idx_list_threshold_dia(1)), min(diff_avgPulse(:)) + 0.1 * (max(diff_avgPulse(:)) - min(diff_avgPulse(:))), '  (3)', 'FontSize', 14);
+xline(t(idx_sys + idx_list_threshold_dia(1)), ':', {}, LineWidth = 2);
+text(t(idx_sys + idx_list_threshold_dia(1)), min(diff_avgPulse(:)) + 0.1 * (max(diff_avgPulse(:)) - min(diff_avgPulse(:))), '  (3)', 'FontSize', 14);
 legend(' arterial pulse');
 fontsize(gca, 12, "points");
 xlabel('Time (s)', 'FontSize', 14);
@@ -1029,7 +974,7 @@ axis tight
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.eps')))
 
-plot2txt(T(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative', ToolBox)
+plot2txt(t(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative', ToolBox)
 end
 clear idx_sys
 clear max_diff_pulse
