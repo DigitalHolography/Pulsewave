@@ -6,15 +6,15 @@ one_cycle_dir_txt = fullfile(one_cycle_dir, 'txt');
 one_cycle_dir_avi = fullfile(one_cycle_dir, 'avi');
 one_cycle_dir_mp4 = fullfile(one_cycle_dir, 'mp4');
 
-num_vessels = size(mask_cell, 2);
-num_frames = size(velocity_cell{1}, 3);
-n_interp = 100;
+numVessels = size(mask_cell, 2);
+numFrames = size(velocity_cell{1}, 3);
+numInterpFrames = 100;
 %interpolation parameter
 k = 2;
 
-velocity_profiles = zeros(n_interp, num_frames, num_vessels);
+velocity_profiles = zeros(numInterpFrames, numFrames, numVessels);
 
-for ii = 1 : num_vessels
+for ii = 1 : numVessels
     subImg = mask_cell{ii};
     subVideo = velocity_cell{ii};
     tilt_angle = (angle_list(ii));
@@ -49,9 +49,9 @@ for ii = 1 : num_vessels
     
     x = 1:size(projVideo,1);
     x_wall2wall = list(1) : list(end);
-    xinterp_wall2wall = linspace(list(1),list(end),n_interp);
+    xinterp_wall2wall = linspace(list(1),list(end),numInterpFrames);
 
-    velocityProfileInterp = zeros(n_interp, size(projVideo,2));
+    velocityProfileInterp = zeros(numInterpFrames, size(projVideo,2));
     for tt = 1:size(projVideo,2)
         velocityProfileInterp(:,tt) = interp1(x, projVideo(:,tt), xinterp_wall2wall);
     end
@@ -76,16 +76,16 @@ mimin = min(average_velocity_profile(:));
 % x for normalize wall length for fiting
 x = linspace(-1,1,length(average_velocity_profile(:,1)));
 
-Vmax_list = zeros(num_frames,1);
-alpha_list = zeros(num_frames,1);
-beta_list = zeros(num_frames,1);
-eta_list = zeros(num_frames,1);
-viscosity_list = zeros(num_frames,1);
+Vmax_list = zeros(numFrames,1);
+alpha_list = zeros(numFrames,1);
+beta_list = zeros(numFrames,1);
+eta_list = zeros(numFrames,1);
+viscosity_list = zeros(numFrames,1);
 
 average_velocity_profile_systole = average_velocity_profile(:,idx_syst);
 average_velocity_profile_diastole = average_velocity_profile(:,end);
 
-for tt = 1 : num_frames
+for tt = 1 : numFrames
     tmp_velocity_profile = squeeze(average_velocity_profile(:,tt));
 
     % Use the defined function as an input to fit the function of viscosity

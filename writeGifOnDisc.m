@@ -5,10 +5,10 @@ function writeGifOnDisc(data,filename,timePeriod)
 if size(size(data)) == [1,3]
     data = reshape(data,size(data,1),size(data,2),1,size(data,3));
 end
-N_frame = size(data,4);
-gifWriter = GifWriter(filename, timePeriod, 0.04, N_frame);
+numFrames = size(data,4);
+gifWriter = GifWriter(filename, timePeriod, 0.04, numFrames);
 
-for frameIdx = 1:N_frame
+for frameIdx = 1:numFrames
     gifWriter.write(data(:, :, :, frameIdx), frameIdx);
 end
 

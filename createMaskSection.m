@@ -2,8 +2,8 @@ function [maskSection, VesselImageRGB] = createMaskSection(meanIm, maskArtery,ra
 
     PW_params = Parameters_json(path);
 
-    [N, M] = size(maskArtery);
-    [x, y] = meshgrid(1:M, 1:N);
+    [numX, numY] = size(maskArtery);
+    [x, y] = meshgrid(1:numY, 1:numX);
 
     xx = ToolBox.x_barycentre;
     yy = ToolBox.y_barycentre;
@@ -17,7 +17,7 @@ function [maskSection, VesselImageRGB] = createMaskSection(meanIm, maskArtery,ra
     %
     % skel_branches = bwareaopen(skel_branches,100);
     %
-    % cercle_mask = sqrt((x - xx).^2 + (y - yy).^2) <= M/10;
+    % cercle_mask = sqrt((x - xx).^2 + (y - yy).^2) <= numY/10;
     %
     % skel_dilate = imdilate(skel_branches, strel('disk',2));
     %
