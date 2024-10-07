@@ -16,8 +16,6 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
 
     v_RMS_AVG = mean(v_RMS, 3);
     fullTime = linspace(0, N_frame * ToolBox.stride / ToolBox.fs / 1000, N_frame);
-    v_RMS_AVG = mean(v_RMS, 3);
-    fullTime = linspace(0, N_frame * ToolBox.stride / ToolBox.fs / 1000, N_frame);
 
     %% change mask section ?
 

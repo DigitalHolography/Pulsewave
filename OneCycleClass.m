@@ -44,11 +44,17 @@ classdef OneCycleClass
             arguments
                 path
             end
-
-            obj.directory = path;
-
-            tmp_idx = regexp(path, '\');
-            obj.filenames = {path(tmp_idx(end - 1) + 1:end - 1)};
+            disp(path)
+            if ~isdir(path) % if holo file with moments inside is the input
+                [filepath,name,ext] = fileparts(path) ;
+                mkdir(fullfile(filepath,name));
+                obj.directory = fullfile(filepath,name);
+                obj.filenames = {name};
+            else
+                obj.directory = path;
+                tmp_idx = regexp(path, '\');
+                obj.filenames = {path(tmp_idx(end - 1) + 1:end - 1)};
+            end
 
             obj.nbFiles = 1;
             obj.reference = cell(1, obj.nbFiles);
@@ -91,77 +97,86 @@ classdef OneCycleClass
             logs = obj.load_logs;
 
             for ii = 1:obj.nbFiles
-
-                %% Ref loading
-                dir_path_avi = fullfile(obj.directory, 'avi');
-                NameRefAviFile = strcat(obj.filenames{ii}, '_M0');
-                RefAviFilePath = fullfile(dir_path_avi, NameRefAviFile);
-                ext = '.avi';
-
-                disp(['reading : ', RefAviFilePath]);
-                RefAviFilePath(strfind(RefAviFilePath, '\')) = '/';
-                str_tosave = sprintf('reading : %s', RefAviFilePath);
-                logs = strcat(logs, '\r', str_tosave);
-
-                V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
-                video = zeros(V.Height, V.Width, V.NumFrames);
-
-                for n = 1:V.NumFrames
-                    video(:, :, n) = rgb2gray(read(V, n));
+                
+                if ~isdir(path) % if holo file with moments inside is the input
+                    disp(['reading moments in : ',strcat(obj.directory,'.holo')]);
+                    [videoM0,videoM1,videoM2] = readMoments(strcat(obj.directory,'.holo'));
+                    obj.reference{ii} = ff_correction(videoM0,30);
+                    obj.dataM0{ii} = videoM0;
+                    obj.dataM1{ii} = videoM1;
+                    obj.dataM2{ii} = videoM2;
+                else
+                    %% Ref loading
+                    dir_path_avi = fullfile(obj.directory, 'avi');
+                    NameRefAviFile = strcat(obj.filenames{ii}, '_M0');
+                    RefAviFilePath = fullfile(dir_path_avi, NameRefAviFile);
+                    ext = '.avi';
+    
+                    disp(['reading : ', RefAviFilePath]);
+                    RefAviFilePath(strfind(RefAviFilePath, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', RefAviFilePath);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
+                    video = zeros(V.Height, V.Width, V.NumFrames);
+    
+                    for n = 1:V.NumFrames
+                        video(:, :, n) = rgb2gray(read(V, n));
+                    end
+    
+                    clear V
+    
+                    obj.reference{ii} = video;
+                    refvideosize = size(obj.reference{ii});
+    
+                    %% File loading
+                    dir_path_raw = fullfile(obj.directory, 'raw');
+    
+                    if isempty(dir(dir_path_raw))
+                        fprintf("No Raw Files, please select a Holowave folder with raw files exported")
+                    end
+    
+                    NameRawFile = strcat(obj.filenames{ii}, '_moment0');
+                    ext = '.raw';
+    
+                    % Import Moment 0
+                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
+                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
+                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', FilePathUnix);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
+                    videoM0 = fread(fileID, 'float32');
+                    fclose(fileID);
+                    obj.dataM0{ii} = reshape(videoM0, refvideosize);
+                    % Import Moment 1
+                    NameRawFile = strcat(obj.filenames{ii}, '_moment1');
+                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
+                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
+                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', FilePathUnix);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
+                    videoM1 = fread(fileID, 'float32');
+                    fclose(fileID);
+                    obj.dataM1{ii} = reshape(videoM1, refvideosize);
+                    % Import Moment 2
+                    NameRawFile = strcat(obj.filenames{ii}, '_moment2');
+                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
+                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
+                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', FilePathUnix);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
+                    videoM2 = fread(fileID, 'float32');
+                    fclose(fileID);
+                    obj.dataM2{ii} = reshape(videoM2, refvideosize);
+    
+                    obj.load_logs = logs;
                 end
-
-                clear V
-
-                obj.reference{ii} = video;
-                refvideosize = size(obj.reference{ii});
-
-                %% File loading
-                dir_path_raw = fullfile(obj.directory, 'raw');
-
-                if isempty(dir(dir_path_raw))
-                    fprintf("No Raw Files, please select a Holowave folder with raw files exported")
-                end
-
-                NameRawFile = strcat(obj.filenames{ii}, '_moment0');
-                ext = '.raw';
-
-                % Import Moment 0
-                disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs, '\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM0 = fread(fileID, 'float32');
-                fclose(fileID);
-                obj.dataM0{ii} = reshape(videoM0, refvideosize);
-                % Import Moment 1
-                NameRawFile = strcat(obj.filenames{ii}, '_moment1');
-                disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs, '\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM1 = fread(fileID, 'float32');
-                fclose(fileID);
-                obj.dataM1{ii} = reshape(videoM1, refvideosize);
-                % Import Moment 2
-                NameRawFile = strcat(obj.filenames{ii}, '_moment2');
-                disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs, '\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM2 = fread(fileID, 'float32');
-                fclose(fileID);
-                obj.dataM2{ii} = reshape(videoM2, refvideosize);
-
-                obj.load_logs = logs;
 
             end
 

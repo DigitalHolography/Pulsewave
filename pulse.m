@@ -21,6 +21,7 @@ classdef pulse < matlab.apps.AppBase
         Lamp                          matlab.ui.control.Lamp
         ClearButton                   matlab.ui.control.Button
         LoadfolderButton              matlab.ui.control.Button
+        LoadHoloButton              matlab.ui.control.Button
         ExecuteButton                 matlab.ui.control.Button
         NumberofframesEditField       matlab.ui.control.NumericEditField
         NumberofframesEditFieldLabel  matlab.ui.control.Label
@@ -40,11 +41,12 @@ classdef pulse < matlab.apps.AppBase
                         app.ErrorLabel.Text = "Error: number of files not correct";
                         return ; 
                     end 
-                end
+                end 
                 app.Lamp.Color = [1, 0, 0];
                 drawnow;
-                path = strcat(path, '\');
-                
+                if isdir(path)
+                    path = strcat(path, '\');
+                end
                 parfor_arg = app.NumberofWorkersSpinner.Value ;
 
                 poolobj = gcp('nocreate'); % check if a pool already exist
@@ -184,6 +186,29 @@ end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(selected_dir);
+                
+            end
+
+            
+        end
+        function LoadHoloButtonPushed(app, event)
+            % clearing before loading
+            app.files = {};
+            app.ReferenceDirectory.Value = "";
+            app.LoadfolderButton.Enable = true;
+            app.flag_is_load = false;
+            
+            clear Parameters_json
+            if (app.flag_is_load)
+                disp("Files already loaded")
+                app.ClearButton.Enable = true ;
+                app.EditParametersButton.Enable = true;
+            else
+                f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
+                [selected_holo,path_holo] = uigetfile('*.holo');
+                delete(f); %delete the dummy figure
+                app.flag_is_load = true;
+                app.Load(fullfile(path_holo,selected_holo));
                 
             end
 
@@ -505,6 +530,15 @@ end
             app.LoadfolderButton.FontColor = [0.9412 0.9412 0.9412];
             app.LoadfolderButton.Position = [61 322 123 28];
             app.LoadfolderButton.Text = 'Load folder';
+
+            % Create LoadHoloButton
+            app.LoadHoloButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.LoadHoloButton.ButtonPushedFcn = createCallbackFcn(app, @LoadHoloButtonPushed, true);
+            app.LoadHoloButton.BackgroundColor = [0.502 0.502 0.502];
+            app.LoadHoloButton.FontSize = 16;
+            app.LoadHoloButton.FontColor = [0.9412 0.9412 0.9412];
+            app.LoadHoloButton.Position = [61 362 123 28];
+            app.LoadHoloButton.Text = 'Load holo';
 
             % Create ClearButton
             app.ClearButton = uibutton(app.PulsewaveUIFigure, 'push');
