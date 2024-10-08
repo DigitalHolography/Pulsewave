@@ -35,8 +35,8 @@
         "Vesselness Binarization threshold" : 0.35,
         "MagicWand Number of segmented area detected for vessels" : 3,
         "MagicWand Number of segmented area detected for artery" : 3,
-        "Artery correlation threshold" : 0.07,
-        "ArteryCorrelationMatrixThreshold":  1.5,
+        "Artery correlation threshold" : 0.7,
+        "ArteryCorrelationMatrixThreshold":  0.8,
         "ContrastNumSlides": [100,100]
 
     },

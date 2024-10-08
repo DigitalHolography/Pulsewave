@@ -199,11 +199,12 @@ classdef OneCycleClass
 
         function obj = cropAllVideo(obj)
             disp('cropping videos')
-            tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
             lastFrame = PW_params.videoEndFrameIndex;
+
+            [~, ~, numFrames] = size(obj.M0_disp_video);
 
             logs = obj.load_logs;
 
@@ -228,7 +229,6 @@ classdef OneCycleClass
             end
 
             obj.load_logs = logs;
-            toc
 
         end
 
@@ -357,8 +357,8 @@ classdef OneCycleClass
 
         function obj = RemoveOutliers(obj)
             %% Outlier Cleaning
-            
-            window_size = int(numFrames/ 50);
+            [numX, numY, numFrames] = size(obj.f_RMS_video);
+            window_size = ceil(numFrames/ 50);
 
             tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);
             tmp_f_AVG_cleaned = zeros(numX, numY, numFrames);

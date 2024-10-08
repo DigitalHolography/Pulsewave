@@ -289,12 +289,12 @@ set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
 colormap("hot")
 f = getframe(gcf);
 [numX_fig, numY_fig, ~] = size(f.cdata);
-histoVideoArtery = zeros(numY, numX, 3, numFrames);
+histoVideoArtery = zeros(numX_fig, numY_fig, 3, numFrames);
 
 %FIXME avoir une ligne à zéro de trois pixel
 %FIXME getframe pour la couleur
 
-gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, N_frame);
+gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, numFrames);
 
 for frameIdx = 1:numFrames
 
@@ -321,7 +321,7 @@ for frameIdx = 1:numFrames
     title("Velocity distribution in arteries")
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     f = getframe(gcf);
-    histoVideoArtery(:, :, :, frameIdx) = imresize(f.cdata, [numY numX]);
+    histoVideoArtery(:, :, :, frameIdx) = imresize(f.cdata, [numX_fig numY_fig]);
     gifWriter.write(f, frameIdx);
 
 end
@@ -368,7 +368,7 @@ if veins_analysis
     %histoVideoVein = zeros(size(X,2),size(dataCubeM2M0,3),size(dataCubeM2M0,3));
     f = getframe(gcf);
     [numX_fig, numY_fig, ~] = size(f.cdata);
-    histoVideoVein = zeros(height, width, 3, numFrames);
+    histoVideoVein = zeros(numX_fig, numY_fig, 3, numFrames);
 
     fDistribVein = figure(158);
     fDistribVein.Position(3:4) = [600 275];
@@ -445,7 +445,7 @@ if veins_analysis
     flowVideoRGB4Gif(:, :, 2, :) = imresize3(squeeze(flowVideoRGB(:, :, 2, :)), [550 550 numFrames]);
     flowVideoRGB4Gif(:, :, 3, :) = imresize3(squeeze(flowVideoRGB(:, :, 3, :)), [550 550 numFrames]);
     combinedGifs = cat(2, flowVideoRGB4Gif, cat(1, mat2gray(histoVideoArtery), mat2gray(histoVideoVein)));
-    flowVideoRGBMean4Gif = rescale(imresize3(flowVideoRGBMean));
+    flowVideoRGBMean4Gif = rescale(imresize3(flowVideoRGBMean, [550 550 3]));
     imwrite(cat(2, flowVideoRGBMean4Gif, cat(1, mat2gray(histoVideoArtery(:, :, :, end)), mat2gray(histoVideoVein(:, :, :, end)))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
 else
     flowVideoRGB4Gif(:, :, 1, :) = imresize3(squeeze(flowVideoRGB(:, :, 1, :)), [600 600 numFrames]);
