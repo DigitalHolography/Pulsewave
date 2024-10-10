@@ -1,4 +1,4 @@
-classdef Parameters_json
+classdef Parameters_json < handle
     % Class for storing parameters from an input json file
 
     properties
@@ -111,13 +111,8 @@ classdef Parameters_json
 
         function obj = Parameters_json(dir_path)
             obj.path = dir_path;
-            persistent PulsewaveParams
 
-            if isempty(PulsewaveParams)
-                PulsewaveParams = obj.GetParameters();
-            end
-
-            obj = PulsewaveParams;
+            obj = obj.GetParameters();
         end
 
         function obj = GetParameters(obj)

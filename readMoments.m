@@ -31,22 +31,6 @@ footer_skip = 64 + uint64(frame_width * frame_height) * uint64( num_frames) * ui
 s=dir(filename);
 footer_size = s.bytes - footer_skip;
 
-% read old footer
- if  footer_skip >= s.bytes
-        footer.compute_settings.image_rendering.lambda = 8.5200e-07';
-        footer.info.pixel_pitch.x = 12;
-        footer.info.pixel_pitch.y = 12;
-        footer.compute_settings.image_rendering.propagation_distance = 0.4000;
-else
-    % open file and seek footer
-    fd = fopen(filename, 'r');
-    fseek(fd, footer_skip, 'bof');
-    footer_unparsed = fread(fd, footer_size, '*char');
-    footer_parsed = jsondecode(convertCharsToStrings(footer_unparsed));
-    footer = footer_parsed;
-    fclose(fd);
-end
-
 fd = fopen(filename, 'r');
 fseek(fd, 64, 'bof'); % skip the header
 frame_size = frame_width * frame_height * 32; % as it is float32 images
@@ -69,8 +53,11 @@ else
     max_idx= floor(num_frames/3 - 1);
 end
 for i=1:max_idx
-    videoM0(:,:,i) = reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]);
-    videoM1(:,:,i) = reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]);
-    videoM2(:,:,i) = reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]);
+    videoM0(:,:,i) = fftshift(reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]));
+    videoM1(:,:,i) = fftshift(reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]));
+    videoM2(:,:,i) = fftshift(reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]));
 end
+implay(rescale(videoM0));
+implay(rescale(videoM1));
+implay(rescale(videoM2));
 end

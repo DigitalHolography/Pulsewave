@@ -45,7 +45,7 @@ classdef OneCycleClass
                 path
             end
             disp(path)
-            if ~isdir(path) % if holo file with moments inside is the input
+            if ~isfolder(path) % if holo file with moments inside is the input
                 [filepath,name,ext] = fileparts(path) ;
                 mkdir(fullfile(filepath,name));
                 obj.directory = fullfile(filepath,name);
@@ -98,9 +98,10 @@ classdef OneCycleClass
 
             for ii = 1:obj.nbFiles
                 
-                if ~isdir(path) % if holo file with moments inside is the input
+                if ~isfolder(path) % if holo file with moments inside is the input
                     disp(['reading moments in : ',strcat(obj.directory,'.holo')]);
                     [videoM0,videoM1,videoM2] = readMoments(strcat(obj.directory,'.holo'));
+                    readMomentsFooter(obj.directory);
                     obj.reference{ii} = ff_correction(videoM0,30);
                     obj.dataM0{ii} = videoM0;
                     obj.dataM1{ii} = videoM1;
@@ -683,7 +684,7 @@ classdef OneCycleClass
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
                     [v_RMS_one_cycle, v_RMS_all, FlowVideoRGB, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp{n}, obj.dataM1M0_interp{n}, obj.dataM2_interp{n}, obj.dataM0_interp{n}, obj.reference_interp{1}, sys_index_list_cell{n}, meanIm, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
-                    disp('PulseAnalysis timing :')
+                     disp('PulseAnalysis timing :')
                     time_pulseanalysis = total_time;
                     disp(time_pulseanalysis)
                     save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
@@ -707,7 +708,7 @@ classdef OneCycleClass
 
                     if obj.flag_velocity_analysis
                         tic
-                        bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                        bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, obj.directory)
                         disp('Blood Flow Velocity timing :')
                         time_velo = toc;
                         disp(time_velo)

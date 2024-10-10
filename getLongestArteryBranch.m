@@ -108,6 +108,16 @@ for idx= 1:n
     end
 end
 
+
+%%FIX ME going back to simplest option for reliability
+m=0;
+for idx= 1:n
+    if sum((L==idx),[1,2])>m
+        maskLongArtery = (L==idx);
+        m=sum((L==idx),[1,2]);
+    end
+end
+
 figure(408); imshow(maskLongArtery);
 
 

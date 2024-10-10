@@ -19,10 +19,10 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
     [M, N, T_max] = size(v_RMS);
     width_cross_section = zeros(nb_section, 1);
     cross_section_area = zeros(nb_section, 1);
-    avg_blood_velocity = zeros(nb_section, 1);
-    avg_blood_volume_rate = zeros(nb_section, 1);
-    std_blood_velocity = zeros(nb_section, 1);
-    std_blood_volume_rate = zeros(nb_section, 1);
+    avg_blood_velocity = zeros(nb_section, T_max);
+    avg_blood_volume_rate = zeros(nb_section, T_max);
+    std_blood_velocity = zeros(nb_section, T_max);
+    std_blood_volume_rate = zeros(nb_section, T_max);
     cross_section_mask = zeros(size(mask));
     mask_sections = zeros(M, N, nb_section);
     total_avg_blood_volume_rate = zeros(T_max, 1);
@@ -44,8 +44,8 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             subImgHW = round(width(section_idx) * PW_params.cropSection_scaleFactorWidth);
             %FIXME bords d IMG,
 
-            xRange = round(-subImgHW / 2) + locs(section_idx, 2):round(subImgHW / 2) + locs(section_idx, 2);
-            yRange = round(-subImgHW / 2) + locs(section_idx, 1):round(subImgHW / 2) + locs(section_idx, 1);
+            xRange = max(round(-subImgHW / 2) + locs(section_idx, 2),1):min(round(subImgHW / 2) + locs(section_idx, 2),N);
+            yRange = max(round(-subImgHW / 2) + locs(section_idx, 1),1):min(round(subImgHW / 2) + locs(section_idx, 1),M);
             subImg = img_v_artery(yRange, xRange);
 
             %make disk mask

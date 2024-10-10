@@ -91,6 +91,7 @@ classdef pulse < matlab.apps.AppBase
                     app.EditParametersButton.Enable = true;
                     % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
                     app.ReferenceDirectory.Value = path ;
+                    app.Lamp.Color = [0, 1, 0];
 
                 catch exception
 

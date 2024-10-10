@@ -112,8 +112,20 @@ classdef ToolBoxClass < handle
                 obj.minPCA = cache.time_transform.min_PCA;
                 obj.maxPCA = cache.time_transform.max_PCA;
                 disp('done.')
+            elseif exist(fullfile(path, 'Holovibes_rendering_parameters.json'))
+                disp('reading cache parameters from holovibes');
+                json_txt = fileread(fullfile(path, 'Holovibes_rendering_parameters.json'));
+                footer_parsed = jsondecode(json_txt);
+                obj.stride = footer_parsed.compute_settings.image_rendering.time_transformation_stride;
+                obj.fs = footer_parsed.info.input_fps/1000; %conversion in kHz
+                obj.type = 'FFT';
+                obj.f1 = nan;
+                obj.f2 = nan;
+                obj.minPCA = nan;
+                obj.maxPCA = nan;
+                disp('done.')
             else
-                disp('no mat file found');
+                disp('WARNING : no rendering parameters file found');
                 obj.stride = 0;
                 obj.fs = 0;
                 obj.type = 'None';
