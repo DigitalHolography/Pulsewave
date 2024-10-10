@@ -33,8 +33,8 @@
         "Vesselnes parameter sigma" : 3,
         "Vesselnes parameter beta" : 0.8,
         "Vesselness Binarization threshold" : 0.35,
-        "MagicWand Number of segmented area detected for vessels" : 3,
-        "MagicWand Number of segmented area detected for artery" : 3,
+        "MagicWand Number of segmented area detected for vessels" : 5,
+        "MagicWand Number of segmented area detected for artery" : 5,
         "Artery correlation threshold" : 0.7,
         "ArteryCorrelationMatrixThreshold":  0.8,
         "ContrastNumSlides": [100,100]
