@@ -44,11 +44,17 @@ classdef OneCycleClass
             arguments
                 path
             end
-
-            obj.directory = path;
-
-            tmp_idx = regexp(path, '\');
-            obj.filenames = {path(tmp_idx(end - 1) + 1:end - 1)};
+            disp(path)
+            if ~isfolder(path) % if holo file with moments inside is the input
+                [filepath,name,ext] = fileparts(path) ;
+                mkdir(fullfile(filepath,name));
+                obj.directory = fullfile(filepath,name);
+                obj.filenames = {name};
+            else
+                obj.directory = path;
+                tmp_idx = regexp(path, '\');
+                obj.filenames = {path(tmp_idx(end - 1) + 1:end - 1)};
+            end
 
             obj.nbFiles = 1;
             obj.reference = cell(1, obj.nbFiles);
@@ -91,77 +97,87 @@ classdef OneCycleClass
             logs = obj.load_logs;
 
             for ii = 1:obj.nbFiles
-
-                %% Ref loading
-                dir_path_avi = fullfile(obj.directory, 'avi');
-                NameRefAviFile = strcat(obj.filenames{ii}, '_M0');
-                RefAviFilePath = fullfile(dir_path_avi, NameRefAviFile);
-                ext = '.avi';
-
-                disp(['reading : ', RefAviFilePath]);
-                RefAviFilePath(strfind(RefAviFilePath, '\')) = '/';
-                str_tosave = sprintf('reading : %s', RefAviFilePath);
-                logs = strcat(logs, '\r', str_tosave);
-
-                V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
-                video = zeros(V.Height, V.Width, V.NumFrames);
-
-                for n = 1:V.NumFrames
-                    video(:, :, n) = rgb2gray(read(V, n));
+                
+                if ~isfolder(path) % if holo file with moments inside is the input
+                    disp(['reading moments in : ',strcat(obj.directory,'.holo')]);
+                    [videoM0,videoM1,videoM2] = readMoments(strcat(obj.directory,'.holo'));
+                    readMomentsFooter(obj.directory);
+                    obj.reference{ii} = ff_correction(videoM0,30);
+                    obj.dataM0{ii} = videoM0;
+                    obj.dataM1{ii} = videoM1;
+                    obj.dataM2{ii} = videoM2;
+                else
+                    %% Ref loading
+                    dir_path_avi = fullfile(obj.directory, 'avi');
+                    NameRefAviFile = strcat(obj.filenames{ii}, '_M0');
+                    RefAviFilePath = fullfile(dir_path_avi, NameRefAviFile);
+                    ext = '.avi';
+    
+                    disp(['reading : ', RefAviFilePath]);
+                    RefAviFilePath(strfind(RefAviFilePath, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', RefAviFilePath);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
+                    video = zeros(V.Height, V.Width, V.NumFrames);
+    
+                    for n = 1:V.NumFrames
+                        video(:, :, n) = rgb2gray(read(V, n));
+                    end
+    
+                    clear V
+    
+                    obj.reference{ii} = video;
+                    refvideosize = size(obj.reference{ii});
+    
+                    %% File loading
+                    dir_path_raw = fullfile(obj.directory, 'raw');
+    
+                    if isempty(dir(dir_path_raw))
+                        fprintf("No Raw Files, please select a Holowave folder with raw files exported")
+                    end
+    
+                    NameRawFile = strcat(obj.filenames{ii}, '_moment0');
+                    ext = '.raw';
+    
+                    % Import Moment 0
+                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
+                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
+                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', FilePathUnix);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
+                    videoM0 = fread(fileID, 'float32');
+                    fclose(fileID);
+                    obj.dataM0{ii} = reshape(videoM0, refvideosize);
+                    % Import Moment 1
+                    NameRawFile = strcat(obj.filenames{ii}, '_moment1');
+                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
+                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
+                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', FilePathUnix);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
+                    videoM1 = fread(fileID, 'float32');
+                    fclose(fileID);
+                    obj.dataM1{ii} = reshape(videoM1, refvideosize);
+                    % Import Moment 2
+                    NameRawFile = strcat(obj.filenames{ii}, '_moment2');
+                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
+                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
+                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
+                    str_tosave = sprintf('reading : %s', FilePathUnix);
+                    logs = strcat(logs, '\r', str_tosave);
+    
+                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
+                    videoM2 = fread(fileID, 'float32');
+                    fclose(fileID);
+                    obj.dataM2{ii} = reshape(videoM2, refvideosize);
+    
+                    obj.load_logs = logs;
                 end
-
-                clear V
-
-                obj.reference{ii} = video;
-                refvideosize = size(obj.reference{ii});
-
-                %% File loading
-                dir_path_raw = fullfile(obj.directory, 'raw');
-
-                if isempty(dir(dir_path_raw))
-                    fprintf("No Raw Files, please select a Holowave folder with raw files exported")
-                end
-
-                NameRawFile = strcat(obj.filenames{ii}, '_moment0');
-                ext = '.raw';
-
-                % Import Moment 0
-                disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs, '\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM0 = fread(fileID, 'float32');
-                fclose(fileID);
-                obj.dataM0{ii} = reshape(videoM0, refvideosize);
-                % Import Moment 1
-                NameRawFile = strcat(obj.filenames{ii}, '_moment1');
-                disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs, '\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM1 = fread(fileID, 'float32');
-                fclose(fileID);
-                obj.dataM1{ii} = reshape(videoM1, refvideosize);
-                % Import Moment 2
-                NameRawFile = strcat(obj.filenames{ii}, '_moment2');
-                disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                str_tosave = sprintf('reading : %s', FilePathUnix);
-                logs = strcat(logs, '\r', str_tosave);
-
-                fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                videoM2 = fread(fileID, 'float32');
-                fclose(fileID);
-                obj.dataM2{ii} = reshape(videoM2, refvideosize);
-
-                obj.load_logs = logs;
 
             end
 
@@ -206,6 +222,8 @@ classdef OneCycleClass
         end
 
         function obj = registerVideo(obj)
+            disp('registering')
+            tic
             % Registers the video using intensity based registration
             PW_params = Parameters_json(obj.directory);
             if ~PW_params.registerVideoFlag
@@ -234,13 +252,17 @@ classdef OneCycleClass
                 obj.dataM2{ii} = register_video_from_shifts(obj.dataM2{ii},shifts);
 
 
+
             end
+            toc
 
 
 
         end
 
         function obj = cropAllVideo(obj)
+             disp('cropping videos')
+             tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
@@ -270,10 +292,13 @@ classdef OneCycleClass
             end
 
             obj.load_logs = logs;
+            toc
 
         end
 
         function obj = VideoResize(obj)
+             disp('resizing')
+             tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;
             out_width = PW_params.frameHeight;
@@ -395,9 +420,12 @@ classdef OneCycleClass
             % logs = obj.load_logs;
             % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_num_frames));
             % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
+            toc
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
+            disp('interpolating')
+            tic
             height = size(obj.reference{1}, 1);
             width = size(obj.reference{1}, 2);
             num_frames = size(obj.reference{1}, 3);
@@ -480,10 +508,13 @@ classdef OneCycleClass
             obj.dataM2M0{1} = [];
             obj.dataM0{1} = [];
             obj.dataM1M0{1} = [];
+            toc
 
         end
 
         function onePulse(obj, Ninterp)
+            %  ------- This is the app main routine. --------
+
             % PW_params = Parameters_json(obj.directory);
             % ToolBox = obj.ToolBoxmaster;
 
@@ -581,19 +612,12 @@ classdef OneCycleClass
             [Nx, Ny, N_frame] = size(obj.reference_norm_interp{1});
 
             timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-            gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod, 0.04, N_frame);
-
             videoM0Rescaled = rescale(obj.reference_interp{1});
-
-            for frameIdx = 1:N_frame
-                gifWriter.write(videoM0Rescaled(:, :, frameIdx), frameIdx);
-            end
-
-            gifWriter.generate();
-            gifWriter.delete();
+            writeGifOnDisc(videoM0Rescaled,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")),timePeriod)
 
             imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
-
+            
+            clear videoM0Rescaled;
             disp('M0 gif animation timing :')
             time = toc;
             disp(time)
@@ -611,8 +635,15 @@ classdef OneCycleClass
             fclose(fileID);
 
             tic
-            [maskArtery, maskVein, ~, maskBackground, maskCRA, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
-            disp('CreatMasks timing :')
+
+            try 
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = forceCreateMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            catch
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSectionArtery] = createMasks(obj.reference_norm_interp{1}, obj.dataM1M0_interp{1}, obj.directory, ToolBox);
+            end
+
+
+            disp('CreateMasks timing :')
             time = toc;
             disp(time)
 
@@ -653,7 +684,7 @@ classdef OneCycleClass
                     save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
                     [v_RMS_one_cycle, v_RMS_all, FlowVideoRGB, exec_times, total_time] = pulseAnalysis(Ninterp, obj.dataM2M0_interp{n}, obj.dataM1M0_interp{n}, obj.dataM2_interp{n}, obj.dataM0_interp{n}, obj.reference_interp{1}, sys_index_list_cell{n}, meanIm, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
-                    disp('PulseAnalysis timing :')
+                     disp('PulseAnalysis timing :')
                     time_pulseanalysis = total_time;
                     disp(time_pulseanalysis)
                     save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
@@ -667,9 +698,18 @@ classdef OneCycleClass
                     fclose(fileID);
                     clear exec_times
 
+                    pulseVelocity(obj.dataM0_interp{n},maskArtery,ToolBox,obj.directory)
+                    disp('PulseVelocity timing :')
+                    time_pulsevelocity = total_time;
+                    disp(time_pulsevelocity)
+                    save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
+                    %exec time details
+                    fileID = fopen(path_file_txt_exe_times, 'a+');
+
                     if obj.flag_velocity_analysis
                         tic
-                        bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, path)
+                        bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, obj.directory)
+                        bloodFlowVelocityFullField(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, obj.directory)
                         disp('Blood Flow Velocity timing :')
                         time_velo = toc;
                         disp(time_velo)
@@ -687,7 +727,8 @@ classdef OneCycleClass
 
                     if obj.flag_bloodVolumeRate_analysis
                         tic
-                        bloodVolumeRate(maskArtery, maskVein, maskCRA, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                        bloodVolumeRate(maskArtery, maskVein, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                        bloodVolumeRateForAllRadii(maskArtery, maskVein, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                         disp('Blood Volume Rate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)

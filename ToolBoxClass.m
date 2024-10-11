@@ -58,9 +58,20 @@ classdef ToolBoxClass < handle
 
             PW_folder_name = strcat(obj.main_foldername, '_PW');
 
-            while (exist(fullfile(obj.PW_path_main, sprintf('%s_%d', PW_folder_name, idx)), 'dir'))
-                idx = idx + 1;
+            list_dir = dir(obj.PW_path_main);
+            for i=1:length(list_dir)
+                if contains(list_dir(i).name, PW_folder_name)
+                    match = regexp(list_dir(i).name, '\d+$', 'match'); 
+                    if ~isempty(match) && str2double(match{1}) >= idx
+                        idx = str2double(match{1}) + 1; %suffix
+                    end
+                end
             end
+
+            % for naming with the minimum possible suffix
+            %while (exist(fullfile(obj.PW_path_main, sprintf('%s_%d', PW_folder_name, idx)), 'dir'))
+            %    idx = idx + 1;
+            %end
 
             obj.PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
             obj.PW_path_dir = fullfile(obj.PW_path_main, obj.PW_folder_name);
@@ -101,8 +112,20 @@ classdef ToolBoxClass < handle
                 obj.minPCA = cache.time_transform.min_PCA;
                 obj.maxPCA = cache.time_transform.max_PCA;
                 disp('done.')
+            elseif exist(fullfile(path, 'Holovibes_rendering_parameters.json'))
+                disp('reading cache parameters from holovibes');
+                json_txt = fileread(fullfile(path, 'Holovibes_rendering_parameters.json'));
+                footer_parsed = jsondecode(json_txt);
+                obj.stride = footer_parsed.compute_settings.image_rendering.time_transformation_stride;
+                obj.fs = footer_parsed.info.input_fps/1000; %conversion in kHz
+                obj.type = 'FFT';
+                obj.f1 = nan;
+                obj.f2 = nan;
+                obj.minPCA = nan;
+                obj.maxPCA = nan;
+                disp('done.')
             else
-                disp('no mat file found');
+                disp('WARNING : no rendering parameters file found');
                 obj.stride = 0;
                 obj.fs = 0;
                 obj.type = 'None';

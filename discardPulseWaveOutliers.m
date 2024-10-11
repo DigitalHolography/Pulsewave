@@ -1,5 +1,7 @@
 function [idxOut, pulseWaveOutput] = discardPulseWaveOutliers(pulseWave, filterSize)
 
+    [filledSignal, TF] = filloutliers(pulseWave, "linear");
+
     [~, outliers] = rmoutliers(pulseWave, 'movmedian', filterSize);
 
     idxOut = find(outliers);
@@ -31,5 +33,5 @@ function [idxOut, pulseWaveOutput] = discardPulseWaveOutliers(pulseWave, filterS
     end
 
     idxOut;
-    pulseWaveOutput = pulseWave;
+    pulseWaveOutput = filledSignal;
 end

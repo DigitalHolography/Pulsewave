@@ -1,4 +1,4 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path, flagBloodVelocityProfile)
+function [] = bloodVolumeRate(maskArtery, maskVein, ~, v_RMS, dataM0, videoM0_from_holowaves, ToolBox, k, path, flagBloodVelocityProfile)
 
     PW_params = Parameters_json(path);
 
@@ -152,9 +152,6 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'velocityInAllArterySection.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'velocityInAllArterySection.eps')))
-
-
-    
 
     if veins_analysis
 
@@ -460,7 +457,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
     curve1 = total_avg_bloodVolumeRate_artery + 0.5 * total_std_bloodVolumeRate_artery;
     curve2 = total_avg_bloodVolumeRate_artery - 0.5 * total_std_bloodVolumeRate_artery;
     fullTime2 = [fullTime, fliplr(fullTime)];
-    inBetween = [curve1', fliplr(curve2')];
+    inBetween = [curve1, fliplr(curve2)];
 
     fill(fullTime2, inBetween, Color_std);
     hold on;
@@ -492,7 +489,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
         curve1 = total_avg_bloodVolumeRate_vein + 0.5 * total_std_bloodVolumeRate_vein;
         curve2 = total_avg_bloodVolumeRate_vein - 0.5 * total_std_bloodVolumeRate_vein;
         fullTime2 = [fullTime, fliplr(fullTime)];
-        inBetween = [curve1', fliplr(curve2')];
+        inBetween = [curve1, fliplr(curve2)];
 
         fill(fullTime2, inBetween, Color_std);
         hold on;
@@ -519,7 +516,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
         curve1 = total_avg_bloodVolumeRate_artery(1:frameIdx) + 0.5 * total_std_bloodVolumeRate_artery(1:frameIdx);
         curve2 = total_avg_bloodVolumeRate_artery(1:frameIdx) - 0.5 * total_std_bloodVolumeRate_artery(1:frameIdx);
         tmp_fullTime = [fullTime(1:frameIdx), fliplr(fullTime(1:frameIdx))];
-        inBetween = [curve1', fliplr(curve2')];
+        inBetween = [curve1, fliplr(curve2)];
 
         fill(tmp_fullTime, inBetween, Color_std);
         hold on;
@@ -531,7 +528,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
 
         ylabel('Blood volume rate (µL/min)')
         xlabel('Time (s)')
-        title(sprintf("Total blood volume rate in arteries : %02.0f", round(mean_volume_rate_artery)))
+        title(sprintf("Total blood volume rate in arteries : %02.0f µL/min", round(mean_volume_rate_artery)))
         axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
         fontsize(gca, 14, "points");
         set(gca, 'Linewidth', 2)
@@ -549,7 +546,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
             curve1 = total_avg_bloodVolumeRate_vein(1:frameIdx) + 0.5 * total_std_bloodVolumeRate_vein(1:frameIdx);
             curve2 = total_avg_bloodVolumeRate_vein(1:frameIdx) - 0.5 * total_std_bloodVolumeRate_vein(1:frameIdx);
             tmp_fullTime = [fullTime(1:frameIdx), fliplr(fullTime(1:frameIdx))];
-            inBetween = [curve1', fliplr(curve2')];
+            inBetween = [curve1, fliplr(curve2)];
 
             fill(tmp_fullTime, inBetween, Color_std);
             hold on;
@@ -561,7 +558,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
 
             ylabel('Blood volume rate (µL/min)')
             xlabel('Time (s)')
-            title(sprintf("Total blood volume rate in veins : %02.0f", round(mean_volume_rate_vein)))
+            title(sprintf("Total blood volume rate in veins : %02.0f µL/min", round(mean_volume_rate_vein)))
             axis([ax_vol_rate_vein(1) ax_vol_rate_vein(2) ax_vol_rate_vein(3) ax_vol_rate_vein(4)]);
             fontsize(gca, 14, "points");
             set(gca, 'Linewidth', 2)
@@ -697,9 +694,9 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
     % for the all circles output
     nbCircles = PW_params.nbCircles;
     maskSectionCircles = cell(1,nbCircles);
-    deltr = PW_params.radius_ratio* (M + N) /nbCircles; %PW_params.radius_gap 
+    deltr = (PW_params.velocity_bigRadiusRatio - PW_params.velocity_smallRadiusRatio) * (M + N)/2 /nbCircles; %PW_params.radius_gap 
     for i = 1:nbCircles
-        rad1 = (PW_params.radius_ratio - PW_params.radius_ratio) * (M + N) / 2 + (i-1) * deltr ; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * deltr ;
+        rad1 = (PW_params.velocity_smallRadiusRatio) * (M + N) / 2 + (i-1) * deltr ; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * deltr ;
         rad2 = rad1 + deltr ;
         c1 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= rad1;
         c2 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= rad2;
@@ -887,7 +884,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
         curve1 = total_avg_bloodVolumeRate_artery + 0.5 * total_std_bloodVolumeRate_artery;
         curve2 = total_avg_bloodVolumeRate_artery - 0.5 * total_std_bloodVolumeRate_artery;
         fullTime2 = [fullTime, fliplr(fullTime)];
-        inBetween = [curve1', fliplr(curve2')];
+        inBetween = [curve1, fliplr(curve2)];
     
         fill(fullTime2, inBetween, Color_std);
         hold on;
@@ -919,7 +916,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
             curve1 = total_avg_bloodVolumeRate_artery(1:frameIdx) + 0.5 * total_std_bloodVolumeRate_artery(1:frameIdx);
             curve2 = total_avg_bloodVolumeRate_artery(1:frameIdx) - 0.5 * total_std_bloodVolumeRate_artery(1:frameIdx);
             tmp_fullTime = [fullTime(1:frameIdx), fliplr(fullTime(1:frameIdx))];
-            inBetween = [curve1', fliplr(curve2')];
+            inBetween = [curve1, fliplr(curve2)];
     
             fill(tmp_fullTime, inBetween, Color_std);
             hold on;
@@ -931,7 +928,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, ~, v_RMS, dataM0, videoM0
     
             ylabel('Blood volume rate (µL/min)')
             xlabel('Time (s)')
-            title(sprintf("Total blood volume rate in arteries : %02.0f", round(mean_volume_rate_artery)))
+            title(sprintf("Total blood volume rate in arteries : %02.0f µL/min", round(mean_volume_rate_artery)))
             axis([ax_vol_rate_artery(1) ax_vol_rate_artery(2) ax_vol_rate_artery(3) ax_vol_rate_artery(4)]);
             fontsize(gca, 14, "points");
             set(gca, 'Linewidth', 2)

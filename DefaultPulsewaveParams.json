@@ -27,7 +27,7 @@
         "Number of interpolation" : 64,
         "Out of noise threshold" : 85,
         "Data reliability index threshold" : 50,
-        "Local background width" : 15
+        "Local background width" : 2
     },
     "Creation of masks" : {
         "Vesselnes parameter sigma" : 3,
@@ -44,8 +44,8 @@
         "Central retina artery threshold" : 3,
         "Central retina vein threshold" : -3,
         "Central retina background threshold" : 2,
-        "Crop coroid radius" : 0.15,
-        "Treshold radius value" : -1,
+        "Crop coroid radius" : 0.10,
+        "Threshold radius value" : -1,
         "Standard binarization threshold" : 0.15,
         "Minimum seed area size" : 150,
         "Cleaning Coroid or not" : 1,

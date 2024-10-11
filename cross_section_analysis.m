@@ -1,4 +1,4 @@
-function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile,circle)
+function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate,velocity_profiles,subImg_cell] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile,circle,force_width)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
 
@@ -13,16 +13,16 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
     nb_section = size(locs, 1);
 
     PW_params = Parameters_json(path);
-    subImg_cell = cell(nb_section);
-    subVideo_cell = cell(nb_section);
+    subImg_cell = cell([1 nb_section]);
+    subVideo_cell = cell([1 nb_section]);
 
     [M, N, T_max] = size(v_RMS);
     width_cross_section = zeros(nb_section, 1);
     cross_section_area = zeros(nb_section, 1);
-    avg_blood_velocity = zeros(nb_section, 1);
-    avg_blood_volume_rate = zeros(nb_section, 1);
-    std_blood_velocity = zeros(nb_section, 1);
-    std_blood_volume_rate = zeros(nb_section, 1);
+    avg_blood_velocity = zeros(nb_section, T_max);
+    avg_blood_volume_rate = zeros(nb_section, T_max);
+    std_blood_velocity = zeros(nb_section, T_max);
+    std_blood_volume_rate = zeros(nb_section, T_max);
     cross_section_mask = zeros(size(mask));
     mask_sections = zeros(M, N, nb_section);
     total_avg_blood_volume_rate = zeros(T_max, 1);
@@ -37,15 +37,15 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     img_v_artery = squeeze(mean(v_RMS, 3)) .* mask;
     v_RMS_masked = v_RMS .* mask;
-
+    velocity_profiles = cell([1 nb_section]);
     for section_idx = 1:nb_section % section_idx: vessel_number
 
         if width(section_idx) > 2
             subImgHW = round(width(section_idx) * PW_params.cropSection_scaleFactorWidth);
             %FIXME bords d IMG,
 
-            xRange = round(-subImgHW / 2) + locs(section_idx, 2):round(subImgHW / 2) + locs(section_idx, 2);
-            yRange = round(-subImgHW / 2) + locs(section_idx, 1):round(subImgHW / 2) + locs(section_idx, 1);
+            xRange = max(round(-subImgHW / 2) + locs(section_idx, 2),1):min(round(subImgHW / 2) + locs(section_idx, 2),N);
+            yRange = max(round(-subImgHW / 2) + locs(section_idx, 1),1):min(round(subImgHW / 2) + locs(section_idx, 1),M);
             subImg = img_v_artery(yRange, xRange);
 
             %make disk mask
@@ -194,12 +194,14 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
         cross_section_area(section_idx) = pi * ((width_cross_section(section_idx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     end
 
-    for tt = 1:T_max
-        current_frame = v_RMS(:, :, tt);
-        all_velocity = zeros(M, N);
-        Total_cross_section = 0;
 
-        for section_idx = 1:nb_section
+    %% Blood Volume Rate computation
+
+    for section_idx = 1:nb_section
+        profils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)),T_max],'single');
+        for tt = 1:T_max
+
+            current_frame = v_RMS(:, :, tt);
 
             %FIXME mean(v_RMS,3)
             tmp = current_frame .* mask_sections(:, :, section_idx);
@@ -211,6 +213,8 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             subFrame = cropCircle(subFrame);
             subFrame = imrotate(subFrame, tilt_angle_list(section_idx), 'bilinear', 'crop');
             avg_profil = mean(subFrame, 1);
+            profils(:,tt) = avg_profil;
+            
 
             for ll = 1:size(subFrame, 1)
                 subFrame(ll, :) = subFrame(ll, :) - avg_profil;
@@ -234,8 +238,6 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
             avg_blood_volume_rate(section_idx, tt) = avg_blood_velocity(section_idx, tt) * cross_section_area(section_idx) * 60; % microL/min
             std_blood_volume_rate(section_idx, tt) = std_blood_velocity(section_idx, tt) * cross_section_area(section_idx) * 60; % microL/min
-            all_velocity(:, :) = all_velocity(:, :) + current_frame .* mask_sections(:, :, section_idx);
-            Total_cross_section = Total_cross_section + cross_section_area(section_idx);
 
             %     figure(101)
             %     plot(plot_values);
@@ -250,20 +252,19 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
         end
 
-        if ~isempty(avg_blood_volume_rate)
-            total_avg_blood_volume_rate(tt) = sum(avg_blood_volume_rate(:, tt));
-            total_std_blood_volume_rate(tt) = mean(std_blood_volume_rate(:, tt));
-            %         total_std_blood_volume_rate(tt) = (std(all_velocity(all_velocity~=0))*Total_cross_section*60);% microL/min; %FIXME calculer le vrai std
-        else
-            total_avg_blood_volume_rate(tt) = 0;
-            total_std_blood_volume_rate(tt) = 0;
-        end
+        velocity_profiles{section_idx} = profils;
+
+        avg_blood_volume_rate(section_idx, :) = filloutliers(avg_blood_volume_rate(section_idx, :), 'linear');
+        std_blood_volume_rate(section_idx, :) = filloutliers(std_blood_volume_rate(section_idx, :), 'linear');
 
     end % section_idx
 
+    total_avg_blood_volume_rate = sum(avg_blood_volume_rate, 1);
+    total_std_blood_volume_rate = mean(std_blood_volume_rate, 1); % propagation des incertitudes -> devrait être la somme également
+
     if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
 
-        viscosity(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
+        bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
         % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
     end
