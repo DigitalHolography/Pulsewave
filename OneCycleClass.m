@@ -623,13 +623,13 @@ classdef OneCycleClass
                 fclose(fileID);
                 clear exec_times
 
-                pulseVelocity(obj.M0_data_video, maskArtery, ToolBox, obj.directory)
-                disp('PulseVelocity timing :')
-                time_pulsevelocity = total_time;
-                disp(time_pulsevelocity)
-                save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
+                % pulseVelocity(obj.M0_data_video, maskArtery, ToolBox, obj.directory)
+                % disp('PulseVelocity timing :')
+                % time_pulsevelocity = total_time;
+                % disp(time_pulsevelocity)
+                % save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
                 %exec time details
-                fileID = fopen(path_file_txt_exe_times, 'a+');
+                % fileID = fopen(path_file_txt_exe_times, 'a+');
 
                 if obj.flag_velocity_analysis
                     tic

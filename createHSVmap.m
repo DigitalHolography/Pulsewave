@@ -9,8 +9,7 @@ function [hue, sat, val, cmap] = createHSVmap(Im, mask, hueValMin, hueValMax)
     hue = (Im_hue * (hueValMax - hueValMin) + hueValMin) .* mask;
     %sat = (1.0-0.5*Im).*mask;
     sat = Ones .* mask;
-    val = imgaussfilt(Im, 3);
-    %val = Ones.*mask;
+    val = Im;
     tolVal = [0.01, 0.99];
     val = mat2gray(imadjust(val, stretchlim(val, tolVal)));
 
