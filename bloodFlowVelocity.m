@@ -62,7 +62,7 @@ function [] = bloodFlowVelocity(v_RMS_all, v_one_cycle, maskArtery, maskVein, vi
         hue_mean = (hue_artery_mean + hue_vein_mean)  - (hue_artery_mean + hue_vein_mean)./2.*(maskArtery&maskVein);
         sat_mean = (sat_artery_mean + sat_vein_mean)  - (sat_artery_mean + sat_vein_mean)./2.*(maskArtery&maskVein);
         flowVideoRGB_mean = hsv2rgb(hue_mean, sat_mean, val_mean);
-        flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein - maskArtery&maskVein) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* M0_norm_mean;
+        flowVideoRGB_mean = flowVideoRGB_mean .* (maskArtery + maskVein - (maskArtery&maskVein)) + ones(Nx, Ny, 3) .* ~(maskArtery + maskVein) .* M0_norm_mean;
         imwrite(flowVideoRGB_mean, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMSMean.png")))
 
         parfor frameIdx = 1:N_frame

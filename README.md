@@ -30,6 +30,10 @@ To install PulseWave, follow these steps:
 
 - A valid MATLAB license is required to run PulseWave.
 - A very performant computer is required to run PulseWave. 
+- Parallel Computing Toolbox
+- Curve Fitting Toolbox
+- Signal Processing Toolbox
+- Image Processing Toolbox
 
 ## Getting Started
 

@@ -3,9 +3,8 @@ function bloodFlowVelocityFullField(v_RMS_all, v_one_cycle, maskArtery, maskVein
     %FIXME prctile 10% Y = percentil(X,[5 95])
     tic
     PW_params = Parameters_json(path);
-    Im = rescale(mean(videoM0, 3));
-    [Nx, Ny, N_frame] = size(v_RMS_all);
-        ImgM0 = rescale(mean(videoM0, 3));
+     [Nx, Ny, N_frame] = size(v_RMS_all);
+    ImgM0 = rescale(mean(videoM0, 3));
 
 
     %% Init of histogram axis
@@ -62,6 +61,21 @@ function bloodFlowVelocityFullField(v_RMS_all, v_one_cycle, maskArtery, maskVein
     
         X = linspace(v_min_all, v_max_all, v_max_all - v_min_all + 1);
         histo_artery = zeros(size(X, 2), nbCircles);
+        for jj = 1:nbCircles % to parforize (change createMaskSection)
+            radiusmid = radius0+jj*deltar;
+            for j = 1:nbCircles
+                
+                r1 = radiusmid+j*deltarcentral/2;
+                r2 = radiusmid-j*deltarcentral/2;
+                [maskSection] = createMaskSection(ImgM0, maskArtery,r1,r2,sprintf('_mask_artery_section_velocity_growing_sections_%d.png',j), ToolBox, path);
+                maskArtery_section = maskArtery & maskSection;
+                non_zero_points = find(maskArtery_section);
+                mean_velocity_in_growing_section(jj,j) = mean(v_RMS_frame(non_zero_points),[1,2]);
+                std_velocity_in_growing_section(jj,j) = std(v_RMS_frame(non_zero_points));
+                growing_gap(jj,j) = r2-r1;
+            end
+        end
+        radiusmid = (radius1+radius2)/2;
         for j = 1:nbCircles % to parforize (change createMaskSection)
     
             r1 = radiusmid+j*deltarcentral/2;
@@ -82,10 +96,7 @@ function bloodFlowVelocityFullField(v_RMS_all, v_one_cycle, maskArtery, maskVein
     
             end
             histo_artery(:, j) = histo_artery(:, j)/sum(maskArtery_section,[1,2]);
-            non_zero_points = find(maskArtery_section);
-            mean_velocity_in_growing_section(j) = mean(v_RMS_frame(non_zero_points),[1,2]);
-            std_velocity_in_growing_section(j) = std(v_RMS_frame(non_zero_points));
-            growing_gap(j) = r1-r2;
+            
             number_of_points(j)=sum(maskArtery_section,[1,2]);
     
             r1 = radius0+j*deltar;
@@ -126,19 +137,15 @@ function bloodFlowVelocityFullField(v_RMS_all, v_one_cycle, maskArtery, maskVein
         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf('bloodVelocityinArterieshistogramxNumpoints.png')))
 
         plot_velocity_funnel = figure(162);
-    
-        
-        curve1 = mean_velocity_in_growing_section + 0.5 * std_velocity_in_growing_section;
-        curve2 = mean_velocity_in_growing_section - 0.5 * std_velocity_in_growing_section;
-        rad2 = [growing_gap, fliplr(growing_gap)];
-        inBetween = [curve1, fliplr(curve2)];
-        
-        fill(rad2, inBetween, Color_std);
-        hold on;
-        plot(rad, curve1, "Color", Color_std, 'LineWidth', 2);
-        plot(rad, curve2, "Color", Color_std, 'LineWidth', 2);
-        plot(rad, mean_velocity_in_section_only, '-k', 'LineWidth', 2);
+        for i=1:nbCircles   
+            plot(growing_gap(i,:), mean_velocity_in_growing_section(i,:), 'LineWidth', 2);
+            hold on
+        end
         axis tight;
+        aa = axis;
+        aa(3)=0;
+        aa(4)=1.3*aa(4);
+        axis(aa);
         hold off
         
         ylabel('Velocity (mm.s^{-1})')

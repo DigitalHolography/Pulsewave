@@ -709,6 +709,7 @@ classdef OneCycleClass
                     if obj.flag_velocity_analysis
                         tic
                         bloodFlowVelocity(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, obj.directory)
+                        bloodFlowVelocityFullField(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.dataM0_interp{n}, FlowVideoRGB, ToolBox, obj.directory)
                         disp('Blood Flow Velocity timing :')
                         time_velo = toc;
                         disp(time_velo)
@@ -727,6 +728,7 @@ classdef OneCycleClass
                     if obj.flag_bloodVolumeRate_analysis
                         tic
                         bloodVolumeRate(maskArtery, maskVein, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                        bloodVolumeRateForAllRadii(maskArtery, maskVein, maskSectionArtery, v_RMS_all, obj.dataM0_interp{1}, obj.reference_interp{n}, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                         disp('Blood Volume Rate timing :')
                         time_flowrate = toc;
                         disp(time_flowrate)
