@@ -9,9 +9,9 @@ PW_params = Parameters_json(path);
 
 implay(rescale(U).*mask);
 
-[N, M] = size(mask);
+[numX, numY] = size(mask);
 N_frame = size(U, 3);
-[x, y] = meshgrid(1:M, 1:N);
+[x, y] = meshgrid(1:numY, 1:numX);
 
 timePeriod = ToolBox.stride / ToolBox.fs / 1000;
 
@@ -19,14 +19,14 @@ x_bary = ToolBox.x_barycentre;
 y_bary = ToolBox.y_barycentre;
 
 % radii approach
-% m = floor((N+M)/2/10);
+% m = floor((numX+numY)/2/10);
 % 
 % list_radius = linspace(0,1,m+1);
 % U_r = zeros([m,N_frame]);
 % 
 % parfor i=1:m
-%     c1 = sqrt((x-x_bary).^2+(y-y_bary).^2)<list_radius(i)* (N+M)/2;
-%     c2 = sqrt((x-x_bary).^2+(y-y_bary).^2)<list_radius(i+1)* (N+M)/2;
+%     c1 = sqrt((x-x_bary).^2+(y-y_bary).^2)<list_radius(i)* (numX+numY)/2;
+%     c2 = sqrt((x-x_bary).^2+(y-y_bary).^2)<list_radius(i+1)* (numX+numY)/2;
 %     U_r(i,:) = (sum(U.*(xor(c1,c2)&mask),[1,2])/nnz(xor(c1,c2)&mask));
 % end
 % 
@@ -37,7 +37,7 @@ y_bary = ToolBox.y_barycentre;
 % 
 dxx = 5;
 skel = bwskel(mask);
-grid = ones([M,N])<0;
+grid = ones([numY,numX])<0;
 grid(1:dxx:end,:)=true;
 grid(:,1:dxx:end)=true;
 interpoints = grid& skel; % get points interpolating with grid
@@ -78,7 +78,7 @@ U_x = single(zeros([numpoints,N_frame]));
 for i=1:numpoints
     sk_mask = ones(size(mask))<0;
     sk_mask(absy(i),absx(i)) = true;
-    sectio = imdilate(sk_mask, strel('disk', floor(N * PW_params.masks_radius/5)))&mask;
+    sectio = imdilate(sk_mask, strel('disk', floor(numX * PW_params.masks_radius/5)))&mask;
     L(sectio) = i;
     U_x(i,:)=squeeze(mean(U.*sectio,[1,2]));
 end

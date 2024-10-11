@@ -10,23 +10,23 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
         name_section = 'V';
     end
 
-    nb_section = size(locs, 1);
+    numSections = size(locs, 1);
 
     PW_params = Parameters_json(path);
-    subImg_cell = cell([1 nb_section]);
-    subVideo_cell = cell([1 nb_section]);
+    subImg_cell = cell([1 numSections]);
+    subVideo_cell = cell([1 numSections]);
 
-    [M, N, T_max] = size(v_RMS);
-    width_cross_section = zeros(nb_section, 1);
-    cross_section_area = zeros(nb_section, 1);
-    avg_blood_velocity = zeros(nb_section, T_max);
-    avg_blood_volume_rate = zeros(nb_section, T_max);
-    std_blood_velocity = zeros(nb_section, T_max);
-    std_blood_volume_rate = zeros(nb_section, T_max);
+    [numX, numY, numFrames] = size(v_RMS);
+    width_cross_section = zeros(numSections, 1);
+    cross_section_area = zeros(numSections, 1);
+    avg_blood_velocity = zeros(numSections, numFrames);
+    avg_blood_volume_rate = zeros(numSections, numFrames);
+    std_blood_velocity = zeros(numSections, numFrames);
+    std_blood_volume_rate = zeros(numSections, numFrames);
     cross_section_mask = zeros(size(mask));
-    mask_sections = zeros(M, N, nb_section);
-    total_avg_blood_volume_rate = zeros(T_max, 1);
-    total_std_blood_volume_rate = zeros(T_max, 1);
+    mask_sections = zeros(numX, numY, numSections);
+    total_avg_blood_volume_rate = zeros(numFrames, 1);
+    total_std_blood_volume_rate = zeros(numFrames, 1);
 
     % %% VARIABLES FOR VELOCITY PROFILE VIDEO
 
@@ -37,8 +37,8 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     img_v_artery = squeeze(mean(v_RMS, 3)) .* mask;
     v_RMS_masked = v_RMS .* mask;
-    velocity_profiles = cell([1 nb_section]);
-    for section_idx = 1:nb_section % section_idx: vessel_number
+    velocity_profiles = cell([1 numSections]);
+    for section_idx = 1:numSections % section_idx: vessel_number
 
         if width(section_idx) > 2
             subImgHW = round(width(section_idx) * PW_params.cropSection_scaleFactorWidth);
@@ -84,7 +84,7 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             subImg_cell{section_idx} = subImg;
             subVideo = v_RMS_masked(yRange, xRange, :);
 
-            for tt = 1:T_max
+            for tt = 1:numFrames
                 subVideo(:, :, tt) = imrotate(cropCircle(subVideo(:, :, tt)), tilt_angle_list(section_idx), 'bilinear', 'crop');
             end
 
@@ -197,9 +197,9 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
 
     %% Blood Volume Rate computation
 
-    for section_idx = 1:nb_section
-        profils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)),T_max],'single');
-        for tt = 1:T_max
+    for section_idx = 1:numSections
+        profils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)), numFrames],'single');
+        for tt = 1:numFrames
 
             current_frame = v_RMS(:, :, tt);
 

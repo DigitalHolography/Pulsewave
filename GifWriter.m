@@ -4,12 +4,12 @@ classdef GifWriter < handle
 
     properties
         filename
-        gifLength
         images
         timePeriod
         timePeriodMin
-        Nx
-        Ny
+        numX
+        numY
+        numFrames
         isRGB
     end
 
@@ -23,7 +23,7 @@ classdef GifWriter < handle
             obj.filename = filename;
             obj.timePeriodMin = timePeriodMin;
             obj.timePeriod = timePeriod; % ToolBox.stride / ToolBox.fs / 1000
-            obj.gifLength = gifLength;
+            obj.numFrames = gifLength;
 
         end
 
@@ -38,14 +38,14 @@ classdef GifWriter < handle
             end
 
             if isempty(obj.images)
-                obj.Nx = size(image, 1);
-                obj.Ny = size(image, 2);
+                obj.numX = size(image, 1);
+                obj.numY = size(image, 2);
                 if size(image, 3) == 3
                     obj.isRGB = true;
-                    obj.images = zeros(obj.Nx, obj.Ny, 3, obj.gifLength, 'like', image);
+                    obj.images = zeros(obj.numX, obj.numY, 3, obj.numFrames, 'like', image);
                 else
 
-                    obj.images = zeros(obj.Nx, obj.Ny, 1, obj.gifLength, 'like', image);
+                    obj.images = zeros(obj.numX, obj.numY, 1, obj.numFrames, 'like', image);
                 end
             end
 
@@ -59,14 +59,14 @@ classdef GifWriter < handle
 
             if obj.timePeriod < obj.timePeriodMin
 
-                num_T = floor(obj.gifLength * obj.timePeriod / obj.timePeriodMin);
+                num_T = floor(obj.numFrames * obj.timePeriod / obj.timePeriodMin);
 
                 if obj.isRGB
-                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
-                    images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.Nx obj.Ny num_T], "nearest");
-                    images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.Nx obj.Ny num_T], "nearest");
+                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.numX obj.numY num_T], "nearest");
+                    images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.numX obj.numY num_T], "nearest");
+                    images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.numX obj.numY num_T], "nearest");
                 else
-                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.Nx obj.Ny num_T], "nearest");
+                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.numX obj.numY num_T], "nearest");
                 end
 
                 for tt = 1:num_T
@@ -88,14 +88,14 @@ classdef GifWriter < handle
 
             else
 
-                for tt = 1:obj.gifLength
+                for tt = 1:obj.numFrames
                     if obj.isRGB
                         [A, map] = rgb2ind(obj.images(:, :, :, tt), 256);
                     else
                         [A, map] = gray2ind(obj.images(:, :, :, tt), 256);
                     end
 
-                    waitbar((tt - 1) / obj.gifLength, h);
+                    waitbar((tt - 1) / obj.numFrames, h);
 
                     if tt == 1
                         imwrite(A, map, obj.filename, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriod);

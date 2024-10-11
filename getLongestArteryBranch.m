@@ -1,12 +1,12 @@
 function [maskLongArtery,L,adjMatrix] = getLongestArteryBranch(maskArtery,U,ToolBox,path)
 % Returns the longest artery branch mask
 PW_params = Parameters_json(path);
-[Nx, Ny] = size(maskArtery);
+[numX, numY] = size(maskArtery);
 
 %% Skeletonize and label the individual branches
 skel = bwskel(maskArtery);
-[x, y] = meshgrid(1:Ny, 1:Nx);
-cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius/6 * (Ny + Nx) / 2; % making a mask to cut the center
+[x, y] = meshgrid(1:numY, 1:numX);
+cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius/6 * (numY + numX) / 2; % making a mask to cut the center
 
 skel = skel & ~cercleMask; % takes out arteries near the center 
 [L,n] = bwlabel(skel&~imdilate(bwmorph(skel, 'branchpoints'), strel('disk', 2))); % labeling the skeleton with branch points off to get individual branches
@@ -26,7 +26,7 @@ end
 %% Get the label mask back to initial size
 for i=1:n % for each individual branch
     sk_mask = L==i;
-    L(bwareafilt(imdilate(sk_mask, strel('disk', floor(Nx * PW_params.masks_radius/5)))&maskArtery,1)) = i;
+    L(bwareafilt(imdilate(sk_mask, strel('disk', floor(numX * PW_params.masks_radius/5)))&maskArtery,1)) = i;
 end
 
 figure(72)

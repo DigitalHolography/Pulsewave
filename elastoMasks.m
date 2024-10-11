@@ -2,8 +2,8 @@
 V = VideoReader('X:\230705_BRZ0546\230705_BRZ0546_OD1_1_0\avi\230705_BRZ0546_OD1_1_0_M0.avi');
 videoM0 = zeros(V.Height, V.Width, V.NumFrames);
 
-for n = 1:V.NumFrames
-    videoM0(:, :, n) = rgb2gray(read(V, n));
+for frameIdx = 1:V.NumFrames
+    videoM0(:, :, frameIdx) = rgb2gray(read(V, frameIdx));
 end
 
 %% loading parameters and compute useful variables
@@ -17,24 +17,24 @@ masks_showIntermediateFigures = true;
 RG_veinConditionThreshold = 0.45;
 RG_ArteryConditionThreshold = 3;
 
-[N, M, L] = size(videoM0);
-% tmpvideo = zeros(N*2-1,M*2-1,L);
-% for i = 1:L
+[numX, numY, numFrames] = size(videoM0);
+% tmpvideo = zeros(numX*2-1,numY*2-1,numFrames);
+% for i = 1:numFrames
 % tmpvideo(:,:,i) = interp2(videoM0(:,:,i),1);
 % end
 % videoM0 = tmpvideo;
-% [N,M,L] = size(videoM0);
+% [numX,numY,numFrames] = size(videoM0);
 
-for pp = 1:L
-    videoM0(:, :, pp) = flat_field_correction(squeeze(videoM0(:, :, pp)), 0.07 * (M + N) / 2, 0);
+for pp = 1:numFrames
+    videoM0(:, :, pp) = flat_field_correction(squeeze(videoM0(:, :, pp)), 0.07 * (numY + numX) / 2, 0);
 
 end
 
 meanIm = squeeze(mean(videoM0, 3));
 blurred_mask = imgaussfilt(double(meanIm), 0.05 * size(meanIm, 1), 'Padding', 0);
 [y_barycentre, x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
-[x, y] = meshgrid(1:M, 1:N);
-cercle_mask = sqrt((x - x_barycentre) .^ 2 + (y - y_barycentre) .^ 2) <= masks_radius * (M + N) / 2;
+[x, y] = meshgrid(1:numY, 1:numX);
+cercle_mask = sqrt((x - x_barycentre) .^ 2 + (y - y_barycentre) .^ 2) <= masks_radius * (numY + numX) / 2;
 
 videoM0_zero = videoM0 - meanIm;
 
@@ -46,11 +46,11 @@ vesselnessIm = vesselness_filter(meanIm, arteryMask_vesselness_sigma, arteryMask
 % compute pulse in 3 dimentions for correlation in all vessels
 pulse = squeeze(mean(videoM0 .* (vesselnessIm > 0), [1 2]));
 pulse_init = pulse - mean(pulse, "all");
-pulse_init_3d = zeros(N, M, L);
+pulse_init_3d = zeros(numX, numY, numFrames);
 
-for nn = 1:N
+for nn = 1:numX
 
-    for mm = 1:M
+    for mm = 1:numY
         pulse_init_3d(nn, mm, :) = pulse_init;
     end
 
@@ -81,11 +81,11 @@ clear pulse pulse_init pulse_init_3d correlationMatrix_artery;
 % compute pulse in 3 dimentions for correlation in main arteries
 pulse = squeeze(mean(videoM0 .* firstMaskArtery, [1 2]));
 pulse_init = pulse - mean(pulse, "all");
-pulse_init_3d = zeros(N, M, L);
+pulse_init_3d = zeros(numX, numY, numFrames);
 
-for nn = 1:N
+for nn = 1:numX
 
-    for mm = 1:M
+    for mm = 1:numY
         pulse_init_3d(nn, mm, :) = pulse_init;
     end
 
@@ -95,10 +95,10 @@ end
 CorrelationMatrix = squeeze(mean((videoM0_zero .* pulse_init_3d), 3));
 
 % compute mean correction correlation to find coroid maximums
-meanVideoM0 = zeros(N, M, L);
+meanVideoM0 = zeros(numX, numY, numFrames);
 
-for ll = 1:L
-    meanVideoM0(:, :, L) = meanIm;
+for ll = 1:numFrames
+    meanVideoM0(:, :, numFrames) = meanIm;
 end
 
 % Create correlation matrix to segment vein and arteries

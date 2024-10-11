@@ -1,13 +1,13 @@
 function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
 
     nb_section = size(SubImage_cell, 2);
-    N_frame = size(SubVideo_cell{1}, 3);
+    numFrames = size(SubVideo_cell{1}, 3);
     n_interp = 100;
     %interpolation parameter
     k = 2;
 
-    velocity_profiles = zeros(n_interp, N_frame, nb_section);
-    velocity_profiles_std = zeros(n_interp, N_frame, nb_section);
+    velocity_profiles = zeros(n_interp, numFrames, nb_section);
+    velocity_profiles_std = zeros(n_interp, numFrames, nb_section);
 
     for ii = 1:nb_section
         subImg = SubImage_cell{ii};
@@ -67,11 +67,11 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
     % x for normalize wall length for fiting
     x = linspace(-1, 1, length(average_velocity_profile(:, 1)));
 
-    Vmax_list = zeros(N_frame, 1);
-    alpha_list = zeros(N_frame, 1);
-    beta_list = zeros(N_frame, 1);
-    eta_list = zeros(N_frame, 1);
-    viscosity_list = zeros(N_frame, 1);
+    Vmax_list = zeros(numFrames, 1);
+    alpha_list = zeros(numFrames, 1);
+    beta_list = zeros(numFrames, 1);
+    eta_list = zeros(numFrames, 1);
+    viscosity_list = zeros(numFrames, 1);
 
     average_velocity_profile_systole = average_velocity_profile(:, idx_syst);
     average_velocity_profile_diastole = average_velocity_profile(:, end);
@@ -92,9 +92,9 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
     Color_std = [0.8 0.8 0.8];
     fullTime = 1:n_interp;
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityProfile")), timePeriod, 0.04, N_frame);
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityProfile")), timePeriod, 0.04, numFrames);
 
-    for frameIdx = 1:N_frame
+    for frameIdx = 1:numFrames
         tmp_velocity_profile = squeeze(average_velocity_profile(:, frameIdx));
         tmp_velocity_profile_plus_std = tmp_velocity_profile + 0.5 * average_velocity_profile_std(:, frameIdx);
         tmp_velocity_profile_minus_std = tmp_velocity_profile - 0.5 * average_velocity_profile_std(:, frameIdx);
@@ -207,7 +207,7 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
     ylim([0.9 * mimin 1.1 * mamax]);
     ylabel('velocity (mm/s)', 'FontSize', 14);
 
-    fullTime = linspace(0, N_frame * ToolBox.stride / ToolBox.fs / 1000, N_frame);
+    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
     figure(666)
     plot(fullTime, viscosity_list,'k-','LineWidth', 2)

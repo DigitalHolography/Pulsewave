@@ -5,18 +5,18 @@ function [ArterySpectrum, BgSpectrum, DeltaSpectrum, sizeSHFreq, Lorenz_Arteries
     fs = ToolBox.fs;
     f1 = ToolBox.f1;
     f2 = ToolBox.f2;
-    [M, N, ~] = size(SH);
+    [numY, numX, ~] = size(SH);
 
     sizeSHFreq = size(SH, 3);
     ArterySpectrum = zeros(1, sizeSHFreq);
     BgSpectrum = zeros(1, sizeSHFreq);
 
-    ArterySpectrumM1M0 = zeros(M, N, sizeSHFreq);
-    BgSpectrumM1M0 = zeros(M, N, sizeSHFreq);
-    ArterySpectrumM2M0 = zeros(M, N, sizeSHFreq);
-    BgSpectrumM2M0 = zeros(M, N, sizeSHFreq);
+    ArterySpectrumM1M0 = zeros(numY, numX, sizeSHFreq);
+    BgSpectrumM1M0 = zeros(numY, numX, sizeSHFreq);
+    ArterySpectrumM2M0 = zeros(numY, numX, sizeSHFreq);
+    BgSpectrumM2M0 = zeros(numY, numX, sizeSHFreq);
 
-    Ones = ones(M, N);
+    Ones = ones(numY, numX);
 
     %% integration interval
     % convert frequencies to indices
