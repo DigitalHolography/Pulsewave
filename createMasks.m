@@ -101,8 +101,8 @@ clear arterialPulse arterialPulse_centered venousPulse venousPulse_centered;
 R_ArteryVessel = R_ArterialPulse .* vesselnessM0 .* maskVesselness;
 R_VeinVessel = R_VenousPulse .* vesselnessM0 .* maskVesselness;
 
-imwrite(rescale(R_ArteryVessel), fullfile(ToolBox.PW_path_png, 'mask', 'step', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_3_R_ArteryVessel.png')))
-imwrite(rescale(R_VeinVessel), fullfile(ToolBox.PW_path_png, 'mask', 'step', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_3_R_VeinVessel.png')))
+imwrite(rescale(R_ArteryVessel), fullfile(ToolBox.PW_path_png, 'mask', 'step', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_2_R_ArteryVessel.png')))
+imwrite(rescale(R_VeinVessel), fullfile(ToolBox.PW_path_png, 'mask', 'step', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_2_R_VeinVessel.png')))
 
 % Segmentation based on Otsu's criteria for arteries and veins
 numClassesArtery = 5;

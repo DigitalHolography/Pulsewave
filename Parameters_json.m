@@ -56,6 +56,7 @@ classdef Parameters_json < handle
         elasWave_gaussFiltPadding
         elasWave_butterFiltOrder
         elasWave_butterFiltBand
+        exportGifs
         systoleThreshold
         flatField_gwRatio
         flatField_border
@@ -144,6 +145,7 @@ classdef Parameters_json < handle
                 obj.radius_gap = parsedData.RadiusGap;
                 obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
                 obj.veins_analysis = parsedData.VeinsAnalysis;
+                obj.exportGifs = parsedData.ExportGifs;
 
                 obj.resistivity_gaussFiltSigma = parsedData.ResistivityIndex.GaussianFilterSigma;
                 obj.resistivity_satAmp = parsedData.ResistivityIndex.AmplitudeSaturationPonderation;

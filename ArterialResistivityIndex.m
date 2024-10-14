@@ -1,4 +1,7 @@
-function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox)
+function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox, path)
+
+    PW_params = Parameters_json(path);
+    exportGif = PW_params.exportGifs;
 
     disp('arterial resistivity and pulsatility...');
 
@@ -81,32 +84,34 @@ function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox)
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.eps')))
 
-    f71 = figure(71);
-    f71.Position = [300, 300, 570, 630];
+    if exportGif
+        f71 = figure(71);
+        f71.Position = [300, 300, 570, 630];
 
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialResistivityIndex")), timePeriod, 0.04, numFrames);
+        timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+        gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialResistivityIndex")), timePeriod, 0.04, numFrames);
 
-    for frameIdx = 1:numFrames
-        imagesc(ARIvideoRGB(:, :, :, frameIdx));
-        title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
-        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-        c.Label.String = 'Arterial resistivity index';
-        c.Label.FontSize = 12;
+        for frameIdx = 1:numFrames
+            imagesc(ARIvideoRGB(:, :, :, frameIdx));
+            title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
+            axis image
+            axis off
+            set(gca, 'LineWidth', 2);
+            fontsize(gca, 12, "points");
+            c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
+            c.Label.String = 'Arterial resistivity index';
+            c.Label.FontSize = 12;
 
-        colormap(cmap);
+            colormap(cmap);
 
-        frame = getframe(f71, [40 10 500 600]);
-        gifWriter.write(frame, frameIdx);
+            frame = getframe(f71, [40 10 500 600]);
+            gifWriter.write(frame, frameIdx);
 
+        end
+
+        gifWriter.generate();
+        gifWriter.delete();
     end
-
-    gifWriter.generate();
-    gifWriter.delete();
 
     %% Arterial Pulsatility Index
 

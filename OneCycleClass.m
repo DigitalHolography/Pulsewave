@@ -486,6 +486,7 @@ classdef OneCycleClass
             % progress_bar = waitbar(0,'');
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
+            exportGifs = PW_params.exportGifs;
             totalTime = tic;
 
             obj.k = PW_params.k;
@@ -564,30 +565,30 @@ classdef OneCycleClass
             fclose(fileID);
 
             %% Video M0 gif
+            if exportGifs
+                fileID = fopen(path_file_txt_exe_times, 'a+');
+                fprintf(fileID, '\r\n');
+                fclose(fileID);
 
-            fileID = fopen(path_file_txt_exe_times, 'a+');
-            fprintf(fileID, '\r\n');
-            fclose(fileID);
+                tic
+                [numX, numY, numFrames] = size(obj.M0_disp_video);
 
-            tic
-            [numX, numY, numFrames] = size(obj.M0_disp_video);
+                timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+                videoM0Rescaled = rescale(obj.M0_disp_video);
+                writeGifOnDisc(videoM0Rescaled, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod)
 
-            timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-            videoM0Rescaled = rescale(obj.M0_disp_video);
-            writeGifOnDisc(videoM0Rescaled, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod)
+                imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
 
-            imwrite(rescale(mean(videoM0Rescaled, 3)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, "videoM0.png")));
+                clear videoM0Rescaled;
+                disp('M0 gif animation timing :')
+                time = toc;
+                disp(time)
 
-            clear videoM0Rescaled;
-            disp('M0 gif animation timing :')
-            time = toc;
-            disp(time)
-
-            save_time(path_file_txt_exe_times, 'M0 Gif', time)
-            fileID = fopen(path_file_txt_exe_times, 'a+');
-            fprintf(fileID, '\r\n----------\r\n');
-            fclose(fileID);
-
+                save_time(path_file_txt_exe_times, 'M0 Gif', time)
+                fileID = fopen(path_file_txt_exe_times, 'a+');
+                fprintf(fileID, '\r\n----------\r\n');
+                fclose(fileID);
+            end
             %% Creating Masks
             % waitbar(0.1,progress_bar,"Creating Masks");
 
@@ -657,18 +658,18 @@ classdef OneCycleClass
                 % fileID = fopen(path_file_txt_exe_times, 'a+');
 
                 if obj.flag_velocity_analysis
-                    tic
+                    bloodFlowVelocityTimer = tic;
                     bloodFlowVelocity(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_disp_video, ToolBox, obj.directory)
-                    bloodFlowVelocityFullField(v_RMS_all, v_RMS_one_cycle, maskArtery, maskVein, obj.M0_data_video, FlowVideoRGB, ToolBox, obj.directory)
+                    bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
                     disp('Blood Flow Velocity timing :')
-                    time_velo = toc;
+                    time_velo = toc(bloodFlowVelocityTimer);
                     disp(time_velo)
                     save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
                 end
 
                 if obj.flag_ARI_analysis
                     tic
-                    ArterialResistivityIndex(vOneCycle, obj.M0_disp_video, maskArtery, ToolBox);
+                    ArterialResistivityIndex(vOneCycle, obj.M0_disp_video, maskArtery, ToolBox, obj.directory);
                     disp('ArterialResistivityIndex timing :')
                     time_arterial_res = toc;
                     disp(time_arterial_res)
