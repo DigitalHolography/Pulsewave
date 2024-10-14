@@ -183,30 +183,32 @@ function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox, 
 
     f73 = figure(73);
     f73.Position = [300, 300, 570, 630];
+    
+    if exportGifs
+        timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+        gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialPulsatilityIndex")), timePeriod, 0.04, numFrames);
 
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialPulsatilityIndex")), timePeriod, 0.04, numFrames);
+        for frameIdx = 1:numFrames
+            imagesc(APIvideoRGB(:, :, :, frameIdx));
+            title(strcat('Arterial pulsatility index value : ', sprintf(" %3.2f", API)));
+            axis image
+            axis off
+            set(gca, 'LineWidth', 2);
+            fontsize(gca, 12, "points");
+            c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
+            c.Label.String = 'Arterial pulsatility index';
+            c.Label.FontSize = 12;
 
-    for frameIdx = 1:numFrames
-        imagesc(APIvideoRGB(:, :, :, frameIdx));
-        title(strcat('Arterial pulsatility index value : ', sprintf(" %3.2f", API)));
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
-        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-        c.Label.String = 'Arterial pulsatility index';
-        c.Label.FontSize = 12;
+            colormap(cmap);
 
-        colormap(cmap);
+            frame = getframe(f73, [40 10 500 600]);
+            gifWriter.write(frame, frameIdx);
 
-        frame = getframe(f73, [40 10 500 600]);
-        gifWriter.write(frame, frameIdx);
+        end
 
+        gifWriter.generate();
+        gifWriter.delete();
     end
-
-    gifWriter.generate();
-    gifWriter.delete();
 
     close all
 

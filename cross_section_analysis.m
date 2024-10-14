@@ -44,8 +44,8 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             subImgHW = round(width(section_idx) * PW_params.cropSection_scaleFactorWidth);
             %FIXME bords d IMG,
 
-            xRange = max(round(-subImgHW / 2) + locs(section_idx, 2),1):min(round(subImgHW / 2) + locs(section_idx, 2),N);
-            yRange = max(round(-subImgHW / 2) + locs(section_idx, 1),1):min(round(subImgHW / 2) + locs(section_idx, 1),M);
+            xRange = max(round(-subImgHW / 2) + locs(section_idx, 2),1):min(round(subImgHW / 2) + locs(section_idx, 2),numX);
+            yRange = max(round(-subImgHW / 2) + locs(section_idx, 1),1):min(round(subImgHW / 2) + locs(section_idx, 1),numY);
             subImg = img_v_artery(yRange, xRange);
 
             %make disk mask
