@@ -190,6 +190,10 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             mask_sections(:, :, section_idx) = mask_current_slice;
 
         end
+        
+        if ~isempty(force_width)
+            width_cross_section(section_idx) = force_width;
+        end
 
         cross_section_area(section_idx) = pi * ((width_cross_section(section_idx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     end
