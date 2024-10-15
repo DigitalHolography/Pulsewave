@@ -261,11 +261,11 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
     
     plot(fullTime(index_start), 2.5*mean_bvr_t_value, 'k|', 'MarkerSize', 10); 
     plot(fullTime(index_end), 2.5*mean_bvr_t_value, 'k|', 'MarkerSize', 10); 
-    plot(fullTime(index_start:index_end),repmat(2.5*mean_std_bvr_t,index_end-index_start+1),'-k');
+    plot(fullTime(index_start:index_end),repmat(2.5*mean_bvr_t_value,index_end-index_start+1),'-k');
     legend({'','','','',sprintf('mean = %f µL/min',mean_bvr_t_value),'',''});
     axis tight;
     aa = axis;
-    %aa(3)=0;
+    aa(3)=0;
     aa(4)=1.3*aa(4);
     axis(aa);
     hold off
