@@ -65,21 +65,27 @@ classdef pulse < matlab.apps.AppBase
                 app.files{end + 1} = OneCycleClass(path);
 
                 % register
+                fprintf("Video Registering\n")
                 app.files{end} = app.files{end}.registerVideo();
 
                 % crop videos
+                fprintf("Video Cropping\n")
                 app.files{end} = app.files{end}.cropAllVideo();
 
                 % moment normalize
+                fprintf("Moment Normalizing\n")
                 app.files{end} = app.files{end}.MomentNormalize();
 
                 % Video resize (preprocess interpolation interpolate)
+                fprintf("Video Resizing\n")
                 app.files{end} = app.files{end}.VideoResize();
 
                 % interpolate
+                fprintf("Video Interpolation\n")
                 app.files{end} = app.files{end}.Interpolate();
 
                 % remove outliers
+                fprintf("Video Outlier Cleaning\n")
                 app.files{end} = app.files{end}.RemoveOutliers();
 
                 %% End

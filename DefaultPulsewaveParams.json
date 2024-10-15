@@ -16,8 +16,8 @@
     "Radius gap" : 0.01,
     "Gaussian Filter Size For Barycentre" : 0.02,
     "Veins Analysis" : 1,
-    "Export Videos" : 0,
-    "Entire Pulse Analysis" : 0,
+    "Export Videos" : 1,
+    "Entire Pulse Analysis" : 1,
     "Resistivity index" : {
         "Gaussian filter sigma" : 0.7,
         "Amplitude saturation  ponderation" : 0.75,
@@ -32,7 +32,7 @@
         "Local background width" : 2
     },
     "Creation of masks" : {
-        "Vesselnes parameter sigma" : 3,
+        "Vesselnes parameter sigma" : 1,
         "Vesselnes parameter beta" : 0.8,
         "Vesselness Binarization threshold" : 0.35,
         "MagicWand Number of segmented area detected for vessels" : 5,

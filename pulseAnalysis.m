@@ -388,7 +388,7 @@ elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
     tmpM0 = M0_data_video - LocalBKG_vesselM0;
     tmpM2M0 = tmpM2 ./ tmpM0;
     delta_f_RMS = sign(tmpM2M0) .* sqrt(abs(tmpM2M0));
-    clear tmpM2 tmpM0 tmpM2M0
+    clear tmpM2 tmpM0 tmpM2M0 M2_data_video
 
 else % DIFFERENCE LAST
 
@@ -425,7 +425,7 @@ if exportVideos
 
 end
 
-clear f_RMS_background
+clear LocalBackground_in_vessels f_RMS_background
 
 %% Creation of the avg pulse for In-plane arteries ~5min
 

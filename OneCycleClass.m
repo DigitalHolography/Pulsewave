@@ -178,8 +178,8 @@ classdef OneCycleClass
             PW_params = Parameters_json(obj.directory);
             M0_data_mean = mean(obj.M0_data_video, [1 2]);
 
-            obj.f_RMS_video = sqrt(obj.M2_data_video ./ M0_data_video);
-            obj.f_AVG_video = obj.M1_data_video ./ M0_data_video;
+            obj.f_RMS_video = sqrt(obj.M2_data_video ./ obj.M0_data_video);
+            obj.f_AVG_video = obj.M1_data_video ./ obj.M0_data_video;
             obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
 
         end
@@ -393,15 +393,25 @@ classdef OneCycleClass
 
                 for yy = 1:numY
                     tmp_f_RMS_cleaned(xx, yy, :) = filloutliers(tmp_f_RMS(xx, yy, :), 'linear', 'movmedian', window_size);
-                    tmp_f_AVG_cleaned(xx, yy, :) = filloutliers(tmp_f_AVG(xx, yy, :), 'linear', 'movmedian', window_size);
                 end
 
             end
 
             obj.f_RMS_video = tmp_f_RMS_cleaned;
+
+            clear tmp_f_RMS_cleaned tmp_f_RMS
+
+            parfor xx = 1:numX
+
+                for yy = 1:numY
+                    tmp_f_AVG_cleaned(xx, yy, :) = filloutliers(tmp_f_AVG(xx, yy, :), 'linear', 'movmedian', window_size);
+                end
+
+            end
+
             obj.f_AVG_video = tmp_f_AVG_cleaned;
 
-            clear tmp_f_RMS_cleaned tmp_f_AVG_cleaned tmp_f_RMS tmp_f_AVG
+            clear tmp_f_AVG_cleaned tmp_f_AVG
         end
 
         function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference

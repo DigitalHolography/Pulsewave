@@ -20,8 +20,8 @@ if numSys > 0 % we have detected at least two systoles
         %        [idxOutPw, tmp] = discardPulseWaveOutliers( tmp,3);
         %       tmp= smoothdata( tmp,'lowess');
         cyclesSignal(ii, :) = interp1(frame_range, tmp, interp_range);
-        % meanSignal(ii) = mean(meanSignal(ii, :));
     end
+    clear tmp
 
     %check pulse integrity
     pulseMatrix = zeros(numSys, numInterp);
