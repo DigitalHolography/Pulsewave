@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, crossSectionMask, avgVolumeRate_total, stdVolumeRate_total, velocityProfiles, subImg_cell] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles, subImg_cell] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
@@ -259,8 +259,7 @@ for sectionIdx = 1:numSections
 
 end % sectionIdx
 
-avgVolumeRate_total = sum(avgVolumeRate, 1);
-stdVolumeRate_total = sqrt(sum(stdVolumeRate.^2, 1)); % propagation des incertitudes -> devrait être la somme également
+ % propagation des incertitudes -> devrait être la somme également
 
 if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
 

@@ -73,7 +73,7 @@ velocity_profiles_r = cell([numCircles max(nb_sections_artery)]);
 sub_images_r = cell([numCircles max(nb_sections_artery)]);
 
 for i = 1:numCircles
-    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, cross_section_mask_artery, ~, ~, velocity_profiles, subImg_cell] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i);
+    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, subImg_cell] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i);
 
     if length(avg_bloodVolumeRate_artery) < 1
         continue
