@@ -3,10 +3,10 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, crossSect
 %   Detailed explanation goes here FIXME
 
 if strcmp(type_of_vessel, 'artery')
-    fig_idx_start = 60;
+    fig_idx_start = 2000;
     name_section = 'A';
 else
-    fig_idx_start = 80;
+    fig_idx_start = 2100;
     name_section = 'V';
 end
 
@@ -63,10 +63,10 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             projy(:, theta) = squeeze(sum(tmpImg, 2));
         end
 
-        figure(3001)
+        figure(2200)
         imagesc(projx)
 
-        figure(3002)
+        figure(2201)
         imagesc(projy)
         % avi
 
@@ -100,7 +100,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
 
         tmp_section = (section_cut ./ max(section_cut)) * size(section_cut, 1);
 
-        figure(1000 + sectionIdx)
+        figure(2001 + sectionIdx)
         xAx = linspace(0, size(projx, 1), size(projx, 1));
         xAy = linspace(0, size(projx, 2), size(projx, 2));
         imagesc(xAy, xAx, projx)
@@ -260,11 +260,11 @@ for sectionIdx = 1:numSections
 end % sectionIdx
 
 avgVolumeRate_total = sum(avgVolumeRate, 1);
-stdVolumeRate_total = mean(stdVolumeRate, 1); % propagation des incertitudes -> devrait être la somme également
+stdVolumeRate_total = sqrt(sum(stdVolumeRate.^2, 1)); % propagation des incertitudes -> devrait être la somme également
 
 if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
 
-    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
+    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox, path);
     % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
 end

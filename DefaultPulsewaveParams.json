@@ -16,7 +16,8 @@
     "Radius gap" : 0.01,
     "Gaussian Filter Size For Barycentre" : 0.02,
     "Veins Analysis" : 1,
-    "Export Gifs" : 0,
+    "Export Videos" : 0,
+    "Entire Pulse Analysis" : 0,
     "Resistivity index" : {
         "Gaussian filter sigma" : 0.7,
         "Amplitude saturation  ponderation" : 0.75,

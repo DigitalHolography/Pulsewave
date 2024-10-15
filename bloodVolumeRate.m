@@ -3,7 +3,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS_all, M0_disp_video, To
 PW_params = Parameters_json(path);
 
 veins_analysis = PW_params.veins_analysis;
-exportGifs = PW_params.exportGifs;
+exportVideos = PW_params.exportVideos;
 
 mkdir(ToolBox.PW_path_png, 'volumeRate')
 mkdir(ToolBox.PW_path_eps, 'volumeRate')
@@ -104,7 +104,7 @@ smoothVelocityArtery = zeros(numSectionsArtery, numFrames); % avg_blood_velocity
 
 parfor sectionIdx = 1:numSectionsArtery
     smoothVelocityArtery(sectionIdx, :) = smoothdata(avgVelocityArtery(sectionIdx, :), 'lowess');
-    labelsArteries{sectionIdx} = sprintf("A%s", sectionIdx);
+    labelsArteries{sectionIdx} = sprintf("A%d", sectionIdx);
 end
 
 figure(210)
@@ -154,7 +154,7 @@ if veins_analysis
 
     parfor sectionIdx = 1:numSectionsVein
         smoothVelocityVein(sectionIdx, :) = smoothdata(avgVelocityVein(sectionIdx, :), 'lowess');
-        labelsVeins{sectionIdx} = sprintf("V%s", sectionIdx);
+        labelsVeins{sectionIdx} = sprintf("V%d", sectionIdx);
     end
 
     figure(220)
@@ -232,11 +232,11 @@ for sectionIdx = 1:numSectionsArtery
     new_x = x_center + ratio_etiquette * (SubImg_locs_artery(sectionIdx, 2) - x_center);
     new_y = y_center + ratio_etiquette * (SubImg_locs_artery(sectionIdx, 1) - y_center);
     figure(300)
-    text(new_x, new_y, strcat("A", num2str(sectionIdx)), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
+    text(new_x, new_y, sprintf("A%d", sectionIdx), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
 
     if veins_analysis
         figure(302)
-        text(new_x, new_y, strcat("A", num2str(sectionIdx)), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
+        text(new_x, new_y, sprintf("A%d", sectionIdx), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
     end
 
 end
@@ -247,9 +247,9 @@ if veins_analysis
         new_x = x_center + ratio_etiquette * (SubImg_locs_vein(sectionIdx, 2) - x_center);
         new_y = y_center + ratio_etiquette * (SubImg_locs_vein(sectionIdx, 1) - y_center);
         figure(301)
-        text(new_x, new_y, sprintf("V%s", sectionIdx), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
+        text(new_x, new_y, sprintf("V%d", sectionIdx), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
         figure(302)
-        text(new_x, new_y, sprintf("V%s", sectionIdx), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
+        text(new_x, new_y, sprintf("V%d", sectionIdx), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
     end
 
 end
@@ -281,12 +281,6 @@ maskArtery_RGB(:, :, 1) = M0_disp_image .* ~crossSectionMaskArtery + crossSectio
 maskArtery_RGB(:, :, 2) = M0_disp_image .* ~crossSectionMaskArtery;
 maskArtery_RGB(:, :, 3) = M0_disp_image .* ~crossSectionMaskArtery;
 
-f410 = figure(410);
-colormap("gray")
-f410.Position = [200, 200, 600, 600];
-ax410 = gca;
-ax410.Units = 'pixels';
-
 if veins_analysis
 
     volumeRateVein_video = zeros(figWidth, figHeight, 3, numFrames);
@@ -296,30 +290,24 @@ if veins_analysis
     maskVein_RGB(:, :, 2) = M0_disp_image .* ~crossSectionMaskVein;
     maskVein_RGB(:, :, 3) = M0_disp_image .* ~crossSectionMaskVein + crossSectionMaskVein;
 
-    f411 = figure(411);
-    colormap("gray")
-    f411.Position = [800, 200, 600, 600];
-    ax411 = gca;
-    ax411.Units = 'pixels';
-
 end
 
 %% 4) 1) Video Generation
 
 M0_disp_video_rescaled = rescale(M0_disp_video);
 
-if exportGifs
+if exportVideos
 
     for frameIdx = 1:numFrames
 
-        figure(410)
+        figure(410, 'Position',[200 200 200+figWidth 200+figHeight])
 
         hueArtery = 0 * (maskOnes .* crossSectionMaskArtery);
         satArtery = maskOnes .* crossSectionMaskArtery;
         valArtery = maskOnes .* crossSectionMaskArtery;
 
         crossSectionArtery_RGB = hsv2rgb(hueArtery, satArtery, valArtery) .* crossSectionMaskArtery + ~crossSectionMaskArtery .* M0_disp_video_rescaled(:, :, frameIdx);
-        imagesc(ax410, crossSectionArtery_RGB);
+        imagesc(crossSectionArtery_RGB);
         axis image
         axis off
 
@@ -339,19 +327,19 @@ if exportGifs
         set(gca, 'FontSize', 18)
         drawnow
 
-        volumeRateArtery_frame = getframe(f410);
+        volumeRateArtery_frame = getframe(gcf);
         volumeRateArtery_video(:, :, :, frameIdx) = frame2im(volumeRateArtery_frame);
 
         if veins_analysis
 
-            figure(411)
+            figure(411, 'Position',[200 200 200+figWidth 200+figHeight])
 
             hueVein = 0.6 * (maskOnes .* crossSectionMaskVein);
             satVein = maskOnes .* crossSectionMaskVein;
             valVein = maskOnes .* crossSectionMaskVein;
 
             crossSectionVein_RGB = hsv2rgb(hueVein, satVein, valVein) .* crossSectionMaskVein + ~crossSectionMaskVein .* M0_disp_video_rescaled(:, :, frameIdx);
-            imagesc(ax411, crossSectionVein_RGB);
+            imagesc(crossSectionVein_RGB);
             axis image
             axis off
 
@@ -371,7 +359,7 @@ if exportGifs
             set(gca, 'FontSize', 18)
             drawnow
 
-            volumeRateVein_frame = getframe(f411);
+            volumeRateVein_frame = getframe(gcf);
             volumeRateVein_video(:, :, :, frameIdx) = frame2im(volumeRateVein_frame);
 
         end
@@ -404,8 +392,8 @@ ax = gca;
 ax.Units = 'pixels';
 set(gca, 'FontSize', 14)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateInArteries.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateInArteries.eps')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateArteryImage.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateArteryImage.eps')))
 
 if veins_analysis
 
@@ -423,8 +411,8 @@ if veins_analysis
     ax = gca;
     ax.Units = 'pixels';
     set(gca, 'FontSize', 14)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateInVeins.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateInVeins.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateVeinImage.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateVeinImage.eps')))
 
 end
 
@@ -483,7 +471,7 @@ if veins_analysis
     hold on;
     plot(fullTime, curve1, "Color", Color_std, 'LineWidth', 2);
     plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
-    plot(fullTime, avgVolumeRateVein_total, '-k', 'LineWidth', 1);
+    plot(fullTime, avgVolumeRateVein_total, '-k', 'LineWidth', 2);
     yline(volumeRateVein_mean, '--k', 'LineWidth', 2)
     axis tight;
     hold off
@@ -510,7 +498,7 @@ if veins_analysis
 end
 
 %% 5) 3) Artery Plot & Vein Plot progression
-if exportGifs
+if exportVideos
 
     for frameIdx = 1:numFrames
 
@@ -670,222 +658,84 @@ end
 close all
 
 %% 6) Arterial Resistivity with Volume Rate
+maxVolumeRate = max(avgVolumeRateArtery_total(:));
+minVolumeRate = min(avgVolumeRateArtery_total(:));
+meanVolumeRate = mean(avgVolumeRateArtery_total(:));
 
-disp('Arterial Resistivity and Pulsatility...');
-
-mkdir(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex')
-mkdir(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex')
-
-
-maxVolumeRate = max(avgVolumeRate_total(:));
-minVolumeRate = min(avgVolumeRate_total(:));
-meanVolumeRate = mean(avgVolumeRate_total(:));
+%% 6) 1) Arterial Resisitivity Index
 
 ARI = (maxVolumeRate - minVolumeRate) / maxVolumeRate;
 
-%% Arterial Resisitivity Index
+figure(610)
 
-[hue_ARI, sat_ARI, val_ARI, cmap] = createARI_HSVmap(ARI, M0_disp_image, maskArtery, ToolBox);
+curve1 = avgVolumeRateArtery_total + 0.5 * stdVolumeRateArtery_total;
+curve2 = avgVolumeRateArtery_total - 0.5 * stdVolumeRateArtery_total;
+fullTime2 = [fullTime, fliplr(fullTime)];
+inBetween = [curve1, fliplr(curve2)];
 
-% arterial resistivity map RGB
-ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-ARImapRGB = ARImapRGB .* maskArtery + ones(numX, numY, 3) .* M0_disp_image .* ~maskArtery;
+hold on 
 
-if exportGifs
+fill(fullTime2, inBetween, Color_std);
+plot(fullTime, curve1, "Color", Color_std, 'LineWidth', 2);
+plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
+plot(fullTime, avgVolumeRateArtery_total, '-k', 'LineWidth', 2);
+yline(volumeRateArtery_mean, '--k', 'LineWidth', 2)
+yline(maxVolumeRate, '--r', 'Linewidth', 2)
+yline(minVolumeRate, '--r', 'Linewidth', 2)
+axis tight;
 
-    ARIvideoRGB = zeros(numX, numY, 3, numFrames);
 
-    for frameIdx = 1:numFrames
-        img_M0 = M0_disp_video_rescaled(:, :, frameIdx);
-        [hue_ARI, sat_ARI, val_ARI] = createARI_HSVmap(ARI, img_M0, maskArtery, ToolBox);
-        ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-        ARIvideoRGB(:, :, :, frameIdx) = ARIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(numX, numY, 3, 1) .* img_M0 .* ~maskArtery;
-    end
+volumeRateArtery_ax = axis;
+volumeRateArtery_ax(3) = 0;
+hold off
 
-    % save video
-    % avi
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_ARIVideo')));
-    open(w)
+ylabel('Blood volume rate (µL/min)')
+xlabel('Time (s)')
+title(sprintf("Arterial Resistivity %0.2f ", ARI))
+axis([volumeRateArtery_ax(1) volumeRateArtery_ax(2) volumeRateArtery_ax(3) volumeRateArtery_ax(4)]);
 
-    for frameIdx = 1:numFrames
-        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, frameIdx)));
-    end
-
-    close(w);
-
-    close(w);
-
-    % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, '_ARIVideo')), 'MPEG-4');
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, frameIdx)));
-    end
-
-    close(w);
-
-end
-
-%% ARTERIAL RESISTIVITY FIGURES
-figure(600)
-imagesc(ARImapRGB);
-title(strcat('Arterial Resistivity Index avg. : ', sprintf(" %3.2f", ARI)));
-axis image
-axis off
-set(gca, 'LineWidth', 2);
 fontsize(gca, 14, "points");
-c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-c.Label.String = 'Arterial resistivity index';
-c.Label.FontSize = 14;
-colormap(cmap);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
+set(gca, 'Linewidth', 2)
 
-imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapColored.png')), 'png')
-imwrite(ARImap, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapRaw.png')), 'png')
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateARI.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateARI.eps')))
 
-% Save colorbar
-colorfig = figure(601);
-colorfig.Units = 'normalized';
-colormap(cmap)
-hCB = colorbar('north');
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca, 14, "points");
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.eps')))
 
-if exportGif
-    f602 = figure(602);
-    f602.Position = [300, 300, 570, 630];
-
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialResistivityIndex")), timePeriod, 0.04, numFrames);
-
-    for frameIdx = 1:numFrames
-        imagesc(ARIvideoRGB(:, :, :, frameIdx));
-        title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
-        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-        c.Label.String = 'Arterial resistivity index';
-        c.Label.FontSize = 12;
-
-        colormap(cmap);
-
-        frame = getframe(f71, [40 10 500 600]);
-        gifWriter.write(frame, frameIdx);
-
-    end
-
-    gifWriter.generate();
-    gifWriter.delete();
-end
-
-%% Arterial Pulsatility Index
+%% 6) 2) Arterial Pulsatility Index
 
 API = (maxVolumeRate - minVolumeRate) / meanVolumeRate;
 
-[hue_API, sat_API, val_API, cmap] = createARI_HSVmap(API, M0_disp_image, maskArtery, ToolBox);
+figure(620)
 
-% arterial resistivity map RGB
-APImapRGB = hsv2rgb(hue_API, sat_API, val_API);
-APImapRGB = APImapRGB .* maskArtery + ones(numX, numY, 3) .* M0_disp_image .* ~maskArtery;
+curve1 = avgVolumeRateArtery_total + 0.5 * stdVolumeRateArtery_total;
+curve2 = avgVolumeRateArtery_total - 0.5 * stdVolumeRateArtery_total;
+fullTime2 = [fullTime, fliplr(fullTime)];
+inBetween = [curve1, fliplr(curve2)];
 
-APIvideoRGB = zeros(numX, numY, 3, numFrames);
+hold on 
 
-for frameIdx = 1:numFrames
-    [hue_API, sat_API, val_API] = createARI_HSVmap(API, M0_disp_video_rescaled(:, :, frameIdx), maskArtery, ToolBox);
-    APIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_API, sat_API, val_API);
-    img_M0 = M0_disp_video_rescaled(:, :, frameIdx);
-    APIvideoRGB(:, :, :, frameIdx) = APIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(numX, numY, 3, 1) .* img_M0 .* ~maskArtery;
-end
-APIvideoRGB (APIvideoRGB < 0) = 0;
-% save video
-% avi
-w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_APIVideo')));
-open(w)
+fill(fullTime2, inBetween, Color_std);
+plot(fullTime, curve1, "Color", Color_std, 'LineWidth', 2);
+plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
+plot(fullTime, avgVolumeRateArtery_total, '-k', 'LineWidth', 2);
+yline(maxVolumeRate, '--r', 'Linewidth', 2)
+yline(meanVolumeRate, '--r', 'Linewidth', 2)
+yline(minVolumeRate, '--r', 'Linewidth', 2)
+axis tight;
 
-for frameIdx = 1:numFrames
-    writeVideo(w, squeeze(APIvideoRGB(:, :, :, frameIdx)));
-end
+volumeRateArtery_ax = axis;
+volumeRateArtery_ax(3) = 0;
+hold off
 
-close(w);
-% mp4
-w = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, '_APIVideo')), 'MPEG-4');
-open(w)
-
-for frameIdx = 1:numFrames
-    writeVideo(w, squeeze(APIvideoRGB(:, :, :, frameIdx)));
-end
-
-close(w);
-
-%% ARTERIAL PULSATILITY FIGURES
-
-figure(603)
-imagesc(APImapRGB);
-title(strcat('Arterial Pulsatility Index avg. : ', sprintf(" %3.2f", API)));
-axis image
-axis off
-set(gca, 'LineWidth', 2);
+ylabel('Blood volume rate (µL/min)')
+xlabel('Time (s)')
+title(sprintf("Arterial Pulsatility %d ", API))
+axis([volumeRateArtery_ax(1) volumeRateArtery_ax(2) volumeRateArtery_ax(3) volumeRateArtery_ax(4)]);
 fontsize(gca, 14, "points");
-c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-c.Label.String = 'Arterial pulsatility index';
-c.Label.FontSize = 14;
-colormap(cmap);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.eps')))
+set(gca, 'Linewidth', 2)
 
-imwrite(APImapRGB, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'APIMapColored.png')), 'png')
-imwrite(APImap, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'APIMapRaw.png')), 'png')
-
-% Save colorbar
-colorfig = figure(604);
-colorfig.Units = 'normalized';
-colormap(cmap)
-hCB = colorbar('north');
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca, 14, "points");
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'APImapColorbar.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'APImapColorbar.eps')))
-
-f605 = figure(605);
-f605.Position = [300, 300, 570, 630];
-
-if exportGifs
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialPulsatilityIndex")), timePeriod, 0.04, numFrames);
-
-    for frameIdx = 1:numFrames
-        imagesc(APIvideoRGB(:, :, :, frameIdx));
-        title(strcat('Arterial pulsatility index value : ', sprintf(" %3.2f", API)));
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
-        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-        c.Label.String = 'Arterial pulsatility index';
-        c.Label.FontSize = 12;
-
-        colormap(cmap);
-
-        frame = getframe(f73, [40 10 500 600]);
-        gifWriter.write(frame, frameIdx);
-
-    end
-
-    gifWriter.generate();
-    gifWriter.delete();
-end
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateAPI.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateAPI.eps')))
 
 close all
 

@@ -1,6 +1,8 @@
 function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(M0_disp_video, ~, f_AVG_mean, path, ToolBox)
 
 PW_params = Parameters_json(path);
+exportVideos = PW_params.exportVideos;
+
 mkdir(ToolBox.PW_path_png, 'mask')
 mkdir(fullfile(ToolBox.PW_path_png, 'mask'), 'step')
 close all
@@ -15,6 +17,12 @@ imwrite(rescale(maskDiaphragm), fullfile(ToolBox.PW_path_png, 'mask', 'step', sp
 M0_disp_img = squeeze(mean(M0_disp_video, 3));
 M0_disp_centered_video = M0_disp_video - M0_disp_img;
 imwrite(rescale(M0_disp_img), fullfile(ToolBox.PW_path_png, 'mask', 'step', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_0_M0.png')))
+
+if exportVideos
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+    M0_disp_video_rescaled = rescale(M0_disp_video);
+    writeGifOnDisc(M0_disp_video_rescaled, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod)
+end
 
 %% 1) 1) Compute vesselness response
 

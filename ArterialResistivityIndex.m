@@ -1,9 +1,7 @@
 function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox, path)
 
 PW_params = Parameters_json(path);
-exportGif = PW_params.exportGifs;
-
-disp('arterial resistivity and pulsatility...');
+exportVideos = PW_params.exportVideos;
 
 mkdir(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex')
 mkdir(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex')
@@ -23,7 +21,7 @@ flatfieldM0 = rescale(flatfieldM0);
 ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
 ARImapRGB = ARImapRGB .* maskArtery + ones(numX, numY, 3) .* meanIm .* ~maskArtery;
 
-if exportGif
+if exportVideos
 
     ARIvideoRGB = zeros(numX, numY, 3, numFrames);
 
@@ -87,7 +85,7 @@ fontsize(gca, 14, "points");
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilityIndex', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.eps')))
 
-if exportGif
+if exportVideos
     f71 = figure(71);
     f71.Position = [300, 300, 570, 630];
 
@@ -123,7 +121,7 @@ end
 APImapRGB = hsv2rgb(hue_API, sat_API, val_API);
 APImapRGB = APImapRGB .* maskArtery + ones(numX, numY, 3) .* meanIm .* ~maskArtery;
 
-if exportGif
+if exportVideos
 
     APIvideoRGB = zeros(numX, numY, 3, numFrames);
 
@@ -190,7 +188,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'arterialResistivityPulsatilit
 f73 = figure(73);
 f73.Position = [300, 300, 570, 630];
 
-if exportGifs
+if exportVideos
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
     gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialPulsatilityIndex")), timePeriod, 0.04, numFrames);
 

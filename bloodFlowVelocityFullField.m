@@ -182,7 +182,6 @@ function bloodFlowVelocityFullField(v_RMS_video, ~, maskArtery, maskVein, M0_dis
 
     %close all
 
+fprintf("- Blood Flow Velocity over the full field timing : %d\n", round(toc))
 
-fprintf("Blood Flow Velocity over the full field timing : :\n")
-    toc
 end

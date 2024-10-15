@@ -2,7 +2,7 @@ function [] = bloodFlowVelocity(v_RMS_video, v_oneCycle, maskArtery, maskVein, M
 
 PW_params = Parameters_json(path);
 veinsAnalysis = PW_params.veins_analysis;
-exportGifs = PW_params.exportGifs;
+exportVideos = PW_params.exportVideos;
 
 mkdir(ToolBox.PW_path_png, 'bloodFlowVelocity')
 mkdir(ToolBox.PW_path_eps, 'bloodFlowVelocity')
@@ -77,7 +77,7 @@ clear hue_artery sat_artery val_artery hue_vein sat_vein val_vein
 
 parfeval(backgroundPool, @writeVideoOnDisc, 0, v_RMS_videoRGB, fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
 
-if exportGifs
+if exportVideos
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
     writeGifOnDisc(v_RMS_videoRGB, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")), timePeriod);
 end
@@ -139,7 +139,7 @@ if veinsAnalysis
 
 end
 
-if exportGifs
+if exportVideos
     f3 = figure(13); % v_RMS Gif
     f3.Position = [300, 300, 600, 630];
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
@@ -165,8 +165,7 @@ if exportGifs
     gifWriter.delete();
 end
 
-fprintf("Velocity Map Timing :\n")
-toc
+fprintf("- Velocity Map Timing : %ds\n", round(toc))
 
 %% 2) HISTOGRAM
 %% Init of histogram axis
@@ -222,7 +221,7 @@ f = getframe(gcf);
 [numX_fig, numY_fig, ~] = size(f.cdata);
 histoVideoArtery = zeros(numX_fig, numY_fig, 3, numFrames);
 
-if exportGifs
+if exportVideos
     gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, numFrames);
 
     for frameIdx = 1:numFrames
@@ -334,7 +333,7 @@ if veinsAnalysis
     [numX_fig, numY_fig, ~] = size(f.cdata);
     histoVideoVein = zeros(numX_fig, numY_fig, 3, numFrames);
 
-    if exportGifs
+    if exportVideos
         gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityVeins")), timePeriod, 0.04, numFrames);
 
         for frameIdx = 1:numFrames
@@ -423,7 +422,7 @@ if veinsAnalysis
     end
 end
 
-if exportGifs
+if exportVideos
 
     if veinsAnalysis
         v_RMS_videoRGB4Gif(:, :, 1, :) = imresize3(squeeze(v_RMS_videoRGB(:, :, 1, :)), [550 550 numFrames]);
@@ -496,9 +495,9 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
 
 if veinsAnalysis
-    vHistoVeins = round(v_oneCycle .* maskVein);
-    v_min = min(vHistoVeins, [], 'all');
-    v_max = max(vHistoVeins, [], 'all');
+    v_histoVeins = round(v_oneCycle .* maskVein);
+    v_min = min(v_histoVeins, [], 'all');
+    v_max = max(v_histoVeins, [], 'all');
 
     X = linspace(v_min, v_max, v_max - v_min + 1);
     n = size(X, 2);
@@ -511,7 +510,7 @@ if veinsAnalysis
             for yy = 1:numY
 
                 if maskVeinSection(xx, yy) ~= 0
-                    i = find(X == vHistoVeins(xx, yy, frameIdx));
+                    i = find(X == v_histoVeins(xx, yy, frameIdx));
                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
                 end
 
@@ -526,7 +525,7 @@ if veinsAnalysis
     xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
     imagesc(xAx, yAx, histo)
     set(gca, 'YDir', 'normal')
-    colormap('hot')
+    colormap('bone')
     ylabel('Velocity (mm.s^{-1})')
     xlabel('Time (s)')
     title("Velocity histogram in veins")
@@ -536,8 +535,7 @@ if veinsAnalysis
 
 end
 
-fprintf("Velocity Histograms Timing :\n")
-toc
+fprintf("- Velocity Histograms Timing : %ds\n", round(toc))
 
 %% Velocity funnel Histogram in arteries (exactly the same but with an increasing number of points)
 %FIXME prctile 10% Y = percentil(X,[5 95])
