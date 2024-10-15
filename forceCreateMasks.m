@@ -74,6 +74,13 @@ imwrite(mat2gray(single(maskBackground)), fullfile(ToolBox.PW_path_png, 'mask', 
 imwrite(mat2gray(single(maskSection)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskSection_New.png')), 'png');
 imwrite(mat2gray(single(maskCRA)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRA_New.png')), 'png');
 imwrite(mat2gray(single(maskCRV)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRV_New.png')), 'png');
+%% Saving a pretty masks image
+segmentationMap = zeros(Nx, Ny, 3);
+meanIm = rescale(meanIm);
+segmentationMap(:, :, 1) = meanIm - (maskArtery + maskVein) .* meanIm + maskArtery;
+segmentationMap(:, :, 2) = meanIm - (maskArtery + maskVein) .* meanIm;
+segmentationMap(:, :, 3) = meanIm - (maskArtery + maskVein) .* meanIm + maskVein;
+imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
 
 fprintf("Manually made Masks have been used\n");
 end

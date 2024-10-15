@@ -4,6 +4,10 @@ PW_params = Parameters_json(path);
 
 veins_analysis = PW_params.veins_analysis;
 exportVideos = PW_params.exportVideos;
+force_width = [];
+if ~isempty(PW_params.forcewidth)
+    force_width = PW_params.forcewidth;
+end
 
 mkdir(ToolBox.PW_path_png, 'volumeRate')
 mkdir(ToolBox.PW_path_eps, 'volumeRate')
@@ -97,7 +101,7 @@ strXlabel = 'Time(s)'; %createXlabelTime(1);
 strYlabel = 'Velocity (mm.s-1)';
 
 %% Arteries
-[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, crossSectionMaskArtery, avgVolumeRateArtery_total, stdVolumeRateArtery_total] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, []);
+[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, crossSectionMaskArtery, avgVolumeRateArtery_total, stdVolumeRateArtery_total] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [],force_width);
 
 labelsArteries = cell(numSectionsArtery, 1);
 smoothVelocityArtery = zeros(numSectionsArtery, numFrames); % avg_blood_velocity (section, time)
@@ -147,7 +151,7 @@ end
 
 %% 2) 2) Veins
 if veins_analysis
-    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, crossSectionMaskVein, avgVolumeRateVein_total, stdVolumeRateVein_total] = crossSectionAnalysis(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, []);
+    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, crossSectionMaskVein, avgVolumeRateVein_total, stdVolumeRateVein_total] = crossSectionAnalysis(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, [],force_width);
 
     labelsVeins = cell(numSectionsVein, 1);
     smoothVelocityVein = zeros(numSectionsVein, numFrames);
