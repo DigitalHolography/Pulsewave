@@ -105,6 +105,7 @@ classdef Parameters_json < handle
         DiffFirstCalculationsFlag
         AllCirclesFlag
         nbCircles
+        forcewidth
     end
 
     methods
@@ -248,6 +249,7 @@ classdef Parameters_json < handle
                 obj.DiffFirstCalculationsFlag = parsedData.Other.DiffFirstCalculationsFlag;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
                 obj.nbCircles = parsedData.Other.NumberOfCircles ;
+                obj.forcewidth = parsedData.Other.ForceWidthInPixels;
 
 
             else

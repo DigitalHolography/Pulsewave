@@ -103,12 +103,16 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, v_RMS, dataM0, videoM0_fr
 
     mask_artery = maskArtery;
     mask_vein = maskVein;
-
+    
+    force_width = [];
+    if ~isempty(PW_params.forcewidth)
+        force_width = PW_params.forcewidth;
+    end
     if veins_analysis
-        [avg_bloodVolumeRate_vein, std_bloodVolumeRate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein, total_avg_bloodVolumeRate_vein, total_std_bloodVolumeRate_vein] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile,[]);
+        [avg_bloodVolumeRate_vein, std_bloodVolumeRate_vein, cross_section_area_vein, avg_blood_velocity_vein, cross_section_mask_vein, total_avg_bloodVolumeRate_vein, total_std_bloodVolumeRate_vein] = cross_section_analysis(SubImg_locs_vein, SubImg_width_vein, mask_vein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile,[],force_width);
     end
 
-    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,[]);
+    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery] = cross_section_analysis(SubImg_locs_artery, SubImg_width_artery, mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,[],force_width);
 
     labels_arteries = cell(nb_sections_artery, 1);
     strXlabel = 'Time(s)'; %createXlabelTime(1);
@@ -738,7 +742,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, ~, v_RMS, dataM0, videoM0_fr
     % for all circles output 
 
     for i = 1:nbCircles
-        [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery] = cross_section_analysis(reshape(nonzeros(SubImg_locs_artery_Circles(i,:,:)),[],2), nonzeros(SubImg_width_artery_Circles(i,:,:)), mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,i);
+        [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery] = cross_section_analysis(reshape(nonzeros(SubImg_locs_artery_Circles(i,:,:)),[],2), nonzeros(SubImg_width_artery_Circles(i,:,:)), mask_artery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,i,force_width);
         if length(avg_bloodVolumeRate_artery)<1
             continue
         end
