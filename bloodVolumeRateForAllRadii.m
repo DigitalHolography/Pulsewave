@@ -71,9 +71,12 @@ cross_section_area_artery_r = zeros(numCircles, max(nb_sections_artery), 'single
 cross_section_mask_artery_r = zeros(numCircles, numY, numX, 'single');
 velocity_profiles_r = cell([numCircles max(nb_sections_artery)]);
 sub_images_r = cell([numCircles max(nb_sections_artery)]);
-
+force_width = [];
+if ~isempty(PW_params.forcewidth)
+    force_width = PW_params.forcewidth;
+end
 for i = 1:numCircles
-    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, subImg_cell] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i);
+    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, subImg_cell] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
 
     if length(avg_bloodVolumeRate_artery) < 1
         continue
@@ -89,6 +92,13 @@ for i = 1:numCircles
         sub_images_r{i, j} = rescale(subImg_cell{j});
     end
 
+end
+if isempty(PW_params.forcewidth)
+    index_start = systoles_indexes(1);
+    index_end = systoles_indexes(end);
+else
+    index_start = 1;
+    index_end = N_frame;
 end
 
 colors = lines(numCircles);
@@ -115,6 +125,14 @@ imshow(imgRGB)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'ateries_sections.png')))
 
 figure(11174)
+subimage_size = size(sub_images_r{1,1},1);
+for i=1:numCircles
+    for j=1:max(nb_sections_artery)
+        if isempty(sub_images_r{i,j})
+            sub_images_r{i,j} = zeros(subimage_size,'single');
+        end
+    end
+end
 montage(sub_images_r(1:numCircles, 1:max(nb_sections_artery)), "Size", [numCircles, max(nb_sections_artery)])
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'all_sections_with_increasing_radius.png')))
 
@@ -161,8 +179,8 @@ Color_std = [0.7 0.7 0.7];
 rad = ((PW_params.velocitySmallRadiusRatio * (numY + numX) / 2) + delta_rad / 2:delta_rad:(PW_params.velocityBigRadiusRatio * (numY + numX) / 2) - delta_rad / 2)'';
 bvr_r = sum(avg_bloodVolumeRateArteryR, 2);
 std_bvr_r = sum(std_bloodVolumeRateArteryR, 2);
-mean_bvr_r = squeeze(mean(bvr_r, 3))';
-mean_std_bvr_r = squeeze(mean(std_bvr_r, 3))';
+mean_bvr_r = squeeze(mean(bvr_r(:,:,index_start:index_end), 3))';
+mean_std_bvr_r = squeeze(mean(std_bvr_r(:,:,index_start:index_end), 3))';
 curve1 = mean_bvr_r + 0.5 * mean_std_bvr_r;
 curve2 = mean_bvr_r - 0.5 * mean_std_bvr_r;
 rad_out = [rad, fliplr(rad)];
@@ -173,6 +191,8 @@ hold on;
 plot(rad, curve1, "Color", Color_std, 'LineWidth', 2);
 plot(rad, curve2, "Color", Color_std, 'LineWidth', 2);
 plot(rad, mean_bvr_r, '-k', 'LineWidth', 2);
+yline(mean(mean_bvr_r),'--k', 'LineWidth', 2);
+legend({'','','','',sprintf('mean = %f µL/min',mean(mean_bvr_r)),'',''});
 
 axis tight;
 aa = axis;
@@ -209,6 +229,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s
 plot_bvr_t = figure(1579);
 
 mean_bvr_t = squeeze(mean(bvr_r, 1))';
+mean_bvr_t_value = mean(mean_bvr_t(index_start:index_end));
 mean_std_bvr_t = squeeze(mean(std_bvr_r, 1))';
 
 hold off
@@ -222,6 +243,12 @@ hold on;
 plot(fullTime, curve1, "Color", Color_std, 'LineWidth', 2);
 plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
 plot(fullTime, mean_bvr_t, '-k', 'LineWidth', 2);
+yline(mean_bvr_t_value,'--k', 'LineWidth', 2)
+
+plot(fullTime(index_start), 2.5*mean_bvr_t_value, 'k|', 'MarkerSize', 10);
+plot(fullTime(index_end), 2.5*mean_bvr_t_value, 'k|', 'MarkerSize', 10);
+plot(fullTime(index_start:index_end),repmat(2.5*mean_bvr_t_value,index_end-index_start+1),'-k');
+legend({'','','','',sprintf('mean = %f µL/min',mean_bvr_t_value),'',''});
 
 axis tight;
 aa = axis;

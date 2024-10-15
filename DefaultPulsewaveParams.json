@@ -116,7 +116,7 @@
     },
     "Velocity" : {
         "Small radius ratio" : 0.15,
-        "Big radius ratio" : 0.2
+        "Big radius ratio" : 0.35
     },
     "Vessels video" : {
         "Radius ratio factor" : 0.27,
@@ -137,6 +137,7 @@
         "Number of sides" : 120,
         "Diff First Calculations Flag" : 0,
         "All Circles" : 0,
-        "Number Of Circles" : 8
+        "Number Of Circles" : 10,
+        "Force Width In Pixels" : []
     }
 }
