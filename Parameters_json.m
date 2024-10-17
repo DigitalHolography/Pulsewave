@@ -29,8 +29,8 @@ classdef Parameters_json < handle
         arteryMask_vesselness_bin_threshold
         arteryMask_magicwand_nb_of_area_vessels
         arteryMask_magicwand_nb_of_area_artery
-        arteryMask_ArteryCorrThreshold
-        arteryMask_CorrelationMatrixThreshold
+        finalarteryMask_CorrelationMatrixThreshold
+        firstArteryMask_CorrelationMatrixThreshold
         arteryMask_vesselnessContrastNumSlides
         centralRetinal_arteryThreshold
         centralRetinal_veinThreshold
@@ -56,6 +56,8 @@ classdef Parameters_json < handle
         elasWave_gaussFiltPadding
         elasWave_butterFiltOrder
         elasWave_butterFiltBand
+        exportVideos
+        entirePulseAnalysis
         systoleThreshold
         flatField_gwRatio
         flatField_border
@@ -88,8 +90,8 @@ classdef Parameters_json < handle
         trWavelength_f0
         trWavelength_r0
         veins_analysis
-        velocity_smallRadiusRatio
-        velocity_bigRadiusRatio
+        velocitySmallRadiusRatio
+        velocityBigRadiusRatio
         video2vessels_radiusRatio
         video2vessels_gaussFiltPadding
         video2vessels_gaussFiltFactor
@@ -144,7 +146,10 @@ classdef Parameters_json < handle
                 obj.radius_ratio = parsedData.RadiusRatio;
                 obj.radius_gap = parsedData.RadiusGap;
                 obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
+
                 obj.veins_analysis = parsedData.VeinsAnalysis;
+                obj.exportVideos = parsedData.ExportVideos;
+                obj.entirePulseAnalysis = parsedData.EntirePulseAnalysis;
 
                 obj.resistivity_gaussFiltSigma = parsedData.ResistivityIndex.GaussianFilterSigma;
                 obj.resistivity_satAmp = parsedData.ResistivityIndex.AmplitudeSaturationPonderation;
@@ -162,8 +167,8 @@ classdef Parameters_json < handle
                 obj.arteryMask_vesselness_bin_threshold = parsedData.CreationOfMasks.VesselnessBinarizationThreshold;
                 obj.arteryMask_magicwand_nb_of_area_vessels = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForVessels;
                 obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
-                obj.arteryMask_ArteryCorrThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
-                obj.arteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
+                obj.finalarteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
+                obj.firstArteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
                 obj.arteryMask_vesselnessContrastNumSlides = parsedData.CreationOfMasks.ContrastNumSlides;
 
                 obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
@@ -229,8 +234,8 @@ classdef Parameters_json < handle
                 obj.trWavelength_f0 = parsedData.Wavelength.F0;
                 obj.trWavelength_r0 = parsedData.Wavelength.R0;
 
-                obj.velocity_smallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
-                obj.velocity_bigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
+                obj.velocitySmallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
+                obj.velocityBigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
 
                 obj.video2vessels_radiusRatio = parsedData.VesselsVideo.RadiusRatioFactor;
                 obj.video2vessels_gaussFiltPadding = parsedData.VesselsVideo.GaussianFilterPadding;

@@ -1,4 +1,4 @@
-function [hue, sat, val, cmap] = createARI_HSVmap(ARImap, ARI, Im, mask, ToolBox)
+function [hue, sat, val, cmap] = createARI_HSVmap(ARI, Im, mask, ToolBox)
 
     tolVal = [0.02, 0.98];
 

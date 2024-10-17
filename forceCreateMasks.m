@@ -4,7 +4,7 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
 PW_params = Parameters_json(path);
 mkdir(ToolBox.PW_path_png, 'mask')
-[Nx, Ny, N_frame] = size(videoM0);
+[numX, numY, numFrames] = size(videoM0);
 
 %% Manual Mask Import
 
@@ -20,11 +20,11 @@ videoM0_zero = videoM0 - meanIm;
 % compute pulse in 3 dimentions for correlation in main arteries
 pulse = squeeze(mean(videoM0 .* maskArtery, [1 2]));
 pulseInit = pulse - mean(pulse, "all");
-pulseInit3d = zeros(Nx, Ny, N_frame);
+pulseInit3d = zeros(numX, numY, numFrames);
 
-for xx = 1:Nx
+for xx = 1:numX
 
-    for yy = 1:Ny
+    for yy = 1:numY
         pulseInit3d(xx, yy, :) = pulseInit;
     end
 end
@@ -48,10 +48,10 @@ maskVessel = maskArtery | maskVein;
 maskBackground = not(maskVessel);
 
 %% Create Mask Section
-[x, y] = meshgrid(1:Ny, 1:Nx);
+[x, y] = meshgrid(1:numY, 1:numX);
 
-radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (Ny + Nx) / 2;
-radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (Ny + Nx) / 2;
+radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (numY + numX) / 2;
+radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (numY + numX) / 2;
 
 circleMask1 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius1;
 circleMask2 = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= radius2;
