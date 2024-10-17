@@ -1,4 +1,4 @@
-function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox)
+function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox, circle_num)
 
     nb_section = size(SubImage_cell, 2);
     N_frame = size(SubVideo_cell{1}, 3);
@@ -10,8 +10,13 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
     velocity_profiles_std = zeros(n_interp, N_frame, nb_section);
 
     for ii = 1:nb_section
-        subImg = SubImage_cell{ii};
-        subVideo = SubVideo_cell{ii};
+        if nargin>4
+            subImg = SubImage_cell{circle_num,ii};
+            subVideo = SubVideo_cell{circle_num,ii};
+        else
+            subImg = SubImage_cell{ii};
+            subVideo = SubVideo_cell{ii};
+        end
 
         %% interpolate
         interp_size = 4 * size(subImg, 1) - 3;

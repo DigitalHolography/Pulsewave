@@ -70,7 +70,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
             masksSectionsArtery(:, :, section_idx) = (maskSectionArtery == section_idx);
         end
         SubImg_locs_artery = zeros(nb_sections_artery(i),2);
-        SubImg_width_artery = zeros(nb_sections_artery(i));
+        SubImg_width_artery = zeros(nb_sections_artery(i),1);
         for section_idx = 1:nb_sections_artery(i)
             [row, col] = find(masksSectionsArtery(:, :, section_idx));
             SubImg_locs_artery(section_idx, 1) = round(mean(row));
@@ -88,6 +88,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
     cross_section_area_artery_r = zeros(nbCircles,max(nb_sections_artery),'single');
     cross_section_mask_artery_r = zeros(nbCircles, M,N,'single');
     velocity_profiles_r = cell([nbCircles  max(nb_sections_artery)]);
+    std_velocity_profiles_r = cell([nbCircles  max(nb_sections_artery)]);
     sub_images_r = cell([nbCircles  max(nb_sections_artery)]);
 
     force_width = [];
@@ -95,7 +96,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
         force_width = PW_params.forcewidth;
     end
     for i = 1:nbCircles
-        [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery,velocity_profiles,subImg_cell] = cross_section_analysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,i,force_width);
+        [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, avg_blood_velocity_artery, cross_section_mask_artery, total_avg_bloodVolumeRate_artery, total_std_bloodVolumeRate_artery,velocity_profiles,std_velocity_profiles,subImg_cell] = cross_section_analysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile,i,force_width);
         if length(avg_bloodVolumeRate_artery)<1
             continue
         end
@@ -106,6 +107,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
         cross_section_mask_artery_r(i,:,:) = reshape(cross_section_mask_artery,1,N,M);
         for j=1:nb_sections_artery(i)
             velocity_profiles_r{i,j} = velocity_profiles{j};
+            std_velocity_profiles_r{i,j} = std_velocity_profiles{j};
             sub_images_r{i,j} = rescale(subImg_cell{j});
         end
 
@@ -152,8 +154,8 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
 
 
     figure(16796)
-    cross_section_hist = histogram(cross_section_area_artery_r(cross_section_area_artery_r~=0),100);
-    title('histogram of cross sections');
+    cross_section_hist = histogram(2*sqrt(cross_section_area_artery_r(cross_section_area_artery_r~=0)/pi),'Normalization','pdf');
+    title('histogram of sections width');
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'histogram_of_cross_sections.png')))
     
 %     discarded_cross_sections = ~(2e-3<cross_section_area_artery_r<8e-3);
@@ -193,7 +195,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
     Color_std = [0.7 0.7 0.7];
     rad = ((PW_params.velocity_smallRadiusRatio * (M + N) / 2 )+deltr/2:deltr : (PW_params.velocity_bigRadiusRatio * (M + N) / 2)-deltr/2)'';
     bvr_r = sum(avg_bloodVolumeRate_artery_r,2);
-    std_bvr_r= sum(std_bloodVolumeRate_artery_r,2);
+    std_bvr_r= sqrt(sum(std_bloodVolumeRate_artery_r.^2,2));
     mean_bvr_r = squeeze(mean(bvr_r(:,:,index_start:index_end),3))';
     mean_std_bvr_r = squeeze(mean(std_bvr_r(:,:,index_start:index_end),3))';
     curve1 = mean_bvr_r + 0.5 * mean_std_bvr_r;
@@ -211,15 +213,15 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
     
     axis tight;
     aa = axis;
-    %aa(3)=0;
-    aa(4)=1.3*aa(4);
+    aa(3)=-5;
+    aa(4)=95;
     axis(aa);
     hold off
     
     ylabel('Blood Volume Rate (µL/min)')
     xlabel('radius in pixels')
     title("Total Blood Volume Flow Rate averaged over time at different radii.")
-    set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
+    set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'meanbloodVolumeRatexradius.png')))
 
@@ -230,12 +232,16 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
         plot(fullTime, squeeze(bvr_r(i,:,:)), 'LineWidth', 2);
     end
     axis tight;
+    aa = axis;
+    aa(3)=-5;
+    aa(4)=95;
+    axis(aa);
     hold off
     
     ylabel('Blood Volume Rate (µL/min)')
     xlabel('time (s)')
     title("Total Blood Volume Rate over time in each imaginary artery sections")
-    set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
+    set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'bloodVolumeRatevariancextime.png')))
 
@@ -265,16 +271,94 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
     legend({'','','','',sprintf('mean = %f µL/min',mean_bvr_t_value),'',''});
     axis tight;
     aa = axis;
-    aa(3)=0;
-    aa(4)=1.3*aa(4);
+    aa(3)=-5;
+    aa(4)=95;
     axis(aa);
     hold off
     
     ylabel('Blood Volume Rate (µL/min)')
     xlabel('time (s)')
     title("Total Blood Volume Rate averaged over all the radii")
-    set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
+    set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'bloodVolumeRateallradxtime.png')))
 
+    if flagBloodVelocityProfile && nbCircles>2
+        i=3 % third radius
+        plot_mean_velocity_profiles = figure(7579+i);
+        for j=1:nb_sections_artery(i)
+            plot(mean(velocity_profiles_r{i,j},2))
+            hold on
+        end
+        colors = lines(nb_sections_artery(i));
+        for j=1:nb_sections_artery(i)
+            profile = mean(velocity_profiles_r{i,j},2); 
+            if any(profile<0) % edge case when there is negative velocities
+                [~,locs] = findpeaks(-profile);
+                % we find the minimums and set them as the borders of the
+                % vessel profile
+                if length(locs)>1
+                    indx = locs(1):locs(end);
+                else
+                    if locs(1)>length(profile)/2
+                        indx = 1:locs(1);
+                    else
+                        indx = locs(1):length(profile);
+                    end
+                end
+            else % main case 
+                indx = find(profile>0);
+            end
+            disp(length(indx))
+            plot(indx,ones([1 length(indx)])*mean(mean(velocity_profiles_r{i,j},2)),'Color',colors(j,:))
+            hold on
+        end
+
+        title(['Mean velocity profiles at radius = ',num2str(rad(i)),' pix'])
+        plot_inter_velocity_profile = figure(7503+i);
+        Ninterp = 50;
+        interp_profile = zeros([nb_sections_artery(i),Ninterp],'single');
+        interp_profile_std = zeros([nb_sections_artery(i),Ninterp],'single');
+        for j=1:nb_sections_artery(i)
+            
+            profile = mean(velocity_profiles_r{i,j},2); % mean velocity profile
+            profile_std = mean(std_velocity_profiles_r{i,j},2);
+            if any(profile<0) % edge case when there is negative velocities
+                [~,locs] = findpeaks(-profile);
+                % we find the minimums and set them as the borders of the
+                % vessel profile
+                if length(locs)>1
+                    indx = locs(1):locs(end);
+                else
+                    if locs(1)>length(profile)/2
+                        indx = 1:locs(1);
+                    else
+                        indx = locs(1):length(profile);
+                    end
+                end
+            else % main case 
+                indx = find(profile>0);
+            end
+            disp(length(indx)*PW_params.cropSection_pixelSize)
+%             disp(2*sqrt(cross_section_area_artery_r(i,j)/pi))
+            interp_profile(j,:) = interp1(1:length(indx),profile(indx),linspace(1,length(indx),Ninterp));
+            interp_profile_std(j,:) = interp1(1:length(indx),profile_std(indx),linspace(1,length(indx),Ninterp));
+        end
+        mean_interp_profile = mean(interp_profile,1);
+        std_interp_profile = mean(interp_profile_std,1);
+        curve1 = mean_interp_profile + 0.5 * std_interp_profile;
+        curve2 = mean_interp_profile - 0.5 * std_interp_profile;
+        ft2 = [(1:Ninterp), fliplr(1:Ninterp)];
+        inBetween = [curve1, fliplr(curve2)]';
+        
+        fill(ft2, inBetween, Color_std);
+        hold on;
+        plot(1:Ninterp, curve1, "Color", Color_std, 'LineWidth', 2);
+        plot(1:Ninterp, curve2, "Color", Color_std, 'LineWidth', 2);
+        plot(1:Ninterp, mean_interp_profile, '-k', 'LineWidth', 2);
+        axis tight;
+        hold off
+        title(['Interpolated mean velocity profile at radius = ',num2str(rad(i)),' pix'])
+            
+    end
 end

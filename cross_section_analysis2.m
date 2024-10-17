@@ -1,4 +1,4 @@
-function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate,velocity_profiles,std_velocity_profiles,subImg_cell] = cross_section_analysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile,circle,force_width)
+function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_blood_velocity, cross_section_mask, total_avg_blood_volume_rate, total_std_blood_volume_rate,velocity_profiles,std_velocity_profiles,subImg_cell] = cross_section_analysis2(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile,circle,force_width)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
 
@@ -8,6 +8,11 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
     else
         fig_idx_start = 90;
         name_section = 'V';
+    end
+
+    insert = '';
+    if ~isempty(circle)
+        insert = sprintf('_circle_%d',circle);
     end
 
     nb_section = size(locs, 1);
@@ -41,22 +46,21 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
     for section_idx = 1:nb_section % section_idx: vessel_number
 
         if width(section_idx) > 2
-            subImgHW = round(width(section_idx) * PW_params.cropSection_scaleFactorWidth);
-            %FIXME bords d IMG,
+            subImgHW = round(width(section_idx) * PW_params.cropSection_scaleFactorWidth); % default 1% of interp image size and modified by tunable factor
 
+            % select a sub image around the center of the section
             xRange = max(round(-subImgHW / 2) + locs(section_idx, 2),1):min(round(subImgHW / 2) + locs(section_idx, 2),N);
             yRange = max(round(-subImgHW / 2) + locs(section_idx, 1),1):min(round(subImgHW / 2) + locs(section_idx, 1),M);
             subImg = img_v_artery(yRange, xRange);
 
-            %make disk mask
-            %FIXME img anamorphique
             subImg = cropCircle(subImg);
 
             angles = linspace(0, 180, 181);
             projx = zeros(size(subImg, 1), length(angles));
             projy = zeros(size(subImg, 2), length(angles));
             Video_subIm_rotate = zeros(size(subImg, 1), size(subImg, 2), length(angles));
-
+            
+            % calculate the sum of columns and rows
             for theta = 1:length(angles)
                 tmpImg = imrotate(subImg, angles(theta), 'bilinear', 'crop');
                 Video_subIm_rotate(:, :, theta) = tmpImg;
@@ -64,34 +68,57 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
                 projy(:, theta) = squeeze(sum(tmpImg, 2));
             end
 
+            % save a video to enjoy
+            w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername,insert, ['_' name_section num2str(section_idx) '.avi'])));
+            tmp_video = mat2gray(Video_subIm_rotate);
+            open(w)
+            for theta = 1:length(angles)
+                writeVideo(w, tmp_video(:, :, theta));
+            end
+            close(w);
+
             figure(3001)
             imagesc(projx)
 
             figure(3002)
             imagesc(projy)
-            % avi
 
-            % [max_projx,tilt_idx] = max(projx(:),[],'all','linear');
-            % [row,col] = ind2sub(size(squeeze(projx)),tilt_idx);
-            % tilt_angle{section_idx} = col;
-            %     [~,tilt_angle] = find(projx == max_projx); %x_max angle de rotation pour une coupe normale au vaisseau
-
+            % select angle of max of sum of columns 
             projx_bin = (projx == 0);
             list_x = squeeze(sum(projx_bin, 1));
             [~, idc] = max(list_x);
             tilt_angle_list(section_idx) = idc(1);
+            % rotate the sub image
             subImg = imrotate(subImg, tilt_angle_list(section_idx), 'bilinear', 'crop');
             subImg_cell{section_idx} = subImg;
             subVideo = v_RMS_masked(yRange, xRange, :);
-
+            
+            % rotate every sub frames
             for tt = 1:T_max
                 subVideo(:, :, tt) = imrotate(cropCircle(subVideo(:, :, tt)), tilt_angle_list(section_idx), 'bilinear', 'crop');
             end
 
             subVideo_cell{section_idx} = subVideo;
-            section_cut = projx(:, tilt_angle_list(section_idx));
+            
+            profile = mean(subImg,1); % mean velocity profile along the length of the section
 
-            section_cut(section_cut<0) = 0 ;
+            section_cut = projx(:, tilt_angle_list(section_idx));
+            
+            
+            [~,centt] = max(profile);
+            central_range = max(1,centt-round(subImgHW/6)):min(length(profile),centt+round(subImgHW/6));
+            r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
+            f = fit(r_range',profile(central_range)','poly2');
+            figure(section_idx)
+            plot(f,r_range,profile(central_range));
+            r = roots([f.p1,f.p2,f.p3]);
+            width_cross_section(section_idx) = r(1)-r(2);
+
+            set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
+            f = getframe(gca); %# Capture the current window
+
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername,insert, ['_proj_' name_section num2str(section_idx) '.png'])));
+
 
             tmp_section = (section_cut ./ max(section_cut)) * size(section_cut, 1);
 
@@ -109,28 +136,10 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             hold off;
             set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
             f = getframe(gca); %# Capture the current window
-            
-            insert = '';
-            if ~isempty(circle)
-                insert = sprintf('_circle_%d',circle);
-            end
+
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername,insert, ['_proj_' name_section num2str(section_idx) '.png'])));
 
-            % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(section_idx)]);
-            w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(section_idx) '.avi'])));
-            tmp_video = mat2gray(Video_subIm_rotate);
-            open(w)
-
-            for theta = 1:length(angles)
-                writeVideo(w, tmp_video(:, :, theta));
-            end
-
-            close(w);
-
-            % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
-            tmp = nnz(section_cut);
             
-            width_cross_section(section_idx) = mean(sum(subImg>0,1));
 
             figure(fig_idx_start + section_idx)
             xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
@@ -148,8 +157,6 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
             line(x, y, 'Color', 'red', 'LineWidth', 3)
             axis off;
             f = getframe(gca); %# Capture the current
-
-            %bords blancs
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername,insert, ['_' name_section num2str(section_idx) '.png'])));
 
             mask_slice_subImg = false(size(subImg, 1), size(subImg, 2));
@@ -179,9 +186,9 @@ function [avg_blood_volume_rate, std_blood_volume_rate, cross_section_area, avg_
         end
         
         if ~isempty(force_width)
-            width_cross_section(section_idx) = force_width;
+            width_cross_section(section_idx) = force_width * PW_params.cropSection_pixelSize / 2 ^ k;
         end
-        cross_section_area(section_idx) = pi * ((width_cross_section(section_idx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+        cross_section_area(section_idx) = pi * ((width_cross_section(section_idx) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     end
 
 
