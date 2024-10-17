@@ -96,9 +96,11 @@ end
 if isempty(PW_params.forcewidth)
     % index_start = systoles_indexes(1);
     % index_end = systoles_indexes(end);
+    index_start = 1;
+    index_end = numFrames;
 else
     index_start = 1;
-    index_end = N_frame;
+    index_end = numFrames;
 end
 
 colors = lines(numCircles);
@@ -263,5 +265,7 @@ title("Average over all radii Total Blood Volume Rate over time")
 set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'bloodVolumeRateallradxtime.png')))
+
+fprintf("- Blood Volume Rate for all radii took : %ds", round(toc))
 
 end

@@ -215,13 +215,12 @@ classdef OneCycleClass
             obj.M0_data_video = register_video_from_shifts(obj.M0_data_video, shifts);
             obj.M1_data_video = register_video_from_shifts(obj.M1_data_video, shifts);
             obj.M2_data_video = register_video_from_shifts(obj.M2_data_video, shifts);
-            
+
             toc
 
         end
 
         function obj = cropAllVideo(obj)
-            tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
             firstFrame = PW_params.videoStartFrameIndex;
@@ -251,7 +250,6 @@ classdef OneCycleClass
             end
 
             obj.load_logs = logs;
-            toc
         end
 
         function obj = VideoResize(obj)
@@ -650,17 +648,17 @@ classdef OneCycleClass
                 clear exec_times
 
                 % pulseVelocityTimer = tic;
-                % 
+                %
                 % fprintf("\n----------------------------------\n")
                 % fprintf("Pulse Velocity\n")
                 % fprintf("----------------------------------\n")
-                % 
+                %
                 % pulseVelocity(obj.M0_data_video, maskArtery, ToolBox, obj.directory)
-                % 
+                %
                 % time_pulsevelocity = toc(pulseVelocityTimer);
                 % fprintf("- Pulse Velocity Calculations took : %ds\n", round(time_pulsevelocity))
                 % save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
-                
+
                 if obj.flag_velocity_analysis
                     bloodFlowVelocityTimer = tic;
 

@@ -9,6 +9,8 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 
+tic
+
 mkdir(ToolBox.PW_path_png, 'volumeRate')
 mkdir(ToolBox.PW_path_eps, 'volumeRate')
 
@@ -1053,5 +1055,7 @@ for i = 1:numCircles
     %writeGifOnDisc(combined_Gif_artery,fullfile(ToolBox.PW_path_gif, sprintf("%s_circle_%d_%s.gif", ToolBox.PW_folder_name,i, "volumeRateArtery")),timePeriod);
 
 end
+
+fprintf("- Blood Volume Rate took : %ds\n", round(toc))
 
 end

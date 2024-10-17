@@ -64,8 +64,8 @@ if veinsAnalysis
     end
 
 else
-    [hue_artery_mean, sat_artery_mean, val_artery_mean, cmapArtery] = createHSVmap(f_RMS_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-    val_mean = f_RMS_mean .* ~maskArtery + val_artery_mean .* maskArtery;
+    [hue_artery_mean, sat_artery_mean, val_artery_mean, cmapArtery] = createHSVmap(v_RMS_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
+    val_mean = v_RMS_mean .* ~maskArtery + val_artery_mean .* maskArtery;
     v_RMS_meanRGB = hsv2rgb(hue_artery_mean, sat_artery_mean, val_mean);
     v_RMS_meanRGB = v_RMS_meanRGB .* maskArtery + M0_disp_image .* ~maskArtery;
     imwrite(v_RMS_meanRGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_RMS_mean.png')))
