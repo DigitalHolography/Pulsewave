@@ -26,13 +26,13 @@ M0_disp_image = mat2gray(mean(M0_disp_video, 3));
 v_RMS_mean = mat2gray(squeeze(mean(v_RMS_video(:, :, :), 3)));
 
 if veinsAnalysis
-    fi=figure(730);colormap turbo; I=imagesc(v_mean);c=colorbar;c.Label.String = 'mm/s';
+    fi=figure(730);colormap turbo; I=imagesc(v_RMS_mean);c=colorbar;c.Label.String = 'mm/s';
     axis image;axis off;
     exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMS_imagesc_Mean.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
-    fi=figure(731);colormap hot; I=imagesc(v_mean.*maskArtery);c=colorbar;c.Label.String = 'mm/s';
+    fi=figure(731);colormap hot; I=imagesc(v_RMS_mean.*maskArtery);c=colorbar;c.Label.String = 'mm/s';
     axis image;axis off;
     exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMS_imagesc_Mean_arteries.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
-    fi=figure(732);colormap cool; I=imagesc(v_mean.*maskVein);c=colorbar;c.Label.String = 'mm/s';
+    fi=figure(732);colormap cool; I=imagesc(v_RMS_mean.*maskVein);c=colorbar;c.Label.String = 'mm/s';
     axis image;axis off;
     exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMS_imagesc_Mean_veins.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
 

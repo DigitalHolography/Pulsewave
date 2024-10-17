@@ -178,14 +178,13 @@ classdef OneCycleClass
             PW_params = Parameters_json(obj.directory);
             M0_data_mean = mean(obj.M0_data_video, [1 2]);
 
-            obj.f_RMS_video = sqrt(obj.M2_data_video ./ obj.M0_data_video);
-            obj.f_AVG_video = obj.M1_data_video ./ obj.M0_data_video;
+            obj.f_RMS_video = sqrt(obj.M2_data_video ./ M0_data_mean);
+            obj.f_AVG_video = obj.M1_data_video ./ M0_data_mean;
             obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
 
         end
 
         function obj = registerVideo(obj)
-            disp('registering')
             tic
             % Registers the video using intensity based registration
             PW_params = Parameters_json(obj.directory);
@@ -222,7 +221,6 @@ classdef OneCycleClass
         end
 
         function obj = cropAllVideo(obj)
-            disp('cropping videos')
             tic
             %Crop a video (matrix dim 3)
             PW_params = Parameters_json(obj.directory);
@@ -257,7 +255,6 @@ classdef OneCycleClass
         end
 
         function obj = VideoResize(obj)
-            disp('resizing')
             tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;

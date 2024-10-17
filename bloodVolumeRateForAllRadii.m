@@ -94,8 +94,8 @@ for i = 1:numCircles
 
 end
 if isempty(PW_params.forcewidth)
-    index_start = systoles_indexes(1);
-    index_end = systoles_indexes(end);
+    % index_start = systoles_indexes(1);
+    % index_end = systoles_indexes(end);
 else
     index_start = 1;
     index_end = N_frame;
