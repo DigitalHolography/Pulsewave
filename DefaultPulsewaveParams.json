@@ -136,6 +136,7 @@
         "Diff First Calculations Flag" : 0,
         "All Circles" : 0,
         "Number Of Circles" : 10,
-        "Force Width In Pixels" : []
+        "Force Width In Pixels" : [],
+        "Force Barycenter" : []
     }
 }

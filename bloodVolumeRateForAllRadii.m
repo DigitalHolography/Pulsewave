@@ -342,7 +342,13 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, ~, v_RMS, dataM0,
             poiseuille_fit(poiseuille_fit<0)=0;
             plot(poiseuille_fit, '-r', 'LineWidth', 2);
 
+            axis tight;
+            aa = axis;
+            aa(3)=-5;
+            aa(4)=25;
+            axis(aa);
             hold off
+
             title(['Interpolated time-averaged velocity profile at radius = ',num2str(rad(i)),' pix'])
             exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'interpolatedBloodVelocityProfile.png')))
 
