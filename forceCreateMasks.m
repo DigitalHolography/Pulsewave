@@ -36,9 +36,12 @@ correlationMatrixArtery = correlationMatrix ./ max(correlationMatrix, [], 'all')
 
 meanIm = squeeze(mean(videoM0, 3)); % Because highest intensities in CRA usually
 meanIm_M1M0 = squeeze(mean(videoM1M0, 3)); % Because velocities coming from the CRA are out-of-plane
-blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0) .* correlationMatrixArtery, PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);
+blurred_mask = imgaussfilt(double(meanIm .* meanIm_M1M0), PW_params.gauss_filt_size_for_barycentre * size(meanIm .* meanIm_M1M0, 1), 'Padding', 0);
 [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
-
+if ~isempty(PW_params.forcebarycenter)
+    ToolBox.y_barycentre = PW_params.forcebarycenter(1);
+    ToolBox.x_barycentre= PW_params.forcebarycenter(2);
+end
 %% Create Vessel Mask
 
 maskVessel = maskArtery | maskVein;

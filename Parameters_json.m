@@ -108,6 +108,7 @@ classdef Parameters_json < handle
         AllCirclesFlag
         nbCircles
         forcewidth
+        forcebarycenter
     end
 
     methods
@@ -255,6 +256,7 @@ classdef Parameters_json < handle
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
                 obj.nbCircles = parsedData.Other.NumberOfCircles ;
                 obj.forcewidth = parsedData.Other.ForceWidthInPixels;
+                obj.forcebarycenter = parsedData.Other.ForceBarycenter;
 
 
             else
