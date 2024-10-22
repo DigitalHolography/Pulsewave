@@ -78,7 +78,7 @@ imwrite(mat2gray(single(maskSection)), fullfile(ToolBox.PW_path_png, 'mask', spr
 imwrite(mat2gray(single(maskCRA)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRA_New.png')), 'png');
 imwrite(mat2gray(single(maskCRV)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRV_New.png')), 'png');
 %% Saving a pretty masks image
-segmentationMap = zeros(Nx, Ny, 3);
+segmentationMap = zeros(numX, numY, 3);
 meanIm = rescale(meanIm);
 segmentationMap(:, :, 1) = meanIm - (maskArtery + maskVein) .* meanIm + maskArtery;
 segmentationMap(:, :, 2) = meanIm - (maskArtery + maskVein) .* meanIm;

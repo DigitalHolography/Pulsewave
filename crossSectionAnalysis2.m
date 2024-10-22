@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
     
@@ -88,10 +88,11 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             end
     
             subVideo_cell{sectionIdx} = subVideo;
-            section_cut = projx(:, tilt_angle_list(section_idx));
+            section_cut = projx(:, tilt_angle_list(sectionIdx));
                 
             section_cut(section_cut<0) = 0 ;
             
+            profile = mean(subImg,1);
             [~,centt] = max(profile);
             central_range = max(1,centt-round(subImgHW/6)):min(length(profile),centt+round(subImgHW/6));
             r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
@@ -192,7 +193,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             crossSectionWidth(sectionIdx) = force_width;
         end
     
-        crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+        crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     end
     
     %% Blood Volume Rate computation

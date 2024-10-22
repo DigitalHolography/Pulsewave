@@ -589,9 +589,9 @@ classdef OneCycleClass
 
             f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-            try
+            if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
                 [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.M0_disp_video, f_AVG_mean, obj.directory, ToolBox);
-            catch
+            else
                 [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.f_RMS_video, f_AVG_mean, obj.directory, ToolBox);
             end
 
@@ -695,8 +695,8 @@ classdef OneCycleClass
                     fprintf("Blood Volume Rate Calculation\n")
                     fprintf("----------------------------------\n")
 
-                    bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
-                    bloodVolumeRateForAllRadii(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    % bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRateForAllRadii(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,sysIdxList);
 
                     time_volumeRate = toc(bloodVolumeRateTimer);
                     fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
