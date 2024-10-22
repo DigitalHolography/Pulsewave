@@ -3,11 +3,13 @@ function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, 
 nb_section = size(SubImage_cell, 2);
 numFrames = size(SubVideo_cell{1}, 3);
 n_interp = 100;
+[path,~,~] = fileparts(ToolBox.PW_path_main);
+PW_params = Parameters_json(path);
 %interpolation parameter
 k = 2;
 
-    velocity_profiles = zeros(n_interp, N_frame, nb_section);
-    velocity_profiles_std = zeros(n_interp, N_frame, nb_section);
+    velocity_profiles = zeros(n_interp, numFrames, nb_section);
+    velocity_profiles_std = zeros(n_interp, numFrames, nb_section);
 
 for ii = 1:nb_section
     subImg = SubImage_cell{ii};
@@ -100,7 +102,7 @@ average_velocity_profile_diastole = average_velocity_profile(:, end);
 Color_std = [0.8 0.8 0.8];
 fullTime = 1:n_interp;
 
-if exportVideos
+if PW_params.exportVideos
 
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
     gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityProfile")), timePeriod, 0.04, numFrames);

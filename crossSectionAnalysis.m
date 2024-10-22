@@ -130,7 +130,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
 
         % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
         tmp = nnz(section_cut);
-        crossSectionWidth(section_idx) = mean(sum(subImg>0,1));
+        crossSectionWidth(sectionIdx) = mean(sum(subImg>0,1));
 
         figure(fig_idx_start + sectionIdx)
         xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
@@ -179,7 +179,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
     end
     
     if ~isempty(force_width)
-        crossSectionWidth(section_idx) = force_width;
+        crossSectionWidth(sectionIdx) = force_width;
     end
 
     crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
@@ -188,7 +188,7 @@ end
 %% Blood Volume Rate computation
 
 for sectionIdx = 1:numSections
-    stdProfils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)),T_max],'single');
+    stdProfils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)),numFrames],'single');
     profils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)), numFrames], 'single');
 
     for tt = 1:numFrames
@@ -245,7 +245,7 @@ for sectionIdx = 1:numSections
     end
 
     velocityProfiles{sectionIdx} = profils;
-    stdVelocityProfiles{section_idx} = stdProfils;
+    stdVelocityProfiles{sectionIdx} = stdProfils;
 
     avgVolumeRate(sectionIdx, :) = filloutliers(avgVolumeRate(sectionIdx, :), 'linear');
     stdVolumeRate(sectionIdx, :) = filloutliers(stdVolumeRate(sectionIdx, :), 'linear');
@@ -256,7 +256,7 @@ end % sectionIdx
 
 if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
 
-    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox, path);
+    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
     % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
 
 end
