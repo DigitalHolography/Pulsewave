@@ -273,6 +273,7 @@ classdef pulse < matlab.apps.AppBase
 
             for n = 1:length(app.files)
 
+                fprintf("==============================\n")
                 app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
                 app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
