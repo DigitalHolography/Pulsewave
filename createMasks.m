@@ -313,9 +313,9 @@ segmentationMap = zeros(numX, numY, 3);
 segmentationMap(:, :, 1) = M0_disp_img - (maskArtery + maskVein) .* M0_disp_img + maskArtery;
 segmentationMap(:, :, 2) = M0_disp_img - (maskArtery + maskVein) .* M0_disp_img;
 segmentationMap(:, :, 3) = M0_disp_img - (maskArtery + maskVein) .* M0_disp_img + maskVein;
-segmentationMapArtery(:, :, 1) = meanIm - (maskArtery) .* meanIm + maskArtery;
-segmentationMapArtery(:, :, 2) = meanIm - maskArtery.* meanIm;
-segmentationMapArtery(:, :, 3) = meanIm - maskArtery.* meanIm;
+segmentationMapArtery(:, :, 1) = M0_disp_img - (maskArtery) .* M0_disp_img + maskArtery;
+segmentationMapArtery(:, :, 2) = M0_disp_img - maskArtery.* M0_disp_img;
+segmentationMapArtery(:, :, 3) = M0_disp_img - maskArtery.* M0_disp_img;
 imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
 imwrite(segmentationMapArtery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arterySegmentation.png')), 'png');
 
@@ -327,7 +327,7 @@ imwrite(mat2gray(single(maskArtery)), fullfile(ToolBox.PW_path_png, 'mask', spri
 imwrite(mat2gray(single(maskVein)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskVein.png')), 'png');
 imwrite(mat2gray(single(maskVessel)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskVessel.png')), 'png');
 imwrite(mat2gray(single(maskBackground)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskBackground.png')), 'png');
-%vesselMap = uint8( cat( 3, uint8(meanIm)+ uint8(maskArtery)*255, uint8(meanIm) , uint8(meanIm) + uint8(maskVein)*255 ));
+%vesselMap = uint8( cat( 3, uint8(M0_disp_img)+ uint8(maskArtery)*255, uint8(M0_disp_img) , uint8(M0_disp_img) + uint8(maskVein)*255 ));
 imwrite(vesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'vesselMap.png')), 'png');
 imwrite(VesselImageRGB_Artery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'vesselMapArtery.png')), 'png');
 imwrite(mat2gray(maskCRA), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRA.png')), 'png');

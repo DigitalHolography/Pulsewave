@@ -50,10 +50,8 @@ classdef OneCycleClass
             else
                 obj.directory = path;
                 tmp_idx = regexp(path, '\');
-                obj.filenames = path(tmp_idx(end - 1) + 1:end - 1);
+                obj.filenames = obj.directory(tmp_idx(end-1) + 1:end -1);
             end
-
-            obj.k = 0;
 
             %% AVEC TXT
 
