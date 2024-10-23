@@ -708,9 +708,10 @@ classdef OneCycleClass
             %% Spectrum Analysis
             % waitbar(0.9,progress_bar,"Spectrum analysis");
 
-            if obj.flag_SH_analysis
+            if obj.flag_SH_analysis && isfile(fullfile(obj.directory, 'raw', [strcat(ToolBox.main_foldername, '_SH'),  '.raw']))
 
                 %% Import SH
+
 
                 tmpname = strcat(ToolBox.main_foldername, '_SH');
                 ext = '.raw';
@@ -718,7 +719,12 @@ classdef OneCycleClass
                 fileID = fopen(fullfile(obj.directory, 'raw', [tmpname, ext]));
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
-                SH_cube = reshape(videoSH, numX, numY, numFrames, []);
+                [numX, numY, numFrames] = size(obj.f_RMS_video);
+                bin_x = 4;
+                bin_y = 4;
+                bin_w = 16;
+                bin_t = 1;
+                SH_cube = reshape(videoSH, ceil(numX/(2^obj.k*bin_x)), ceil(numY/(2^obj.k*bin_y)),[], ceil(numFrames/bin_t));
 
                 tic
                 spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.M0_data_video);

@@ -13,12 +13,10 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
 
     %% Resize masks
 
-    ratio = cubeSize / size(maskArtery, 1); % to resize the masks
+    
 
-    maskArtery = logical(imresize(maskArtery, ratio));
-    maskBackground = logical(imresize(maskBackground, ratio));
-
-    clear ratio
+    maskArtery = logical(imresize(maskArtery, [cubeSize,cubeSize]));
+    maskBackground = logical(imresize(maskBackground, [cubeSize,cubeSize]));
 
     %% Video
     video = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s",ToolBox.main_foldername,"stdTemp.avi")));

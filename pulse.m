@@ -667,7 +667,7 @@ classdef pulse < matlab.apps.AppBase
             app.SHanalysisCheckBox.FontSize = 16;
             app.SHanalysisCheckBox.FontColor = [1 1 1];
             app.SHanalysisCheckBox.Position = [63 164 250 24];
-            app.SHanalysisCheckBox.Enable = false;
+            app.SHanalysisCheckBox.Enable = true;
 
             % Create ExecutefromtextButton
             app.ExecutefromtextButton = uibutton(app.PulsewaveUIFigure, 'push');
