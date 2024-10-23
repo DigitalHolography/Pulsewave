@@ -77,7 +77,7 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 for i = 1:numCircles
-    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell] = crossSectionAnalysis2(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
+    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
 
     if length(avg_bloodVolumeRate_artery) < 1
         continue
@@ -142,8 +142,8 @@ aa = axis;
 aa(4) = aa(4)*1.14;
 axis(aa);
 title('Histogram of sections width (µm)');
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'histogram_of_cross_sections.png')))
-
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'histogram_of_section_width.png')))
+writematrix(2*sqrt(cross_section_area_artery_r(cross_section_area_artery_r~=0)/pi )*1000,fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername,'histogram_of_section_width.png')));
 
 plot_bvr_full_field = figure(1676);
 

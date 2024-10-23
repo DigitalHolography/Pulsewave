@@ -130,7 +130,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
 
         % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
         tmp = nnz(section_cut);
-        crossSectionWidth(sectionIdx) = mean(sum(subImg>0,1));
+        crossSectionWidth(sectionIdx) = mean(sum(subImg~=0,1));
 
         figure(fig_idx_start + sectionIdx)
         xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
@@ -179,7 +179,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
     end
     
     if ~isempty(force_width)
-        crossSectionWidth(sectionIdx) = force_width;
+        %crossSectionWidth(sectionIdx) = force_width;
     end
 
     crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
