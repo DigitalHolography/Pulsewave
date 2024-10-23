@@ -18,46 +18,18 @@
     "Veins Analysis" : 1,
     "Export Videos" : 1,
     "Entire Pulse Analysis" : 1,
-    "Resistivity index" : {
-        "Gaussian filter sigma" : 0.7,
-        "Amplitude saturation  ponderation" : 0.75,
-        "Tolerant value minimum" : 0.02,
-        "Tolerant value maximum" : 0.98,
-        "Gamma" : 0.7
-    },
     "Creation of one cycle" : {
-        "Number of interpolation" : 64,
         "Out of noise threshold" : 85,
         "Data reliability index threshold" : 50,
         "Local background width" : 2
     },
     "Creation of masks" : {
-        "Vesselnes parameter sigma" : 1,
+        "Vesselnes parameter sigma" : 2,
         "Vesselnes parameter beta" : 0.8,
-        "Vesselness Binarization threshold" : 0.35,
-        "MagicWand Number of segmented area detected for vessels" : 5,
-        "MagicWand Number of segmented area detected for artery" : 5,
-        "Artery correlation threshold" : 0.7,
-        "ArteryCorrelationMatrixThreshold":  0.8,
-        "ContrastNumSlides": [100,100]
-
-    },
-    "Central retina mask" : {
-        "Central retina artery threshold" : 3,
-        "Central retina vein threshold" : -3,
-        "Central retina background threshold" : 2,
-        "Crop coroid radius" : 0.10,
-        "Threshold radius value" : -1,
-        "Standard binarization threshold" : 0.15,
+        "Crop coroid radius" : 0.12,
         "Minimum seed area size" : 150,
-        "Cleaning Coroid or not" : 1,
-        "Showing intermediate figures in the process" : 0,
-        "Region growing floor threshold" : 0.33,
-        "Region growing vein condition threshold" : 0.33,
-        "Region growing artery condition threshold" : 2,
-        "Region growing artery seeds threshold" : 2,
-        "Central Retina Vein Artery threshold" : 3,
-        "Region growing threshold" : -0.0025
+        "Diaphragm radius" : 0.45,
+        "Central Retina Vein Artery threshold" : 3
     },
     "Crop section analysis" : {
         "Scale factor width" : 3,

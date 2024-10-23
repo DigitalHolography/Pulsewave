@@ -256,7 +256,7 @@ classdef OneCycleClass
             tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;
-            out_width = PW_params.frameHeight;
+            out_width = PW_params.frameWidth;
             out_numFrames = PW_params.videoLength;
 
             if out_numFrames < 0
@@ -485,12 +485,7 @@ classdef OneCycleClass
 
         function onePulse(obj, Ninterp)
             %  ------- This is the app main routine. --------
-
-            % PW_params = Parameters_json(obj.directory);
-            % ToolBox = obj.ToolBoxmaster;
-
             % progress_bar = waitbar(0,'');
-
 
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);

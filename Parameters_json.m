@@ -15,38 +15,15 @@ classdef Parameters_json < handle
         radius_ratio
         radius_gap
         gauss_filt_size_for_barycentre
-        resistivity_gaussFiltSigma
-        resistivity_satAmp
-        resistivity_minTolVal
-        resistivity_maxTolVal
-        resistivity_gamma
-        oneCycle_Ninterp
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
         local_background_width
-        arteryMask_vesselness_sigma
-        arteryMask_vesselness_beta
-        arteryMask_vesselness_bin_threshold
-        arteryMask_magicwand_nb_of_area_vessels
-        arteryMask_magicwand_nb_of_area_artery
-        finalarteryMask_CorrelationMatrixThreshold
-        firstArteryMask_CorrelationMatrixThreshold
-        arteryMask_vesselnessContrastNumSlides
-        centralRetinal_arteryThreshold
-        centralRetinal_veinThreshold
-        centralRetinal_backgndThreshold
-        vesselMask_BinTreshold
+        masks_vesselness_sigma
+        masks_vesselness_beta
         masks_radius
-        masks_radius_treshold
         masks_minSize
-        masks_cleaningCoroid
-        masks_showIntermediateFigures
-        RG_FloorThreshold
-        RG_veinConditionThreshold
-        RG_ArteryConditionThreshold
-        RG_ArterySeedsThreshold
+        masks_diaphragmRadius
         CRACRV_Threshold
-        RG_alpha
         cropSection_scaleFactorWidth
         cropSection_scaleFactorSize
         cropSection_maskThreshold
@@ -152,41 +129,16 @@ classdef Parameters_json < handle
                 obj.exportVideos = parsedData.ExportVideos;
                 obj.entirePulseAnalysis = parsedData.EntirePulseAnalysis;
 
-                obj.resistivity_gaussFiltSigma = parsedData.ResistivityIndex.GaussianFilterSigma;
-                obj.resistivity_satAmp = parsedData.ResistivityIndex.AmplitudeSaturationPonderation;
-                obj.resistivity_minTolVal = parsedData.ResistivityIndex.TolerantValueMinimum;
-                obj.resistivity_maxTolVal = parsedData.ResistivityIndex.TolerantValueMaximum;
-                obj.resistivity_gamma = parsedData.ResistivityIndex.Gamma;
-
-                obj.oneCycle_Ninterp = parsedData.CreationOfOneCycle.NumberOfInterpolation;
                 obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
                 obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
                 obj.local_background_width = parsedData.CreationOfOneCycle.LocalBackgroundWidth;
 
-                obj.arteryMask_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
-                obj.arteryMask_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
-                obj.arteryMask_vesselness_bin_threshold = parsedData.CreationOfMasks.VesselnessBinarizationThreshold;
-                obj.arteryMask_magicwand_nb_of_area_vessels = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForVessels;
-                obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
-                obj.finalarteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
-                obj.firstArteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
-                obj.arteryMask_vesselnessContrastNumSlides = parsedData.CreationOfMasks.ContrastNumSlides;
-
-                obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
-                obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;
-                obj.centralRetinal_backgndThreshold = parsedData.CentralRetinaMask.CentralRetinaBackgroundThreshold;
-                obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold;
-                obj.masks_radius = parsedData.CentralRetinaMask.CropCoroidRadius;
-                obj.masks_radius_treshold = parsedData.CentralRetinaMask.ThresholdRadiusValue;
-                obj.masks_minSize = parsedData.CentralRetinaMask.MinimumSeedAreaSize;
-                obj.masks_cleaningCoroid = parsedData.CentralRetinaMask.CleaningCoroidOrNot;
-                obj.masks_showIntermediateFigures = parsedData.CentralRetinaMask.ShowingIntermediateFiguresInTheProcess;
-                obj.RG_FloorThreshold = parsedData.CentralRetinaMask.RegionGrowingFloorThreshold;
-                obj.RG_veinConditionThreshold = parsedData.CentralRetinaMask.RegionGrowingVeinConditionThreshold;
-                obj.RG_ArteryConditionThreshold = parsedData.CentralRetinaMask.RegionGrowingArteryConditionThreshold;
-                obj.RG_ArterySeedsThreshold = parsedData.CentralRetinaMask.RegionGrowingArterySeedsThreshold;
-                obj.CRACRV_Threshold = parsedData.CentralRetinaMask.CentralRetinaVeinArteryThreshold;
-                obj.RG_alpha = parsedData.CentralRetinaMask.RegionGrowingThreshold;
+                obj.masks_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
+                obj.masks_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
+                obj.masks_radius = parsedData.CreationOfMasks.CropCoroidRadius;
+                obj.masks_minSize = parsedData.CreationOfMasks.MinimumSeedAreaSize;
+                obj.masks_diaphragmRadius = parsedData.CreationOfMasks.DiaphragmRadius;
+                obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
                 obj.cropSection_scaleFactorWidth = parsedData.CropSectionAnalysis.ScaleFactorWidth;
                 obj.cropSection_scaleFactorSize = parsedData.CropSectionAnalysis.ScaleFactorSize;
