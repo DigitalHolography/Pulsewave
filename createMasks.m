@@ -313,7 +313,11 @@ segmentationMap = zeros(numX, numY, 3);
 segmentationMap(:, :, 1) = M0_disp_img - (maskArtery + maskVein) .* M0_disp_img + maskArtery;
 segmentationMap(:, :, 2) = M0_disp_img - (maskArtery + maskVein) .* M0_disp_img;
 segmentationMap(:, :, 3) = M0_disp_img - (maskArtery + maskVein) .* M0_disp_img + maskVein;
+segmentationMapArtery(:, :, 1) = meanIm - (maskArtery) .* meanIm + maskArtery;
+segmentationMapArtery(:, :, 2) = meanIm - maskArtery.* meanIm;
+segmentationMapArtery(:, :, 3) = meanIm - maskArtery.* meanIm;
 imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
+imwrite(segmentationMapArtery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arterySegmentation.png')), 'png');
 
 %% Saving masks as PNG
 foldername = ToolBox.main_foldername;

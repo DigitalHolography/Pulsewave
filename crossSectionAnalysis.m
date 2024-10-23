@@ -179,7 +179,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
     end
     
     if ~isempty(force_width)
-        %crossSectionWidth(sectionIdx) = force_width;
+        crossSectionWidth(sectionIdx) = force_width;
     end
 
     crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
