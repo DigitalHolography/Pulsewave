@@ -9,6 +9,11 @@ else
     fig_idx_start = 2100;
     name_section = 'V';
 end
+insert = '';
+
+if ~isempty(circle)
+    insert = sprintf('_circle_%d', circle);
+end
 
 numSections = size(locs, 1);
 
@@ -109,11 +114,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
         f = getframe(gca); %# Capture the current window
 
-        insert = '';
-
-        if ~isempty(circle)
-            insert = sprintf('_circle_%d', circle);
-        end
+        
 
         imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
 
@@ -130,7 +131,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
 
         % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
         tmp = nnz(section_cut);
-        crossSectionWidth(sectionIdx) = mean(sum(subImg~=0,1));
+        crossSectionWidth(sectionIdx) = mean(sum(subImg~=0,2));
 
         figure(fig_idx_start + sectionIdx)
         xAx = linspace(0, size(section_cut, 1), size(subImg, 1));

@@ -112,7 +112,6 @@ classdef Parameters_json < handle
                 obj.refAvgStart = parsedData.Video.RefStart;
                 obj.refAvgEnd = parsedData.Video.RefEnd;
 
-
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
 
@@ -121,17 +120,17 @@ classdef Parameters_json < handle
                 obj.videoLength = parsedData.ResizeVideo.VideoLength;
 
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
-                obj.radius_ratio = parsedData.RadiusRatio;
-                obj.radius_gap = parsedData.RadiusGap;
-                obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
 
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
                 obj.entirePulseAnalysis = parsedData.EntirePulseAnalysis;
 
-                obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
-                obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
-                obj.local_background_width = parsedData.CreationOfOneCycle.LocalBackgroundWidth;
+                obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
+
+                obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
+                obj.flatField_border = parsedData.FlatFieldCorrection.Border;
+                obj.flatField_borderDMap = parsedData.FlatFieldCorrection.BorderDMAP;
+                obj.flatField_borderPulseAnal = parsedData.FlatFieldCorrection.BorderPulseAnalysis;
 
                 obj.masks_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
                 obj.masks_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
@@ -140,55 +139,41 @@ classdef Parameters_json < handle
                 obj.masks_diaphragmRadius = parsedData.CreationOfMasks.DiaphragmRadius;
                 obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
-                obj.cropSection_scaleFactorWidth = parsedData.CropSectionAnalysis.ScaleFactorWidth;
-                obj.cropSection_scaleFactorSize = parsedData.CropSectionAnalysis.ScaleFactorSize;
-                obj.cropSection_maskThreshold = parsedData.CropSectionAnalysis.MaskSliceThreshold;
-                obj.cropSection_pixelSize = parsedData.CropSectionAnalysis.PixelSize; %??
+                obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
 
-                obj.elasWave_nDomFreq = parsedData.ElasticWaves.NumberOfDominantFrequency;
-                obj.elasWave_pixelSize = parsedData.ElasticWaves.PixelSize;
-                obj.elasWave_gaussFiltPadding = parsedData.ElasticWaves.GaussianFilterPadding;
-                obj.elasWave_butterFiltOrder = parsedData.ElasticWaves.ButterworthFilterOrder;
-                obj.elasWave_butterFiltBand = parsedData.ElasticWaves.ButterworthFilterThicknessBand;
+                obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
+                obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
 
-                obj.systoleThreshold = parsedData.Systole.SystoleThreshold;
+                obj.DiffFirstCalculationsFlag = parsedData.Velocity.DiffFirstCalculationsFlag;
+                obj.local_background_width = parsedData.Velocity.LocalBackgroundWidth;
 
-                obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
-                obj.flatField_border = parsedData.FlatFieldCorrection.Border;
-                obj.flatField_borderDMap = parsedData.FlatFieldCorrection.BorderDMAP;
-                obj.flatField_borderPulseAnal = parsedData.FlatFieldCorrection.BorderPulseAnalysis;
+                obj.velocitySmallRadiusRatio = parsedData.SizeOfField.SmallRadiusRatio;
+                obj.velocityBigRadiusRatio = parsedData.SizeOfField.BigRadiusRatio;
 
-                obj.flowRate_gaussFiltPadding = parsedData.FlowRate.GaussianFilterPadding;
-                obj.flowRate_yelorRangeHSV = parsedData.FlowRate.YellowOrangeRangeHSV;
-                obj.flowRate_cydblueRangeHSV = parsedData.FlowRate.CyanDarkBlueRangeHSV;
-                obj.flowRate_minTolVal = parsedData.FlowRate.TolerantValueMinimum;
-                obj.flowRate_maxTolVal = parsedData.FlowRate.TolerantValueMaximum;
-                obj.flowRate_sliceHalfThickness = parsedData.FlowRate.SliceHalfThickness;
-
-                obj.normFlag = parsedData.OpticalPowerNormalization.NormalizationFlag;
-                obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope;
-                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept;
-                obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow;
+                obj.nbCircles = parsedData.BloodVolumeRate.NumberOfCircles ;
+                obj.radius_ratio = parsedData.BloodVolumeRate.RadiusRatio;
+                obj.radius_gap = parsedData.BloodVolumeRate.RadiusGap;
+                obj.cropSection_scaleFactorWidth = parsedData.BloodVolumeRate.ScaleFactorWidth;
+                obj.cropSection_scaleFactorSize = parsedData.BloodVolumeRate.ScaleFactorSize;
+                obj.cropSection_maskThreshold = parsedData.BloodVolumeRate.MaskSliceThreshold;
+                obj.cropSection_pixelSize = parsedData.BloodVolumeRate.PixelSize;
+                obj.flowRate_sliceHalfThickness = parsedData.BloodVolumeRate.SliceHalfThickness;
 
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
                 obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;
                 obj.theta = parsedData.PulseAnalysis.Theta;
                 obj.opticalIndex = parsedData.PulseAnalysis.OpticalIndex;
                 obj.lambda = parsedData.PulseAnalysis.Lambda;
-                obj.phi = parsedData.PulseAnalysis.Phi; % Mie scattering angle
+                obj.phi = parsedData.PulseAnalysis.Phi; 
                 obj.pulseAnal_dataReliabilityFactor = parsedData.PulseAnalysis.DataReliatibilityFactor; %?
                 obj.pulseAnal_peakHeightThreshold = parsedData.PulseAnalysis.PeakHeightThreshold;
                 obj.pulseAnal_outNoiseThreshold = parsedData.PulseAnalysis.OutOfNoiseThreshold;
                 obj.pulseAnal_blurScaleFactor = parsedData.PulseAnalysis.BlurScaleFactor;
                 obj.pulseAnal_frameMinDiastole = parsedData.PulseAnalysis.FramePercentageBeforeMinimumOfDiastole;
                 obj.pulseAnal_framePeakSystole = parsedData.PulseAnalysis.FramePercentageAroundPeakSystole;
-                obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel; %??
+                obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel; 
 
-                obj.trWavelength_f0 = parsedData.Wavelength.F0;
-                obj.trWavelength_r0 = parsedData.Wavelength.R0;
-
-                obj.velocitySmallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
-                obj.velocityBigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
+                
 
                 obj.video2vessels_radiusRatio = parsedData.VesselsVideo.RadiusRatioFactor;
                 obj.video2vessels_gaussFiltPadding = parsedData.VesselsVideo.GaussianFilterPadding;
@@ -203,10 +188,15 @@ classdef Parameters_json < handle
                 obj.viscosity_listParamA = parsedData.Viscosity.ViscosityListParameterA;
                 obj.viscosity_listParamB = parsedData.Viscosity.ViscosityListParameterB;
 
+                obj.elasWave_nDomFreq = parsedData.ElasticWaves.NumberOfDominantFrequency;
+                obj.elasWave_pixelSize = parsedData.ElasticWaves.PixelSize;
+                obj.elasWave_gaussFiltPadding = parsedData.ElasticWaves.GaussianFilterPadding;
+                obj.elasWave_butterFiltOrder = parsedData.ElasticWaves.ButterworthFilterOrder;
+                obj.elasWave_butterFiltBand = parsedData.ElasticWaves.ButterworthFilterThicknessBand;
+
+
                 obj.nbSides = parsedData.Other.NumberOfSides;
-                obj.DiffFirstCalculationsFlag = parsedData.Other.DiffFirstCalculationsFlag;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
-                obj.nbCircles = parsedData.Other.NumberOfCircles ;
                 obj.forcewidth = parsedData.Other.ForceWidthInPixels;
                 obj.forcebarycenter = parsedData.Other.ForceBarycenter;
 

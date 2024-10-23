@@ -365,7 +365,7 @@ end
 figure(280)
 hold on
 plot(t, squeeze(sum(f_RMS_video.*maskArtery,[1,2])/nnz(maskArtery)), '-k', t, squeeze(sum(f_RMS_background.*maskArtery,[1,2])/nnz(maskArtery)), '--k', 'LineWidth', 2);
-title('Average f_RMS in Arteries');
+title('Average f_{RMS} in Arteries');
 fontsize(gca, 12, "points");
 xlabel(strXlabel, 'FontSize', 14);
 ylabel(strYlabel, 'FontSize', 14);
@@ -373,6 +373,7 @@ pbaspect([1.618 1 1]);
 box on
 set(gca, 'LineWidth', 2);
 axis tight;
+legend({'Arteries','Vessels background'});
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Arteries_fRMS.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Arteries_fRMS.eps')))
@@ -381,7 +382,7 @@ if veinsAnalysis
     figure(281)
     hold on
     plot(t, squeeze(sum(f_RMS_video.*maskVein,[1,2])/nnz(maskVein)), '-k', t, squeeze(sum(f_RMS_background.*maskVein,[1,2])/nnz(maskVein)), '--k', 'LineWidth', 2);
-    title('Average f_RMS in Veins');
+    title('Average f_{RMS} in Veins');
     fontsize(gca, 12, "points");
     xlabel(strXlabel, 'FontSize', 14);
     ylabel(strYlabel, 'FontSize', 14);
@@ -389,6 +390,8 @@ if veinsAnalysis
     box on
     set(gca, 'LineWidth', 2);
     axis tight;
+    legend({'Veins','Vessels background'});
+
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Veins_fRMS.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Veins_fRMS.eps')))
@@ -434,7 +437,7 @@ else % DIFFERENCE LAST
 
 end
 
-v_RMS_video = ToolBox.ScalingFactorVelocityInPlane * delta_f_RMS * ToolBox.NormalizationFactor;
+v_RMS_video = ToolBox.ScalingFactorVelocityInPlane * delta_f_RMS ;
 
 figure(282)
 hold on
@@ -442,11 +445,15 @@ plot(t, squeeze(sum(v_RMS_video.*maskArtery,[1,2])/nnz(maskArtery)), '-k', 'Line
 title('Average estimated velocity in Arteries');
 fontsize(gca, 12, "points");
 xlabel(strXlabel, 'FontSize', 14);
-ylabel(strYlabel, 'FontSize', 14);
+ylabel('mm/s', 'FontSize', 14);
 pbaspect([1.618 1 1]);
 box on
 set(gca, 'LineWidth', 2);
 axis tight;
+aa = axis;
+aa(4) = 1.14 * aa(4);
+aa(3) = 0;
+axis(aa);
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Arteries_velocity.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Arteries_velocity.eps')))
@@ -458,11 +465,15 @@ if veinsAnalysis
     title('Average estimated velocity in Veins');
     fontsize(gca, 12, "points");
     xlabel(strXlabel, 'FontSize', 14);
-    ylabel(strYlabel, 'FontSize', 14);
+    ylabel('mm/s', 'FontSize', 14);
     pbaspect([1.618 1 1]);
     box on
     set(gca, 'LineWidth', 2);
     axis tight;
+    aa = axis;
+    aa(4) = 1.14 * aa(4);
+    aa(3) = 0;
+    axis(aa);
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Veins_velocity.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'Veins_velocity.eps')))

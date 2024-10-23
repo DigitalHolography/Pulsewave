@@ -32,4 +32,4 @@ end
 figure(435)
 montage(segmentation_paths);
 figure(321)
-%montage(bvr_paths);
+montage(bvr_paths);

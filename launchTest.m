@@ -42,6 +42,13 @@ for ind = 1:length(paths)
     OcClass = OcClass.VideoResize();
     OcClass = OcClass.Interpolate();
 
+    OcClass.flag_SH_analysis = 0;
+    OcClass.flag_PulseWave_analysis = 1;
+    OcClass.flag_velocity_analysis = 0;
+    OcClass.flag_ARI_analysis = 0;
+    OcClass.flag_bloodVolumeRate_analysis = 1;
+    OcClass.flag_bloodVelocityProfile_analysis = 0;
+
     OcClass.onePulse(255);
 end
 

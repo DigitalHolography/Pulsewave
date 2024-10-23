@@ -17,10 +17,5 @@ function [success] = displaySuccessMsg(n)
     disp(' ');
     disp(['   ' kaomoji{n}]);
     disp(' ');
-    disp('for robust rendering : ');
-    disp('1-flat-field correction, 2-background substraction');
-    disp('make disc mask : ');
-    disp('1- image field, to avoid bad segmentation, 2-fourier, to enable qty estimation of velocity');
-    disp(' ');
     success = 1;
 end
