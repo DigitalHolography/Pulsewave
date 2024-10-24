@@ -34,15 +34,25 @@ imwrite(maskVesselness, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("
 
 %% 1) 2) Compute the barycentres and the circle mask
 
-vascularImage = double(M0_ff_img .* f_AVG_mean) ;
-blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0);
-[ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
-[y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
-cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
-cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+if ~isempty(PW_params.forcebarycenter)
+
+    ToolBox.y_barycentre = PW_params.forcebarycenter(1);
+    ToolBox.x_barycentre = PW_params.forcebarycenter(2);
+    cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+
+else
+
+    vascularImage = double(M0_ff_img .* f_AVG_mean);
+    blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0);
+    [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
+    [y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
+    cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+    cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+
+end
 
 maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness | cercleMask, 1, 4);
-imwrite(rescale(maskVesselnessClean|cercleMask), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_3_choroidClean.png')))
+imwrite(rescale(maskVesselnessClean | cercleMask), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_3_choroidClean.png')))
 
 %%  1) 3) Compute first correlation
 % compute pulse in 3 dimentions for correlation in all vessels
@@ -67,14 +77,14 @@ vascularPulse_centered = vascularPulse - mean(vascularPulse, 3);
 R_VascularPulse = mean(M0_ff_video_centered .* vascularPulse_centered, 3) ./ (std((M0_ff_video_centered), [], 3) * std(vascularPulse_centered, [], 3));
 imwrite(rescale(R_VascularPulse), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_4_Correlation.png')))
 
-vascularImage = double(M0_ff_img .* f_AVG_mean .* R_VascularPulse) ;
-blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0).* maskDiaphragm;
+vascularImage = double(M0_ff_img .* f_AVG_mean .* R_VascularPulse);
+blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0) .* maskDiaphragm;
 [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
 cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 
 %% 1) 4) Segment Vessels
-cmapArtery = [0 0 0; 255/255 22/255 18/255];
-cmapVein = [0 0 0; 18/255 237/255 255/255];
+cmapArtery = [0 0 0; 255 22 18]/255;
+cmapVein = [0 0 0; 18 237 255]/255;
 
 % Number of classes for Vessels: 5
 % 1 = Background, 2 & 3 = Veins & CoroidalVessels, 4 = CoroidalVessel, 5 = Arteries
@@ -86,7 +96,7 @@ quantizedVesselCorrelation = imquantize(R_VascularPulse - ~maskVesselnessClean *
 imwrite(rescale(quantizedVesselCorrelation), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_4_quantizedCorrelation.png')))
 
 % Create first artery mask & first vein mask
-firstMaskArtery = quantizedVesselCorrelation == 4 |quantizedVesselCorrelation == 5;
+firstMaskArtery = quantizedVesselCorrelation == 4 | quantizedVesselCorrelation == 5;
 firstMaskVein = quantizedVesselCorrelation == 3 | quantizedVesselCorrelation == 2;
 
 imwrite(firstMaskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_1_5_FirstMask.png')))
@@ -94,21 +104,38 @@ imwrite(firstMaskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', 
 
 % Remove small blobs
 % minSize = PW_params.masks_minSize * (numX * numY);
-firstMaskArtery = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
-firstMaskVein = bwareaopen(firstMaskVein, PW_params.masks_minSize);
+firstMaskArteryClean = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
+firstMaskVeinClean = bwareaopen(firstMaskVein, PW_params.masks_minSize);
 
-imwrite(firstMaskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_1_6_FirstMaskClean.png')))
-imwrite(firstMaskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_1_6_FirstMaskClean.png')))
+imwrite(firstMaskArteryClean, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_1_6_FirstMaskClean.png')))
+imwrite(firstMaskVeinClean, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_1_6_FirstMaskClean.png')))
+
+
+%% 1) 5) WIP: Choroid Segmentations
+cmapChoroid = [0 0 0; 23 255 18] / 255;
+numClassesChoroidalVessels = 5;
+firstThresholdsChoroid = multithresh(R_VascularPulse(maskVesselness), numClassesChoroidalVessels - 2);
+firstThresholdsChoroid = [-1 firstThresholdsChoroid];
+quantizedChoroidalVesselCorrelation = imquantize(R_VascularPulse - ~maskVesselness * 2, firstThresholdsChoroid);
+
+firstMaskChoroid = quantizedChoroidalVesselCorrelation == 4 | quantizedChoroidalVesselCorrelation == 3 | quantizedChoroidalVesselCorrelation == 2;
+firstMaskChoroid = firstMaskChoroid & ~firstMaskArtery & ~firstMaskVein;
+imwrite(firstMaskChoroid, cmapChoroid, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroid_1_6_FirstMask.png')))
+
+RGBM0(:, :, 1) = rescale(M0_ff_img) + firstMaskArteryClean;
+RGBM0(:, :, 2) = rescale(M0_ff_img) + firstMaskChoroid;
+RGBM0(:, :, 3) = rescale(M0_ff_img) + firstMaskVeinClean;
+
+imwrite(RGBM0, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_6_RGB.png')))
 
 clear quantizedVesselCorrelation firstThresholds;
-
 %% 2)  Compute the second correlation to fine tune the segmentation
 
 %% 2) 1) Compute the new pulse
 
 % compute pulse in 3 dimentions for correlation in main arteries
-arterialPulse = mean(M0_ff_video .* firstMaskArtery .* maskDiaphragm, [1 2]);
-arterialPulse = arterialPulse ./ nnz(firstMaskArtery .* maskDiaphragm);
+arterialPulse = mean(M0_ff_video .* firstMaskArteryClean .* maskDiaphragm, [1 2]);
+arterialPulse = arterialPulse ./ nnz(firstMaskArteryClean .* maskDiaphragm);
 arterialPulse_centered = arterialPulse - mean(arterialPulse, 3);
 
 figure, plot(t, squeeze(arterialPulse), '-', 'LineWidth', 2, 'Color', [255/255 22/255 18/255])
@@ -122,9 +149,9 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'arterialPulse.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'arterialPulse.eps')))
 
-% compute pulse in 3 dimentions for correlation in main arteries
-venousPulse = mean(M0_ff_video .* firstMaskVein, [1 2]);
-venousPulse = venousPulse ./ nnz(firstMaskVein);
+% compute pulse in 3 dimentions for correlation in main veins
+venousPulse = mean(M0_ff_video .* firstMaskVeinClean, [1 2]);
+venousPulse = venousPulse ./ nnz(firstMaskVeinClean);
 venousPulse_centered = venousPulse - mean(venousPulse, 3);
 
 figure, plot(t, squeeze(venousPulse), '-', 'LineWidth', 2, 'Color', [18/255 237/255 255/255])
@@ -138,12 +165,31 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'venousPulse.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'venousPulse.eps')))
 
+% compute pulse in 3 dimentions for correlation in choroids
+
+choroidalPulse = mean(M0_ff_video .* firstMaskChoroid, [1 2]);
+choroidalPulse = choroidalPulse ./ nnz(firstMaskChoroid);
+choroidalPulse_centered = choroidalPulse - mean(choroidalPulse, 3);
+
+figure, plot(t, squeeze(choroidalPulse), '-', 'LineWidth', 2, 'Color', [18/255 255/255 23/255])
+title('Choroidal Pulse')
+fontsize(gca, 14, "points");
+xlabel('Time(s)', 'FontSize', 14);
+ylabel('Power Doppler Pulse (s.u.)', 'FontSize', 14);
+pbaspect([1.618 1 1]);
+set(gca, 'LineWidth', 2);
+axis tight;
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroidalPulse.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroidalPulse.eps')))
+
 % compute local-to-average pulse wave zero-lag correlation
 R_ArterialPulse = mean((M0_ff_video_centered .* arterialPulse_centered), 3) ./ (std((M0_ff_video_centered), [], 3) * std(arterialPulse_centered, [], 3));
 R_VenousPulse = mean((M0_ff_video_centered .* venousPulse_centered), 3) ./ (std((M0_ff_video_centered), [], 3) * std(arterialPulse_centered, [], 3));
+R_ChoroidalPulse = mean((M0_ff_video_centered .* choroidalPulse_centered), 3) ./ (std((M0_ff_video_centered), [], 3) * std(choroidalPulse_centered, [], 3));
 
 imwrite(rescale(R_ArterialPulse), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_1_CorrelMatrix.png')))
 imwrite(rescale(R_VenousPulse), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_1_CorrelMatrix.png')))
+imwrite(rescale(R_ChoroidalPulse), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroid_2_1_CorrelMatrix.png')))
 
 figure
 hold on
@@ -184,7 +230,7 @@ numClassesArtery = 4;
 levelArtery = multithresh(R_ArteryVessel(maskVesselnessClean), numClassesArtery - 2);
 levelArtery = [-1 levelArtery];
 maskArteryQ = imquantize(R_ArteryVessel - 2 * ~maskVesselnessClean, levelArtery);
-maskArtery = maskArteryQ == 4 | firstMaskArtery;
+maskArtery = maskArteryQ == 4 | firstMaskArteryClean;
 
 imwrite(rescale(maskArteryQ), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_3_Quantize.png')))
 imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_4_Thresh.png')))
@@ -194,18 +240,17 @@ numClassesVein = 4;
 levelVein = multithresh(R_VeinVessel(maskVesselnessClean), numClassesVein - 2);
 levelVein = [-1 levelVein];
 maskVeinQ = imquantize(R_VeinVessel - 2 * ~maskVesselnessClean, levelVein);
-maskVein = maskVeinQ == 4 | firstMaskVein;
+maskVein = maskVeinQ == 4 | firstMaskVeinClean;
 
 imwrite(rescale(maskVeinQ), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_3_Quantize.png')))
 imwrite(maskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_4_Thresh.png')))
-
 
 %% Clearing 3)
 %% 3) 1) Morphological Operations
 
 % Remove the small bits
-maskArteryClean = maskArtery & bwareaopen(maskArtery|maskVein, PW_params.masks_minSize, 4);
-maskVeinClean = maskVein & bwareaopen(maskArtery|maskVein, PW_params.masks_minSize, 4);
+maskArteryClean = maskArtery & bwareaopen(maskArtery | maskVein, PW_params.masks_minSize, 4);
+maskVeinClean = maskVein & bwareaopen(maskArtery | maskVein, PW_params.masks_minSize, 4);
 
 imwrite(maskArteryClean, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_3_1_AreaOpen.png')))
 imwrite(maskVeinClean, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_3_1_AreaOpen.png')))
@@ -232,7 +277,7 @@ maskVessel = maskArtery | maskVein;
 imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_3_3_Final.png')))
 imwrite(maskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_3_3_Final.png')))
 imwrite(maskVessel, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_3_Final.png')))
-imwrite(rescale(uint8( cat( 3, uint8(M0_ff_img)+ uint8(maskArteryClean)*255, uint8(M0_ff_img) + uint8(cercleMask) , uint8(M0_ff_img) + uint8(maskVeinClean)*255 ))), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_4_Final.png')))
+imwrite(rescale(uint8(cat(3, uint8(M0_ff_img) + uint8(maskArteryClean) * 255, uint8(M0_ff_img) + uint8(cercleMask), uint8(M0_ff_img) + uint8(maskVeinClean) * 255))), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_4_Final.png')))
 
 %% SENSITIVITY & SPECIFICITY
 % Add targetMaskArtery.png and targetMaskVein.png in a mask folder inside
@@ -258,6 +303,12 @@ try
     fprintf("Vein Specificity: %0.2f %%\n", 100 * TNVein / (TNVein + FPVein))
 catch
     fprintf("No target masks to perform sensitivity & specificity evaluation\n")
+end
+
+%% Force Create Masks
+if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
+    maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
+    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
 end
 
 %% Create Background Mask
@@ -310,8 +361,8 @@ segmentationMap(:, :, 1) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img + ma
 segmentationMap(:, :, 2) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img;
 segmentationMap(:, :, 3) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img + maskVein;
 segmentationMapArtery(:, :, 1) = M0_ff_img - (maskArtery) .* M0_ff_img + maskArtery;
-segmentationMapArtery(:, :, 2) = M0_ff_img - maskArtery.* M0_ff_img;
-segmentationMapArtery(:, :, 3) = M0_ff_img - maskArtery.* M0_ff_img;
+segmentationMapArtery(:, :, 2) = M0_ff_img - maskArtery .* M0_ff_img;
+segmentationMapArtery(:, :, 3) = M0_ff_img - maskArtery .* M0_ff_img;
 imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
 imwrite(segmentationMapArtery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arterySegmentation.png')), 'png');
 
