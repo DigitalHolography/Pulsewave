@@ -226,22 +226,22 @@ imwrite(rescale(R_ChoroidVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps',
 
 % Segmentation based on Otsu's criteria for arteries and veins
 
-numClassesArtery = 5;
+numClassesArtery = 4;
 levelArtery = multithresh(R_ArteryVessel(maskVesselnessClean), numClassesArtery - 2);
 levelArtery = [-1 levelArtery];
 R_ArteryVessel(firstMaskChoroid) = -2;
 maskArteryQ = imquantize(R_ArteryVessel - 2 * ~maskVesselnessClean, levelArtery);
-maskArtery = maskArteryQ == 5 | firstMaskArteryClean;
+maskArtery = maskArteryQ == 4 | firstMaskArteryClean;
 
 imwrite(rescale(maskArteryQ), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_3_Quantize.png')))
 imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_4_Thresh.png')))
 
-numClassesVein = 5;
+numClassesVein = 4;
 levelVein = multithresh(R_VeinVessel(maskVesselnessClean), numClassesVein - 2);
 levelVein = [-1 levelVein];
 R_VeinVessel(maskArtery) = -2;
 maskVeinQ = imquantize(R_VeinVessel - 2 * ~maskVesselnessClean, levelVein);
-maskVein = maskVeinQ == 5 | firstMaskVeinClean;
+maskVein = maskVeinQ == 4 | firstMaskVeinClean;
 
 imwrite(rescale(maskVeinQ), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_3_Quantize.png')))
 imwrite(maskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_4_Thresh.png')))
