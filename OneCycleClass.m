@@ -582,11 +582,7 @@ classdef OneCycleClass
 
             f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-            if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.M0_disp_video, f_AVG_mean, obj.directory, ToolBox);
-            else
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.M1_data_video, obj.f_RMS_video, f_AVG_mean, obj.directory, ToolBox);
-            end
+            [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.M1_data_video, obj.f_RMS_video, f_AVG_mean, obj.directory, ToolBox);
 
             time_create_masks = toc(createMasksTiming);
             fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
