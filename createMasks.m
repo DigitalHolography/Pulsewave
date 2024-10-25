@@ -27,11 +27,12 @@ end
 
 %% 1) 1) Compute vesselness response
 vesselnessM0 = vesselness_filter(M0_ff_img, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
-M0 = rescale(M0_ff_img) .* maskDiaphragm;
-maskVesselness = logical(imbinarize(vesselnessM0 .* M0));
+boosted_M0 = (rescale(imgradient(M0_ff_img))/2 + rescale(vesselnessM0)) .* maskDiaphragm;
+maskVesselness = logical(imbinarize(boosted_M0));
 
 imwrite(rescale(vesselnessM0), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_1_Vesselness.png')))
-imwrite(maskVesselness, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_2_vesselMask.png')))
+imwrite(rescale(boosted_M0), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_1_M0boosted.png')))
+imwrite(maskVesselness, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_2_vesselnessMask.png')))
 
 %% 1) 2) Compute the barycentres and the circle mask
 
@@ -92,52 +93,10 @@ cmapVein = [0 0 0; 18 237 255]/255;
 numClassesVessels = 5;
 firstThresholds = multithresh(R_VascularPulse(maskVesselnessClean), numClassesVessels - 2);
 firstThresholds = [-1 firstThresholds];
-
-% Set the threshold
-threshold = firstThresholds(3);
-
-m = min(R_VascularPulse(maskVesselnessClean));
-M = max(R_VascularPulse(maskVesselnessClean));
-
-% Bin the data and count occurrences
-edges = linspace(m, M); % Set bin edges (modify as needed)
-[counts, centers] = histcounts(R_VascularPulse(maskVesselnessClean), edges);
-counts = [counts 0];
-
-% Separate bins based on threshold
-below_thresh = centers < threshold; % Logical array for bins below threshold
-above_thresh = centers >= threshold; % Logical array for bins above threshold
-
-% Plot the histogram with different colors based on threshold
-figure;
-hold on;
-
-% Bars below threshold
-bar(centers(below_thresh), counts(below_thresh), 'FaceColor', 'blue', 'EdgeColor', 'none');
-
-% Bars above threshold
-bar(centers(above_thresh), counts(above_thresh), 'FaceColor', 'red', 'EdgeColor', 'none');
-
-% thresholds
-xline(firstThresholds(2), 'k--', 'LineWidth', 2)
-xline(firstThresholds(3), 'k--', 'LineWidth', 2)
-xline(firstThresholds(4), 'k--', 'LineWidth', 2)
-
-% Add labels and title
-xlabel('Data Value');
-ylabel('Frequency');
-title('Histogram with Threshold Coloring');
-axis tight
-set(gca, 'Linewidth', 2)
-pbaspect([1.68 1 1])
-box on
-hold off;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vascularHisto.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vascularHisto.eps')))
-
+figHistogram(R_VascularPulse, firstThresholds, maskVesselnessClean, 'blue', 'red', 'all_1_5_Histo', ToolBox)
 quantizedVesselCorrelation = imquantize(R_VascularPulse - ~maskVesselnessClean * 2, firstThresholds);
 
-imwrite(rescale(quantizedVesselCorrelation), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_4_quantizedCorrelation.png')))
+imwrite(rescale(quantizedVesselCorrelation), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_5_quantizedCorrelation.png')))
 
 % Create first artery mask & first vein mask
 firstMaskArtery = quantizedVesselCorrelation == 5 | quantizedVesselCorrelation == 4;
@@ -167,9 +126,9 @@ RGBM0(:, :, 2) = rescale(M0_ff_img) + firstMaskChoroid;
 RGBM0(:, :, 3) = rescale(M0_ff_img) + firstMaskVeinClean;
 imwrite(RGBM0, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_6_RGB.png')))
 
-%% 2)  Compute the second correlation to fine tune the segmentation
+%% 2)  Improvements of the first mask
 
-%% 2) 1) Compute the new pulse
+%% 2) 1) Compute a new pulse
 
 % compute pulse in 3 dimentions for correlation in main arteries
 arterialPulse = mean(M0_ff_video .* firstMaskArteryClean .* maskDiaphragm, [1 2]);
@@ -257,10 +216,8 @@ se = strel('disk', 5);
 % maskVesselnessDilated = imdilate(maskVesselness, se); % As Arteries tend to be more dilated than what they appear to be
 
 R_ArteryVessel = R_ArterialPulse .* maskVesselnessClean;
-R_ArteryVessel = R_ArteryVessel .* (R_ArteryVessel > 0);
 
 R_VeinVessel = R_VenousPulse .* maskVesselnessClean;
-R_VeinVessel = R_VeinVessel .* (R_VeinVessel > 0);
 
 R_ChoroidVessel = R_ChoroidalPulse .* maskVesselness;
 
@@ -273,49 +230,7 @@ imwrite(rescale(R_ChoroidVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps',
 numClassesArtery = 5;
 levelArtery = multithresh(R_ArteryVessel(maskVesselnessClean), numClassesArtery - 2);
 levelArtery = [-1 levelArtery];
-
-% Set the threshold
-threshold = levelArtery(3);
-
-m = min(R_ArteryVessel(maskVesselnessClean));
-M = max(R_ArteryVessel(maskVesselnessClean));
-
-% Bin the data and count occurrences
-edges = linspace(m, M); % Set bin edges (modify as needed)
-[counts, centers] = histcounts(R_ArteryVessel(maskVesselnessClean), edges);
-counts = [counts 0];
-
-% Separate bins based on threshold
-below_thresh = centers < threshold; % Logical array for bins below threshold
-above_thresh = centers >= threshold; % Logical array for bins above threshold
-
-% Plot the histogram with different colors based on threshold
-figure;
-hold on;
-
-% Bars below threshold
-bar(centers(below_thresh), counts(below_thresh), 'FaceColor', 'white', 'EdgeColor', 'none');
-
-% Bars above threshold
-bar(centers(above_thresh), counts(above_thresh), 'FaceColor', 'red', 'EdgeColor', 'none');
-
-% thresholds
-xline(levelArtery(2), 'k--', 'LineWidth', 2)
-xline(levelArtery(3), 'k--', 'LineWidth', 2)
-xline(levelArtery(4), 'k--', 'LineWidth', 2)
-
-% Add labels and title
-xlabel('Data Value');
-ylabel('Frequency');
-title('Histogram with Threshold Coloring');
-axis tight
-set(gca, 'Linewidth', 2)
-pbaspect([1.68 1 1])
-box on
-hold off;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'arterialHisto.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'arterialHisto.eps')))
-
+figHistogram(R_ArteryVessel, levelArtery, maskVesselnessClean, 'white', 'red', 'artery_2_3_Histo', ToolBox)
 maskArteryQ = imquantize(R_ArteryVessel - 2 * ~maskVesselnessClean, levelArtery);
 maskArtery = maskArteryQ == 4 | maskArteryQ == 5 |firstMaskArteryClean;
 
@@ -325,49 +240,7 @@ imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 numClassesVein = 5;
 levelVein = multithresh(R_VeinVessel(maskVesselnessClean), numClassesVein - 2);
 levelVein = [-1 levelVein];
-
-% Set the threshold
-threshold = levelVein(3);
-
-m = min(R_VeinVessel(maskVesselnessClean));
-M = max(R_VeinVessel(maskVesselnessClean));
-
-% Bin the data and count occurrences
-edges = linspace(m, M); % Set bin edges (modify as needed)
-[counts, centers] = histcounts(R_VeinVessel(maskVesselnessClean), edges);
-counts = [counts 0];
-
-% Separate bins based on threshold
-below_thresh = centers < threshold; % Logical array for bins below threshold
-above_thresh = centers >= threshold; % Logical array for bins above threshold
-
-% Plot the histogram with different colors based on threshold
-figure;
-hold on;
-
-% Bars below threshold
-bar(centers(below_thresh), counts(below_thresh), 'FaceColor', 'white', 'EdgeColor', 'none');
-
-% Bars above threshold
-bar(centers(above_thresh), counts(above_thresh), 'FaceColor', 'blue', 'EdgeColor', 'none');
-
-% thresholds
-xline(levelArtery(2), 'k--', 'LineWidth', 2)
-xline(levelArtery(3), 'k--', 'LineWidth', 2)
-xline(levelArtery(4), 'k--', 'LineWidth', 2)
-
-% Add labels and title
-xlabel('Data Value');
-ylabel('Frequency');
-title('Histogram with Threshold Coloring');
-axis tight
-set(gca, 'Linewidth', 2)
-pbaspect([1.68 1 1])
-box on
-hold off;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'venousHisto.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'venousHisto.eps')))
-
+figHistogram(R_VeinVessel, levelVein, maskVesselnessClean, 'white', 'blue', 'artery_2_3_Histo', ToolBox)
 maskVeinQ = imquantize(R_VeinVessel - 2 * ~maskVesselnessClean, levelVein);
 maskVein = maskVeinQ == 4 | maskVeinQ == 5 | firstMaskVeinClean;
 
