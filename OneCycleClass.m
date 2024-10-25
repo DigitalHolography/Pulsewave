@@ -585,7 +585,7 @@ classdef OneCycleClass
             if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
                 [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.M0_disp_video, f_AVG_mean, obj.directory, ToolBox);
             else
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.f_RMS_video, f_AVG_mean, obj.directory, ToolBox);
+                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.M1_data_video, obj.f_RMS_video, f_AVG_mean, obj.directory, ToolBox);
             end
 
             time_create_masks = toc(createMasksTiming);

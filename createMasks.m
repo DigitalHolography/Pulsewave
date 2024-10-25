@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(M0_ff_video, ~, f_AVG_mean, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(M0_ff_video, M1_video, ~, f_AVG_mean, path, ToolBox)
 
 PW_params = Parameters_json(path);
 exportVideos = PW_params.exportVideos;
@@ -42,7 +42,7 @@ if ~isempty(PW_params.forcebarycenter)
 
 else
 
-    vascularImage = double(M0_ff_img .* f_AVG_mean);
+    vascularImage = single(squeeze(mean(M1_video, 3)));
     blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0);
     [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
     [y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
