@@ -156,6 +156,7 @@ classdef pulse < matlab.apps.AppBase
 
             end
 
+            fprintf("------------------------------\n")
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
 
         end
@@ -166,18 +167,12 @@ classdef pulse < matlab.apps.AppBase
 
             [selected_file,path] = uigetfile('*.txt');
             if (selected_file)
-                fileID = fopen(fullfile(path,selected_file),'r');
-                % filecontent = fscanf(fileID,'%s');
-                % files_cell = strsplit(filecontent,'\n');
-
-                filecontent = fileread(fullfile(path,selected_file));
-                files_cell = strsplit(filecontent,'\n');
-                for nn = 1:length(files_cell)
-                    if ~isempty(files_cell{1,nn})
-                        app.drawer_list{end + 1} = files_cell{1,nn};
+                files_lines = readlines(fullfile(path,selected_file));
+                for nn = 1:length(files_lines)
+                    if ~isempty(files_lines(nn))
+                        app.drawer_list{end + 1} = files_lines(nn);
                     end
                 end
-                fclose(fileID);
             end
 
         end
