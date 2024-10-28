@@ -34,7 +34,6 @@ classdef Parameters_json < handle
         elasWave_butterFiltOrder
         elasWave_butterFiltBand
         exportVideos
-        entirePulseAnalysis
         systoleThreshold
         flatField_gwRatio
         flatField_border
@@ -123,7 +122,6 @@ classdef Parameters_json < handle
 
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
-                obj.entirePulseAnalysis = parsedData.EntirePulseAnalysis;
 
                 obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
 
