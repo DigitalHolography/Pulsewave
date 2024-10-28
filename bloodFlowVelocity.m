@@ -23,7 +23,7 @@ v_minVeins = min(vVein(:));
 %% 1) VELOCITY VIDEO ~3min
 v_RMS_videoRGB = zeros(numX, numY, 3, numFrames);
 M0_disp_image = mat2gray(mean(M0_disp_video, 3));
-v_RMS_mean = mat2gray(squeeze(mean(v_RMS_video(:, :, :), 3)));
+v_RMS_mean =  squeeze(mean(v_RMS_video(:, :, :), 3));
 
 if veinsAnalysis
     fi = figure(730); colormap turbo; I = imagesc(v_RMS_mean); c = colorbar; c.Label.String = 'mm/s';
@@ -35,7 +35,8 @@ if veinsAnalysis
     fi = figure(732); colormap cool; I = imagesc(v_RMS_mean .* maskVein); c = colorbar; c.Label.String = 'mm/s';
     axis image; axis off;
     exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "vRMS_imagesc_Mean_veins.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
-
+    
+    v_RMS_mean = mat2gray(v_RMS_mean);
     [hue_artery_mean, sat_artery_mean, val_artery_mean, cmapArtery] = createHSVmap(v_RMS_mean, maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
     [hue_vein_mean, sat_vein_mean, val_vein_mean, cmapVein] = createHSVmap(v_RMS_mean, maskVein, 0.68, 0.5); %0.5/0.68 for cyan-dark blue range
 

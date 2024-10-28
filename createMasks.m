@@ -39,7 +39,8 @@ if ~isempty(PW_params.forcebarycenter)
     ToolBox.y_barycentre = PW_params.forcebarycenter(1);
     ToolBox.x_barycentre = PW_params.forcebarycenter(2);
     cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
-
+    y_CRV = 0;
+    x_CRV = 0;
 else
 
     vascularImage = double(M0_ff_img .* f_AVG_mean);
@@ -309,6 +310,13 @@ end
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
     maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
     maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
+end
+
+%% Force Barycenter
+if ~isempty(PW_params.forcebarycenter)
+    ToolBox.y_barycentre = PW_params.forcebarycenter(1);
+    ToolBox.x_barycentre = PW_params.forcebarycenter(2);
+    cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 end
 
 %% Create Background Mask

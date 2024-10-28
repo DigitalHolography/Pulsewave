@@ -69,6 +69,7 @@ avg_bloodVolumeRateArteryR = zeros(numCircles, max(nb_sections_artery), numFrame
 std_bloodVolumeRateArteryR = zeros(numCircles, max(nb_sections_artery), numFrames, 'single');
 cross_section_area_artery_r = zeros(numCircles, max(nb_sections_artery), 'single');
 cross_section_mask_artery_r = zeros(numCircles, numY, numX, 'single');
+stdCrossSectionWidthR = zeros(numCircles, max(nb_sections_artery), 'single');
 velocity_profiles_r = cell([numCircles max(nb_sections_artery)]);
 std_velocity_profiles_r = cell([numCircles max(nb_sections_artery)]);
 sub_images_r = cell([numCircles max(nb_sections_artery)]);
@@ -77,7 +78,7 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 for i = 1:numCircles
-    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
+    [avg_bloodVolumeRate_artery, std_bloodVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
 
     if length(avg_bloodVolumeRate_artery) < 1
         continue
@@ -86,6 +87,7 @@ for i = 1:numCircles
     avg_bloodVolumeRateArteryR(i, 1:nb_sections_artery(i), :) = reshape(avg_bloodVolumeRate_artery, 1, nb_sections_artery(i), numFrames);
     std_bloodVolumeRateArteryR(i, 1:nb_sections_artery(i), :) = reshape(std_bloodVolumeRate_artery, 1, nb_sections_artery(i), numFrames);
     cross_section_area_artery_r(i, 1:nb_sections_artery(i)) = reshape(cross_section_area_artery, 1, nb_sections_artery(i));
+    stdCrossSectionWidthR(i, 1:nb_sections_artery(i)) = reshape(stdCrossSectionWidth, 1, nb_sections_artery(i));
     cross_section_mask_artery_r(i, :, :) = reshape(cross_section_mask_artery, 1, numX, numY);
 
     for j = 1:nb_sections_artery(i)
@@ -143,7 +145,8 @@ aa(4) = aa(4)*1.14;
 axis(aa);
 title('Histogram of sections width (µm)');
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'histogram_of_section_width.png')))
-writematrix(2*sqrt(cross_section_area_artery_r(cross_section_area_artery_r~=0)/pi )*1000,fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername,'histogram_of_section_width.txt')));
+writematrix(2*sqrt(cross_section_area_artery_r/pi )*1000,fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername,'section_widths.txt')));
+writematrix(stdCrossSectionWidthR*PW_params.cropSection_pixelSize/(2^PW_params.k)*1000,fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername,'standard_deviation_section_width.txt')));
 
 plot_bvr_full_field = figure(1676);
 
@@ -175,7 +178,7 @@ hold off
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('radius in pixels')
-title("Total Blood Volume Flow Rate averaged over time at different radii.")
+title("Radial variations of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'meanbloodVolumeRatexradius.png')))
@@ -196,7 +199,7 @@ box on
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('time (s)')
-title("Total Blood Volume Rate over time in each artery sections")
+title("Time average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'bloodVolumeRatevariancextime.png')))
@@ -234,7 +237,7 @@ hold off
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('time (s)')
-title("Total Blood Volume Rate averaged over all the radii")
+title("Radial average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodVolumeRate', sprintf("%s_%s", ToolBox.main_foldername,'bloodVolumeRateallradxtime.png')))

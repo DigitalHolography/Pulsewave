@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell, crossSectionWidth,stdCrossSectionWidth] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
@@ -23,7 +23,9 @@ subVideo_cell       = cell([1 numSections]);
 
 [numX, numY, numFrames] = size(v_RMS);
 crossSectionWidth   = zeros(numSections, 1);
+stdCrossSectionWidth = zeros(numSections, 1);
 crossSectionArea    = zeros(numSections, 1);
+stdCrossSectionArea = zeros(numSections, 1);
 avgVelocity         = zeros(numSections, numFrames);
 avgVolumeRate       = zeros(numSections, numFrames);
 stdVelocity         = zeros(numSections, numFrames);
@@ -82,7 +84,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
 
         projx_bin = (projx == 0);
         list_x = squeeze(sum(projx_bin, 1));
-        [~, idc] = max(list_x);
+        [~, idc] = max(list_x); 
         tilt_angle_list(sectionIdx) = idc(1);
         subImg = imrotate(subImg, tilt_angle_list(sectionIdx), 'bilinear', 'crop');
         subImg_cell{sectionIdx} = subImg;
@@ -132,6 +134,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
         tmp = nnz(section_cut);
         crossSectionWidth(sectionIdx) = mean(sum(subImg~=0,2));
+        stdCrossSectionWidth(sectionIdx) = std(sum(subImg~=0,2));
 
         figure(fig_idx_start + sectionIdx)
         xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
@@ -184,6 +187,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
     end
 
     crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+    stdCrossSectionArea(sectionIdx) = pi * (1/2*(PW_params.cropSection_pixelSize / 2 ^ k))^2 * sqrt(stdCrossSectionWidth(sectionIdx)^4+2*stdCrossSectionWidth(sectionIdx)^2*crossSectionWidth(sectionIdx)^2);
 end
 
 %% Blood Volume Rate computation
@@ -230,7 +234,7 @@ for sectionIdx = 1:numSections
         end
 
         avgVolumeRate(sectionIdx, tt) = avgVelocity(sectionIdx, tt) * crossSectionArea(sectionIdx) * 60; % microL/min
-        stdVolumeRate(sectionIdx, tt) = stdVelocity(sectionIdx, tt) * crossSectionArea(sectionIdx) * 60; % microL/min
+        stdVolumeRate(sectionIdx, tt) = sqrt(stdVelocity(sectionIdx, tt)^2 * stdCrossSectionArea(sectionIdx)^2+stdVelocity(sectionIdx, tt)^2 * crossSectionArea(sectionIdx)^2 + stdCrossSectionArea(sectionIdx)^2 * avgVelocity(sectionIdx, tt)^2)* 60; % microL/min
 
         %     figure(101)
         %     plot(plot_values);
