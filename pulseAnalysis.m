@@ -1,4 +1,4 @@
-function [v_OneCycle, v_RMS_video, exec_times] = pulseAnalysis(numFramesInterp, f_RMS_video, f_AVG_mean, M2_data_video, M0_data_video, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, path)
+function [v_RMS_video, exec_times] = pulseAnalysis(numFramesInterp, f_RMS_video, f_AVG_video, M2_data_video, M0_data_video, M0_ff_video, sysIdxList, maskArtery, maskVein, maskBackground, flag_ExtendedPulseWave_analysis, ToolBox, path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
@@ -14,8 +14,9 @@ exec_times_time = [];
 
 PW_params = Parameters_json(path);
 veinsAnalysis = PW_params.veins_analysis;
-entirePulseAnalysis = PW_params.entirePulseAnalysis;
+entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
+f_AVG_mean = mean(f_AVG_video, 3);
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -506,7 +507,7 @@ if exportVideos
 end
 
 clear LocalBackground_in_vessels f_RMS_background
-v_OneCycle = [];
+
 if entirePulseAnalysis
     %% Creation of the avg pulse for In-plane arteries ~5min
 
@@ -526,6 +527,7 @@ if entirePulseAnalysis
     avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
 
     v_OneCycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
+    ArterialResistivityIndex(v_OneCycle, M0_ff_video, maskArtery, ToolBox, path)
 
     if exportVideos
         % avi

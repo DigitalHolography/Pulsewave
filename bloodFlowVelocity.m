@@ -1,4 +1,4 @@
-function [] = bloodFlowVelocity(v_RMS_video, v_oneCycle, maskArtery, maskVein, M0_disp_video, ToolBox, path)
+function [] = bloodFlowVelocity(v_RMS_video, maskArtery, maskVein, M0_disp_video, ToolBox, path)
 
 PW_params = Parameters_json(path);
 veinsAnalysis = PW_params.veins_analysis;
@@ -472,93 +472,93 @@ end
 
 close all
 
-%% Histogram of One_Cycle
-
-if ~isempty(v_oneCycle)
-
-    nInterpFrames = size(v_oneCycle, 3);
-    v_histoArtery = round(v_oneCycle .* maskArtery);
-    v_min = min(v_histoArtery, [], 'all');
-    v_max = max(v_histoArtery, [], 'all');
-
-    X = linspace(v_min, v_max, v_max - v_min + 1);
-    n = size(X, 2);
-    histo = zeros(size(X, 2), nInterpFrames);
-
-    for frameIdx = 1:nInterpFrames
-
-        for xx = 1:numX
-
-            for yy = 1:numY
-
-                if maskArterySection(xx, yy) ~= 0
-                    i = find(X == v_histoArtery(xx, yy, frameIdx));
-                    histo(i, frameIdx) = histo(i, frameIdx) + 1;
-                end
-
-            end
-
-        end
-
-    end
-
-    figure(22)
-    yAx = [v_min v_max];
-    xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
-    imagesc(xAx, yAx, histo)
-    pbaspect([1.618 1 1]);
-    set(gca, 'YDir', 'normal')
-    colormap('hot')
-    ylabel('Velocity (mm.s^{-1})')
-    xlabel('Time (s)')
-    title("Velocity histogram in arteries")
-
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
-
-    if veinsAnalysis
-        v_histoVeins = round(v_oneCycle .* maskVein);
-        v_min = min(v_histoVeins, [], 'all');
-        v_max = max(v_histoVeins, [], 'all');
-
-        X = linspace(v_min, v_max, v_max - v_min + 1);
-        n = size(X, 2);
-        histo = zeros(size(X, 2), nInterpFrames);
-
-        for frameIdx = 1:nInterpFrames
-
-            for xx = 1:numX
-
-                for yy = 1:numY
-
-                    if maskVeinSection(xx, yy) ~= 0
-                        i = find(X == v_histoVeins(xx, yy, frameIdx));
-                        histo(i, frameIdx) = histo(i, frameIdx) + 1;
-                    end
-
-                end
-
-            end
-
-        end
-
-        figure(23)
-        yAx = [v_min v_max];
-        xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
-        imagesc(xAx, yAx, histo)
-        set(gca, 'YDir', 'normal')
-        colormap('bone')
-        ylabel('Velocity (mm.s^{-1})')
-        xlabel('Time (s)')
-        title("Velocity histogram in veins")
-
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.png')))
-        exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.eps')))
-
-    end
-
-    fprintf("- Velocity Histograms Timing : %ds\n", round(toc))
-end
+% %% Histogram of One_Cycle
+% 
+% if ~isempty(v_oneCycle)
+% 
+%     nInterpFrames = size(v_oneCycle, 3);
+%     v_histoArtery = round(v_oneCycle .* maskArtery);
+%     v_min = min(v_histoArtery, [], 'all');
+%     v_max = max(v_histoArtery, [], 'all');
+% 
+%     X = linspace(v_min, v_max, v_max - v_min + 1);
+%     n = size(X, 2);
+%     histo = zeros(size(X, 2), nInterpFrames);
+% 
+%     for frameIdx = 1:nInterpFrames
+% 
+%         for xx = 1:numX
+% 
+%             for yy = 1:numY
+% 
+%                 if maskArterySection(xx, yy) ~= 0
+%                     i = find(X == v_histoArtery(xx, yy, frameIdx));
+%                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
+%                 end
+% 
+%             end
+% 
+%         end
+% 
+%     end
+% 
+%     figure(22)
+%     yAx = [v_min v_max];
+%     xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
+%     imagesc(xAx, yAx, histo)
+%     pbaspect([1.618 1 1]);
+%     set(gca, 'YDir', 'normal')
+%     colormap('hot')
+%     ylabel('Velocity (mm.s^{-1})')
+%     xlabel('Time (s)')
+%     title("Velocity histogram in arteries")
+% 
+%     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.png')))
+%     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
+% 
+%     if veinsAnalysis
+%         v_histoVeins = round(v_oneCycle .* maskVein);
+%         v_min = min(v_histoVeins, [], 'all');
+%         v_max = max(v_histoVeins, [], 'all');
+% 
+%         X = linspace(v_min, v_max, v_max - v_min + 1);
+%         n = size(X, 2);
+%         histo = zeros(size(X, 2), nInterpFrames);
+% 
+%         for frameIdx = 1:nInterpFrames
+% 
+%             for xx = 1:numX
+% 
+%                 for yy = 1:numY
+% 
+%                     if maskVeinSection(xx, yy) ~= 0
+%                         i = find(X == v_histoVeins(xx, yy, frameIdx));
+%                         histo(i, frameIdx) = histo(i, frameIdx) + 1;
+%                     end
+% 
+%                 end
+% 
+%             end
+% 
+%         end
+% 
+%         figure(23)
+%         yAx = [v_min v_max];
+%         xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
+%         imagesc(xAx, yAx, histo)
+%         set(gca, 'YDir', 'normal')
+%         colormap('bone')
+%         ylabel('Velocity (mm.s^{-1})')
+%         xlabel('Time (s)')
+%         title("Velocity histogram in veins")
+% 
+%         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.png')))
+%         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.eps')))
+% 
+%     end
+% 
+%     fprintf("- Velocity Histograms Timing : %ds\n", round(toc))
+% end
 
 %% Velocity funnel Histogram in arteries (exactly the same but with an increasing number of points)
 %FIXME prctile 10% Y = percentil(X,[5 95])

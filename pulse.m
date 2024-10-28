@@ -12,7 +12,7 @@ classdef pulse < matlab.apps.AppBase
         SHanalysisCheckBox            matlab.ui.control.CheckBox
         FolderManagementButton        matlab.ui.control.Button
         PulsewaveanalysisCheckBox     matlab.ui.control.CheckBox
-        ARICheckBox                   matlab.ui.control.CheckBox
+        ExtendedPulsewaveCheckBox     matlab.ui.control.CheckBox
         velocityCheckBox              matlab.ui.control.CheckBox
         bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
         bloodVelocityProfileCheckBox  matlab.ui.control.CheckBox
@@ -272,7 +272,7 @@ classdef pulse < matlab.apps.AppBase
                 app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
                 app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
-                app.files{n}.flag_ARI_analysis = app.ARICheckBox.Value;
+                app.files{n}.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
                 app.files{n}.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
                 app.files{n}.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
 
@@ -487,22 +487,16 @@ classdef pulse < matlab.apps.AppBase
                 app.velocityCheckBox.Enable = true;
                 app.bloodVelocityProfileCheckBox.Enable = true;
                 app.bloodVolumeRateCheckBox.Enable = true;
-                app.ARICheckBox.Enable = true;
-                if app.bloodVolumeRateCheckBox.Value == true
-                    app.bloodVelocityProfileCheckBox.Visible = true;
-                else
-                    app.bloodVelocityProfileCheckBox.Visible = false;
-                    app.bloodVelocityProfileCheckBox.Value = false;
-                end
+                app.ExtendedPulsewaveCheckBox.Enable = true;
             else
                 app.velocityCheckBox.Enable = false;
-                app.bloodVelocityProfileCheckBox.Visible = false;
                 app.bloodVolumeRateCheckBox.Enable = false;
-                app.ARICheckBox.Enable = false;
+                app.ExtendedPulsewaveCheckBox.Enable = false;
+                app.bloodVelocityProfileCheckBox.Enable = false;
                 app.velocityCheckBox.Value = false;
                 app.bloodVelocityProfileCheckBox.Value = false;
                 app.bloodVolumeRateCheckBox.Value = false;
-                app.ARICheckBox.Value = false;
+                app.ExtendedPulsewaveCheckBox.Value = false;
             end
         end
 
@@ -607,7 +601,7 @@ classdef pulse < matlab.apps.AppBase
             app.PulsewaveanalysisCheckBox.Text = 'Pulse wave analysis';
             app.PulsewaveanalysisCheckBox.FontSize = 16;
             app.PulsewaveanalysisCheckBox.FontColor = [1 1 1];
-            app.PulsewaveanalysisCheckBox.Position = [63 198 250 24];
+            app.PulsewaveanalysisCheckBox.Position = [63 164 250 24];
             app.PulsewaveanalysisCheckBox.Value = true;
             app.PulsewaveanalysisCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
@@ -620,21 +614,21 @@ classdef pulse < matlab.apps.AppBase
             app.velocityCheckBox.Value = true;
             app.velocityCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
-            % Create ARICheckBox
-            app.ARICheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.ARICheckBox.Text = 'Arterial Resistivity Index';
-            app.ARICheckBox.FontSize = 16;
-            app.ARICheckBox.FontColor = [1 1 1];
-            app.ARICheckBox.Position = [63 96 250 24];
-            app.ARICheckBox.Value = true;
-            app.ARICheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
+            % Create ExtendedPulsewaveCheckBox
+            app.ExtendedPulsewaveCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.ExtendedPulsewaveCheckBox.Text = 'Extended Pulse Analysis';
+            app.ExtendedPulsewaveCheckBox.FontSize = 16;
+            app.ExtendedPulsewaveCheckBox.FontColor = [1 1 1];
+            app.ExtendedPulsewaveCheckBox.Position = [250 164 250 24];
+            app.ExtendedPulsewaveCheckBox.Value = true;
+            app.ExtendedPulsewaveCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create bloodVolumeRateCheckBox
             app.bloodVolumeRateCheckBox = uicheckbox(app.PulsewaveUIFigure);
             app.bloodVolumeRateCheckBox.Text = 'Blood Volume Rate';
             app.bloodVolumeRateCheckBox.FontSize = 16;
             app.bloodVolumeRateCheckBox.FontColor = [1 1 1];
-            app.bloodVolumeRateCheckBox.Position = [63 62 250 24];
+            app.bloodVolumeRateCheckBox.Position = [63 96 250 24];
             app.bloodVolumeRateCheckBox.Value = true;
             app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
@@ -643,7 +637,7 @@ classdef pulse < matlab.apps.AppBase
             app.bloodVelocityProfileCheckBox.Text = 'Blood Velocity Profile';
             app.bloodVelocityProfileCheckBox.FontSize = 16;
             app.bloodVelocityProfileCheckBox.FontColor = [1 1 1];
-            app.bloodVelocityProfileCheckBox.Position = [250 62 250 24];
+            app.bloodVelocityProfileCheckBox.Position = [250 96 250 24];
             app.bloodVelocityProfileCheckBox.Value = true;
             app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
@@ -658,10 +652,10 @@ classdef pulse < matlab.apps.AppBase
 
             % Create SHanalysisCheckBox
             app.SHanalysisCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.SHanalysisCheckBox.Text = 'SH analysis (WIP)';
+            app.SHanalysisCheckBox.Text = 'SH analysis';
             app.SHanalysisCheckBox.FontSize = 16;
             app.SHanalysisCheckBox.FontColor = [1 1 1];
-            app.SHanalysisCheckBox.Position = [63 164 250 24];
+            app.SHanalysisCheckBox.Position = [63 62 250 24];
             app.SHanalysisCheckBox.Enable = true;
 
             % Create ExecutefromtextButton

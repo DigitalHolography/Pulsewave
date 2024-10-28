@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(M0_ff_video, M1_video, ~, f_AVG_mean, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(M0_ff_video, M1_video, ~, f_AVG_video, path, ToolBox)
 
 PW_params = Parameters_json(path);
 exportVideos = PW_params.exportVideos;
@@ -35,6 +35,7 @@ imwrite(rescale(boosted_M0), fullfile(ToolBox.PW_path_png, 'mask', 'steps', spri
 imwrite(maskVesselness, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_2_vesselnessMask.png')))
 
 %% 1) 2) Compute the barycentres and the circle mask
+f_AVG_mean = mean(f_AVG_video, 3);
 
 if ~isempty(PW_params.forcebarycenter)
 
@@ -240,7 +241,7 @@ imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 numClassesVein = 5;
 levelVein = multithresh(R_VeinVessel(maskVesselnessClean), numClassesVein - 2);
 levelVein = [-1 levelVein];
-figHistogram(R_VeinVessel, levelVein, maskVesselnessClean, 'white', 'blue', 'artery_2_3_Histo', ToolBox)
+figHistogram(R_VeinVessel, levelVein, maskVesselnessClean, 'white', 'blue', 'vein_2_3_Histo', ToolBox)
 maskVeinQ = imquantize(R_VeinVessel - 2 * ~maskVesselnessClean, levelVein);
 maskVein = maskVeinQ == 4 | maskVeinQ == 5 | firstMaskVeinClean;
 
@@ -270,8 +271,12 @@ imwrite(RGBM0, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", T
 
 clear vesselnessVein vesselnessArtery ;
 %% 3) 2) Final Masks
-maskArtery = maskArteryClean;
-maskVein = maskVeinClean;
+
+skelArtery = bwskel(maskArtery);
+skelVein = bwskel(maskVein);
+
+maskArtery = maskArteryClean | imdilate(skelArtery, strel('disk', 3));
+maskVein = maskVeinClean | imdilate(skelVein, strel('disk', 3));
 
 % Force Create Masks
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
@@ -306,10 +311,12 @@ try
     FNVein = nnz(targetMaskVein & ~maskVeinClean);
     TNVein = nnz(~targetMaskVein & ~maskVeinClean);
 
-    fprintf("Artery Sensitivity: %0.2f %%\n", 100 * TPArtery / (TPArtery + FNArtery))
-    fprintf("Artery Specificity: %0.2f %%\n", 100 * TNArtery / (TNArtery + FPArtery))
-    fprintf("Vein Sensitivity: %0.2f %%\n", 100 * TPVein / (TPVein + FNVein))
-    fprintf("Vein Specificity: %0.2f %%\n", 100 * TNVein / (TNVein + FPVein))
+    fileID = fopen(fullfile(ToolBox.PW_path_log, sprintf("%s_confusionMatrix.txt", ToolBox.main_foldername)), 'w');
+    fprintf(fileID, "Artery Sensitivity: %0.2f %%\n", 100 * TPArtery / (TPArtery + FNArtery));
+    fprintf(fileID, "Artery Specificity: %0.2f %%\n", 100 * TNArtery / (TNArtery + FPArtery));
+    fprintf(fileID, "Vein Sensitivity: %0.2f %%\n", 100 * TPVein / (TPVein + FNVein));
+    fprintf(fileID, "Vein Specificity: %0.2f %%\n", 100 * TNVein / (TNVein + FPVein));
+    fclose(fileID);
 catch
     fprintf("No target masks to perform sensitivity & specificity evaluation\n")
 end
