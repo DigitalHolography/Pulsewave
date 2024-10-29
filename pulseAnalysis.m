@@ -352,11 +352,13 @@ tic
 exec_times_id = [exec_times_id, "Local BKG Artery and Veins"];
 if veinsAnalysis
     maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
+    imwrite(maskVesselDilated-(maskArtery | maskVein), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
+
 else
     maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
+    imwrite(maskVesselDilated-(maskArtery), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
 end
 
-imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
 f_RMS_background = zeros(numX, numY, numFrames,'single');
 
 parfor frameIdx = 1:numFrames
