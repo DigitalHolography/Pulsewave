@@ -1,4 +1,4 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS_all, M0_disp_video, ToolBox, k, path, flagBloodVelocityProfile)
+function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, M0_disp_video, ToolBox, k, path, flagBloodVelocityProfile)
 
 PW_params = Parameters_json(path);
 
@@ -14,11 +14,11 @@ tic
 mkdir(ToolBox.PW_path_png, 'volumeRate')
 mkdir(ToolBox.PW_path_eps, 'volumeRate')
 
-[numX, numY, numFrames] = size(v_RMS_all);
+[numX, numY, numFrames] = size(v_RMS);
 [X, Y] = meshgrid(1:numY, 1:numX);
 Color_std = [0.7 0.7 0.7];
 
-v_RMS_AVG = mean(v_RMS_all, 3);
+v_RMS_AVG = mean(v_RMS, 3);
 fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
 %% 0) Change mask section
@@ -105,7 +105,7 @@ strYlabel = 'Velocity (mm.s-1)';
 
 %% Arteries
 
-[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width);
+[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width);
 
 labelsArteries = cell(numSectionsArtery, 1);
 avgVolumeRateArtery_total = sum(avgVolumeRateArtery, 1);
@@ -179,7 +179,7 @@ end
 
 %% 2) 2) Veins
 if veins_analysis
-    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, stdVelocityVein, crossSectionMaskVein] = crossSectionAnalysis(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, [], force_width);
+    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, stdVelocityVein, crossSectionMaskVein] = crossSectionAnalysis(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, [], force_width);
 
     labelsVeins = cell(numSectionsVein, 1);
     avgVolumeRateVein_total = sum(avgVolumeRateVein, 1);
@@ -850,7 +850,7 @@ end
 % for all circles output
 
 for i = 1:numCircles
-    [avgVolumeRateArtery, ~, ~, avgVelocityArtery, crossSectionMaskArtery, avgVolumeRateArtery_total, stdVolumeRateArtery_total] = cross_section_analysis(reshape(nonzeros(SubImg_locs_artery_Circles(i, :, :)), [], 2), nonzeros(SubImg_width_artery_Circles(i, :, :)), maskArtery, v_RMS_all, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i);
+    [avgVolumeRateArtery, ~, ~, avgVelocityArtery, crossSectionMaskArtery, avgVolumeRateArtery_total, stdVolumeRateArtery_total] = cross_section_analysis(reshape(nonzeros(SubImg_locs_artery_Circles(i, :, :)), [], 2), nonzeros(SubImg_width_artery_Circles(i, :, :)), maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i);
 
     if length(avgVolumeRateArtery) < 1
         continue

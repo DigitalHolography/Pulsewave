@@ -670,7 +670,7 @@ classdef OneCycleClass
                     fprintf("Blood Volume Rate Calculation\n")
                     fprintf("----------------------------------\n")
 
-                    % bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
                     bloodVolumeRateForAllRadii(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,sysIdxList);
 
                     time_volumeRate = toc(bloodVolumeRateTimer);
