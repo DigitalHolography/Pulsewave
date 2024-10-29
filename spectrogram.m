@@ -170,7 +170,9 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     xlabel('frequency (kHz)', 'FontSize', 14);
     ylabel('A.U.', 'FontSize', 14);
     legend('Artery', 'Background')
-    imwrite(frame2im(getframe(gca)), fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'Averaged_spectrum.png')), 'png');
+    set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
+    set(gca, 'Linewidth', 2)
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'Averaged_spectrum.png')));
 
     % DELTA
     yAx = [0 f2];
