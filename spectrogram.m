@@ -13,12 +13,10 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
 
     %% Resize masks
 
-    ratio = cubeSize / size(maskArtery, 1); % to resize the masks
+    
 
-    maskArtery = logical(imresize(maskArtery, ratio));
-    maskBackground = logical(imresize(maskBackground, ratio));
-
-    clear ratio
+    maskArtery = logical(imresize(maskArtery, [cubeSize,cubeSize]));
+    maskBackground = logical(imresize(maskBackground, [cubeSize,cubeSize]));
 
     %% Video
     video = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s",ToolBox.main_foldername,"stdTemp.avi")));
@@ -92,6 +90,9 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     AVG_M2M0_artery = zeros(1, cubeFrameLength);
     AVG_M2M0_background = zeros(1, cubeFrameLength);
 
+    AVG_arterySpectrum = zeros(1, cubeFreqLength * 2 * k_int);
+    AVG_backgroundSpectrum = zeros(1, cubeFreqLength * 2 * k_int);
+
     for i = 1:cubeFrameLength
         %Spectro
         [ArterySpectrum, BgSpectrum, DeltaSpectrum, ~, Lorenz_Arteries, Lorenz_BKG, M0_artery, M0_background, M1M0_artery, M1M0_background, M2M0_artery, M2M0_background] = createSpectrum(maskArtery, maskBackground, SH_cube(:, :, :, i), ToolBox);
@@ -101,6 +102,8 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
         AVG_M1M0_background(i) = sum(M1M0_background, "all") / nnz(M1M0_background);
         AVG_M2M0_artery(i) = sum(M2M0_artery, "all") / nnz(M2M0_artery);
         AVG_M2M0_background(i) = sum(M2M0_background, "all") / nnz(M2M0_background);
+        AVG_arterySpectrum = AVG_arterySpectrum + interp(ArterySpectrum, 2 * k_int);
+        AVG_backgroundSpectrum = AVG_backgroundSpectrum + interp(BgSpectrum, 2 * k_int);
 
         figure(92)
         loglog(freq, Lorenz_Arteries)
@@ -151,6 +154,25 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     disp('Video creation ok.')
     %clear tmp_BG tmp_A tmp_DELTA DELTA_Smooth A_Smooth BG_Smooth ArterySpectrum BgSpectrum DeltaSpectrum
     %% Figure spectrogram avg
+
+
+    AVG_arterySpectrum = AVG_arterySpectrum/cubeFrameLength;
+    AVG_backgroundSpectrum = AVG_backgroundSpectrum/cubeFrameLength;
+
+    figure(94)
+    semilogy(frq_shift, AVG_arterySpectrum, ...
+            frq_shift, AVG_backgroundSpectrum);
+    mimim = 0.8 * min(min(AVG_backgroundSpectrum),min(AVG_arterySpectrum));
+    mamam = 1.2 * max(max(AVG_backgroundSpectrum),max(AVG_arterySpectrum));
+    ylim([mimim mamam])
+    xlim([-fs / 2 fs / 2])
+    title('Average spectrum')
+    xlabel('frequency (kHz)', 'FontSize', 14);
+    ylabel('A.U.', 'FontSize', 14);
+    legend('Artery', 'Background')
+    set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
+    set(gca, 'Linewidth', 2)
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'Averaged_spectrum.png')));
 
     % DELTA
     yAx = [0 f2];

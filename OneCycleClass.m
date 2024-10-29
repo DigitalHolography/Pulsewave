@@ -23,7 +23,7 @@ classdef OneCycleClass
         flag_SH_analysis
         flag_PulseWave_analysis
         flag_velocity_analysis
-        flag_ARI_analysis
+        flag_ExtendedPulseWave_analysis
         flag_bloodVolumeRate_analysis
         flag_bloodVelocityProfile_analysis
 
@@ -50,10 +50,8 @@ classdef OneCycleClass
             else
                 obj.directory = path;
                 tmp_idx = regexp(path, '\');
-                obj.filenames = path(tmp_idx(end - 1) + 1:end - 1);
+                obj.filenames = obj.directory(tmp_idx(end-1) + 1:end -1);
             end
-
-            obj.k = 0;
 
             %% AVEC TXT
 
@@ -256,7 +254,7 @@ classdef OneCycleClass
             tic
             PW_params = Parameters_json(obj.directory);
             out_height = PW_params.frameHeight;
-            out_width = PW_params.frameHeight;
+            out_width = PW_params.frameWidth;
             out_numFrames = PW_params.videoLength;
 
             if out_numFrames < 0
@@ -485,12 +483,7 @@ classdef OneCycleClass
 
         function onePulse(obj, Ninterp)
             %  ------- This is the app main routine. --------
-
-            % PW_params = Parameters_json(obj.directory);
-            % ToolBox = obj.ToolBoxmaster;
-
             % progress_bar = waitbar(0,'');
-
 
             checkPulsewaveParamsFromJson(obj.directory);
             PW_params = Parameters_json(obj.directory);
@@ -589,11 +582,7 @@ classdef OneCycleClass
 
             f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-            try
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = forceCreateMasks(obj.M0_disp_video, f_AVG_mean, obj.directory, ToolBox);
-            catch
-                [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.f_RMS_video, f_AVG_mean, obj.directory, ToolBox);
-            end
+            [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
 
             time_create_masks = toc(createMasksTiming);
             fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -631,7 +620,7 @@ classdef OneCycleClass
                 fprintf("Pulse Analysis\n")
                 fprintf("----------------------------------\n")
 
-                [vOneCycle, vRMS, exec_times] = pulseAnalysis(Ninterp, obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, sysIdxList, maskArtery, maskVein, maskBackground, ToolBox, obj.directory);
+                [vRMS, exec_times] = pulseAnalysis(Ninterp, obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
@@ -666,26 +655,12 @@ classdef OneCycleClass
                     fprintf("Blood Flow Velocity Calculation\n")
                     fprintf("----------------------------------\n")
 
-                    bloodFlowVelocity(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_disp_video, ToolBox, obj.directory)
+                    bloodFlowVelocity(vRMS, maskArtery, maskVein, obj.M0_disp_video, ToolBox, obj.directory)
                     % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
 
                     time_velo = toc(bloodFlowVelocityTimer);
                     fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
                     save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
-                end
-
-                if obj.flag_ARI_analysis
-                    bloodARITimer = tic;
-
-                    fprintf("\n----------------------------------\n")
-                    fprintf("ARI and API Calculation\n")
-                    fprintf("----------------------------------\n")
-
-                    ArterialResistivityIndex(vOneCycle, obj.M0_disp_video, maskArtery, ToolBox, obj.directory);
-
-                    time_ARIAPI = toc(bloodARITimer);
-                    fprintf("- ARI & API calculation took : %ds\n", round(time_ARIAPI))
-                    save_time(path_file_txt_exe_times, 'Arterial Resistivity Index', time_ARIAPI)
                 end
 
                 if obj.flag_bloodVolumeRate_analysis
@@ -696,7 +671,7 @@ classdef OneCycleClass
                     fprintf("----------------------------------\n")
 
                     bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
-                    bloodVolumeRateForAllRadii(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRateForAllRadii(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,sysIdxList);
 
                     time_volumeRate = toc(bloodVolumeRateTimer);
                     fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
@@ -715,9 +690,10 @@ classdef OneCycleClass
             %% Spectrum Analysis
             % waitbar(0.9,progress_bar,"Spectrum analysis");
 
-            if obj.flag_SH_analysis
+            if obj.flag_SH_analysis && isfile(fullfile(obj.directory, 'raw', [strcat(ToolBox.main_foldername, '_SH'),  '.raw']))
 
                 %% Import SH
+
 
                 tmpname = strcat(ToolBox.main_foldername, '_SH');
                 ext = '.raw';
@@ -725,7 +701,12 @@ classdef OneCycleClass
                 fileID = fopen(fullfile(obj.directory, 'raw', [tmpname, ext]));
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
-                SH_cube = reshape(videoSH, numX, numY, numFrames, []);
+                [numX, numY, numFrames] = size(obj.f_RMS_video);
+                bin_x = 4;
+                bin_y = 4;
+                bin_w = 16;
+                bin_t = 1;
+                SH_cube = reshape(videoSH, ceil(numX/(2^obj.k*bin_x)), ceil(numY/(2^obj.k*bin_y)),[], ceil(numFrames/bin_t));
 
                 tic
                 spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.M0_data_video);

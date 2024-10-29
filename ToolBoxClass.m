@@ -154,37 +154,6 @@ classdef ToolBoxClass < handle
             obj.ARI_inflexion_point_val = 1;
             obj.ARI_slope_val = 10;
 
-            %% Normalization parameters
-            disp('reading Normalization Factors')
-
-            if PW_params.normFlag
-
-                try
-                    % normData = load(fullfile(path, 'mat', sprintf("%s_power_normalization.mat", obj.main_foldername)), "beating_wave_variance", "reference_wave");
-                    % OpticalPower = normData.beating_wave_variance ./ normData.reference_wave;
-                    % OpticalPowerAveraged = squeeze(mean(OpticalPower, 'all')); % Spatial and Temporal average AFTER division
-
-                    % obj.NormalizationOffset = (PW_params.normPowerCalibrationSlope * PW_params.normRefBloodFlow + PW_params.normPoweryIntercept - OpticalPowerAveraged) ./ PW_params.normPowerCalibrationSlope;
-                    obj.NormalizationFactor = 1; % PW_params.normPowerCalibrationSlope .* PW_params.normRefBloodFlow ./ (OpticalPowerAveraged - PW_params.normPoweryIntercept);
-
-                    if obj.NormalizationFactor < 0
-                        obj.NormalizationFactor = 1;
-                        disp('Normalization Factor is NEGATIVE, No normalization was peformed')
-                    end
-
-                    %                     fprintf("Normalization factor mean: %4.2f \n", mean(obj.NormalizationFactor,'all')) DEBUGGING LINES
-                    %                     fprintf("Ratio mean: %4.2f \n", mean(normData.beating_wave_variance_power./normData.reference_wave_power,'all'))
-                catch
-                    obj.NormalizationFactor = 1;
-                    obj.NormalizationOffset = 0;
-                    disp('Normalization Error: No normalization was performed')
-                end
-
-            else
-                obj.NormalizationFactor = 1;
-                obj.NormalizationOffset = 0;
-            end
-
         end
 
     end

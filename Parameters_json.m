@@ -15,38 +15,15 @@ classdef Parameters_json < handle
         radius_ratio
         radius_gap
         gauss_filt_size_for_barycentre
-        resistivity_gaussFiltSigma
-        resistivity_satAmp
-        resistivity_minTolVal
-        resistivity_maxTolVal
-        resistivity_gamma
-        oneCycle_Ninterp
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
         local_background_width
-        arteryMask_vesselness_sigma
-        arteryMask_vesselness_beta
-        arteryMask_vesselness_bin_threshold
-        arteryMask_magicwand_nb_of_area_vessels
-        arteryMask_magicwand_nb_of_area_artery
-        finalarteryMask_CorrelationMatrixThreshold
-        firstArteryMask_CorrelationMatrixThreshold
-        arteryMask_vesselnessContrastNumSlides
-        centralRetinal_arteryThreshold
-        centralRetinal_veinThreshold
-        centralRetinal_backgndThreshold
-        vesselMask_BinTreshold
+        masks_vesselness_sigma
+        masks_vesselness_beta
         masks_radius
-        masks_radius_treshold
         masks_minSize
-        masks_cleaningCoroid
-        masks_showIntermediateFigures
-        RG_FloorThreshold
-        RG_veinConditionThreshold
-        RG_ArteryConditionThreshold
-        RG_ArterySeedsThreshold
+        masks_diaphragmRadius
         CRACRV_Threshold
-        RG_alpha
         cropSection_scaleFactorWidth
         cropSection_scaleFactorSize
         cropSection_maskThreshold
@@ -57,7 +34,6 @@ classdef Parameters_json < handle
         elasWave_butterFiltOrder
         elasWave_butterFiltBand
         exportVideos
-        entirePulseAnalysis
         systoleThreshold
         flatField_gwRatio
         flatField_border
@@ -108,6 +84,7 @@ classdef Parameters_json < handle
         AllCirclesFlag
         nbCircles
         forcewidth
+        forcebarycenter
     end
 
     methods
@@ -134,7 +111,6 @@ classdef Parameters_json < handle
                 obj.refAvgStart = parsedData.Video.RefStart;
                 obj.refAvgEnd = parsedData.Video.RefEnd;
 
-
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
 
@@ -143,99 +119,59 @@ classdef Parameters_json < handle
                 obj.videoLength = parsedData.ResizeVideo.VideoLength;
 
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
-                obj.radius_ratio = parsedData.RadiusRatio;
-                obj.radius_gap = parsedData.RadiusGap;
-                obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
 
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
-                obj.entirePulseAnalysis = parsedData.EntirePulseAnalysis;
 
-                obj.resistivity_gaussFiltSigma = parsedData.ResistivityIndex.GaussianFilterSigma;
-                obj.resistivity_satAmp = parsedData.ResistivityIndex.AmplitudeSaturationPonderation;
-                obj.resistivity_minTolVal = parsedData.ResistivityIndex.TolerantValueMinimum;
-                obj.resistivity_maxTolVal = parsedData.ResistivityIndex.TolerantValueMaximum;
-                obj.resistivity_gamma = parsedData.ResistivityIndex.Gamma;
-
-                obj.oneCycle_Ninterp = parsedData.CreationOfOneCycle.NumberOfInterpolation;
-                obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
-                obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
-                obj.local_background_width = parsedData.CreationOfOneCycle.LocalBackgroundWidth;
-
-                obj.arteryMask_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
-                obj.arteryMask_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
-                obj.arteryMask_vesselness_bin_threshold = parsedData.CreationOfMasks.VesselnessBinarizationThreshold;
-                obj.arteryMask_magicwand_nb_of_area_vessels = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForVessels;
-                obj.arteryMask_magicwand_nb_of_area_artery = parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery;
-                obj.finalarteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationThreshold;
-                obj.firstArteryMask_CorrelationMatrixThreshold = parsedData.CreationOfMasks.ArteryCorrelationMatrixThreshold;
-                obj.arteryMask_vesselnessContrastNumSlides = parsedData.CreationOfMasks.ContrastNumSlides;
-
-                obj.centralRetinal_arteryThreshold = parsedData.CentralRetinaMask.CentralRetinaArteryThreshold;
-                obj.centralRetinal_veinThreshold = parsedData.CentralRetinaMask.CentralRetinaVeinThreshold;
-                obj.centralRetinal_backgndThreshold = parsedData.CentralRetinaMask.CentralRetinaBackgroundThreshold;
-                obj.vesselMask_BinTreshold = parsedData.CentralRetinaMask.StandardBinarizationThreshold;
-                obj.masks_radius = parsedData.CentralRetinaMask.CropCoroidRadius;
-                obj.masks_radius_treshold = parsedData.CentralRetinaMask.ThresholdRadiusValue;
-                obj.masks_minSize = parsedData.CentralRetinaMask.MinimumSeedAreaSize;
-                obj.masks_cleaningCoroid = parsedData.CentralRetinaMask.CleaningCoroidOrNot;
-                obj.masks_showIntermediateFigures = parsedData.CentralRetinaMask.ShowingIntermediateFiguresInTheProcess;
-                obj.RG_FloorThreshold = parsedData.CentralRetinaMask.RegionGrowingFloorThreshold;
-                obj.RG_veinConditionThreshold = parsedData.CentralRetinaMask.RegionGrowingVeinConditionThreshold;
-                obj.RG_ArteryConditionThreshold = parsedData.CentralRetinaMask.RegionGrowingArteryConditionThreshold;
-                obj.RG_ArterySeedsThreshold = parsedData.CentralRetinaMask.RegionGrowingArterySeedsThreshold;
-                obj.CRACRV_Threshold = parsedData.CentralRetinaMask.CentralRetinaVeinArteryThreshold;
-                obj.RG_alpha = parsedData.CentralRetinaMask.RegionGrowingThreshold;
-
-                obj.cropSection_scaleFactorWidth = parsedData.CropSectionAnalysis.ScaleFactorWidth;
-                obj.cropSection_scaleFactorSize = parsedData.CropSectionAnalysis.ScaleFactorSize;
-                obj.cropSection_maskThreshold = parsedData.CropSectionAnalysis.MaskSliceThreshold;
-                obj.cropSection_pixelSize = parsedData.CropSectionAnalysis.PixelSize; %??
-
-                obj.elasWave_nDomFreq = parsedData.ElasticWaves.NumberOfDominantFrequency;
-                obj.elasWave_pixelSize = parsedData.ElasticWaves.PixelSize;
-                obj.elasWave_gaussFiltPadding = parsedData.ElasticWaves.GaussianFilterPadding;
-                obj.elasWave_butterFiltOrder = parsedData.ElasticWaves.ButterworthFilterOrder;
-                obj.elasWave_butterFiltBand = parsedData.ElasticWaves.ButterworthFilterThicknessBand;
-
-                obj.systoleThreshold = parsedData.Systole.SystoleThreshold;
+                obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
 
                 obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
                 obj.flatField_border = parsedData.FlatFieldCorrection.Border;
                 obj.flatField_borderDMap = parsedData.FlatFieldCorrection.BorderDMAP;
                 obj.flatField_borderPulseAnal = parsedData.FlatFieldCorrection.BorderPulseAnalysis;
 
-                obj.flowRate_gaussFiltPadding = parsedData.FlowRate.GaussianFilterPadding;
-                obj.flowRate_yelorRangeHSV = parsedData.FlowRate.YellowOrangeRangeHSV;
-                obj.flowRate_cydblueRangeHSV = parsedData.FlowRate.CyanDarkBlueRangeHSV;
-                obj.flowRate_minTolVal = parsedData.FlowRate.TolerantValueMinimum;
-                obj.flowRate_maxTolVal = parsedData.FlowRate.TolerantValueMaximum;
-                obj.flowRate_sliceHalfThickness = parsedData.FlowRate.SliceHalfThickness;
+                obj.masks_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
+                obj.masks_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
+                obj.masks_radius = parsedData.CreationOfMasks.CropCoroidRadius;
+                obj.masks_minSize = parsedData.CreationOfMasks.MinimumSeedAreaSize;
+                obj.masks_diaphragmRadius = parsedData.CreationOfMasks.DiaphragmRadius;
+                obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
-                obj.normFlag = parsedData.OpticalPowerNormalization.NormalizationFlag;
-                obj.normPowerCalibrationSlope = parsedData.OpticalPowerNormalization.PowerCalibrationCurveSlope;
-                obj.normPoweryIntercept = parsedData.OpticalPowerNormalization.PowerCalibrationYIntercept;
-                obj.normRefBloodFlow = parsedData.OpticalPowerNormalization.ReferenceTotalRetinalBloodFlow;
+                obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
+
+                obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
+                obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
+
+                obj.DiffFirstCalculationsFlag = parsedData.Velocity.DiffFirstCalculationsFlag;
+                obj.local_background_width = parsedData.Velocity.LocalBackgroundWidth;
+
+                obj.velocitySmallRadiusRatio = parsedData.SizeOfField.SmallRadiusRatio;
+                obj.velocityBigRadiusRatio = parsedData.SizeOfField.BigRadiusRatio;
+
+                obj.nbCircles = parsedData.BloodVolumeRate.NumberOfCircles ;
+                obj.radius_ratio = parsedData.BloodVolumeRate.RadiusRatio;
+                obj.radius_gap = parsedData.BloodVolumeRate.RadiusGap;
+                obj.cropSection_scaleFactorWidth = parsedData.BloodVolumeRate.ScaleFactorWidth;
+                obj.cropSection_scaleFactorSize = parsedData.BloodVolumeRate.ScaleFactorSize;
+                obj.cropSection_maskThreshold = parsedData.BloodVolumeRate.MaskSliceThreshold;
+                obj.cropSection_pixelSize = parsedData.BloodVolumeRate.PixelSize;
+                obj.flowRate_sliceHalfThickness = parsedData.BloodVolumeRate.SliceHalfThickness;
 
                 obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
                 obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;
                 obj.theta = parsedData.PulseAnalysis.Theta;
                 obj.opticalIndex = parsedData.PulseAnalysis.OpticalIndex;
                 obj.lambda = parsedData.PulseAnalysis.Lambda;
-                obj.phi = parsedData.PulseAnalysis.Phi; % Mie scattering angle
+                obj.phi = parsedData.PulseAnalysis.Phi; 
                 obj.pulseAnal_dataReliabilityFactor = parsedData.PulseAnalysis.DataReliatibilityFactor; %?
                 obj.pulseAnal_peakHeightThreshold = parsedData.PulseAnalysis.PeakHeightThreshold;
                 obj.pulseAnal_outNoiseThreshold = parsedData.PulseAnalysis.OutOfNoiseThreshold;
                 obj.pulseAnal_blurScaleFactor = parsedData.PulseAnalysis.BlurScaleFactor;
                 obj.pulseAnal_frameMinDiastole = parsedData.PulseAnalysis.FramePercentageBeforeMinimumOfDiastole;
                 obj.pulseAnal_framePeakSystole = parsedData.PulseAnalysis.FramePercentageAroundPeakSystole;
-                obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel; %??
+                obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel; 
 
-                obj.trWavelength_f0 = parsedData.Wavelength.F0;
-                obj.trWavelength_r0 = parsedData.Wavelength.R0;
-
-                obj.velocitySmallRadiusRatio = parsedData.Velocity.SmallRadiusRatio;
-                obj.velocityBigRadiusRatio = parsedData.Velocity.BigRadiusRatio;
+                
 
                 obj.video2vessels_radiusRatio = parsedData.VesselsVideo.RadiusRatioFactor;
                 obj.video2vessels_gaussFiltPadding = parsedData.VesselsVideo.GaussianFilterPadding;
@@ -250,11 +186,17 @@ classdef Parameters_json < handle
                 obj.viscosity_listParamA = parsedData.Viscosity.ViscosityListParameterA;
                 obj.viscosity_listParamB = parsedData.Viscosity.ViscosityListParameterB;
 
+                obj.elasWave_nDomFreq = parsedData.ElasticWaves.NumberOfDominantFrequency;
+                obj.elasWave_pixelSize = parsedData.ElasticWaves.PixelSize;
+                obj.elasWave_gaussFiltPadding = parsedData.ElasticWaves.GaussianFilterPadding;
+                obj.elasWave_butterFiltOrder = parsedData.ElasticWaves.ButterworthFilterOrder;
+                obj.elasWave_butterFiltBand = parsedData.ElasticWaves.ButterworthFilterThicknessBand;
+
+
                 obj.nbSides = parsedData.Other.NumberOfSides;
-                obj.DiffFirstCalculationsFlag = parsedData.Other.DiffFirstCalculationsFlag;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
-                obj.nbCircles = parsedData.Other.NumberOfCircles ;
                 obj.forcewidth = parsedData.Other.ForceWidthInPixels;
+                obj.forcebarycenter = parsedData.Other.ForceBarycenter;
 
 
             else

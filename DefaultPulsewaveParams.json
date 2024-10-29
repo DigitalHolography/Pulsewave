@@ -12,89 +12,49 @@
         "Video length" : -1
     },
     "Value of the interpolation parameter" : 1,
-    "Radius ratio" : 0.18,
-    "Radius gap" : 0.01,
-    "Gaussian Filter Size For Barycentre" : 0.02,
     "Veins Analysis" : 1,
-    "Export Videos" : 1,
-    "Entire Pulse Analysis" : 1,
-    "Resistivity index" : {
-        "Gaussian filter sigma" : 0.7,
-        "Amplitude saturation  ponderation" : 0.75,
-        "Tolerant value minimum" : 0.02,
-        "Tolerant value maximum" : 0.98,
-        "Gamma" : 0.7
-    },
-    "Creation of one cycle" : {
-        "Number of interpolation" : 64,
-        "Out of noise threshold" : 85,
-        "Data reliability index threshold" : 50,
-        "Local background width" : 2
-    },
-    "Creation of masks" : {
-        "Vesselnes parameter sigma" : 1,
-        "Vesselnes parameter beta" : 0.8,
-        "Vesselness Binarization threshold" : 0.35,
-        "MagicWand Number of segmented area detected for vessels" : 5,
-        "MagicWand Number of segmented area detected for artery" : 5,
-        "Artery correlation threshold" : 0.7,
-        "ArteryCorrelationMatrixThreshold":  0.8,
-        "ContrastNumSlides": [100,100]
-
-    },
-    "Central retina mask" : {
-        "Central retina artery threshold" : 3,
-        "Central retina vein threshold" : -3,
-        "Central retina background threshold" : 2,
-        "Crop coroid radius" : 0.10,
-        "Threshold radius value" : -1,
-        "Standard binarization threshold" : 0.15,
-        "Minimum seed area size" : 150,
-        "Cleaning Coroid or not" : 1,
-        "Showing intermediate figures in the process" : 0,
-        "Region growing floor threshold" : 0.33,
-        "Region growing vein condition threshold" : 0.33,
-        "Region growing artery condition threshold" : 2,
-        "Region growing artery seeds threshold" : 2,
-        "Central Retina Vein Artery threshold" : 3,
-        "Region growing threshold" : -0.0025
-    },
-    "Crop section analysis" : {
-        "Scale factor width" : 3,
-        "Scale factor size" : 0.004,
-        "Mask slice threshold" : 0.01,
-        "Pixel size" : 0.0102
-    },
-    "Elastic waves" : {
-        "Number of dominant frequency" : 2,
-        "Pixel size" : 0.003909,
-        "Gaussian filter padding" : 0,
-        "Butterworth filter order" : 10,
-        "Butterworth filter thickness band" : 3
-    },
-    "Systole" : {
-        "Systole threshold" : 0.7
-    },
+    "Export Videos" : 0,
+    "Gaussian Filter Size For Barycentre" : 0.02,
     "Flat field correction" : {
         "GW ratio" : 0.07,
         "Border" : 0.15,
         "Border dMAP" : 0.33,
         "Border PulseAnalysis" : 0
     },
-    "Flow rate" : {
-        "Gaussian filter padding" : 0,
-        "Yellow orange range HSV" : 0.18,
-        "Cyan dark blue range HSV" : 0.68,
-        "Tolerant value minimum" : 0.2,
-        "Tolerant value maximum" : 0.98,
+    "Creation of masks" : {
+        "Vesselnes parameter sigma" : 2,
+        "Vesselnes parameter beta" : 0.8,
+        "Crop coroid radius" : 0.07,
+        "Minimum seed area size" : 150,
+        "Diaphragm radius" : 0.40,
+        "Central Retina Vein Artery threshold" : 3
+    },
+    "Systole Detection" : {
+        "Systole threshold ratio of maximum" : 0.7
+    },
+    "Creation of one cycle" : {
+        "Out of noise threshold" : 85,
+        "Data reliability index threshold" : 50
+    },
+    "Velocity" : {
+        "Diff First Calculations Flag" : 0,
+        "Local background width" : 2
+    },
+    "Size of field" : {
+        "Small radius ratio" : 0.15,
+        "Big radius ratio" : 0.35
+    },
+    "Blood Volume Rate" : {
+        "Number Of Circles" : 10,
+        "Radius ratio" : 0.18,
+        "Radius gap" : 0.01,
+        "Scale factor width" : 3,
+        "Scale factor size" : 0.004,
+        "Mask slice threshold" : 0.01,
+        "Pixel size" : 0.0191,
         "Slice half thickness" : 10
     },
-    "Optical Power Normalization" : {
-        "Normalization Flag" : 0,
-        "Power Calibration Curve Slope" : 0.256,
-        "Power Calibration YIntercept": 2.83,
-        "Reference Total Retinal Blood Flow" : 40
-    },
+    
     "Pulse analysis" : {
         "Radius pupil" : 2,
         "Distance iris retina" : 20,
@@ -110,14 +70,7 @@
         "Frame percentage around peak systole" : 0.1,
         "Exponentiel" : 2.718282
     },
-    "Wavelength" : {
-        "F0" : 150,
-        "R0" : 150
-    },
-    "Velocity" : {
-        "Small radius ratio" : 0.15,
-        "Big radius ratio" : 0.35
-    },
+    
     "Vessels video" : {
         "Radius ratio factor" : 0.27,
         "Gaussian filter padding" : 0,
@@ -133,11 +86,17 @@
         "Viscosity list parameter a" : 1.459,
         "Viscosity list parameter b" : 0.017
     },
+    "Elastic waves" : {
+        "Number of dominant frequency" : 2,
+        "Pixel size" : 0.003909,
+        "Gaussian filter padding" : 0,
+        "Butterworth filter order" : 10,
+        "Butterworth filter thickness band" : 3
+    },
     "Other" : {
         "Number of sides" : 120,
-        "Diff First Calculations Flag" : 0,
         "All Circles" : 0,
-        "Number Of Circles" : 10,
-        "Force Width In Pixels" : []
+        "Force Width In Pixels" : [],
+        "Force Barycenter" : []
     }
 }
