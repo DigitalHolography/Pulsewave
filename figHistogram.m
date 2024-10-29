@@ -2,14 +2,15 @@ function figHistogram(R, level, mask, color1, color2, name, ToolBox)
 %FIG_HISTOGRAM Summary of this function goes here
 %   Detailed explanation goes here
 % Set the threshold
-threshold = level(3);
+numLevel = size(level,2);
+threshold = level(ceil((numLevel) / 2) + 1);
 
 m = min(R(mask));
 M = max(R(mask));
 
 % Bin the data and count occurrences
 edges = linspace(m, M, 50); % Set bin edges (modify as needed)
-[counts, centers] = histcounts(R(mask), edges);
+[counts, centers] = histcounts(R(mask & R ~= 0), edges);
 counts = [counts 0];
 
 % Separate bins based on threshold
@@ -35,7 +36,7 @@ else
 end
 
 % thresholds
-for i = 2:size(level,2)
+for i = 2:numLevel
 xline(level(i), 'k--', 'LineWidth', 2)
 end
 

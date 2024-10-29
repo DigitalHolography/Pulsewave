@@ -24,9 +24,9 @@
     "Creation of masks" : {
         "Vesselnes parameter sigma" : 2,
         "Vesselnes parameter beta" : 0.8,
-        "Crop coroid radius" : 0.12,
+        "Crop coroid radius" : 0.07,
         "Minimum seed area size" : 150,
-        "Diaphragm radius" : 0.45,
+        "Diaphragm radius" : 0.40,
         "Central Retina Vein Artery threshold" : 3
     },
     "Systole Detection" : {

@@ -114,7 +114,7 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("\n----------------------------------\n")
                 fprintf("Video Outlier Cleaning\n")
                 fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.RemoveOutliers();
+                % app.files{end} = app.files{end}.RemoveOutliers();
                 fprintf("- Video Outlier Cleaning took : %ds\n", round(toc))
 
                 %% End

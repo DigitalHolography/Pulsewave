@@ -1,6 +1,6 @@
 % Test and evaluation script
 
-paths = readlines("C:\Users\Vladikavkaz\Documents\data_test_list.txt");
+paths = readlines("D:\HoloDopplerFolders\folders.txt");
 
 figure(435)
 title("Segmentation")
