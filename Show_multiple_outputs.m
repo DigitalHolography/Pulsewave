@@ -1,6 +1,6 @@
 % Test and evaluation script
 
-paths = readlines("D:\HoloDopplerFolders\folders.txt");
+paths = readlines("C:\Users\Vladikavkaz\Documents\data_test_list.txt");
 
 figure(435)
 title("Segmentation")
@@ -26,10 +26,13 @@ for ind =1:length(paths)
     last_PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
     
     segmentation_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_arteryVeinSegmentation.png']);
-    bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','bloodVolumeRate',[main_foldername,'_bloodVolumeRateallradxtime.png']);
+    bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']);
 end
-
+output_dir = 'D:\Pulsewave_tests_output';
+mkdir(output_dir);
 figure(435)
 montage(segmentation_paths);
+exportgraphics(gca,fullfile(output_dir,'segmentations.png'));
 figure(321)
 montage(bvr_paths);
+exportgraphics(gca,fullfile(output_dir,'bloodVolumeRate.png'));
