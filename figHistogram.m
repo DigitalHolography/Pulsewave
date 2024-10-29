@@ -3,7 +3,7 @@ function figHistogram(R, level, mask, color1, color2, name, ToolBox)
 %   Detailed explanation goes here
 % Set the threshold
 numLevel = size(level,2);
-threshold = level(ceil((numLevel) / 2) + 1);
+threshold = level(floor((numLevel) / 2) + 1);
 
 m = min(R(mask));
 M = max(R(mask));

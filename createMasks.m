@@ -223,6 +223,9 @@ R_ChoroidVessel = R_ChoroidalPulse .* maskVesselness;
 imwrite(rescale(R_ArteryVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_2_2_R_ArteryVessel.png')))
 imwrite(rescale(R_VeinVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_2_R_VeinVessel.png')))
 imwrite(rescale(R_ChoroidVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroid_2_2_R_ChoroidalVessel.png')))
+figHistogram(R_ArteryVessel, 0, maskDiaphragm, 'red', 'red', 'artery_2_2_R_Histo', ToolBox)
+figHistogram(R_VeinVessel, 0, maskDiaphragm, 'blue', 'blue', 'vein_2_2_R_Histo', ToolBox)
+figHistogram(R_ChoroidVessel, 0, maskDiaphragm, 'green', 'green', 'choroid_2_2_R_Histo', ToolBox)
 
 % Segmentation based on Otsu's criteria for arteries and veins
 
