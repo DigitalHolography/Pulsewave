@@ -227,8 +227,13 @@ classdef OneCycleClass
 
             logs = obj.load_logs;
 
-            if firstFrame > 0 && firstFrame < numFrames && lastFrame > firstFrame && lastFrame <= numFrames
-
+            if firstFrame > 0 && firstFrame < numFrames || lastFrame > 1 && lastFrame <= numFrames
+                if lastFrame == -1
+                    lastFrame = numFrames;
+                end
+                if firstFrame == -1 
+                    firstFrame = 1;
+                end
                 obj.M0_disp_video = obj.M0_disp_video(:, :, firstFrame:lastFrame);
                 obj.M0_data_video = obj.M0_data_video(:, :, firstFrame:lastFrame);
                 obj.M1_data_video = obj.M1_data_video(:, :, firstFrame:lastFrame);

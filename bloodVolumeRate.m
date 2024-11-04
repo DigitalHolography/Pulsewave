@@ -105,7 +105,7 @@ strYlabel = 'Velocity (mm.s-1)';
 
 %% Arteries
 
-[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width);
+[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery,~,~,~,crossSectionWidthArtery] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width);
 
 labelsArteries = cell(numSectionsArtery, 1);
 avgVolumeRateArtery_total = sum(avgVolumeRateArtery, 1);
@@ -179,7 +179,7 @@ end
 
 %% 2) 2) Veins
 if veins_analysis
-    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, stdVelocityVein, crossSectionMaskVein] = crossSectionAnalysis(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, [], force_width);
+    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, stdVelocityVein, crossSectionMaskVein,~,~,~,crossSectionWidthVein] = crossSectionAnalysis(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, [], force_width);
 
     labelsVeins = cell(numSectionsVein, 1);
     avgVolumeRateVein_total = sum(avgVolumeRateVein, 1);
@@ -449,6 +449,24 @@ set(gca, 'FontSize', 14)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateArteryImage.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateArteryImage.eps')))
 
+figure(430);
+imshow(maskArtery_RGB);
+
+for sectionIdx = 1:numSectionsArtery
+    new_x = x_center + ratio_etiquette * (SubImg_locs_artery(sectionIdx, 2) - x_center);
+    new_y = y_center + ratio_etiquette * (SubImg_locs_artery(sectionIdx, 1) - y_center);
+    text(new_x, new_y, strcat(string(round(crossSectionWidthArtery(sectionIdx)*PW_params.cropSection_pixelSize/(2^PW_params.k)*1000))," µm"), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
+end
+
+title(sprintf("Cross section width in arteries"));
+drawnow
+ax = gca;
+ax.Units = 'pixels';
+set(gca, 'FontSize', 14)
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'crossSectionWidthArteryImage.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'crossSectionWidthArteryImage.eps')))
+
 if veins_analysis
 
     figure(421);
@@ -467,6 +485,24 @@ if veins_analysis
     set(gca, 'FontSize', 14)
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateVeinImage.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateVeinImage.eps')))
+    
+    figure(431);
+    imshow(maskVein_RGB);
+    
+    for sectionIdx = 1:numSectionsVein
+        new_x = x_center + ratio_etiquette * (SubImg_locs_vein(sectionIdx, 2) - x_center);
+        new_y = y_center + ratio_etiquette * (SubImg_locs_vein(sectionIdx, 1) - y_center);
+        text(new_x, new_y, strcat(string(round(crossSectionWidthVein(sectionIdx)*PW_params.cropSection_pixelSize/(2^PW_params.k)*1000))," µm"), "FontWeight", "bold", "FontSize", 14, "Color", "white", "BackgroundColor", "black");
+    end
+    
+    title(sprintf("Cross section width in veins"));
+    drawnow
+    ax = gca;
+    ax.Units = 'pixels';
+    set(gca, 'FontSize', 14)
+    
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'crossSectionWidthArteryImage.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'crossSectionWidthArteryImage.eps')))
 
 end
 

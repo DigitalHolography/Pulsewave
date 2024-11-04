@@ -353,11 +353,19 @@ function [v_RMS_video, exec_times] = pulseAnalysis(numFramesInterp, f_RMS_video,
     if veinsAnalysis
         maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
         imwrite(maskVesselDilated-(maskArtery | maskVein), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
-    
+        maskNeighbors = maskVesselDilated-(maskArtery | maskVein);
+        
     else
         maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
         imwrite(maskVesselDilated-(maskArtery), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
+        maskNeighbors = maskVesselDilated-(maskArtery);
     end
+    M0_ff_img = squeeze(mean(M0_ff_video, 3));
+    M0_ff_img = mat2gray(M0_ff_img);
+    segmentationMapNeighbors(:, :, 1) = M0_ff_img - (maskNeighbors) .* M0_ff_img + maskNeighbors;
+    segmentationMapNeighbors(:, :, 2) = M0_ff_img - maskNeighbors .* M0_ff_img+ maskNeighbors;
+    segmentationMapNeighbors(:, :, 3) = M0_ff_img - maskNeighbors .* M0_ff_img+ 0.2*maskNeighbors;
+    imwrite(segmentationMapNeighbors, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'segmentationmaskNeighbors.png')));
     
     f_RMS_background = zeros(numX, numY, numFrames,'single');
     
@@ -497,7 +505,22 @@ function [v_RMS_video, exec_times] = pulseAnalysis(numFramesInterp, f_RMS_video,
     c.Label.FontSize = 12;
     axis off
     axis image
-    imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_vessels.png')))
+
+    imwrite(LocalBackground_in_vessels, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_vessels.png')))
+    imwrite(cat(3, ...
+        rescale(rescale(mean(f_RMS_video, 3)).*~maskVesselDilated+rescale(mean(f_RMS_background, 3)).*maskVesselDilated).*~maskNeighbors+(maskNeighbors), ...
+        rescale(rescale(mean(f_RMS_video, 3)).*~maskVesselDilated+rescale(mean(f_RMS_background, 3)).*maskVesselDilated).*~maskNeighbors+(maskNeighbors), ...
+        rescale(rescale(mean(f_RMS_video, 3)).*~maskVesselDilated)+rescale(mean(f_RMS_background, 3)).*maskVesselDilated.*~maskNeighbors ...
+        ), ...
+        fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'f_RMS_and_neighbors_background.png')))
+    imwrite(rescale(mean(f_RMS_video,3)), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'f_RMS_mean.png')))
+    
+    imwrite(cat(3, ...
+        rescale(rescale(mean(f_RMS_video, 3)).*~maskVesselDilated+rescale(mean(f_RMS_background, 3)).*maskVesselDilated), ...
+        rescale(rescale(mean(f_RMS_video, 3)).*~maskVesselDilated+rescale(mean(f_RMS_background, 3)).*maskVesselDilated), ...
+        rescale(rescale(mean(f_RMS_video, 3)).*~maskVesselDilated)+rescale(mean(f_RMS_background, 3)).*maskVesselDilated ...
+        ), ...
+        fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'f_RMS_and_background.png')))
     
     range(1:2) = clim;
     
