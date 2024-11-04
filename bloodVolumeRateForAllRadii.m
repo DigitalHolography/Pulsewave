@@ -178,7 +178,7 @@ hold off
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('radius in pixels')
-title("Radial variations of Blood Volume Rate")
+title("Time average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'meanvolumeRatexradius.png')))
@@ -191,7 +191,7 @@ for i = 1:numCircles
 end
 axis tight;
 aa = axis;
-aa(3)=-5;
+aa(3)=-10;
 aa(4)=95;
 axis(aa);
 hold off
@@ -199,10 +199,9 @@ box on
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('time (s)')
-title("Time average of Blood Volume Rate")
+title("Radial variations of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
-axis tight;
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'volumeRatevariancextime.png')))
 
@@ -232,7 +231,7 @@ plot(fullTime(index_start:index_end),repmat(1.7*mean_bvr_t_value,index_end-index
 legend({'','','','',sprintf('mean = %f µL/min',mean_bvr_t_value),'',''});
 axis tight;
 aa = axis;
-aa(3)=-5;
+aa(3)=-10;
 aa(4)=95;
 axis(aa);
 hold off
@@ -242,11 +241,11 @@ xlabel('time (s)')
 title("Radial average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
-axis tight;
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'volumeRateallradxtime.png')))
 
 if flagBloodVelocityProfile
+    mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles'));
     for i = 1:numCircles
         plot_mean_velocity_profiles = figure(7579+i);
         for j=1:nb_sections_artery(i)
@@ -278,7 +277,7 @@ if flagBloodVelocityProfile
 
         title(['Measured time-averaged velocity profiles at radius = ',num2str(rad(i)),' pix'])
         set(gca, 'Linewidth', 2)
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'bloodVelocityProfiles.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'bloodVelocityProfiles.png')))
 
 
         title(['Mean velocity profiles at radius = ',num2str(rad(i)),' pix'])
@@ -335,14 +334,14 @@ if flagBloodVelocityProfile
 
         axis tight;
         aa = axis;
-        aa(3)=-5;
-        aa(4)=25;
+        aa(3)=-10;
+        aa(4)=30;
         axis(aa);
         hold off
 
         title(['Interpolated time-averaged velocity profile at radius = ',num2str(rad(i)),' pix'])
         set(gca, 'Linewidth', 2)
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'interpolatedBloodVelocityProfile.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'interpolatedBloodVelocityProfile.png')))
 
     end
 end
