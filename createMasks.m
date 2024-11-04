@@ -72,18 +72,19 @@ if ~isempty(PW_params.forcebarycenter)
     ToolBox.y_barycentre = PW_params.forcebarycenter(1);
     ToolBox.x_barycentre = PW_params.forcebarycenter(2);
     y_CRV = numY / 2;
-    x_CRV = numX /2;
+    x_CRV = numX / 2;
 else
     vascularImage = double(M0_ff_img .* f_AVG_mean .* R_VascularPulse);
     blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0) .* maskDiaphragm;
     [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
 end
+
 cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 
 %% 1) 4) Segment Vessels
-cmapArtery = [0 0 0; 255 22 18]/255;
-cmapVein = [0 0 0; 18 237 255]/255;
+cmapArtery = [0 0 0; 255 22 18] / 255;
+cmapVein = [0 0 0; 18 237 255] / 255;
 
 % Number of classes for Vessels: 5
 % 1 = Background, 2 & 3 = Veins & CoroidalVessels, 4 = CoroidalVessel, 5 = Arteries
@@ -183,7 +184,7 @@ plot(t, squeeze(arterialPulse), '-', 'LineWidth', 2, 'Color', [255/255 22/255 18
 plot(t, squeeze(venousPulse), '-', 'LineWidth', 2, 'Color', [18/255 237/255 255/255])
 plot(t, squeeze(choroidalPulse), '-', 'LineWidth', 2, 'Color', [23/255 237/255 18/255])
 title('Pulses used for correlation maps')
-legend('Vascular Pulse', 'Arterial Pulse', 'Venous Pulse', 'Choroidal Pulse','Location','bestoutside')
+legend('Vascular Pulse', 'Arterial Pulse', 'Venous Pulse', 'Choroidal Pulse', 'Location', 'bestoutside')
 fontsize(gca, 14, "points");
 xlabel('Time(s)', 'FontSize', 14);
 ylabel('Power Doppler Pulse (s.u.)', 'FontSize', 14);
@@ -208,9 +209,6 @@ imwrite(rescale(R_VenousPulse), fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 imwrite(rescale(R_ChoroidalPulse), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroid_2_1_CorrelMatrix.png')))
 
 clear arterialPulse_centered venousPulse_centered choroidalPulse_centered vascularPulse_centered
-
-se = strel('disk', 5);
-% maskVesselnessDilated = imdilate(maskVesselness, se); % As Arteries tend to be more dilated than what they appear to be
 
 R_ArteryVessel = R_ArterialPulse .* maskVesselnessClean;
 R_ArteryVessel = R_ArteryVessel .* (R_ArteryVessel > 0);
@@ -244,7 +242,7 @@ levelVein = multithresh(R_VeinVessel(maskVesselnessClean), numClassesVein - 2);
 levelVein = [-1 levelVein];
 figHistogram(R_VeinVessel, levelVein, maskVesselnessClean, 'white', 'blue', 'vein_2_3_Histo', ToolBox)
 maskVeinQ = imquantize(R_VeinVessel - 2 * ~maskVesselnessClean, levelVein);
-maskVein = maskVeinQ == 4 |  maskVeinQ == 5 | firstMaskVeinClean;
+maskVein = maskVeinQ == 4 | maskVeinQ == 5 | firstMaskVeinClean;
 
 imwrite(rescale(maskVeinQ), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_3_Quantize.png')))
 imwrite(maskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_2_4_Thresh.png')))
@@ -258,8 +256,10 @@ maskVeinClean = bwareaopen(maskVein, PW_params.masks_minSize, 4);
 imwrite(maskArteryClean, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_3_1_AreaOpen.png')))
 imwrite(maskVeinClean, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_3_1_AreaOpen.png')))
 
-maskArteryClean = imclose(maskArteryClean, se);
-maskVeinClean = imclose(maskVeinClean, se);
+% Remove the small gaps
+imcloseSE = strel('disk', PW_params.masks_imclose_radius);
+maskArteryClean = imclose(maskArteryClean, imcloseSE);
+maskVeinClean = imclose(maskVeinClean, imcloseSE);
 
 imwrite(maskArteryClean, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_3_2_ImClose.png')))
 imwrite(maskVeinClean, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_3_2_ImClose.png')))
@@ -269,23 +269,27 @@ RGBM0(:, :, 2) = rescale(M0_ff_img);
 RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVeinClean;
 
 imwrite(RGBM0, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_2_RGB.png')))
-
-clear vesselnessVein vesselnessArtery ;
-%% 3) 2) Final Masks
+%% 3) 2) Minimum Mask Width
+minWidthSE = strel('disk', PW_params.masks_min_width);
 
 skelArtery = bwskel(maskArteryClean);
 skelVein = bwskel(maskVeinClean);
 
-maskArtery = maskArteryClean | imdilate(skelArtery, strel('disk', 3));
-maskVein = maskVeinClean | imdilate(skelVein, strel('disk', 3));
+maskArteryClean = maskArteryClean | imdilate(skelArtery, minWidthSE);
+maskVeinClean = maskVeinClean | imdilate(skelVein, minWidthSE);
 
-% Force Create Masks
+clear skelArtery skelVein
+%% 3) Bonus) Force Create Masks
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
-    maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
-    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
+    fprintf("FORCED MASK\n")
+    maskArteryClean = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
+    maskVeinClean = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
 end
 
-% Create Vessel and Background Mask
+%% 3) 3) Create Vessel and Background Mask
+maskArtery = maskArteryClean;
+maskVein = maskVeinClean;
+
 maskVessel = maskArtery | maskVein;
 maskBackground = not(maskVessel);
 
@@ -336,7 +340,6 @@ if ~isempty(PW_params.forcebarycenter)
     ToolBox.x_barycentre = PW_params.forcebarycenter(2);
     cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 end
-
 
 %% Create CRA and CRV Mask
 f_AVG_std = std2(f_AVG_mean);

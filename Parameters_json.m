@@ -23,6 +23,8 @@ classdef Parameters_json < handle
         masks_radius
         masks_minSize
         masks_diaphragmRadius
+        masks_imclose_radius
+        masks_min_width
         CRACRV_Threshold
         cropSection_scaleFactorWidth
         cropSection_scaleFactorSize
@@ -135,6 +137,8 @@ classdef Parameters_json < handle
                 obj.masks_radius = parsedData.CreationOfMasks.CropCoroidRadius;
                 obj.masks_minSize = parsedData.CreationOfMasks.MinimumSeedAreaSize;
                 obj.masks_diaphragmRadius = parsedData.CreationOfMasks.DiaphragmRadius;
+                obj.masks_imclose_radius = parsedData.CreationOfMasks.ImcloseRadius;
+                obj.masks_min_width = parsedData.CreationOfMasks.MinimumVesselWidth;
                 obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
                 obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
