@@ -27,7 +27,9 @@
         "Crop coroid radius" : 0.07,
         "Minimum seed area size" : 150,
         "Diaphragm radius" : 0.40,
-        "Central Retina Vein Artery threshold" : 3
+        "Central Retina Vein Artery threshold" : 3,
+        "Imclose Radius": 5,
+        "Minimum Vessel Width" : 3
     },
     "Systole Detection" : {
         "Systole threshold ratio of maximum" : 0.7
