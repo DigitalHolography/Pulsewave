@@ -345,6 +345,68 @@ if flagBloodVelocityProfile
 
     end
 end
+
+plot_interp_pulse = figure(7124);
+Ninterp = 1000;
+[interpBvrT,avgLength,interpstdBvrT] = interpSignal(mean_bvr_t,systolesIndexes,Ninterp,mean_std_bvr_t);
+dt = (fullTime(2)-fullTime(1));
+pulseTime = dt*(1:Ninterp)*avgLength/Ninterp;
+
+
+
+[mmin,amin] = min(interpBvrT);
+[mmax,amax] = max(interpBvrT);
+cshiftn = Ninterp-amin;
+
+
+hold off
+interpBvrT2 = repmat(interpBvrT,1,3);
+interpstdBvrT2 = repmat(interpstdBvrT,1,3);
+pulseTime2 = dt*(-Ninterp+1:Ninterp*2)*avgLength/Ninterp;
+
+
+hold on
+curve1 = circshift(interpBvrT2,cshiftn) + 0.5 * circshift(interpstdBvrT2,cshiftn);
+curve2 = circshift(interpBvrT2,cshiftn) - 0.5 * circshift(interpstdBvrT2,cshiftn);
+ft2 = [pulseTime2, fliplr(pulseTime2)];
+inBetween = [curve1, fliplr(curve2)]';
+Color_std = [0.7 0.7 0.7];
+fill(ft2, inBetween, Color_std);
+
+hold on
+curve1 = circshift(interpBvrT,cshiftn);
+curve2 = 0 *ones(size(curve1));
+ft2 = [pulseTime, fliplr(pulseTime)];
+inBetween = [curve1, fliplr(curve2)]';
+Color_std = [0.99 0.9 0.9];
+fill(ft2, inBetween, Color_std);
+
+hold on
+curve1 = circshift(interpBvrT,cshiftn);
+curve1 = curve1(1:amax+cshiftn);
+curve2 = 0 *ones(size(curve1));
+ft2 = [pulseTime(1:amax+cshiftn), fliplr(pulseTime(1:amax+cshiftn))];
+inBetween = [curve1, fliplr(curve2)]';
+Color_std = [0.7 0.0 0.0];
+fill(ft2, inBetween, Color_std);
+
+plot(pulseTime2,circshift(interpBvrT2,cshiftn),'-k', 'LineWidth', 2);
+
+axis tight;
+xlim([pulseTime(1)-1/2*pulseTime(end),3/2*pulseTime(end)])
+
+ylabel('Blood Volume Rate (µL/min)')
+xlabel('Time (s)')
+ccinterpBvrT = circshift(interpBvrT,cshiftn);
+dt2 = pulseTime2(2)-pulseTime2(1);
+stroke_volume_value = sum(ccinterpBvrT(1:amax+cshiftn))*dt2/60 * 1000; % in nL
+total_volume_value = sum(ccinterpBvrT)*dt2/60 * 1000;
+title(sprintf("Retinal Stroke Volume : %02.0f nL and Total Volume : %02.0f nL",stroke_volume_value,total_volume_value));
+set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'strokeAndTotalVolume.png')))
+
+
 close all
 fprintf("- Blood Volume Rate for all radii took : %ds\n", round(toc))
 

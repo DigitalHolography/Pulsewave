@@ -82,7 +82,7 @@ classdef OneCycleClass
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
-                obj.M0_disp_video = ff_correction(videoM0, 30);
+                obj.M0_disp_video = rescale(ff_correction(videoM0, 30))*255;
                 obj.M0_data_video = videoM0;
                 obj.M1_data_video = videoM1;
                 obj.M2_data_video = videoM2;
@@ -174,11 +174,32 @@ classdef OneCycleClass
         function obj = MomentNormalize(obj)
 
             PW_params = Parameters_json(obj.directory);
+            M0_data_mean = mean(double(obj.M0_data_video), [1 2]);
+
+            obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_mean);
+            obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_mean;
+            obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
+
+        end
+
+        function obj = MomentRescaledNormalize(obj)
+
+            PW_params = Parameters_json(obj.directory);
+%             MAX_M0_DISP = max(obj.M0_disp_video,[],'all');
+%             MAX_M0 = max(obj.M0_data_video,[],'all');
+%             MAX_M1 = max(obj.M0_data_video,[],'all');
+%             MAX_M2 = max(obj.M0_data_video,[],'all');
+% 
+%             obj.M0_data_video = obj.M0_data_video /MAX_M0;
+%             obj.M1_data_video = obj.M1_data_video /MAX_M1;
+%             obj.M2_data_video = obj.M2_data_video /MAX_M2;
+%             obj.M0_disp_video = obj.M0_disp_video /MAX_M0_DISP;
+
             M0_data_mean = mean(obj.M0_data_video, [1 2]);
 
-            obj.f_RMS_video = sqrt(obj.M2_data_video ./ M0_data_mean);
-            obj.f_AVG_video = obj.M1_data_video ./ M0_data_mean;
-            obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
+            obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ double(M0_data_mean));
+            obj.f_AVG_video = double(obj.M1_data_video) ./ double(M0_data_mean);
+            % obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
 
         end
 
@@ -417,6 +438,10 @@ classdef OneCycleClass
             kInterp = obj.k;
             numX = (numX - 1) * (2 ^ kInterp - 1) + numX;
             numY = (numY - 1) * (2 ^ kInterp - 1) + numY;
+
+            if kInterp == 0
+                return
+            end
 
             % Reference M0
             tmpReferenceM0 = zeros(numX, numY, numFrames);

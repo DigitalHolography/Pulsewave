@@ -45,9 +45,11 @@ classdef pulse < matlab.apps.AppBase
 
             app.Lamp.Color = [1, 0, 0];
             drawnow;
-                if isdir(path)
-                    path = strcat(path, '\');
-                end
+            holo=true;
+            if isdir(path)
+                holo =false;
+                path = strcat(path, '\');
+            end
             parfor_arg = app.NumberofWorkersSpinner.Value ;
 
             poolobj = gcp('nocreate'); % check if a pool already exist
@@ -91,6 +93,9 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("Moment Normalizing\n")
                 fprintf("----------------------------------\n")
                 app.files{end} = app.files{end}.MomentNormalize();
+                if holo
+                    app.files{end} = app.files{end}.MomentNormalize();
+                end
                 fprintf("- Moment Normalizing took : %ds\n", round(toc))
 
                 % Video resize (preprocess interpolation interpolate)
