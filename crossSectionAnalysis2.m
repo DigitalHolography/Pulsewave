@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell, crossSectionWidth,stdCrossSectionWidth] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width,flag_show_fig)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
     
@@ -18,6 +18,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
     
     [numX, numY, numFrames] = size(v_RMS);
     crossSectionWidth   = zeros(numSections, 1);
+    stdCrossSectionWidth= zeros(numSections, 1);
     crossSectionArea    = zeros(numSections, 1);
     avgVelocity         = zeros(numSections, numFrames);
     avgVolumeRate       = zeros(numSections, numFrames);
@@ -62,12 +63,13 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
                 projx(:, theta) = squeeze(sum(tmpImg, 1));
                 projy(:, theta) = squeeze(sum(tmpImg, 2));
             end
-    
-            figure(2200)
-            imagesc(projx)
-    
-            figure(2201)
-            imagesc(projy)
+            if flag_show_fig
+                figure(2200)
+                imagesc(projx)
+        
+                figure(2201)
+                imagesc(projy)
+            end
             % avi
     
             % [max_projx,tilt_idx] = max(projx(:),[],'all','linear');
@@ -96,73 +98,105 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             [~,centt] = max(profile);
             central_range = max(1,centt-round(subImgHW/6)):min(length(profile),centt+round(subImgHW/6));
             r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
-            f = fit(r_range',profile(central_range)','poly2');
-            figure(sectionIdx)
-            plot(f,r_range,profile(central_range));
+            [f,gof] = fit(r_range',profile(central_range)','poly2');
+            if flag_show_fig
+                figure(sectionIdx)
+                plot(f,r_range,profile(central_range));
+            end
+            
             r = roots([f.p1,f.p2,f.p3]);
-            crossSectionWidth(sectionIdx) = r(1)-r(2);
-    
+            if gof.rsquare <0.6
+                crossSectionWidth(sectionIdx) = 0;
+                stdcrossSectionWidth(sectionIdx) =0;
+            else
+                crossSectionWidth(sectionIdx) = abs(r(1)-r(2))/(PW_params.cropSection_pixelSize / 2 ^ k);
+                stdcrossSectionWidth(sectionIdx) = abs(r(1)-r(2))/gof.rsquare/(PW_params.cropSection_pixelSize / 2 ^ k);
+            end
+
             section_cut(section_cut<0) = 0 ;
     
             tmp_section = (section_cut ./ max(section_cut)) * size(section_cut, 1);
-    
-            figure(2001 + sectionIdx)
-            xAx = linspace(0, size(projx, 1), size(projx, 1));
-            xAy = linspace(0, size(projx, 2), size(projx, 2));
-            imagesc(xAy, xAx, projx)
-            colormap("gray")
-            axis image
-            hold on
-            x = [tilt_angle_list(sectionIdx) tilt_angle_list(sectionIdx)];
-            y = [0 size(projx, 1)];
-            line(x, y, 'Color', 'red', 'LineStyle', ':', 'LineWidth', 3)
-            axis off;
-            hold off;
-            set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
-            f = getframe(gca); %# Capture the current window
-    
-            insert = '';
-    
-            if ~isempty(circle)
-                insert = sprintf('_circle_%d', circle);
+            
+            if flag_show_fig
+                figure(2001 + sectionIdx)
+                xAx = linspace(0, size(projx, 1), size(projx, 1));
+                xAy = linspace(0, size(projx, 2), size(projx, 2));
+                imagesc(xAy, xAx, projx)
+                colormap("gray")
+                axis image
+                hold on
+                x = [tilt_angle_list(sectionIdx) tilt_angle_list(sectionIdx)];
+                y = [0 size(projx, 1)];
+                line(x, y, 'Color', 'red', 'LineStyle', ':', 'LineWidth', 3)
+                axis off;
+                hold off;
+                set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
+                f = getframe(gca); %# Capture the current window
+        
+                insert = '';
+        
+                if ~isempty(circle)
+                    insert = sprintf('_circle_%d', circle);
+                end
+        
+                imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
+            
+                % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
+                w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(sectionIdx) '.avi'])));
+                tmp_video = mat2gray(Video_subIm_rotate);
+                open(w)
+        
+                for theta = 1:length(angles)
+                    writeVideo(w, tmp_video(:, :, theta));
+                end
+        
+                close(w);
+
+                figure(9641+sectionIdx)
+                r_ = linspace(-length(profile)/2,length(profile)/2,length(profile)) * (PW_params.cropSection_pixelSize / 2 ^ k);
+                stdprofile = std(subImg,[],1);
+
+                curve1 = profile + 0.5 * stdprofile;
+                curve2 = profile - 0.5 * stdprofile;
+                ft2 = [r_, fliplr(r_)];
+                inBetween = [curve1, fliplr(curve2)]';
+                
+                
+                Color_std = [0.7 0.7 0.7];
+                fill(ft2, inBetween, Color_std);
+                hold on;
+                plot(r_, curve1, "Color", Color_std, 'LineWidth', 2);
+                plot(r_, curve2, "Color", Color_std, 'LineWidth', 2);
+                plot(r_,profile, '-k', 'LineWidth', 2);
+                plot(f,r_range,profile(central_range));
+                axis tight;
+                
             end
-    
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
-    
-            % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
-            w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(sectionIdx) '.avi'])));
-            tmp_video = mat2gray(Video_subIm_rotate);
-            open(w)
-    
-            for theta = 1:length(angles)
-                writeVideo(w, tmp_video(:, :, theta));
-            end
-    
-            close(w);
     
             % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
             tmp = nnz(section_cut);
-    
-            figure(fig_idx_start + sectionIdx)
-            xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
-            imagesc(xAx, xAx, subImg)
-            colormap("gray")
-            axis image
-            hold on
-            p = plot(xAx, tmp_section);
-            p.LineWidth = 2;
-            p.Color = 'red';
-            p.LineStyle = ':';
-            set(gca, 'PlotBoxAspectRatio', [1, 1, 1]);
-            x = [round(size(subImg, 1) / 2) - round(crossSectionWidth(sectionIdx) / 2) round(size(subImg, 1) / 2) + round(crossSectionWidth(sectionIdx) / 2)];
-            y = [round(size(subImg, 1) / 2) round(size(subImg, 1) / 2)];
-            line(x, y, 'Color', 'red', 'LineWidth', 3)
-            axis off;
-            f = getframe(gca); %# Capture the current
-    
-            %bords blancs
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername,insert, ['_' name_section num2str(sectionIdx) '.png'])));
-    
+            
+            if flag_show_fig
+                figure(fig_idx_start + sectionIdx)
+                xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
+                imagesc(xAx, xAx, subImg)
+                colormap("gray")
+                axis image
+                hold on
+                p = plot(xAx, tmp_section);
+                p.LineWidth = 2;
+                p.Color = 'red';
+                p.LineStyle = ':';
+                set(gca, 'PlotBoxAspectRatio', [1, 1, 1]);
+                x = [round(size(subImg, 1) / 2) - round(crossSectionWidth(sectionIdx) / 2) round(size(subImg, 1) / 2) + round(crossSectionWidth(sectionIdx) / 2)];
+                y = [round(size(subImg, 1) / 2) round(size(subImg, 1) / 2)];
+                line(x, y, 'Color', 'red', 'LineWidth', 3)
+                axis off;
+                f = getframe(gca); %# Capture the current
+        
+                %bords blancs
+                imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername,insert, ['_' name_section num2str(sectionIdx) '.png'])));
+            end
             maskSlice_subImg = false(size(subImg, 1), size(subImg, 2));
             slice_center = round(size(subImg, 1) / 2);
     
@@ -193,7 +227,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             crossSectionWidth(sectionIdx) = force_width;
         end
     
-        crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+        crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx)*(PW_params.cropSection_pixelSize / 2 ^ k) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     end
     
     %% Blood Volume Rate computation

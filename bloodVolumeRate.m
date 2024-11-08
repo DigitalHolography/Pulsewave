@@ -105,7 +105,7 @@ strYlabel = 'Velocity (mm.s-1)';
 
 %% Arteries
 
-[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery,~,~,~,crossSectionWidthArtery] = crossSectionAnalysis(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width);
+[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery,~,~,~,crossSectionWidthArtery] = crossSectionAnalysis2(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width,1);
 
 labelsArteries = cell(numSectionsArtery, 1);
 avgVolumeRateArtery_total = sum(avgVolumeRateArtery, 1);

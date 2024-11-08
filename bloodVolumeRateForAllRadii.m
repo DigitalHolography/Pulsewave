@@ -78,7 +78,7 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 for i = 1:numCircles
-    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
+    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width,1);
 
     if length(avgVolumeRate_artery) < 1
         continue
