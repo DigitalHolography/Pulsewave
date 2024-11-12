@@ -17,6 +17,7 @@ M0_disp_image = rescale(mean(M0_disp_video, 3));
 numCircles = PW_params.nbCircles;
 maskSectionCircles = cell(1, numCircles);
 delta_rad = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2 / numCircles; %PW_params.radius_gap
+mask_allSections = createMaskSection(M0_disp_image, maskArtery, (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2, (PW_params.velocityBigRadiusRatio) * (numY + numX) / 2, sprintf('_mask_artery_all_sections.png'), ToolBox, path);
 
 for i = 1:numCircles
     rad_in = (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2 + (i - 1) * delta_rad; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * delta_rad ;
@@ -123,6 +124,7 @@ end
 figure(16774)
 imshow(imgRGB)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'ateries_sections.png')))
+
 
 figure(11174)
 % fill with zero images the zeros parts
@@ -243,6 +245,11 @@ set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'volumeRateallradxtime.png')))
+
+
+figure(4350)
+maskNeigbors = mat2gray(mean(imread(fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png'))), 3)) > 0; % import mask neigbors
+graphCombined(M0_disp_video,maskNeigbors&mask_allSections,[],[],mean_bvr_t,mean_std_bvr_t,ToolBox,path,'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries','µL/min',skip=~PW_params.exportVideos);
 
 if flagBloodVelocityProfile
     mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles'));
