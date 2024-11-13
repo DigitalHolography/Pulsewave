@@ -50,10 +50,9 @@ end
 for frameIdx = startingvalue:numFrames
     signal_plot = figure(530);
     signal_plot.Position = [200 200 600 300];
-    signal_crop = signal(1:frameIdx);
-    stdsignal_crop = stdsignal(1:frameIdx);
+    
 
-    graphSignalStd(signal_plot, signal_crop, stdsignal_crop,ToolBox,numFrames,ylabl,xlabl,sprintf('Average %s',titl),unit,ylimm=ylimm)
+    graphSignalStd(signal_plot, signal, stdsignal,ToolBox,numFrames,ylabl,xlabl,sprintf('Average %s',titl),unit,ylimm=ylimm,cropIndx=frameIdx)
 
     signal_plot_frame = getframe(signal_plot);
     signal_plot_video(:, :, :, frameIdx) = signal_plot_frame.cdata;
