@@ -21,6 +21,12 @@ classdef Parameters_json < handle
         masks_vesselness_sigma
         masks_vesselness_beta
         masks_radius
+        masks_vascular_threshold
+        masks_vascular_classes
+        masks_arterial_threshold
+        masks_arterial_classes
+        masks_venous_threshold
+        masks_venous_classes
         masks_minSize
         masks_diaphragmRadius
         masks_imclose_radius
@@ -135,6 +141,12 @@ classdef Parameters_json < handle
                 obj.masks_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
                 obj.masks_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
                 obj.masks_radius = parsedData.CreationOfMasks.CropCoroidRadius;
+                obj.masks_vascular_threshold = parsedData.CreationOfMasks.VascularCorrelationMapThreshold;
+                obj.masks_vascular_classes = parsedData.CreationOfMasks.VascularClasses;
+                obj.masks_arterial_threshold = parsedData.CreationOfMasks.ArterialCorrelationMapThreshold;
+                obj.masks_arterial_classes = parsedData.CreationOfMasks.ArterialClasses;
+                obj.masks_venous_threshold = parsedData.CreationOfMasks.VenousCorrelationMapThreshold;
+                obj.masks_venous_classes = parsedData.CreationOfMasks.VenousClasses;
                 obj.masks_minSize = parsedData.CreationOfMasks.MinimumSeedAreaSize;
                 obj.masks_diaphragmRadius = parsedData.CreationOfMasks.DiaphragmRadius;
                 obj.masks_imclose_radius = parsedData.CreationOfMasks.ImcloseRadius;
@@ -152,7 +164,7 @@ classdef Parameters_json < handle
                 obj.velocitySmallRadiusRatio = parsedData.SizeOfField.SmallRadiusRatio;
                 obj.velocityBigRadiusRatio = parsedData.SizeOfField.BigRadiusRatio;
 
-                obj.nbCircles = parsedData.BloodVolumeRate.NumberOfCircles ;
+                obj.nbCircles = parsedData.BloodVolumeRate.NumberOfCircles;
                 obj.radius_ratio = parsedData.BloodVolumeRate.RadiusRatio;
                 obj.radius_gap = parsedData.BloodVolumeRate.RadiusGap;
                 obj.cropSection_scaleFactorWidth = parsedData.BloodVolumeRate.ScaleFactorWidth;
@@ -166,16 +178,14 @@ classdef Parameters_json < handle
                 obj.theta = parsedData.PulseAnalysis.Theta;
                 obj.opticalIndex = parsedData.PulseAnalysis.OpticalIndex;
                 obj.lambda = parsedData.PulseAnalysis.Lambda;
-                obj.phi = parsedData.PulseAnalysis.Phi; 
+                obj.phi = parsedData.PulseAnalysis.Phi;
                 obj.pulseAnal_dataReliabilityFactor = parsedData.PulseAnalysis.DataReliatibilityFactor; %?
                 obj.pulseAnal_peakHeightThreshold = parsedData.PulseAnalysis.PeakHeightThreshold;
                 obj.pulseAnal_outNoiseThreshold = parsedData.PulseAnalysis.OutOfNoiseThreshold;
                 obj.pulseAnal_blurScaleFactor = parsedData.PulseAnalysis.BlurScaleFactor;
                 obj.pulseAnal_frameMinDiastole = parsedData.PulseAnalysis.FramePercentageBeforeMinimumOfDiastole;
                 obj.pulseAnal_framePeakSystole = parsedData.PulseAnalysis.FramePercentageAroundPeakSystole;
-                obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel; 
-
-                
+                obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel;
 
                 obj.video2vessels_radiusRatio = parsedData.VesselsVideo.RadiusRatioFactor;
                 obj.video2vessels_gaussFiltPadding = parsedData.VesselsVideo.GaussianFilterPadding;
@@ -196,12 +206,10 @@ classdef Parameters_json < handle
                 obj.elasWave_butterFiltOrder = parsedData.ElasticWaves.ButterworthFilterOrder;
                 obj.elasWave_butterFiltBand = parsedData.ElasticWaves.ButterworthFilterThicknessBand;
 
-
                 obj.nbSides = parsedData.Other.NumberOfSides;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
                 obj.forcewidth = parsedData.Other.ForceWidthInPixels;
                 obj.forcebarycenter = parsedData.Other.ForceBarycenter;
-
 
             else
                 error('The json file could not be found.');
