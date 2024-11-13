@@ -10,7 +10,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
         name_section = 'V';
     end
     
-    numSections = size(locs, 1);
+      numSections = size(locs, 1);
     
     PW_params = Parameters_json(path);
     subImg_cell         = cell([1 numSections]);
@@ -38,6 +38,12 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
     v_RMS_masked = v_RMS .* mask;
     velocityProfiles = cell([1 numSections]);
     stdVelocityProfiles = cell([1 numSections]);
+
+    insert = '';
+    if ~isempty(circle)
+        insert = sprintf('_circle_%d', circle);
+    end
+
     for sectionIdx = 1:numSections % sectionIdx: vessel_number
     
         if width(sectionIdx) > 2
@@ -98,13 +104,13 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             [~,centt] = max(profile);
             central_range = max(1,centt-round(subImgHW/6)):min(length(profile),centt+round(subImgHW/6));
             r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
-            [f,gof] = fit(r_range',profile(central_range)','poly2');
+            [fitt,gof] = fit(r_range',profile(central_range)','poly2');
             if flag_show_fig
                 figure(sectionIdx)
-                plot(f,r_range,profile(central_range));
+                plot(fitt,r_range,profile(central_range));
             end
             
-            r = roots([f.p1,f.p2,f.p3]);
+            r = roots([fitt.p1,fitt.p2,fitt.p3]);
             if gof.rsquare <0.6
                 crossSectionWidth(sectionIdx) = 0;
                 stdcrossSectionWidth(sectionIdx) =0;
@@ -133,11 +139,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
                 set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
                 f = getframe(gca); %# Capture the current window
         
-                insert = '';
-        
-                if ~isempty(circle)
-                    insert = sprintf('_circle_%d', circle);
-                end
+                
         
                 imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
             
@@ -153,7 +155,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
                 close(w);
 
                 figure(9641+sectionIdx)
-                r_ = linspace(-length(profile)/2,length(profile)/2,length(profile)) * (PW_params.cropSection_pixelSize / 2 ^ k);
+                r_ = ((1:length(profile))-centt) * (PW_params.cropSection_pixelSize / 2 ^ k);
                 stdprofile = std(subImg,[],1);
 
                 curve1 = profile + 0.5 * stdprofile;
@@ -168,7 +170,9 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
                 plot(r_, curve1, "Color", Color_std, 'LineWidth', 2);
                 plot(r_, curve2, "Color", Color_std, 'LineWidth', 2);
                 plot(r_,profile, '-k', 'LineWidth', 2);
-                plot(f,r_range,profile(central_range));
+                yline(0,'k', 'LineWidth', 2)
+                x=r_(profile>0);
+                plot(x,fitt.p1*x.^2+fitt.p2*x+fitt.p3);
                 axis tight;
                 
             end

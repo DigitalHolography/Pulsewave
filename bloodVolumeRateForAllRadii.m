@@ -79,7 +79,7 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 for i = 1:numCircles
-    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width,1);
+    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis2(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width,1);
 
     if length(avgVolumeRate_artery) < 1
         continue
@@ -249,7 +249,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s",
 
 figure(4350)
 maskNeigbors = mat2gray(mean(imread(fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png'))), 3)) > 0; % import mask neigbors
-graphCombined(M0_disp_video,maskNeigbors&mask_allSections,[],[],mean_bvr_t,mean_std_bvr_t,ToolBox,path,'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries','µL/min',skip=~PW_params.exportVideos);
+graphCombined(M0_disp_video,maskNeigbors&mask_allSections,[],[],mean_bvr_t,mean_std_bvr_t,ToolBox,path,'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries Full Field','µL/min',skip=~PW_params.exportVideos);
 
 if flagBloodVelocityProfile
     mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles'));
