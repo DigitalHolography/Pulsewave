@@ -20,6 +20,7 @@ arguments
     titl
     unit
     NameValueArgs.skip logical = false
+    NameValueArgs.Color (1,3) double = [1 0 0]
 end
 
 Videofield_rescaled = rescale(Videofield);
@@ -40,7 +41,7 @@ for frameIdx = startingvalue:numFrames
     else 
         etiquettes_frame_values = [];
     end
-    graphMaskTags(video_plot, Videofield_rescaled(:,:,frameIdx),mask, etiquettes_locs, etiquettes_frame_values,x_center,y_center);
+    graphMaskTags(video_plot, Videofield_rescaled(:,:,frameIdx),mask, etiquettes_locs, etiquettes_frame_values,x_center,y_center,Color=NameValueArgs.Color);
     title(sprintf("%s : %02.0f %s",titl, round(signal(frameIdx))),unit);
     set(gca, 'FontSize', 14)
     video_plot_frame = getframe(video_plot);

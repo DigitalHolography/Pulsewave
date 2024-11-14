@@ -220,10 +220,10 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s",
 if veins_analysis
     numerotationv_plot = figure(301);
     numerotationv_plot.Position = [100 100 600 600];
-    graphMaskTags(301, M0_disp_image, crossSectionMaskVein, SubImg_locs_vein, labelsVeins,x_center,y_center)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'veins_numerotation.png')))
-    graphMaskTags(301, M0_disp_image, crossSectionMaskArtery, SubImg_locs_artery, labelsArteries,x_center,y_center)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'arteries_veins_numerotation.png')))
+    graphMaskTags(301, M0_disp_image, crossSectionMaskVein, SubImg_locs_vein, labelsVeins,x_center,y_center,Color=[0 0 1]);
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'veins_numerotation.png')));
+    graphMaskTags(301, M0_disp_image, crossSectionMaskArtery, SubImg_locs_artery, labelsArteries,x_center,y_center);
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'arteries_veins_numerotation.png')));
 end
 
 
@@ -260,7 +260,7 @@ if veins_analysis
     volume_rate_plot = figure(520);
     volume_rate_plot.Position = [200 200 600 600];
     etiquettes_frame_values = round(mean(avgVolumeRateVein(:, :), 2),1);
-    graphMaskTags(volume_rate_plot, M0_disp_image,crossSectionMaskVein, SubImg_locs_vein, etiquettes_frame_values,x_center,y_center);
+    graphMaskTags(volume_rate_plot, M0_disp_image,crossSectionMaskVein, SubImg_locs_vein, etiquettes_frame_values,x_center,y_center,Color=[0 0 1]);
     title(sprintf("%s : %02.0f %s",'Average total blood volume rate in veins', round(mean(avgVolumeRateVein_total),1),'µL/min'));
     set(gca, 'FontSize', 14)
     
@@ -270,7 +270,7 @@ if veins_analysis
     section_width_plot = figure(530);
     section_width_plot.Position = [200 200 600 600];
     etiquettes_frame_values = append(string(round(crossSectionWidthVein*PW_params.cropSection_pixelSize/(2^PW_params.k)*1000,1)),"µm");
-    graphMaskTags(section_width_plot, M0_disp_image,crossSectionMaskVein, SubImg_locs_vein, etiquettes_frame_values,x_center,y_center,Fontsize=12);
+    graphMaskTags(section_width_plot, M0_disp_image,crossSectionMaskVein, SubImg_locs_vein, etiquettes_frame_values,x_center,y_center,Color=[0 0 1],Fontsize=12);
     title(sprintf("%s",'Cross section width in veins (µm)'));
     set(gca, 'FontSize', 14)
     
@@ -317,7 +317,7 @@ graphCombined(M0_disp_video,crossSectionMaskArtery,SubImg_locs_artery,avgVolumeR
 
 if veins_analysis
 
-    graphCombined(M0_disp_video,crossSectionMaskVein,SubImg_locs_vein,avgVolumeRateVein,avgVolumeRateVein_total,stdVolumeRateVein_total,ToolBox,[],'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in veins','µL/min',skip=~exportVideos);
+    graphCombined(M0_disp_video,crossSectionMaskVein,SubImg_locs_vein,avgVolumeRateVein,avgVolumeRateVein_total,stdVolumeRateVein_total,ToolBox,[],'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in veins','µL/min',skip=~exportVideos,Color=[0 0 1]);
 
 end
 
