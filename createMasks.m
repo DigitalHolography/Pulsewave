@@ -6,6 +6,8 @@ exportVideos = PW_params.exportVideos;
 mkdir(ToolBox.PW_path_png, 'mask')
 mkdir(fullfile(ToolBox.PW_path_png, 'mask'), 'steps')
 mkdir(fullfile(ToolBox.PW_path_eps, 'mask'), 'steps')
+folder = fullfile('mask', 'steps');
+
 close all
 
 %% 1) First Masks and Correlation
@@ -46,25 +48,19 @@ maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness | cercleMask, 1
 imwrite(maskVesselnessClean | cercleMask, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_3_choroidClean.png')))
 
 %%  1) 3) Compute first correlation
+cVascular = [0 0 0];
 % compute signal in 3 dimentions for correlation in all vessels
 vascularSignal = mean(M0_ff_video .* maskVesselnessClean, [1 2]);
 vascularSignal = vascularSignal ./ nnz(maskVesselnessClean);
 
 t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
-figure, plot(t, squeeze(vascularSignal), 'k-', 'LineWidth', 2)
-title('Vascular Signal')
-fontsize(gca, 14, "points");
-xlabel('Time(s)', 'FontSize', 14);
-ylabel('Power Doppler (a.u.)', 'FontSize', 14);
-pbaspect([1.618 1 1]);
-set(gca, 'LineWidth', 2);
-axis tight;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vascularSignal.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vascularSignal.eps')))
+tLabel = 'Time(s)';
+yLabel = 'Power Doppler (a.u.)';
 
-vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
+graphSignal(ToolBox, 'vascularSignal', folder, t, squeeze(vascularSignal), '-', cVascular, Title='Venous Signal', xlabel=tLabel, ylabel=yLabel)
 
 % compute local-to-average signal wave zero-lag correlation
+vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
 R_VascularSignal = mean(M0_ff_video_centered .* vascularSignal_centered, 3) ./ (std((M0_ff_video_centered), [], 3) * std(vascularSignal_centered, [], 3));
 imwrite(rescale(R_VascularSignal), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_4_Correlation.png')))
 
@@ -103,8 +99,8 @@ else
     [firstMaskArtery, firstMaskVein] = autoOtsuThresholding(R_VascularSignal, maskVesselnessClean, vascularClasses, 'all_1_5', ToolBox);
 end
 
-imwrite(firstMaskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_1_5_FirstMask.png')))
-imwrite(firstMaskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_1_5_FirstMask.png')))
+imwrite(logical(firstMaskArtery), cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_1_5_FirstMask.png')))
+imwrite(logical(firstMaskVein), cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_1_5_FirstMask.png')))
 
 % Remove small blobs
 % minSize = PW_params.masks_minSize * (numX * numY);
@@ -137,32 +133,14 @@ arterialSignal = mean(M0_ff_video .* firstMaskArteryClean .* maskDiaphragm, [1 2
 arterialSignal = arterialSignal ./ nnz(firstMaskArteryClean .* maskDiaphragm);
 arterialSignal_centered = arterialSignal - mean(arterialSignal, 3);
 
-figure, plot(t, squeeze(arterialSignal), '-', 'LineWidth', 2, 'Color', cArtery)
-title('Arterial Signal')
-fontsize(gca, 14, "points");
-xlabel('Time(s)', 'FontSize', 14);
-ylabel('Power Doppler (a.u.)', 'FontSize', 14);
-pbaspect([1.618 1 1]);
-set(gca, 'LineWidth', 2);
-axis tight;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'arterialSignal.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'arterialSignal.eps')))
+graphSignal(ToolBox, 'arterialSignal', folder, t, squeeze(arterialSignal), '-', cArtery, Title='Arterial Signal', xlabel=tLabel, ylabel=yLabel)
 
 % compute signal in 3 dimentions for correlation in main veins
 venousSignal = mean(M0_ff_video .* firstMaskVeinClean, [1 2]);
 venousSignal = venousSignal ./ nnz(firstMaskVeinClean);
 venousSignal_centered = venousSignal - mean(venousSignal, 3);
 
-figure, plot(t, squeeze(venousSignal), '-', 'LineWidth', 2, 'Color', cVein)
-title('Venous Signal')
-fontsize(gca, 14, "points");
-xlabel('Time(s)', 'FontSize', 14);
-ylabel('Power Doppler (a.u.)', 'FontSize', 14);
-pbaspect([1.618 1 1]);
-set(gca, 'LineWidth', 2);
-axis tight;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'venousSignal.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'venousSignal.eps')))
+graphSignal(ToolBox, 'venousSignal', folder, t, squeeze(venousSignal), '-', cVein, Title='Venous Signal', xlabel=tLabel, ylabel=yLabel)
 
 % compute signal in 3 dimentions for correlation in choroids
 
@@ -170,33 +148,14 @@ choroidalSignal = mean(M0_ff_video .* firstMaskChoroid, [1 2]);
 choroidalSignal = choroidalSignal ./ nnz(firstMaskChoroid);
 choroidalSignal_centered = choroidalSignal - mean(choroidalSignal, 3);
 
-figure, plot(t, squeeze(choroidalSignal), '-', 'LineWidth', 2, 'Color', cChoroid)
-title('Choroidal Signal')
-fontsize(gca, 14, "points");
-xlabel('Time(s)', 'FontSize', 14);
-ylabel('Power Doppler (a.u.)', 'FontSize', 14);
-pbaspect([1.618 1 1]);
-set(gca, 'LineWidth', 2);
-axis tight;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroidalSignal.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'choroidalSignal.eps')))
+graphSignal(ToolBox, 'choroidalSignal', folder, t, squeeze(choroidalSignal), '-', cChoroid, Title='Choroidal Signal', xlabel=tLabel, ylabel=yLabel)
 
-figure
-hold on
-plot(t, squeeze(vascularSignal), 'k--', 'LineWidth', 2)
-plot(t, squeeze(arterialSignal), '-', 'LineWidth', 2, 'Color', cArtery)
-plot(t, squeeze(venousSignal), '-', 'LineWidth', 2, 'Color', cVein)
-title('Signals used for correlation maps')
-legend('Vascular', 'Arterial', 'Venous')
-fontsize(gca, 14, "points");
-xlabel('Time(s)', 'FontSize', 14);
-ylabel('Power Doppler (a.u.)', 'FontSize', 14);
-pbaspect([1.618 1 1]);
-set(gca, 'LineWidth', 2);
-box on
-axis tight;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'everySignal.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'everySignal.eps')))
+
+graphSignal(ToolBox, 'everySignal', folder, t, ...
+    squeeze(vascularSignal), '--', cVascular, ...
+    squeeze(arterialSignal), '-', cArtery, ...
+    squeeze(venousSignal), '-', cVein, ...
+    Title='Signals used for correlation maps', xlabel = tLabel, ylabel = yLabel)
 
 clear arterialSignal venousSignal choroidalSignal vascularSignal
 
@@ -379,18 +338,12 @@ satSectionVein = satSectionV; %+~maskSectionArtery.*(~maskArtery);
 val = val .* (~maskSection) + val .* maskSection + maskSection .* (~(maskArtery + maskVein));
 vesselImageRGB = hsv2rgb(hueArtery + hueVein + hueSectionA + hueSectionV, satArtery + satVein + satSectionArtery + satSectionVein, val);
 
-figure(101)
-imshow(vesselImageRGB)
-
 %% Create Colormap Artery Only
 [hueArtery, satArtery, val] = createHSVmap(M0_ff_img, maskArtery - maskArtery .* maskSection, 0, 0);
 [hueSectionA, satSectionA, ~] = createHSVmap(M0_ff_img, maskSection .* maskArtery, 0.15, 0.15);
 satSectionArtery = satSectionA;
 val = val .* (~maskSection) + val .* maskSection + maskSection .* (~maskArtery);
 VesselImageRGB_Artery = hsv2rgb(hueArtery + hueSectionA, satArtery + satSectionArtery, val);
-
-figure(102)
-imshow(VesselImageRGB_Artery)
 
 %% Create Segmentation Map
 
