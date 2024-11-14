@@ -248,8 +248,8 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s",
 
 
 figure(4350)
-maskNeigbors = mat2gray(mean(imread(fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png'))), 3)) > 0; % import mask neigbors
-graphCombined(M0_disp_video,maskNeigbors&mask_allSections,[],[],mean_bvr_t,mean_std_bvr_t,ToolBox,path,'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries Full Field','µL/min',skip=~PW_params.exportVideos);
+%maskNeigbors = mat2gray(mean(imread(fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png'))), 3)) > 0; % import mask neigbors
+graphCombined(M0_disp_video,imdilate(maskArtery,strel('disk', PW_params.local_background_width))&mask_allSections,[],[],mean_bvr_t,mean_std_bvr_t,ToolBox,path,'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries Full Field','µL/min',skip=~PW_params.exportVideos);
 
 if flagBloodVelocityProfile
     mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles'));

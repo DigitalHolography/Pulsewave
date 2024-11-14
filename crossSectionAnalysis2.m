@@ -101,22 +101,17 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             section_cut(section_cut<0) = 0 ;
             
             profile = mean(subImg,1);
-            [~,centt] = max(profile);
-            central_range = max(1,centt-round(subImgHW/6)):min(length(profile),centt+round(subImgHW/6));
+            central_range = find(profile>0);%>0.2*max(profile));
+            centt = mean(central_range);
             r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
-            [fitt,gof] = fit(r_range',profile(central_range)','poly2');
-            if flag_show_fig
-                figure(sectionIdx)
-                plot(fitt,r_range,profile(central_range));
-            end
-            
-            r = roots([fitt.p1,fitt.p2,fitt.p3]);
-            if gof.rsquare <0.6
+            [p1, p2, p3, rsquare, p1_err, p2_err, p3_err] = customPoly2Fit(r_range',profile(central_range)');
+            [r1, r2, r1_err, r2_err] = customPoly2Roots(p1, p2, p3, p1_err, p2_err, p3_err);
+            if rsquare <0.6 % if bad fit : reject the cross section
                 crossSectionWidth(sectionIdx) = 0;
                 stdcrossSectionWidth(sectionIdx) =0;
             else
-                crossSectionWidth(sectionIdx) = abs(r(1)-r(2))/(PW_params.cropSection_pixelSize / 2 ^ k);
-                stdcrossSectionWidth(sectionIdx) = abs(r(1)-r(2))/gof.rsquare/(PW_params.cropSection_pixelSize / 2 ^ k);
+                crossSectionWidth(sectionIdx) = abs(r1-r2)/(PW_params.cropSection_pixelSize / 2 ^ k);
+                stdcrossSectionWidth(sectionIdx) = sqrt(r1_err^2+r2_err^2)/(PW_params.cropSection_pixelSize / 2 ^ k);
             end
 
             section_cut(section_cut<0) = 0 ;
@@ -154,26 +149,36 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
         
                 close(w);
 
-                figure(9641+sectionIdx)
-                r_ = ((1:length(profile))-centt) * (PW_params.cropSection_pixelSize / 2 ^ k);
+                f=figure(9641+sectionIdx);
+                r_ = ((1:length(profile))-centt) * (PW_params.cropSection_pixelSize / 2 ^ k)*1000;
                 stdprofile = std(subImg,[],1);
-
                 curve1 = profile + 0.5 * stdprofile;
                 curve2 = profile - 0.5 * stdprofile;
                 ft2 = [r_, fliplr(r_)];
                 inBetween = [curve1, fliplr(curve2)]';
-                
-                
                 Color_std = [0.7 0.7 0.7];
                 fill(ft2, inBetween, Color_std);
                 hold on;
                 plot(r_, curve1, "Color", Color_std, 'LineWidth', 2);
                 plot(r_, curve2, "Color", Color_std, 'LineWidth', 2);
-                plot(r_,profile, '-k', 'LineWidth', 2);
-                yline(0,'k', 'LineWidth', 2)
-                x=r_(profile>0);
-                plot(x,fitt.p1*x.^2+fitt.p2*x+fitt.p3);
+                %plot(r_,profile, '-k', 'LineWidth', 1);
+                plot(r_(central_range),profile(central_range), 'xk', 'MarkerSize', 10); % points on which fit is calculated
+                yline(0,'--k', 'LineWidth', 1)
+                x=interp(r_/1000,3);
+                plot(x*1000,p1*x.^2+p2*x+p3,'k', 'LineWidth', 1);
                 axis tight;
+                ax = axis;
+                ax(3)= -5;
+                axis(ax);
+                plot(r1*1000, -2, 'k|', 'MarkerSize', 10);
+                plot(r2*1000, -2, 'k|', 'MarkerSize', 10);
+                plot(linspace(r1*1000,r2*1000,10),repmat(-2,10),'-k');
+                xlabel('position (µm)')
+                ylabel('velocity (mm/s)')
+                title('Velocity profile and poiseuille fit')
+                legend({'','','meas','',['fit R²=',num2str(rsquare)]});
+                saveas(f, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_poiseuille_' name_section num2str(sectionIdx) '.png'])));
+            
                 
             end
     

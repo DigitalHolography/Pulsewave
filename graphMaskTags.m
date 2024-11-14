@@ -9,12 +9,13 @@ arguments
     x_center
     y_center
     NameValueArgs.Fontsize double = 14
+    NameValueArgs.Color (1,3) double = [1 0 0]
 end
 
 ratio_etiquette = 1.2;
 
 figure(figId)
-image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape([1 0 0], 1, 1, 3) .* mask; % adding the Red value to the mask pixels
+image_RGB = repmat(Image-Image.*mask,1,1,3)+ reshape(NameValueArgs.Color,1,1,3) .* mask .*Image; % adding the Red value to the mask pixels
 imagesc(image_RGB);
 axis image
 axis off
