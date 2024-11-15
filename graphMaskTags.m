@@ -1,4 +1,4 @@
-function graphMaskTags(figId, Image,mask, etiquettes_locs, etiquettes_values,x_center,y_center,NameValueArgs)
+function graphMaskTags(figId, Image, mask, etiquettes_locs, etiquettes_values, x_center, y_center, NameValueArgs)
 % Plots on an existing fig the image combination of a raw image and a mask displayed in red
 arguments
     figId
@@ -21,12 +21,13 @@ axis image
 axis off
 
 if ~isempty(etiquettes_locs)
+
     for etIdx = 1:length(etiquettes_locs)
         new_x = x_center + ratio_etiquette * (etiquettes_locs(etIdx, 2) - x_center);
         new_y = y_center + ratio_etiquette * (etiquettes_locs(etIdx, 1) - y_center);
         text(new_x, new_y, string(etiquettes_values(etIdx)), "FontWeight", "bold", "FontSize", NameValueArgs.Fontsize, "Color", "white", "BackgroundColor", "black");
     end
-end
 
+end
 
 end
