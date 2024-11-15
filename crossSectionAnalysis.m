@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell, crossSectionWidth,stdCrossSectionWidth] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell, crossSectionWidth,stdCrossSectionWidth] = crossSectionAnalysis(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width,flag_show_fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
@@ -69,12 +69,13 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             projx(:, theta) = squeeze(sum(tmpImg, 1));
             projy(:, theta) = squeeze(sum(tmpImg, 2));
         end
-
-        figure(2200)
-        imagesc(projx)
-
-        figure(2201)
-        imagesc(projy)
+        if flag_show_fig
+            figure(2200)
+            imagesc(projx)
+    
+            figure(2201)
+            imagesc(projy)
+        end
         % avi
 
         % [max_projx,tilt_idx] = max(projx(:),[],'all','linear');
@@ -100,26 +101,26 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         section_cut(section_cut<0) = 0 ;
 
         tmp_section = (section_cut ./ max(section_cut)) * size(section_cut, 1);
-
-        figure(2001 + sectionIdx)
-        xAx = linspace(0, size(projx, 1), size(projx, 1));
-        xAy = linspace(0, size(projx, 2), size(projx, 2));
-        imagesc(xAy, xAx, projx)
-        colormap("gray")
-        axis image
-        hold on
-        x = [tilt_angle_list(sectionIdx) tilt_angle_list(sectionIdx)];
-        y = [0 size(projx, 1)];
-        line(x, y, 'Color', 'red', 'LineStyle', ':', 'LineWidth', 3)
-        axis off;
-        hold off;
-        set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
-        f = getframe(gca); %# Capture the current window
-
-        
-
-        imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
-
+        if flag_show_fig
+            figure(2001 + sectionIdx)
+            xAx = linspace(0, size(projx, 1), size(projx, 1));
+            xAy = linspace(0, size(projx, 2), size(projx, 2));
+            imagesc(xAy, xAx, projx)
+            colormap("gray")
+            axis image
+            hold on
+            x = [tilt_angle_list(sectionIdx) tilt_angle_list(sectionIdx)];
+            y = [0 size(projx, 1)];
+            line(x, y, 'Color', 'red', 'LineStyle', ':', 'LineWidth', 3)
+            axis off;
+            hold off;
+            set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
+            f = getframe(gca); %# Capture the current window
+    
+            
+    
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
+        end
         % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
         w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(sectionIdx) '.avi'])));
         tmp_video = mat2gray(Video_subIm_rotate);
@@ -135,26 +136,28 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         tmp = nnz(section_cut);
         crossSectionWidth(sectionIdx) = mean(sum(subImg~=0,2));
         stdCrossSectionWidth(sectionIdx) = std(sum(subImg~=0,2));
-
-        figure(fig_idx_start + sectionIdx)
-        xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
-        imagesc(xAx, xAx, subImg)
-        colormap("gray")
-        axis image
-        hold on
-        p = plot(xAx, tmp_section);
-        p.LineWidth = 2;
-        p.Color = 'red';
-        p.LineStyle = ':';
-        set(gca, 'PlotBoxAspectRatio', [1, 1, 1]);
-        x = [round(size(subImg, 1) / 2) - round(crossSectionWidth(sectionIdx) / 2) round(size(subImg, 1) / 2) + round(crossSectionWidth(sectionIdx) / 2)];
-        y = [round(size(subImg, 1) / 2) round(size(subImg, 1) / 2)];
-        line(x, y, 'Color', 'red', 'LineWidth', 3)
-        axis off;
-        f = getframe(gca); %# Capture the current
-
-        %bords blancs
-        imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername,insert, ['_' name_section num2str(sectionIdx) '.png'])));
+        
+        if flag_show_fig
+            figure(fig_idx_start + sectionIdx)
+            xAx = linspace(0, size(section_cut, 1), size(subImg, 1));
+            imagesc(xAx, xAx, subImg)
+            colormap("gray")
+            axis image
+            hold on
+            p = plot(xAx, tmp_section);
+            p.LineWidth = 2;
+            p.Color = 'red';
+            p.LineStyle = ':';
+            set(gca, 'PlotBoxAspectRatio', [1, 1, 1]);
+            x = [round(size(subImg, 1) / 2) - round(crossSectionWidth(sectionIdx) / 2) round(size(subImg, 1) / 2) + round(crossSectionWidth(sectionIdx) / 2)];
+            y = [round(size(subImg, 1) / 2) round(size(subImg, 1) / 2)];
+            line(x, y, 'Color', 'red', 'LineWidth', 3)
+            axis off;
+            f = getframe(gca); %# Capture the current
+    
+            %bords blancs
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername,insert, ['_' name_section num2str(sectionIdx) '.png'])));
+        end
 
         maskSlice_subImg = false(size(subImg, 1), size(subImg, 2));
         slice_center = round(size(subImg, 1) / 2);
@@ -259,7 +262,7 @@ end % sectionIdx
 
  % propagation des incertitudes -> devrait être la somme également
 
-if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
+if isempty(circle) && flagBloodVelocityProfile && flag_show_fig% only for the main circle (not all circles)
 
     bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, ToolBox);
     % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);

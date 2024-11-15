@@ -17,6 +17,7 @@ M0_disp_image = rescale(mean(M0_disp_video, 3));
 numCircles = PW_params.nbCircles;
 maskSectionCircles = cell(1, numCircles);
 delta_rad = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2 / numCircles; %PW_params.radius_gap
+mask_allSections = createMaskSection(M0_disp_image, maskArtery, (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2, (PW_params.velocityBigRadiusRatio) * (numY + numX) / 2, sprintf('_mask_artery_all_sections.png'), ToolBox, path);
 
 for i = 1:numCircles
     rad_in = (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2 + (i - 1) * delta_rad; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * delta_rad ;
@@ -78,7 +79,7 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 for i = 1:numCircles
-    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width);
+    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles,std_velocity_profiles, subImg_cell,~,stdCrossSectionWidth] = crossSectionAnalysis2(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i,force_width,1);
 
     if length(avgVolumeRate_artery) < 1
         continue
@@ -124,6 +125,7 @@ figure(16774)
 imshow(imgRGB)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'ateries_sections.png')))
 
+
 figure(11174)
 % fill with zero images the zeros parts
 subimage_size = size(sub_images_r{1,1},1);
@@ -137,9 +139,25 @@ end
 montage(sub_images_r(1:numCircles,1:max(nb_sections_artery)),"Size",[max(nb_sections_artery),numCircles])
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'all_sections_with_increasing_radius.png')))
 
+section_width_plot = figure(430);
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'),'sectionsWidth')
+mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'),'sectionsWidth')
+x_center = ToolBox.x_barycentre;
+y_center = ToolBox.y_barycentre;
+for i=1:numCircles
+    section_width_plot.Position = [200 200 600 600];
+    crossSectionWidthArtery = 2*sqrt(cross_section_area_artery_r(i, 1:nb_sections_artery(i))/pi)*1000;
+    etiquettes_frame_values = append(string(round(crossSectionWidthArtery,1)),"µm");
+    graphMaskTags(section_width_plot, M0_disp_image,squeeze(cross_section_mask_artery_r(i, :, :)), SubImg_locs_artery_Circles{i}, etiquettes_frame_values,x_center,y_center,Fontsize=12);
+    title(sprintf("%s",'Cross section width in arteries (µm)'));
+    set(gca, 'FontSize', 14)
+    
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate','sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i, 'crossSectionWidthArteryImage.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate','sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i, 'crossSectionWidthArteryImage.eps')))
+end
 
 figure(16796)
-cross_section_hist = histogram(2*sqrt(cross_section_area_artery_r(cross_section_area_artery_r~=0)/pi )*1000,50,FaceColor='k');
+cross_section_hist = histogram(2*sqrt(cross_section_area_artery_r/pi )*1000,50,FaceColor='k');
 aa = axis;
 aa(4) = aa(4)*1.14;
 axis(aa);
@@ -178,7 +196,7 @@ hold off
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('radius in pixels')
-title("Radial variations of Blood Volume Rate")
+title("Time average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'meanvolumeRatexradius.png')))
@@ -191,7 +209,7 @@ for i = 1:numCircles
 end
 axis tight;
 aa = axis;
-aa(3)=-5;
+aa(3)=-10;
 aa(4)=95;
 axis(aa);
 hold off
@@ -199,10 +217,9 @@ box on
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('time (s)')
-title("Time average of Blood Volume Rate")
+title("Radial variations of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
-axis tight;
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'volumeRatevariancextime.png')))
 
@@ -232,7 +249,7 @@ plot(fullTime(index_start:index_end),repmat(1.7*mean_bvr_t_value,index_end-index
 legend({'','','','',sprintf('mean = %f µL/min',mean_bvr_t_value),'',''});
 axis tight;
 aa = axis;
-aa(3)=-5;
+aa(3)=-10;
 aa(4)=95;
 axis(aa);
 hold off
@@ -242,11 +259,16 @@ xlabel('time (s)')
 title("Radial average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
-axis tight;
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'volumeRateallradxtime.png')))
 
+
+figure(4350)
+%maskNeigbors = mat2gray(mean(imread(fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png'))), 3)) > 0; % import mask neigbors
+graphCombined(M0_disp_video,imdilate(maskArtery,strel('disk', PW_params.local_background_width))&mask_allSections,[],[],mean_bvr_t,mean_std_bvr_t,ToolBox,path,'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries Full Field','µL/min',skip=~PW_params.exportVideos);
+
 if flagBloodVelocityProfile
+    mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles'));
     for i = 1:numCircles
         plot_mean_velocity_profiles = figure(7579+i);
         for j=1:nb_sections_artery(i)
@@ -278,7 +300,7 @@ if flagBloodVelocityProfile
 
         title(['Measured time-averaged velocity profiles at radius = ',num2str(rad(i)),' pix'])
         set(gca, 'Linewidth', 2)
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'bloodVelocityProfiles.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'bloodVelocityProfiles.png')))
 
 
         title(['Mean velocity profiles at radius = ',num2str(rad(i)),' pix'])
@@ -335,17 +357,79 @@ if flagBloodVelocityProfile
 
         axis tight;
         aa = axis;
-        aa(3)=-5;
-        aa(4)=25;
+        aa(3)=-10;
+        aa(4)=30;
         axis(aa);
         hold off
 
         title(['Interpolated time-averaged velocity profile at radius = ',num2str(rad(i)),' pix'])
         set(gca, 'Linewidth', 2)
-        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'interpolatedBloodVelocityProfile.png')))
+        exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate','velocityProfiles', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i,'interpolatedBloodVelocityProfile.png')))
 
     end
 end
+
+plot_interp_pulse = figure(7124);
+Ninterp = 1000;
+[interpBvrT,avgLength,interpstdBvrT] = interpSignal(mean_bvr_t,systolesIndexes,Ninterp,mean_std_bvr_t);
+dt = (fullTime(2)-fullTime(1));
+pulseTime = dt*(1:Ninterp)*avgLength/Ninterp;
+
+
+
+[mmin,amin] = min(interpBvrT);
+[mmax,amax] = max(interpBvrT);
+cshiftn = Ninterp-amin;
+
+
+hold off
+interpBvrT2 = repmat(interpBvrT,1,3);
+interpstdBvrT2 = repmat(interpstdBvrT,1,3);
+pulseTime2 = dt*(-Ninterp+1:Ninterp*2)*avgLength/Ninterp;
+
+
+hold on
+curve1 = circshift(interpBvrT2,cshiftn) + 0.5 * circshift(interpstdBvrT2,cshiftn);
+curve2 = circshift(interpBvrT2,cshiftn) - 0.5 * circshift(interpstdBvrT2,cshiftn);
+ft2 = [pulseTime2, fliplr(pulseTime2)];
+inBetween = [curve1, fliplr(curve2)]';
+Color_std = [0.7 0.7 0.7];
+fill(ft2, inBetween, Color_std);
+
+hold on
+curve1 = circshift(interpBvrT,cshiftn);
+curve2 = 0 *ones(size(curve1));
+ft2 = [pulseTime, fliplr(pulseTime)];
+inBetween = [curve1, fliplr(curve2)]';
+Color_std = [0.99 0.9 0.9];
+fill(ft2, inBetween, Color_std);
+
+hold on
+curve1 = circshift(interpBvrT,cshiftn);
+curve1 = curve1(1:amax+cshiftn);
+curve2 = 0 *ones(size(curve1));
+ft2 = [pulseTime(1:amax+cshiftn), fliplr(pulseTime(1:amax+cshiftn))];
+inBetween = [curve1, fliplr(curve2)]';
+Color_std = [0.7 0.0 0.0];
+fill(ft2, inBetween, Color_std);
+
+plot(pulseTime2,circshift(interpBvrT2,cshiftn),'-k', 'LineWidth', 2);
+
+axis tight;
+xlim([pulseTime(1)-1/2*pulseTime(end),3/2*pulseTime(end)])
+
+ylabel('Blood Volume Rate (µL/min)')
+xlabel('Time (s)')
+ccinterpBvrT = circshift(interpBvrT,cshiftn);
+dt2 = pulseTime2(2)-pulseTime2(1);
+stroke_volume_value = sum(ccinterpBvrT(1:amax+cshiftn))*dt2/60 * 1000; % in nL
+total_volume_value = sum(ccinterpBvrT)*dt2/60 * 1000;
+title(sprintf("Retinal Stroke Volume : %02.0f nL and Total Volume : %02.0f nL",stroke_volume_value,total_volume_value));
+set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'strokeAndTotalVolume.png')))
+
+
 close all
 fprintf("- Blood Volume Rate for all radii took : %ds\n", round(toc))
 

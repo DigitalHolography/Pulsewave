@@ -1,4 +1,4 @@
-paths = readlines("D:\HoloDopplerFolders\folders.txt");
+paths = readlines("C:\Users\Vladikavkaz\Documents\data_test_list.txt");
 
 %% ensure set default parameters and no forced mask
 
@@ -43,10 +43,10 @@ for ind = 1:length(paths)
     OcClass = OcClass.Interpolate();
 
     OcClass.flag_SH_analysis = 0;
-    OcClass.flag_PulseWave_analysis = 0;
-    OcClass.flag_velocity_analysis = 0;
+    OcClass.flag_PulseWave_analysis = 1;
+    OcClass.flag_velocity_analysis = 1;
     OcClass.flag_ExtendedPulseWave_analysis = 0;
-    OcClass.flag_bloodVolumeRate_analysis = 0;
+    OcClass.flag_bloodVolumeRate_analysis = 1;
     OcClass.flag_bloodVelocityProfile_analysis = 0;
 
     OcClass.onePulse(255);
