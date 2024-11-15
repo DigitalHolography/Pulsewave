@@ -15,16 +15,20 @@ arguments(Repeating)
 end
 
 arguments
-    opt.xlabel {mustBeText}  = 'Frame'
-    opt.ylabel {mustBeText}  = 'Signal (a.u.)'
-    opt.Title {mustBeText}  = 'Signal'
+    opt.xlabel {mustBeText}  = 'default'
+    opt.ylabel {mustBeText}  = 'default'
+    opt.Title {mustBeText}  = 'default'
     opt.LineWidth = 2
     opt.Fontsize = 14
-    opt.Legends
+    opt.Legends = {}
     opt.TxtName = {}
-    opt.TxtFigX
-    opt.TxtFigY
-    opt.TxtFigString
+    opt.TxtFigX = []
+    opt.TxtFigY = []
+    opt.TxtFigString = []
+    opt.yLines = []
+    opt.yLineLabels = {}
+    opt.xLines = []
+    opt.xLineLabels = {}
 end
 
 figure(Visible="off")
@@ -36,7 +40,19 @@ end
 
 if ~isempty(opt.TxtFigX)
     for n = 1:length(opt.TxtFigX)
-        text(opt.TxtFigX{n}, opt.TxtFigY, opt.TxtFigString)
+        text(opt.TxtFigX(n), opt.TxtFigY(n), opt.TxtFigString{n})
+    end
+end
+
+if ~isempty(opt.yLines)
+    for n = 1:length(opt.yLines)
+        yline(opt.yLines(n), ':', opt.yLineLabels{n}, LineWidth = opt.LineWidth);
+    end
+end
+
+if ~isempty(opt.xLines)
+    for n = 1:length(opt.xLines)
+        xline(opt.xLines(n), ':', obj.xLineLabels{n}, LineWidth = opt.LineWidth);
     end
 end
 
@@ -50,7 +66,7 @@ pbaspect([1.618 1 1]);
 set(gca, 'LineWidth', opt.LineWidth);
 
 if ~isempty(opt.Legends)
-    legends(opt.Legends)
+    legend(opt.Legends)
 end
 
 if ~isempty(opt.TxtName)
@@ -59,18 +75,11 @@ if ~isempty(opt.TxtName)
     end
 end
 
-% Axis are the minimum value of every X and the maximum value of every X
-minX = min(x{1});
-maxX = max(x{1});
-
-for n = 2:length(x)
-    minX = max(minX, x{n});
-    maxX = max(maxX, x{n});
-end
-
 axis padded
-ax = axis;
-axis([minX, maxX, ax(3), ax(4)])
+axP = axis;
+axis tight
+axT = axis;
+axis([axT(1), axT(2), axP(3), axP(4)])
 box on
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s.png", ToolBox.main_foldername, filename)))

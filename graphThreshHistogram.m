@@ -19,7 +19,7 @@ edges = linspace(m, M, 50); % Set bin edges (modify as needed)
 counts = [counts 0];
 
 % Plot the histogram with different colors based on threshold
-figure;
+figure (Visible="off");
 hold on;
 
 for ii = 1:(numLevel + 1)
