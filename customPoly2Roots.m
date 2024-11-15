@@ -11,7 +11,12 @@ function [r1, r2, r1_err, r2_err] = customPoly2Roots(p1, p2, p3, p1_err, p2_err,
     discriminant = p2^2 - 4 * p1 * p3;
     
     if discriminant < 0
-        error('The polynomial has complex roots.');
+        disp('The polynomial has complex roots.');
+        r1=0;
+        r2=0;
+        r1_err=0;
+        r2_err=0;
+        return
     end
     
     sqrt_discriminant = sqrt(discriminant);

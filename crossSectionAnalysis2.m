@@ -101,7 +101,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
             section_cut(section_cut<0) = 0 ;
             
             profile = mean(subImg,1);
-            central_range = find(profile>0);%>0.2*max(profile));
+            central_range = find(profile>0.1*max(profile));
             centt = mean(central_range);
             r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
             [p1, p2, p3, rsquare, p1_err, p2_err, p3_err] = customPoly2Fit(r_range',profile(central_range)');

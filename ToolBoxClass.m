@@ -1,5 +1,8 @@
 classdef ToolBoxClass < handle
 
+    % Holds useful variables calculated ones and used in the rest of the
+    % script
+
     properties
         %Path of the PW dir and the output dir inside
         PW_path_main char

@@ -139,9 +139,25 @@ end
 montage(sub_images_r(1:numCircles,1:max(nb_sections_artery)),"Size",[max(nb_sections_artery),numCircles])
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername,'all_sections_with_increasing_radius.png')))
 
+section_width_plot = figure(430);
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'),'sectionsWidth')
+mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'),'sectionsWidth')
+x_center = ToolBox.x_barycentre;
+y_center = ToolBox.y_barycentre;
+for i=1:numCircles
+    section_width_plot.Position = [200 200 600 600];
+    crossSectionWidthArtery = 2*sqrt(cross_section_area_artery_r(i, 1:nb_sections_artery(i))/pi)*1000;
+    etiquettes_frame_values = append(string(round(crossSectionWidthArtery,1)),"µm");
+    graphMaskTags(section_width_plot, M0_disp_image,squeeze(cross_section_mask_artery_r(i, :, :)), SubImg_locs_artery_Circles{i}, etiquettes_frame_values,x_center,y_center,Fontsize=12);
+    title(sprintf("%s",'Cross section width in arteries (µm)'));
+    set(gca, 'FontSize', 14)
+    
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate','sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i, 'crossSectionWidthArteryImage.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate','sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername,i, 'crossSectionWidthArteryImage.eps')))
+end
 
 figure(16796)
-cross_section_hist = histogram(2*sqrt(cross_section_area_artery_r(cross_section_area_artery_r~=0)/pi )*1000,50,FaceColor='k');
+cross_section_hist = histogram(2*sqrt(cross_section_area_artery_r/pi )*1000,50,FaceColor='k');
 aa = axis;
 aa(4) = aa(4)*1.14;
 axis(aa);
