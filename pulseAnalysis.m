@@ -29,6 +29,8 @@ strXlabel = 'Time(s)'; %createXlabelTime(1);
 strYlabel = 'frequency (kHz)';
 t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 cBlack = [0 0 0];
+cArtery = [255 22 18] / 255;
+cVein = [18 23 255] / 255;
 
 if entirePulseAnalysis
 
@@ -122,8 +124,7 @@ if entirePulseAnalysis
 
     %% 2 ) Calculate raw signals of arteries, background and veins
 
-    cArtery = [255 22 18] / 255;
-    cVein = [18 23 255] / 255;
+    
 
     tic
 

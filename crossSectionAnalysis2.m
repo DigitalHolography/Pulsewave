@@ -114,6 +114,16 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
                 stdcrossSectionWidth(sectionIdx) = sqrt(r1_err^2+r2_err^2)/(PW_params.cropSection_pixelSize / 2 ^ k);
             end
 
+            if isnan(crossSectionWidth(sectionIdx))
+                crossSectionWidth(sectionIdx) = 0;
+                stdcrossSectionWidth(sectionIdx) =0;
+            end
+
+            if crossSectionWidth(sectionIdx) > length(profile)
+                crossSectionWidth(sectionIdx) = 0;
+                stdcrossSectionWidth(sectionIdx) =0;
+            end
+            
             section_cut(section_cut<0) = 0 ;
     
             tmp_section = (section_cut ./ max(section_cut)) * size(section_cut, 1);

@@ -13,7 +13,7 @@
     },
     "Value of the interpolation parameter" : 1,
     "Veins Analysis" : 1,
-    "Export Videos" : 1,
+    "Export Videos" : 0,
     "Gaussian Filter Size For Barycentre" : 0.02,
     "Flat field correction" : {
         "GW ratio" : 0.07,
