@@ -338,7 +338,7 @@ elseif PW_params.DiffFirstCalculationsFlag == 2 % TO BE TESTED
 
     tmpM2 = M2_data_video - LocalBKG_vesselM2;
     tmpM0 = M0_data_video - LocalBKG_vesselM0;
-    tmpM2M0 = tmpM2 ./ tmpM0;
+    tmpM2M0 = tmpM2 ./ mean(tmpM0, [1 2]);
     delta_f_RMS = sign(tmpM2M0) .* sqrt(abs(tmpM2M0));
     clear tmpM2 tmpM0 tmpM2M0 M2_data_video
 
@@ -381,10 +381,16 @@ imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'puls
 range(1:2) = clim;
 
 if exportVideos
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
 
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.avi')));
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.mp4')), 'MPEG-4');
 
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.avi')));
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
+
+    parfeval(backgroundPool, @writeGifOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.main_foldername, 'LocalBackground_vessels')), timePeriod);
+    parfeval(backgroundPool, @writeGifOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.main_foldername, 'f_AVG_vessels')), timePeriod);
 end
 
 clear LocalBackground_in_vessels f_RMS_background

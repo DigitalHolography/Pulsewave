@@ -31,7 +31,7 @@ arguments
     opt.xLineLabels = {}
 end
 
-figure(Visible="off")
+figure%(Visible="off")
 hold on
 for n = 1:length(y)
     plot(x{n}, y{n}, style{n}, 'Color', color{n}, 'LineWidth', opt.LineWidth)

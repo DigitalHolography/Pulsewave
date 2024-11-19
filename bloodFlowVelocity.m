@@ -67,6 +67,7 @@ if veinsAnalysis
         sat = sat_artery .* maskArtery + sat_vein .* maskVein - (sat_artery + sat_vein) .* (maskArtery & maskVein) ./ 2;
 
         v_RMS_videoRGB(:, :, :, ii) = hsv2rgb(hue, sat, val);
+        % v_RMS_videoRGB(maskArtery==1 & v_RMS_videoRGB == 0) ;
         v_RMS_videoRGB(:, :, :, ii) = v_RMS_videoRGB(:, :, :, ii) .* (maskArtery | maskVein) + rescale(M0_disp_video(:, :, ii)) .* ~(maskArtery | maskVein);
     end
 
