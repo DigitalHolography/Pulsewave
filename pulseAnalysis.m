@@ -272,7 +272,7 @@ if entirePulseAnalysis
 
 end
 
-%% Local BKG Artery and Veins %~1min
+%% 5) Local BKG Artery and Veins %~1min
 
 tic
 exec_times_id = [exec_times_id, "Local BKG Artery and Veins"];
@@ -308,7 +308,7 @@ end
 
 exec_times_time = [exec_times_time, toc];
 
-%% Difference calculation
+%% 6) Difference calculation
 
 tic
 exec_times_id = [exec_times_id, "Difference calculation"];
@@ -376,27 +376,47 @@ c.Label.String = 'RMS Doppler frequency (kHz)';
 c.Label.FontSize = 12;
 axis off
 axis image
-imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_in_vessels.png')))
+imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_LocalBackground_in_vessels.png')))
 
 range(1:2) = clim;
 
+% ARI
+
+
+tic
+
+v_RMS_arterial_signal = squeeze(sum(v_RMS_video .* maskArtery, [1 2])) / nnz(maskArtery);
+v_RMS_arterial_signal = filloutliers(v_RMS_arterial_signal, 'center');
+v_RMS_arterial_signal_smooth = smoothdata(v_RMS_arterial_signal, 'rlowess');
+
+min_vRMS = min(v_RMS_arterial_signal_smooth);
+max_vRMS = max(v_RMS_arterial_signal_smooth);
+ARI = max_vRMS / (max_vRMS + min_vRMS);
+
+graphSignal(ToolBox, '6_ARI', folder, ...
+    t, v_RMS_arterial_signal_smooth, '-', cArtery, ...
+    t, v_RMS_arterial_signal, ':', cArtery, ...
+    yLines = [min_vRMS, ARI, max_vRMS], Title = sprintf('ARI = %0.2f', ARI))
+
 if exportVideos
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;    
+    f_RMS_video_rescale = rescale(f_RMS_video);
+    f_RMS_background_rescale = rescale(f_RMS_background);
+
+    writeGifOnDisc(f_RMS_background_rescale, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "f_RMS_bkg")), timePeriod)
+    writeGifOnDisc(f_RMS_video_rescale, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "f_RMS")), timePeriod)
 
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.avi')));
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.mp4')), 'MPEG-4');
 
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.avi')));
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
-
-    parfeval(backgroundPool, @writeGifOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.main_foldername, 'LocalBackground_vessels')), timePeriod);
-    parfeval(backgroundPool, @writeGifOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.main_foldername, 'f_AVG_vessels')), timePeriod);
 end
 
 clear LocalBackground_in_vessels f_RMS_background
 
 if entirePulseAnalysis
-    %% Creation of the avg pulse for In-plane arteries ~5min
+    %% 7) Creation of the avg pulse for In-plane arteries ~5min
 
     tic
 
@@ -480,8 +500,8 @@ if entirePulseAnalysis
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'RMS_Doppler_frequency_for_different_cycles.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'RMS_Doppler_frequency_for_different_cycles.eps')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
 
     exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
     exec_times_time = [exec_times_time, toc];
