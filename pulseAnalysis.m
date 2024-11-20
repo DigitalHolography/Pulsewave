@@ -124,7 +124,7 @@ if entirePulseAnalysis
 
     %% 2 ) Calculate raw signals of arteries, background and veins
 
-    
+
 
     tic
 
@@ -380,26 +380,25 @@ imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'puls
 
 range(1:2) = clim;
 
-% ARI
+f18 = figure(19);
+f18.Position = [1100 485 350 420];
+in_vessels = mean(delta_f_RMS, 3) .* maskVesselDilated;
+imagesc(in_vessels);
+colormap gray
+title('Delta f in vessels');
+fontsize(gca, 14, "points");
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+imwrite(rescale(in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_Df_in_vessels.png')))
 
-
-tic
-
-v_RMS_arterial_signal = squeeze(sum(v_RMS_video .* maskArtery, [1 2])) / nnz(maskArtery);
-v_RMS_arterial_signal = filloutliers(v_RMS_arterial_signal, 'center');
-v_RMS_arterial_signal_smooth = smoothdata(v_RMS_arterial_signal, 'rlowess');
-
-min_vRMS = min(v_RMS_arterial_signal_smooth);
-max_vRMS = max(v_RMS_arterial_signal_smooth);
-ARI = max_vRMS / (max_vRMS + min_vRMS);
-
-graphSignal(ToolBox, '6_ARI', folder, ...
-    t, v_RMS_arterial_signal_smooth, '-', cArtery, ...
-    t, v_RMS_arterial_signal, ':', cArtery, ...
-    yLines = [min_vRMS, ARI, max_vRMS], Title = sprintf('ARI = %0.2f', ARI))
+range(1:2) = clim;
 
 if exportVideos
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;    
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
     f_RMS_video_rescale = rescale(f_RMS_video);
     f_RMS_background_rescale = rescale(f_RMS_background);
 
@@ -412,6 +411,78 @@ if exportVideos
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.avi')));
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
+
+% ARI
+
+v_RMS_arterial_signal = squeeze(sum(v_RMS_video .* maskArtery, [1 2])) / nnz(maskArtery);
+v_RMS_arterial_signal = filloutliers(v_RMS_arterial_signal, 'center');
+v_RMS_arterial_signal_smooth = smoothdata(v_RMS_arterial_signal, 'rlowess');
+
+min_vRMS = min(v_RMS_arterial_signal_smooth);
+max_vRMS = max(v_RMS_arterial_signal_smooth);
+mean_vRMS = mean(v_RMS_arterial_signal_smooth);
+ARI = (max_vRMS - min_vRMS) / max_vRMS;
+API = (max_vRMS - min_vRMS) / mean_vRMS;
+
+graphSignal(ToolBox, '6_ARI', folder, ...
+    t, v_RMS_arterial_signal_smooth, '-', cArtery, ...
+    t, v_RMS_arterial_signal, ':', cArtery, ...
+    Title = sprintf('ARI = %0.2f, API = %0.2f', ARI, API), Legend = {'Smooth', 'Raw'},...
+    yLines = [min_vRMS, mean_vRMS, max_vRMS], yLineLabels={'','',''})
+
+M0_ff_image = mean(M0_ff_video, 3);
+[hue_ARI, sat_ARI, val_ARI, cmap] = ARI2HSVmap(ARI, M0_ff_image, maskArtery, ToolBox);
+% arterial resistivity map RGB
+ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+ARImapRGB = rescale(ARImapRGB .* maskArtery) + rescale(M0_ff_image .* ~maskArtery);
+
+figure(70)
+imagesc(ARImapRGB);
+title(strcat('Arterial Resistivity Index avg. : ', sprintf(" %3.2f", ARI)));
+axis image
+axis off
+set(gca, 'LineWidth', 2);
+fontsize(gca, 14, "points");
+c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
+c.Label.String = 'Arterial resistivity index';
+c.Label.FontSize = 14;
+% colormap(cmap);
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
+
+if exportVideos
+
+    ARIvideoRGB = zeros(numX, numY, 3, numFrames);
+    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, numFrames);
+    f71 = figure(71);
+    f71.Position = [300, 300, 570, 630];
+
+    for frameIdx = 1:numFrames
+        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery, ToolBox);
+        ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+        % ARIvideoRGB(:, :, :, frameIdx) = imadd(ARIvideoRGB(:, :, :, frameIdx) .* maskArtery, img_M0);
+    end
+    for frameIdx = 1:numFrames
+        imagesc(ARIvideoRGB(:, :, :, frameIdx));
+        title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
+        axis image
+        axis off
+        set(gca, 'LineWidth', 2);
+        fontsize(gca, 18, "points");
+        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
+        c.Label.String = 'Arterial resistivity index';
+        c.Label.FontSize = 18;
+        colormap(cmap);
+        frame = getframe(f71);
+        gifWriter.write(frame, frameIdx);
+    end
+
+    gifWriter.generate();
+    gifWriter.delete();
+
+end
+
 
 clear LocalBackground_in_vessels f_RMS_background
 

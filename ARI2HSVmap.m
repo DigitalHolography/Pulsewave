@@ -5,7 +5,7 @@ function [hue, sat, val, cmap] = ARI2HSVmap(ARI, Im, mask, ToolBox)
     hue = zeros(size(Im)); %ARImap
     adjusted_image = mat2gray(imadjust(Im, stretchlim(Im, tolVal)));
 
-    sat = ARI .* mask .* adjusted_image;
+    sat = ARI .* mask;
     healthy_ARI = 0.75;
     sat = (sat - healthy_ARI) / (1 - healthy_ARI);
     sat(sat <= 0) = 0;
