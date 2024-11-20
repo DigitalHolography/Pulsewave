@@ -6,10 +6,10 @@ function [sys_index_list, fullPulseWave] = find_systole_index(video, path, maskA
     pulse_init = detrend(fullPulseWave);
     pulse_init = pulse_init - mean(pulse_init, "all");
 
-    fullArterialPulseRmOut = filloutliers(pulse_init, 'linear');
-    fullArterialPulseClean = smoothdata(fullArterialPulseRmOut, 'lowess');
+    % fullArterialPulseRmOut = filloutliers(pulse_init, 'linear');
+    % fullArterialPulseClean = smoothdata(fullArterialPulseRmOut, 'lowess');
 
-    diff_signal = diff(fullArterialPulseClean);
+    diff_signal = diff(pulse_init);
     [~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * PW_params.systoleThreshold);
 
     %     figure(3)
