@@ -354,6 +354,7 @@ segmentationMap(:, :, 3) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img + ma
 segmentationMapArtery(:, :, 1) = M0_ff_img - (maskArtery) .* M0_ff_img + maskArtery;
 segmentationMapArtery(:, :, 2) = M0_ff_img - maskArtery .* M0_ff_img;
 segmentationMapArtery(:, :, 3) = M0_ff_img - maskArtery .* M0_ff_img;
+figure, imagesc(segmentationMapArtery), axis image
 imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
 imwrite(segmentationMapArtery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arterySegmentation.png')), 'png');
 
@@ -377,33 +378,5 @@ labeled = bwlabel(and(maskArtery, not(cercleMask)));
 imwrite(rescale(labeled), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskLabeled.png')), 'png');
 imwrite(bwskel(maskArtery), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskSkeletonArtery.png')), 'png');
 imwrite(bwskel(maskVein), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskSkeletonVein.png')), 'png');
-
-%% Saving AVI
-
-% w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_RGVideoArtery.avi')));
-% tmp = mat2gray(RGVideoArtery);
-% open(w)
-% for j = 1:size(RGVideoArtery,3)
-%     writeVideo(w,tmp(:,:,j)) ;
-% end
-% close(w);
-%
-% w = VideoWriter(fullfile(ToolBox.PW_path_avi,strcat(ToolBox.main_foldername,'_RGVideoVein.avi')));
-% tmp = mat2gray(RGVideoVein);
-% open(w)
-% for j = 1:size(RGVideoVein,3)
-%     writeVideo(w,tmp(:,:,j)) ;
-% end
-% close(w);
-%
-% w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_RGVideoVessel.avi')));
-% tmp = mat2gray(rgVideoVessel);
-% open(w)
-%
-% for j = 1:size(rgVideoVessel, 3)
-%     writeVideo(w, tmp(:, :, j));
-% end
-%
-% close(w);
 
 end
