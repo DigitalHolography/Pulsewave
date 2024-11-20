@@ -461,7 +461,6 @@ if exportVideos
     for frameIdx = 1:numFrames
         [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery, ToolBox);
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-        % ARIvideoRGB(:, :, :, frameIdx) = imadd(ARIvideoRGB(:, :, :, frameIdx) .* maskArtery, img_M0);
     end
     for frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
