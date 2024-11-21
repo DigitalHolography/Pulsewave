@@ -260,4 +260,17 @@ function [] = spectrogram(maskArtery, maskBackground, SH_cube, ToolBox)
     print('-f38', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_deltaSpectrogram.png')));
     print('-f39', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_arterySpectrogram.png')));
     print('-f40', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_backgroundSpectrogram.png')));
+
+
+
+    
+    for i = 1:cubeFrameLength
+        [spec_plot, delt_spec_plot] = Show_spectrum(maskArtery,maskBackground,maskSection,SH_cube(:, :, :, i),ToolBox);
+        specVideo(:,:,:,i) = frame2im(getframe(spec_plot));
+        specDeltVideo(:,:,:,i) = frame2im(getframe(delt_spec_plot));
+    end
+
+    writeGigOnDisc(specVideo,fullfile(ToolBox.PW_path_gif, strcat(ToolBox.main_foldername, 'SH_Spectrogram.gif')),0.1);
+    writeGigOnDisc(specDeltVideo,fullfile(ToolBox.PW_path_gif, strcat(ToolBox.main_foldername, 'SH_Delta_Spectrogram.gif')),0.1);
+
 end

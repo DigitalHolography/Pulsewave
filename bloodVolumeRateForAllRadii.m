@@ -156,7 +156,8 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_vi
     mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsWidth')
     x_center = ToolBox.x_barycentre;
     y_center = ToolBox.y_barycentre;
-
+    
+    
     for i = 1:numCircles
         section_width_plot.Position = [200 200 600 600];
         crossSectionWidthArtery = 2 * sqrt(cross_section_area_artery_r(i, 1:nb_sections_artery(i)) / pi) * 1000;
@@ -164,10 +165,12 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_vi
         graphMaskTags(section_width_plot, M0_disp_image, squeeze(cross_section_mask_artery_r(i, :, :)), SubImg_locs_artery_Circles{i}, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
         title(sprintf("%s", 'Cross section width in arteries (µm)'));
         set(gca, 'FontSize', 14)
+        vesselWidthsVideo(:,:,:,i) = frame2im(getframe(section_width_plot));
 
         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername, i, 'crossSectionWidthArteryImage.png')))
         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername, i, 'crossSectionWidthArteryImage.eps')))
-    end
+    end 
+    writeGifOnDisc(vesselWidthsVideo,fullfile(ToolBox.PW_path_gif, sprintf("%s_%s", ToolBox.main_foldername, 'sectionsWidth.gif')),0.1);
 
     figure(16796)
     cross_section_hist = histogram(2 * sqrt(cross_section_area_artery_r(cross_section_area_artery_r ~= 0) / pi) * 1000, 50, FaceColor = 'k');
