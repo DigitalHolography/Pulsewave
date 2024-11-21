@@ -430,6 +430,7 @@ graphSignal(ToolBox, '6_ARI', folder, ...
     Title = sprintf('ARI = %0.2f, API = %0.2f', ARI, API), Legend = {'Smooth', 'Raw'},...
     yLines = [min_vRMS, mean_vRMS, max_vRMS], yLineLabels={'','',''})
 
+M0_ff_video = rescale(M0_ff_video);
 M0_ff_image = mean(M0_ff_video, 3);
 [hue_ARI, sat_ARI, val_ARI, cmap] = ARI2HSVmap(ARI, M0_ff_image, maskArtery, ToolBox);
 % arterial resistivity map RGB
