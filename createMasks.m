@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
 
 PW_params = Parameters_json(path);
 exportVideos = PW_params.exportVideos;
@@ -263,9 +263,16 @@ maskVein = maskVeinClean;
 maskVessel = maskArtery | maskVein;
 maskBackground = not(maskVessel);
 
+if PW_params.veins_analysis
+    maskNeighbors = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width)) - (maskArtery | maskVein);
+else 
+    maskNeighbors = imdilate(maskArtery , strel('disk', PW_params.local_background_width)) - maskArtery;
+end
+
 imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_3_3_Final.png')))
 imwrite(maskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_3_3_Final.png')))
 imwrite(maskVessel, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_3_Final.png')))
+imwrite(maskNeighbors, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskNeighbors.png')));
 imwrite(rescale(uint8(cat(3, uint8(M0_ff_img) + uint8(maskArteryClean) * 255, uint8(M0_ff_img) + uint8(cercleMask), uint8(M0_ff_img) + uint8(maskVeinClean) * 255))), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_4_Final.png')))
 
 %% SENSITIVITY & SPECIFICITY
@@ -318,8 +325,8 @@ maskCRV = f_AVG_mean < (-PW_params.CRACRV_Threshold * f_AVG_std);
 clear f_AVG_std f_AVG_mean
 
 %% Create Mask Section
-radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (numY + numX) / 2;
-radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (numY + numX) / 2;
+radius1 = (PW_params.velocitySmallRadiusRatio - PW_params.velocityBigRadiusRatio) * (numY + numX) / 2;
+radius2 = (PW_params.velocitySmallRadiusRatio + PW_params.velocityBigRadiusRatio) * (numY + numX) / 2;
 
 circleMask1 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= radius1;
 circleMask2 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= radius2;

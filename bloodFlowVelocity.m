@@ -79,7 +79,7 @@ else
 
     parfor ii = 1:numFrames
         [hue_artery, sat_artery, val_artery, ~] = createHSVmap(v_RMS_video_rescale(:, :, ii), maskArtery, 0, 0.18); % 0 / 0.18 for orange-yellow range
-        val = (v .* ~maskArtery) + val_artery .* maskArtery;
+        val = (v_RMS_video_rescale(:, :, ii).* ~maskArtery) + val_artery .* maskArtery;
         v_RMS_videoRGB(:, :, :, ii) = hsv2rgb(hue_artery, sat_artery, val);
         v_RMS_videoRGB(:, :, :, ii) = v_RMS_videoRGB(:, :, :, ii) .* maskArtery + rescale(M0_ff_video(:, :, ii)) .* ~(maskArtery);
     end

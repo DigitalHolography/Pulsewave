@@ -182,6 +182,16 @@ classdef OneCycleClass
 
         end
 
+        function obj = MomentNormalizeLocally(obj)
+
+            PW_params = Parameters_json(obj.directory);
+
+            obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ double(obj.M0_data_video));
+            obj.f_AVG_video = double(obj.M1_data_video) ./ double(obj.M0_data_video);
+            obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
+
+        end
+
         function obj = MomentRescaledNormalize(obj)
 
             PW_params = Parameters_json(obj.directory);
@@ -612,7 +622,7 @@ classdef OneCycleClass
 
             f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-            [maskArtery, maskVein, ~, maskBackground, ~, ~, ~] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
+            [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSection, maskNeighbors] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
 
             time_create_masks = toc(createMasksTiming);
             fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -746,7 +756,7 @@ classdef OneCycleClass
                 save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
 
                 tic
-                spectrogram(maskArtery, maskBackground, SH_cube, ToolBox);
+                spectrogram(maskArtery, maskNeighbors,maskSection, SH_cube, ToolBox);
                 disp('Spectrogram timing :')
                 time = toc;
                 disp(time)
