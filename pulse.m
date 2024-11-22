@@ -196,6 +196,7 @@ classdef pulse < matlab.apps.AppBase
                     "Developed by the DigitalHolographyFoundation\n" + ...
                     "==========================================\n",v(1));
             end
+            addpath("BloodFlowVelocity\","BloodFlowVelocity\Elastography\","BloodVolumeRate\","BloodVolumeRate\Rheology\","Loading\","Parameters\","Preprocessing\","PulseAnalysis\","PulseAnalysis\ARIandAPI\","Scripts\","Segmentation\","SHAnalysis\","Tools\")
             app.PulsewaveUIFigure.Name = ['Pulsewave ',char(v(1))];
             displaySplashScreen();
         end
