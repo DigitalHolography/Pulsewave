@@ -11,6 +11,15 @@ classdef OneCycleClass
         f_AVG_video % AVG M1/M0
 
         SH_data_hypervideo % SH raw
+        
+        maskArtery
+        maskVein
+        maskBackground
+        maskSection
+        maskNeighbors
+
+        sysIdxList
+        vRMS % video estimate of velocity map in retinal vessels
 
         directory char % directory of input data (from HoloDoppler or HoloVibes)
         filenames char % name used for storing analysis data
@@ -126,7 +135,7 @@ classdef OneCycleClass
         
         end
 
-        function onePulse(obj, Ninterp)
+        function onePulse(obj)
             %  ------- This is the app main routine. --------
 
             checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
@@ -224,7 +233,7 @@ classdef OneCycleClass
 
             f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-            [maskArtery, maskVein, ~, maskBackground, ~, ~, maskSection, maskNeighbors] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
+            [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
 
             time_create_masks = toc(createMasksTiming);
             fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -250,7 +259,7 @@ classdef OneCycleClass
                 fprintf("Find Systole\n")
                 fprintf("----------------------------------\n")
 
-                [sysIdxList, ~] = find_systole_index(obj.M0_disp_video, obj.directory, maskArtery);
+                [obj.sysIdxList, ~] = find_systole_index(obj.M0_disp_video, obj.directory, obj.maskArtery);
 
                 time_sys_idx = toc(findSystoleTimer);
                 fprintf("- FindSystoleIndex took : %ds\n", round(time_sys_idx))
@@ -262,7 +271,7 @@ classdef OneCycleClass
                 fprintf("Pulse Analysis\n")
                 fprintf("----------------------------------\n")
 
-                [vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
+                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
@@ -297,7 +306,7 @@ classdef OneCycleClass
                     fprintf("Blood Flow Velocity Calculation\n")
                     fprintf("----------------------------------\n")
 
-                    bloodFlowVelocity(vRMS, maskArtery, maskVein, obj.M0_disp_video, ToolBox, obj.directory)
+                    bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.M0_disp_video, ToolBox, obj.directory)
                     % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
 
                     time_velo = toc(bloodFlowVelocityTimer);
@@ -312,8 +321,8 @@ classdef OneCycleClass
                     fprintf("Blood Volume Rate Calculation\n")
                     fprintf("----------------------------------\n")
 
-                    bloodVolumeRate(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
-                    bloodVolumeRateForAllRadii(maskArtery, maskVein, vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,sysIdxList);
+                    bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                    bloodVolumeRateForAllRadii(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,obj.sysIdxList);
 
                     time_volumeRate = toc(bloodVolumeRateTimer);
                     fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
@@ -350,14 +359,14 @@ classdef OneCycleClass
                 SH_cube = reshape(videoSH, ceil(numX/(2^obj.k*bin_x)), ceil(numY/(2^obj.k*bin_y)),[], ceil(numFrames/bin_t));
 
                 tic
-                spectrum_analysis(maskArtery, maskBackground, SH_cube, ToolBox, obj.M0_data_video);
+                spectrum_analysis(obj.maskArtery, obj.maskBackground, SH_cube, ToolBox, obj.M0_data_video);
                 disp('Spectrum analysis :')
                 time = toc;
                 disp(time)
                 save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
 
                 tic
-                spectrogram(maskArtery, maskNeighbors,maskSection, SH_cube, ToolBox);
+                spectrogram(obj.maskArtery, obj.maskNeighbors,obj.maskSection, SH_cube, ToolBox);
                 disp('Spectrogram timing :')
                 time = toc;
                 disp(time)

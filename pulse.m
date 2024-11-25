@@ -235,7 +235,7 @@ classdef pulse < matlab.apps.AppBase
 
                 try
 
-                    app.files{n}.onePulse(app.NumberofframesEditField.Value);
+                    app.files{n}.onePulse();
 
                 catch ME
 
