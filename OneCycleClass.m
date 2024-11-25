@@ -12,14 +12,14 @@ classdef OneCycleClass
 
         SH_data_hypervideo % SH raw
 
-        directory char
-        filenames
-        k double %interpolaton parameter
+        directory char % directory of input data (from HoloDoppler or HoloVibes)
+        filenames char % name used for storing analysis data
+        k double %interpolaton parameter % TODO move to pw params
         load_logs char
-        % For sectioning
-        video_loaded
-        pictureSection
-        videoSection
+        
+        
+        
+        
         flag_SH_analysis
         flag_PulseWave_analysis
         flag_velocity_analysis
@@ -27,7 +27,6 @@ classdef OneCycleClass
         flag_bloodVolumeRate_analysis
         flag_bloodVelocityProfile_analysis
 
-        %% FIXME : relancer a chaque rendering
         ToolBoxmaster ToolBoxClass
 
     end
@@ -36,13 +35,9 @@ classdef OneCycleClass
 
         function obj = OneCycleClass(path)
 
-            arguments
-                path
-            end
-
             disp(path)
 
-            if ~isfolder(path) % if holo file with moments inside is the input
+            if ~isfolder(path) % if th input path is a .holo file with moments inside 
                 [filepath, name, ~] = fileparts(path);
                 mkdir(fullfile(filepath, name));
                 obj.directory = fullfile(filepath, name);
@@ -53,30 +48,18 @@ classdef OneCycleClass
                 obj.filenames = obj.directory(tmp_idx(end-1) + 1:end -1);
             end
 
-            %% AVEC TXT
+            %% Parameters
 
-            %             try
-            %                 checkPulsewaveParamsFromTxt(obj.directory);
-            %                 PW_params = Parameters(obj.directory);
-            %             catch
-            %                 dir_path_txt = fullfile(path,'txt');
-            %                 delete(fullfile(dir_path_txt,'InputPulsewaveParams.txt'));
-            %                 checkPulsewaveParamsFromTxt(obj.directory);
-            %                 PW_params = Parameters(obj.directory);
-            %             end
-
-            %% AVEC JSON
-
-            checkPulsewaveParamsFromJson(obj.directory);
+            checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
             PW_params = Parameters_json(obj.directory);
 
             obj.k = PW_params.k;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
 
             obj.load_logs = '\n=== LOADING : \r\n';
-            logs = obj.load_logs;
+            
 
-            %% Display Video loading
+            %% Video loading
 
             if ~isfolder(path) % if holo file with moments inside is the input
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
@@ -87,86 +70,7 @@ classdef OneCycleClass
                 obj.M1_data_video = videoM1;
                 obj.M2_data_video = videoM2;
             else
-                %% Ref loading
-                dir_path_avi = fullfile(obj.directory, 'avi');
-                NameRefAviFile = strcat(obj.filenames, '_M0');
-                RefAviFilePath = fullfile(dir_path_avi, NameRefAviFile);
-                ext = '.avi';
-
-                disp(['reading : ', RefAviFilePath]);
-                RefAviFilePath(strfind(RefAviFilePath, '\')) = '/';
-                str_tosave = sprintf('reading : %s', RefAviFilePath);
-                logs = strcat(logs, '\r', str_tosave);
-
-                V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
-                M0_disp_video = zeros(V.Height, V.Width, V.NumFrames);
-
-                for n = 1:V.NumFrames
-                    M0_disp_video(:, :, n) = rgb2gray(read(V, n));
-                end
-
-                obj.M0_disp_video = M0_disp_video;
-
-                clear V M0_disp_video
-
-                %% Data Videos loading
-
-                refvideosize = size(obj.M0_disp_video);
-                dir_path_raw = fullfile(obj.directory, 'raw');
-                ext = '.raw';
-
-                try
-                    % Import Moment 0
-
-                    NameRawFile = strcat(obj.filenames, '_moment0');
-                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                    str_tosave = sprintf('reading : %s', FilePathUnix);
-                    logs = strcat(logs, '\r', str_tosave);
-
-                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                    M0_data_video = fread(fileID, 'float32');
-                    fclose(fileID);
-                    obj.M0_data_video = reshape(M0_data_video, refvideosize);
-
-                    % Import Moment 1
-
-                    NameRawFile = strcat(obj.filenames, '_moment1');
-                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                    str_tosave = sprintf('reading : %s', FilePathUnix);
-                    logs = strcat(logs, '\r', str_tosave);
-
-                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                    M1_data_video = fread(fileID, 'float32');
-                    fclose(fileID);
-                    obj.M1_data_video = reshape(M1_data_video, refvideosize);
-
-                    % Import Moment 2
-
-                    NameRawFile = strcat(obj.filenames, '_moment2');
-                    disp(['reading : ', fullfile(dir_path_raw, [NameRawFile, ext])]);
-                    FilePathUnix = fullfile(dir_path_raw, [NameRawFile, ext]);
-                    FilePathUnix(strfind(FilePathUnix, '\')) = '/';
-                    str_tosave = sprintf('reading : %s', FilePathUnix);
-                    logs = strcat(logs, '\r', str_tosave);
-
-                    fileID = fopen(fullfile(dir_path_raw, [NameRawFile, ext]));
-                    M2_data_video = fread(fileID, 'float32');
-                    fclose(fileID);
-                    obj.M2_data_video = reshape(M2_data_video, refvideosize);
-
-                catch ME
-                    disp(['ID: ' ME.identifier])
-                    % fprintf("No Raw Files, please select a Holowave folder with raw files exported")
-                    rethrow(ME)
-
-                end
-
-                obj.load_logs = logs;
-
+                readRaw(obj);
             end
 
         end
@@ -222,38 +126,16 @@ classdef OneCycleClass
         
         end
 
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
         function onePulse(obj, Ninterp)
             %  ------- This is the app main routine. --------
-            % progress_bar = waitbar(0,'');
 
-            checkPulsewaveParamsFromJson(obj.directory);
+            checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
             PW_params = Parameters_json(obj.directory);
             totalTime = tic;
 
             obj.k = PW_params.k;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;
-
-            fprintf("==================================\n")
-            fprintf("File: %s\n", ToolBox.PW_folder_name)
-            fprintf("==================================\n")
-            fprintf("Loading Input Parameters\n")
 
             mkdir(ToolBox.PW_path_dir);
             mkdir(ToolBox.PW_path_png);
@@ -265,21 +147,23 @@ classdef OneCycleClass
             mkdir(ToolBox.PW_path_json);
             mkdir(ToolBox.PW_path_log);
 
+            fprintf("==================================\n")
+            fprintf("File: %s\n", ToolBox.PW_folder_name)
+            fprintf("==================================\n")
+            fprintf("Loading Input Parameters\n")
+
             try
                 copyfile(fullfile(obj.directory, 'log', 'RenderingParameters.json'), ToolBox.PW_path_log)
             catch
                 warning('no rendering parameters were found')
             end
 
-            %             path_dir_txt = fullfile(obj.directory,'txt');
-            %             path_file_txt_params = fullfile(path_dir_txt,'InputPulsewaveParams.txt');
-            %             copyfile(path_file_txt_params,ToolBox.PW_path_txt );
-
+            % copyin the input parameters to the result folder
             path_dir_json = fullfile(obj.directory, 'pulsewave', 'json');
             path_file_json_params = fullfile(path_dir_json, 'InputPulsewaveParams.json');
             copyfile(path_file_json_params, ToolBox.PW_path_json);
 
-            %saving times
+            % saving times
             path_file_txt_exe_times = fullfile(ToolBox.PW_path_log, sprintf('%s_execution_times.txt', ToolBox.PW_folder_name));
             fileID = fopen(path_file_txt_exe_times, 'w');
             fprintf(fileID, 'EXECUTION TIMES : \r\n==================\n\r\n');
@@ -298,7 +182,9 @@ classdef OneCycleClass
                 resultBranch = strtrim(resultBranch);
                 MessBranch = 'Current branch : %s \r';
             else
-                MessBranch = 'Error getting current branch name.\r Git command output: %s \r';
+                
+                vers = readlines('version.txt');
+                MessBranch = ['PulseWave GitHub version ', char(vers)];
             end
 
             gitHashCommand = 'git rev-parse HEAD';
@@ -308,7 +194,7 @@ classdef OneCycleClass
                 resultHash = strtrim(resultHash);
                 MessHash = 'Latest Commit Hash : %s \r';
             else
-                MessHash = 'Error getting latest commit hash.\r Git command output: %s \r';
+                MessHash = '';
             end
 
             fileID = fopen(path_file_log, 'w');
@@ -325,7 +211,6 @@ classdef OneCycleClass
             fclose(fileID);
 
             %% Creating Masks
-            % waitbar(0.1,progress_bar,"Creating Masks");
 
             fileID = fopen(path_file_txt_exe_times, 'a+');
             fprintf(fileID, '\r\n');
