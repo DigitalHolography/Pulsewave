@@ -71,7 +71,7 @@ classdef pulse < matlab.apps.AppBase
                 app.files{end + 1} = OneCycleClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
-                app.files{end}.preprocessData();
+                app.files{end} = app.files{end}.preprocessData();
 
                 %% End
                 app.LoadfolderButton.Enable = true ;

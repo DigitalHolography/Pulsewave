@@ -1,4 +1,4 @@
-function [v_RMS_video, exec_times] = pulseAnalysis(numFramesInterp, f_RMS_video, f_AVG_video, M2_data_video, M0_data_video, M0_ff_video, sysIdxList, maskArtery, maskVein, maskBackground, flag_ExtendedPulseWave_analysis, ToolBox, path)
+function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M2_data_video, M0_data_video, M0_ff_video, sysIdxList, maskArtery, maskVein, maskBackground, flag_ExtendedPulseWave_analysis, ToolBox, path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
@@ -17,6 +17,7 @@ veinsAnalysis = PW_params.veins_analysis;
 entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
 f_AVG_mean = mean(f_AVG_video, 3);
+numFramesInterp = PW_params.oneCycleNinterp;
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -255,7 +256,7 @@ if entirePulseAnalysis
     else
         textsX = t(sysIdxList) - 0.3;
         textsY = fullArterialPulseSmoothDerivative(sysIdxList)' + 0.03;
-        texts = cell(1, size(sysIdxList));
+        texts = cell(1, length(sysIdxList));
 
         for n = 1:numel(sysIdxList)
             texts{n} = num2str(n);

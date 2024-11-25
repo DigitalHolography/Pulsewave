@@ -1,4 +1,4 @@
-function readRaw(obj)
+function obj = readRaw(obj)
 
 logs = obj.load_logs;
 dir_path_avi = fullfile(obj.directory, 'avi');

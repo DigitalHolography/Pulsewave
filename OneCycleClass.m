@@ -70,12 +70,12 @@ classdef OneCycleClass
                 obj.M1_data_video = videoM1;
                 obj.M2_data_video = videoM2;
             else
-                readRaw(obj);
+                obj = readRaw(obj);
             end
 
         end
 
-        function preprocessData(obj)
+        function obj = preprocessData(obj)
             % register
             tic
             fprintf("\n----------------------------------\n")
@@ -262,7 +262,7 @@ classdef OneCycleClass
                 fprintf("Pulse Analysis\n")
                 fprintf("----------------------------------\n")
 
-                [vRMS, exec_times] = pulseAnalysis(Ninterp, obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
+                [vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
@@ -330,7 +330,6 @@ classdef OneCycleClass
             end
 
             %% Spectrum Analysis
-            % waitbar(0.9,progress_bar,"Spectrum analysis");
 
             if obj.flag_SH_analysis && isfile(fullfile(obj.directory, 'raw', [strcat(ToolBox.main_foldername, '_SH'),  '.raw']))
 
@@ -366,7 +365,6 @@ classdef OneCycleClass
             end
 
             displaySuccessMsg(1);
-            % close(progress_bar)
             close all
 
         end

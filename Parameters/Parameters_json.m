@@ -15,6 +15,7 @@ classdef Parameters_json < handle
         radius_ratio
         radius_gap
         gauss_filt_size_for_barycentre
+        oneCycleNinterp
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
         local_background_width
@@ -154,7 +155,8 @@ classdef Parameters_json < handle
                 obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
                 obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
-
+                
+                obj.oneCycleNinterp = parsedData.CreationOfOneCycle.InterpolationPoints;
                 obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
                 obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
 

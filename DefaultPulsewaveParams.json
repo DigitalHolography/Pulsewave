@@ -51,6 +51,7 @@
         "Systole threshold ratio of maximum": 0.7
     },
     "Creation of one cycle": {
+        "Interpolation points" : 256,
         "Out of noise threshold": 85,
         "Data reliability index threshold": 50
     },
