@@ -71,56 +71,7 @@ classdef pulse < matlab.apps.AppBase
                 app.files{end + 1} = OneCycleClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
-                % register
-                tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Registering\n")
-                fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.registerVideo();
-                fprintf("- Video Registering took : %ds\n", round(toc))
-
-                % crop videos
-                tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Cropping\n")
-                fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.cropAllVideo();
-                fprintf("- Video Cropping took : %ds\n", round(toc))
-
-                % moment normalize
-                tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Moment Normalizing\n")
-                fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.MomentNormalize();
-                if holo
-                    app.files{end} = app.files{end}.MomentNormalize();
-                end
-                fprintf("- Moment Normalizing took : %ds\n", round(toc))
-
-                % Video resize (preprocess interpolation interpolate)
-                tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Resizing\n")
-                fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.VideoResize();
-                fprintf("- Video Resizing : %ds\n", round(toc))
-
-                % interpolate
-                tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Interpolation\n")
-                fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.Interpolate();
-                fprintf("- Video Interpolation : %ds\n", round(toc))
-
-                % remove outliers
-                tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Outlier Cleaning\n")
-                fprintf("----------------------------------\n")
-                app.files{end} = app.files{end}.RemoveOutliers();
-                fprintf("- Video Outlier Cleaning took : %ds\n", round(toc))
+                app.files{end}.preprocessData();
 
                 %% End
                 app.LoadfolderButton.Enable = true ;

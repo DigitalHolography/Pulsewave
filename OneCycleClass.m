@@ -171,355 +171,72 @@ classdef OneCycleClass
 
         end
 
-        function obj = MomentNormalize(obj)
-
-            PW_params = Parameters_json(obj.directory);
-            M0_data_mean = mean(double(obj.M0_data_video), [1 2]);
-
-            obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_mean);
-            obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_mean;
-            obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
-
-        end
-
-        function obj = MomentNormalizeLocally(obj)
-
-            PW_params = Parameters_json(obj.directory);
-
-            obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ double(obj.M0_data_video));
-            obj.f_AVG_video = double(obj.M1_data_video) ./ double(obj.M0_data_video);
-            obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
-
-        end
-
-        function obj = MomentRescaledNormalize(obj)
-
-            PW_params = Parameters_json(obj.directory);
-%             MAX_M0_DISP = max(obj.M0_disp_video,[],'all');
-%             MAX_M0 = max(obj.M0_data_video,[],'all');
-%             MAX_M1 = max(obj.M0_data_video,[],'all');
-%             MAX_M2 = max(obj.M0_data_video,[],'all');
-% 
-%             obj.M0_data_video = obj.M0_data_video /MAX_M0;
-%             obj.M1_data_video = obj.M1_data_video /MAX_M1;
-%             obj.M2_data_video = obj.M2_data_video /MAX_M2;
-%             obj.M0_disp_video = obj.M0_disp_video /MAX_M0_DISP;
-
-            M0_data_mean = mean(obj.M0_data_video, [1 2]);
-
-            obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ double(M0_data_mean));
-            obj.f_AVG_video = double(obj.M1_data_video) ./ double(M0_data_mean);
-            % obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
-
-        end
-
-        function obj = registerVideo(obj)
+        function preprocessData(obj)
+            % register
             tic
-            % Registers the video using intensity based registration
-            PW_params = Parameters_json(obj.directory);
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Registering\n")
+            fprintf("----------------------------------\n")
+            obj = VideoRegistering(obj);
+            fprintf("- Video Registering took : %ds\n", round(toc))
 
-            if ~PW_params.registerVideoFlag
-                return % do nothing if not required
-            end
-
-            video = obj.M0_disp_video;
-            numX = size(video, 1);
-            numY = size(video, 2);
-            x = linspace(-numX / 2, numX / 2, numX);
-            y = linspace(-numY / 2, numY / 2, numY);
-            [X, Y] = meshgrid(x, y);
-
-            disc_ratio = 0.7; % parametrize this coef if needed
-            disc = X .^ 2 + Y .^ 2 < (disc_ratio * min(numX, numY) / 2) ^ 2;
-            video_reg = video .* disc - disc .* sum(video .* disc, [1, 2]) / nnz(disc); % minus the mean in the disc of each frame
-            video_reg = reshape(video_reg, size(video, 1), size(video, 2), 1, size(video, 3)); % insert a dimension to match reegistration functions
-
-            video_reg = video_reg ./ (max(abs(video_reg), [], [1, 2])); % rescaling each frame but keeps mean at zero
-
-            image_ref = mean(video_reg(:, :, PW_params.refAvgStart:PW_params.refAvgEnd), 3); % ref image is from 10 to 20
-            [~, shifts] = register_video_from_reference(video_reg, image_ref);
-
-            obj.M0_disp_video = register_video_from_shifts(video, shifts);
-
-            obj.M0_data_video = register_video_from_shifts(obj.M0_data_video, shifts);
-            obj.M1_data_video = register_video_from_shifts(obj.M1_data_video, shifts);
-            obj.M2_data_video = register_video_from_shifts(obj.M2_data_video, shifts);
-
-            toc
-
-        end
-
-        function obj = cropAllVideo(obj)
-            %Crop a video (matrix dim 3)
-            PW_params = Parameters_json(obj.directory);
-            firstFrame = PW_params.videoStartFrameIndex;
-            lastFrame = PW_params.videoEndFrameIndex;
-            [~, ~, numFrames] = size(obj.M0_disp_video);
-
-            logs = obj.load_logs;
-
-            if firstFrame > 0 && firstFrame < numFrames || lastFrame > 1 && lastFrame <= numFrames
-                if lastFrame == -1
-                    lastFrame = numFrames;
-                end
-                if firstFrame == -1 
-                    firstFrame = 1;
-                end
-                obj.M0_disp_video = obj.M0_disp_video(:, :, firstFrame:lastFrame);
-                obj.M0_data_video = obj.M0_data_video(:, :, firstFrame:lastFrame);
-                obj.M1_data_video = obj.M1_data_video(:, :, firstFrame:lastFrame);
-                obj.M2_data_video = obj.M2_data_video(:, :, firstFrame:lastFrame);
-
-                disp(['Data cube frame: ', num2str(firstFrame), '/', num2str(numFrames), ' to ', num2str(lastFrame), '/', num2str(numFrames)])
-
-                str_tosave = sprintf('Data cube frame: %s/%s to %s/%s', num2str(firstFrame), num2str(numFrames), num2str(lastFrame), num2str(numFrames));
-                logs = strcat(logs, '\r', str_tosave);
-            else
-                disp('Wrong value for the first frame. Set as 1.')
-                disp('Wrong value for the last frame. Set as the end.')
-                disp(['Data cube frame: 1/', num2str(numFrames), ' to ', num2str(numFrames), '/', num2str(numFrames)])
-
-                str_tosave = sprintf('Wrong value for the first frame. Set as 1. \rWrong value for the last frame. Set as the end. \rData cube frame: 1/%s to %s/%s', num2str(numFrames), num2str(numFrames), num2str(numFrames));
-                logs = strcat(logs, '\r\n\n', str_tosave, '\n');
-            end
-
-            obj.load_logs = logs;
-        end
-
-        function obj = VideoResize(obj)
+            % crop videos
             tic
-            PW_params = Parameters_json(obj.directory);
-            out_height = PW_params.frameHeight;
-            out_width = PW_params.frameWidth;
-            out_numFrames = PW_params.videoLength;
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Cropping\n")
+            fprintf("----------------------------------\n")
+            obj = VideoCropping(obj);
+            fprintf("- Video Cropping took : %ds\n", round(toc))
 
-            if out_numFrames < 0
-                return % do nothing if not required
-            end
+            % moment normalize
+            tic
+            fprintf("\n----------------------------------\n")
+            fprintf("Moment Normalizing\n")
+            fprintf("----------------------------------\n")
+            obj = VideoNormalizing(obj);
+            fprintf("- Moment Normalizing took : %ds\n", round(toc))
 
-            if out_numFrames < numFrames
-                % we average the input images to get out_numFrames frames
+            % Video resize (preprocess interpolation interpolate)
+            tic
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Resizing\n")
+            fprintf("----------------------------------\n")
+            obj = VideoResizing(obj);
+            fprintf("- Video Resizing : %ds\n", round(toc))
 
-                % batch = floor(numFrames / out_numFrames);
+            % interpolate
+            tic
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Interpolation\n")
+            fprintf("----------------------------------\n")
+            obj = VideoInterpolating(obj);
+            fprintf("- Video Interpolation : %ds\n", round(toc))
 
-                tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.M0_disp_video;
-
-                for i = 1:out_numFrames
-                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
-                end
-
-                obj.M0_disp_video = single(tmp_ref);
-
-                tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.M0_data_video;
-
-                for i = 1:out_numFrames
-                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
-                end
-
-                obj.M0_data_video = single(tmp_ref);
-
-                tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.M1_data_video;
-
-                for i = 1:out_numFrames
-                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
-                end
-
-                obj.M1_data_video = single(tmp_ref);
-
-                tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.M2_data_video;
-
-                for i = 1:out_numFrames
-                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
-                end
-
-                obj.M2_data_video = single(tmp_ref);
-
-                tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.f_AVG_video;
-
-                for i = 1:out_numFrames
-                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
-                end
-
-                obj.f_AVG_video = single(tmp_ref);
-
-                tmp_ref = zeros([numX, numY, out_numFrames]);
-                tmp_calc = obj.f_RMS_video;
-
-                for i = 1:out_numFrames
-                    tmp_ref(:, :, i) = mean(tmp_calc(:, :, floor(i / out_numFrames * numFrames):floor((i + 1) / out_numFrames * numFrames)), 3);
-                end
-
-                obj.f_RMS_video = single(tmp_ref);
-
-            end
-
-            if out_height < 0 && out_width < 0
-                return % do nothing if not required
-            end
-
-            if out_height < 0
-                out_height = numX;
-            end
-
-            if out_width < 0
-                out_width = numY;
-            end
-
-            if out_numFrames < 0
-                out_numFrames = numFrames;
-            end
-
-            [Xq, Yq, Zq] = meshgrid(linspace(1, numY, out_width), linspace(1, numX, out_height), linspace(1, numFrames, out_numFrames));
-            % tmp_ref = zeros(numX, numY, numFrames);
-
-            tmp_calc_ref = obj.M0_disp_video;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.M0_disp_video = single(tmp_ref);
-
-            tmp_calc_ref = obj.M0_data_video;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.M0_data_video = single(tmp_ref);
-
-            tmp_calc_ref = obj.M1_data_video;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.M1_data_video = single(tmp_ref);
-
-            tmp_calc_ref = obj.M2_data_video;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.M2_data_video = single(tmp_ref);
-
-            tmp_calc_ref = obj.f_AVG_video;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.f_AVG_video = single(tmp_ref);
-
-            tmp_calc_ref = obj.f_RMS_video;
-            tmp_ref = interp3(tmp_calc_ref, Xq, Yq, Zq);
-            obj.f_RMS_video = single(tmp_ref);
-
-            disp(['Resized data cube : ', num2str(out_width), 'x', num2str(out_height), 'x', num2str(out_numFrames)])
-            % logs = obj.load_logs;
-            % str_tosave = sprintf("Resized data cube : %s x %s x %s", num2str(out_width), num2str(out_height), num2str(out_numFrames));
-            % logs = strcat(logs, '\r\n\n', str_tosave, '\n');
-            toc
+            % remove outliers
+            tic
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Outlier Cleaning\n")
+            fprintf("----------------------------------\n")
+            obj = VideoRemoveOutliers(obj);
+            fprintf("- Video Outlier Cleaning took : %ds\n", round(toc))
+        
         end
 
-        function obj = RemoveOutliers(obj)
-            %% Outlier Cleaning
-            [numX, numY, numFrames] = size(obj.f_RMS_video);
-            window_size = ceil(numFrames / 50);
+        
 
-            tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);
-            tmp_f_AVG_cleaned = zeros(numX, numY, numFrames);
-            tmp_f_RMS = obj.f_RMS_video;
-            tmp_f_AVG = obj.f_AVG_video;
+        
 
-            parfor xx = 1:numX
+        
 
-                for yy = 1:numY
-                    tmp_f_RMS_cleaned(xx, yy, :) = filloutliers(tmp_f_RMS(xx, yy, :), 'linear', 'movmedian', window_size);
-                end
+        
 
-            end
+        
 
-            obj.f_RMS_video = tmp_f_RMS_cleaned;
+        
 
-            clear tmp_f_RMS_cleaned tmp_f_RMS
+        
 
-            parfor xx = 1:numX
-
-                for yy = 1:numY
-                    tmp_f_AVG_cleaned(xx, yy, :) = filloutliers(tmp_f_AVG(xx, yy, :), 'linear', 'movmedian', window_size);
-                end
-
-            end
-
-            obj.f_AVG_video = tmp_f_AVG_cleaned;
-
-            clear tmp_f_AVG_cleaned tmp_f_AVG
-        end
-
-        function obj = Interpolate(obj) %ref = TRUE indicates the object is the reference
-            [numX, numY, numFrames] = size(obj.M0_disp_video);
-            kInterp = obj.k;
-            numX = (numX - 1) * (2 ^ kInterp - 1) + numX;
-            numY = (numY - 1) * (2 ^ kInterp - 1) + numY;
-
-            if kInterp == 0
-                return
-            end
-
-            % Reference M0
-            tmpReferenceM0 = zeros(numX, numY, numFrames);
-            tmpCalcRef = obj.M0_disp_video;
-
-            parfor frameIdx = 1:numFrames
-                tmpReferenceM0(:, :, frameIdx) = interp2(tmpCalcRef(:, :, frameIdx), kInterp);
-            end
-
-            obj.M0_disp_video = tmpReferenceM0;
-            clear tmpReferenceM0 tmpCalcRef
-
-            % M0
-            tmpM0 = zeros(numX, numY, numFrames);
-            tmpCalcM0 = obj.M0_data_video;
-
-            parfor frameIdx = 1:numFrames % loop over frames
-                tmpM0(:, :, frameIdx) = interp2(tmpCalcM0(:, :, frameIdx), kInterp);
-            end
-
-            obj.M0_data_video = tmpM0;
-            clear tmpM0 tmpCalcM0
-
-            % M1
-            tmpM1 = zeros(numX, numY, numFrames);
-            tmpCalcM1 = obj.M1_data_video;
-
-            parfor frameIdx = 1:numFrames % loop over frames
-                tmpM1(:, :, frameIdx) = interp2(tmpCalcM1(:, :, frameIdx), kInterp);
-            end
-
-            obj.M1_data_video = tmpM1;
-            clear tmpM1 tmpCalcM1
-
-            % M2
-            tmpM2 = zeros(numX, numY, numFrames);
-            tmpCalcM2 = obj.M2_data_video;
-
-            parfor frameIdx = 1:numFrames % loop over frames
-                tmpM2(:, :, frameIdx) = interp2(tmpCalcM2(:, :, frameIdx), kInterp);
-            end
-
-            obj.M2_data_video = tmpM2;
-            clear tmpM2 tmpCalcM2
-
-            % M1M0
-            tmpM1M0 = zeros(numX, numY, numFrames);
-            tmpCalcM1M0 = obj.f_AVG_video;
-
-            parfor frameIdx = 1:numFrames
-                tmpM1M0(:, :, frameIdx) = interp2(tmpCalcM1M0(:, :, frameIdx), kInterp);
-            end
-
-            obj.f_AVG_video = tmpM1M0;
-            clear tmpM1M0 tmpCalcM1M0
-
-            % M2M0
-            tmpM2M0 = zeros(numX, numY, numFrames);
-            tmpCalcM2M0 = obj.f_RMS_video;
-
-            parfor frameIdx = 1:numFrames
-                tmpM2M0(:, :, frameIdx) = interp2(tmpCalcM2M0(:, :, frameIdx), kInterp);
-            end
-
-            obj.f_RMS_video = single(tmpM2M0);
-            clear tmpM2M0 tmpCalcM2M0
-
-        end
+        
 
         function onePulse(obj, Ninterp)
             %  ------- This is the app main routine. --------
