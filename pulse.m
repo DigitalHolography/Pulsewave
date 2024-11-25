@@ -6,9 +6,6 @@ classdef pulse < matlab.apps.AppBase
         EditParametersButton          matlab.ui.control.Button
         NumberofWorkersSpinner        matlab.ui.control.Spinner
         NumberofWorkersSpinnerLabel   matlab.ui.control.Label
-        ClearListButton               matlab.ui.control.Button
-        LoadTextButton                matlab.ui.control.Button
-        ExecutefromtextButton         matlab.ui.control.Button
         SHanalysisCheckBox            matlab.ui.control.CheckBox
         FolderManagementButton        matlab.ui.control.Button
         PulsewaveanalysisCheckBox     matlab.ui.control.CheckBox
@@ -23,8 +20,6 @@ classdef pulse < matlab.apps.AppBase
         LoadfolderButton              matlab.ui.control.Button
         LoadHoloButton              matlab.ui.control.Button
         ExecuteButton                 matlab.ui.control.Button
-        NumberofframesEditField       matlab.ui.control.NumericEditField
-        NumberofframesEditFieldLabel  matlab.ui.control.Label
     end
 
     properties (Access = private)
@@ -313,8 +308,8 @@ classdef pulse < matlab.apps.AppBase
                 'BackgroundColor', [0.5, 0.5, 0.5],...
                 'ForegroundColor', [0.9 0.9 0.9],...
                 'FontWeight', 'bold',...
-                'String', 'Export to text',...
-                'Callback', @export_text);
+                'String', 'Load from text',...
+                'Callback', @load_from_txt);
 
 
             uicontrol('Parent', d,...
@@ -379,17 +374,11 @@ classdef pulse < matlab.apps.AppBase
                 txt.Position(4) = length(app.drawer_list) * 14;
             end
 
-            function export_text(~, ~)
-                selected_dir = uigetdir('C:\', 'Select file location');
-                filename = fullfile(selected_dir, 'folderManagement.txt');
-                fileID = fopen(filename,'a+') ;
-                if ~isempty(app.drawer_list)
-                    for i = 1:length(app.drawer_list)
-                        fprintf(fileID,'%s \n',app.drawer_list{i});
-                    end
-                end
-
-                fclose(fileID);
+            function load_from_txt(~, ~)
+                app.LoadFromTxt();
+                txt.String = app.drawer_list;
+                d.Position(4) = 100 + length(app.drawer_list) * 14;
+                txt.Position(4) = length(app.drawer_list) * 14;
             end
 
             function render(~, ~)
@@ -406,39 +395,11 @@ classdef pulse < matlab.apps.AppBase
             delete(d);
         end
 
-        % Button pushed function: ExecutefromtextButton
-        function ExecutefromtextButtonPushed(app, event)
-            app.ClearButtonPushed();
-            path_to_copy = uigetdir();
-            if ~isempty(app.drawer_list) && ~isempty(path_to_copy)
-                for i = 1:length(app.drawer_list)
-                    app.Load(app.drawer_list{i});
-                    % app.ExecuteButtonPushed();
-                    fprintf("%s", fullfile(path_to_copy,app.files{i}.ToolBoxmaster.PW_folder_name))
-                    mkdir(fullfile(path_to_copy,app.files{i}.ToolBoxmaster.PW_folder_name))
-                    copyfile(app.files{i}.ToolBoxmaster.PW_path_dir,fullfile(path_to_copy,app.files{i}.ToolBoxmaster.PW_folder_name))
-                    app.ClearButtonPushed();
-                end
-            end
+        
 
-            % clear app.drawer_list
-        end
+        
 
-        % Button pushed function: LoadTextButton
-        function LoadTextButtonPushed(app, event)
-            app.ClearButtonPushed();
-            app.ClearListButtonPushed()
-            app.LoadFromTxt()
-            app.ClearButton.Enable = true;
-            app.EditParametersButton.Enable = true;
-        end
-
-        % Button pushed function: ClearListButton
-        function ClearListButtonPushed(app, event)
-            app.drawer_list = {};
-        end
-
-        % Checkbox update function: ClearListButton
+        % Checkbox update function:
         function updateCheckboxes(app, event)
             if app.PulsewaveanalysisCheckBox.Value
                 app.velocityCheckBox.Enable = true;
@@ -479,22 +440,6 @@ classdef pulse < matlab.apps.AppBase
             app.PulsewaveUIFigure.Position = [100 100 640 421];
             app.PulsewaveUIFigure.Name = 'Pulsewave';
             app.PulsewaveUIFigure.Icon = fullfile(pathToMLAPP, 'pulsewave_logo_temp.png');
-
-            % Create NumberofframesEditFieldLabel
-            app.NumberofframesEditFieldLabel = uilabel(app.PulsewaveUIFigure);
-            app.NumberofframesEditFieldLabel.HorizontalAlignment = 'right';
-            app.NumberofframesEditFieldLabel.FontSize = 16;
-            app.NumberofframesEditFieldLabel.FontColor = [0.9412 0.9412 0.9412];
-            app.NumberofframesEditFieldLabel.Position = [230 325 300 22];
-            app.NumberofframesEditFieldLabel.Text = '# of frames in averaged cardiac cycle ';
-
-            % Create NumberofframesEditField
-            app.NumberofframesEditField = uieditfield(app.PulsewaveUIFigure, 'numeric');
-            app.NumberofframesEditField.Limits = [1 Inf];
-            app.NumberofframesEditField.FontSize = 16;
-            app.NumberofframesEditField.FontColor = [0.149 0.149 0.149];
-            app.NumberofframesEditField.Position = [545 325 44 22];
-            app.NumberofframesEditField.Value = 256;
 
             % Create ExecuteButton
             app.ExecuteButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -614,33 +559,6 @@ classdef pulse < matlab.apps.AppBase
             app.SHanalysisCheckBox.FontColor = [1 1 1];
             app.SHanalysisCheckBox.Position = [63 62 250 24];
             app.SHanalysisCheckBox.Enable = true;
-
-            % Create ExecutefromtextButton
-            app.ExecutefromtextButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.ExecutefromtextButton.ButtonPushedFcn = createCallbackFcn(app, @ExecutefromtextButtonPushed, true);
-            app.ExecutefromtextButton.BackgroundColor = [0.502 0.502 0.502];
-            app.ExecutefromtextButton.FontSize = 16;
-            app.ExecutefromtextButton.FontColor = [1 1 1];
-            app.ExecutefromtextButton.Position = [431 24 160 28];
-            app.ExecutefromtextButton.Text = 'Execute from text';
-
-            % Create LoadTextButton
-            app.LoadTextButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.LoadTextButton.ButtonPushedFcn = createCallbackFcn(app, @LoadTextButtonPushed, true);
-            app.LoadTextButton.BackgroundColor = [0.502 0.502 0.502];
-            app.LoadTextButton.FontSize = 16;
-            app.LoadTextButton.FontColor = [1 1 1];
-            app.LoadTextButton.Position = [431 94 160 28];
-            app.LoadTextButton.Text = 'Load Text';
-
-            % Create ClearListButton
-            app.ClearListButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.ClearListButton.ButtonPushedFcn = createCallbackFcn(app, @ClearListButtonPushed, true);
-            app.ClearListButton.BackgroundColor = [0.502 0.502 0.502];
-            app.ClearListButton.FontSize = 16;
-            app.ClearListButton.FontColor = [1 1 1];
-            app.ClearListButton.Position = [431 59 160 28];
-            app.ClearListButton.Text = 'Clear List';
 
             % Create NumberofWorkersSpinnerLabel
             app.NumberofWorkersSpinnerLabel = uilabel(app.PulsewaveUIFigure);
