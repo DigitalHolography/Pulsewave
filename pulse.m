@@ -8,6 +8,7 @@ classdef pulse < matlab.apps.AppBase
         NumberofWorkersSpinnerLabel   matlab.ui.control.Label
         SHanalysisCheckBox            matlab.ui.control.CheckBox
         FolderManagementButton        matlab.ui.control.Button
+        SegmentationCheckBox          matlab.ui.control.CheckBox
         PulsewaveanalysisCheckBox     matlab.ui.control.CheckBox
         ExtendedPulsewaveCheckBox     matlab.ui.control.CheckBox
         velocityCheckBox              matlab.ui.control.CheckBox
@@ -144,6 +145,7 @@ classdef pulse < matlab.apps.AppBase
             end
             addpath("BloodFlowVelocity\","BloodFlowVelocity\Elastography\","BloodVolumeRate\","BloodVolumeRate\Rheology\","Loading\","Parameters\","Preprocessing\","PulseAnalysis\","PulseAnalysis\ARIandAPI\","Scripts\","Segmentation\","SHAnalysis\","Tools\")
             app.PulsewaveUIFigure.Name = ['Pulsewave ',char(v(1))];
+            app.updateCheckboxes();
             displaySplashScreen();
         end
 
@@ -221,6 +223,7 @@ classdef pulse < matlab.apps.AppBase
             for n = 1:length(app.files)
 
                 fprintf("==============================\n")
+                app.files{n}.flag_Segmentation = app.SegmentationCheckBox.Value;
                 app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
                 app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
@@ -230,7 +233,7 @@ classdef pulse < matlab.apps.AppBase
 
                 try
 
-                    app.files{n}.onePulse();
+                    app.files{n} = app.files{n}.onePulse();
 
                 catch ME
 
@@ -401,21 +404,28 @@ classdef pulse < matlab.apps.AppBase
 
         % Checkbox update function:
         function updateCheckboxes(app, event)
-            if app.PulsewaveanalysisCheckBox.Value
-                app.velocityCheckBox.Enable = true;
-                app.bloodVelocityProfileCheckBox.Enable = true;
-                app.bloodVolumeRateCheckBox.Enable = true;
-                app.ExtendedPulsewaveCheckBox.Enable = true;
-            else
-                app.velocityCheckBox.Enable = false;
-                app.bloodVolumeRateCheckBox.Enable = false;
-                app.ExtendedPulsewaveCheckBox.Enable = false;
-                app.bloodVelocityProfileCheckBox.Enable = false;
-                app.velocityCheckBox.Value = false;
-                app.bloodVelocityProfileCheckBox.Value = false;
-                app.bloodVolumeRateCheckBox.Value = false;
-                app.ExtendedPulsewaveCheckBox.Value = false;
-            end
+%             if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
+%                 app.PulsewaveanalysisCheckBox.Enable = true;
+%                 if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
+%                 
+%                     app.ExtendedPulsewaveCheckBox.Enable = true;
+%                     app.velocityCheckBox.Enable = true;
+%                     app.bloodVolumeRateCheckBox.Enable = true;
+%                     app.bloodVelocityProfileCheckBox.Enable = true;
+%                 else
+%                     app.ExtendedPulsewaveCheckBox.Enable = false;
+%                     app.velocityCheckBox.Enable = false;
+%                     app.bloodVolumeRateCheckBox.Enable = false;
+%                     app.bloodVelocityProfileCheckBox.Enable = false;
+%                 end
+% 
+%             else
+%                 app.PulsewaveanalysisCheckBox.Enable = false;
+%                 app.ExtendedPulsewaveCheckBox.Enable = false;
+%                 app.velocityCheckBox.Enable = false;
+%                 app.bloodVolumeRateCheckBox.Enable = false;
+%                 app.bloodVelocityProfileCheckBox.Enable = false;
+%             end
         end
 
         % Button pushed function: EditParametersButton
@@ -498,6 +508,15 @@ classdef pulse < matlab.apps.AppBase
             app.ReferenceDirectory.BackgroundColor = [0.149 0.149 0.149];
             app.ReferenceDirectory.Position = [61 284 485 24];
 
+            % Create SegmentationCheckBox
+            app.SegmentationCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.SegmentationCheckBox.Text = 'Segmentation';
+            app.SegmentationCheckBox.FontSize = 16;
+            app.SegmentationCheckBox.FontColor = [1 1 1];
+            app.SegmentationCheckBox.Position = [63 198 250 24];
+            app.SegmentationCheckBox.Value = true;
+            app.SegmentationCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
+
             % Create PulsewaveanalysisCheckBox
             app.PulsewaveanalysisCheckBox = uicheckbox(app.PulsewaveUIFigure);
             app.PulsewaveanalysisCheckBox.Text = 'Pulse wave analysis';
@@ -522,7 +541,7 @@ classdef pulse < matlab.apps.AppBase
             app.ExtendedPulsewaveCheckBox.FontSize = 16;
             app.ExtendedPulsewaveCheckBox.FontColor = [1 1 1];
             app.ExtendedPulsewaveCheckBox.Position = [250 164 250 24];
-            app.ExtendedPulsewaveCheckBox.Value = true;
+            app.ExtendedPulsewaveCheckBox.Value = false;
             app.ExtendedPulsewaveCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create bloodVolumeRateCheckBox
@@ -540,7 +559,7 @@ classdef pulse < matlab.apps.AppBase
             app.bloodVelocityProfileCheckBox.FontSize = 16;
             app.bloodVelocityProfileCheckBox.FontColor = [1 1 1];
             app.bloodVelocityProfileCheckBox.Position = [250 96 250 24];
-            app.bloodVelocityProfileCheckBox.Value = true;
+            app.bloodVelocityProfileCheckBox.Value = false;
             app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
 
             % Create FolderManagementButton

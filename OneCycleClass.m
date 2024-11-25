@@ -18,7 +18,8 @@ classdef OneCycleClass
         maskSection
         maskNeighbors
 
-        sysIdxList
+        sysIdxList % list of frame indexes counting carciac cycles
+        baryPos % x y position of the ONH
         vRMS % video estimate of velocity map in retinal vessels
 
         directory char % directory of input data (from HoloDoppler or HoloVibes)
@@ -28,7 +29,7 @@ classdef OneCycleClass
         
         
         
-        
+        flag_Segmentation
         flag_SH_analysis
         flag_PulseWave_analysis
         flag_velocity_analysis
@@ -135,7 +136,7 @@ classdef OneCycleClass
         
         end
 
-        function onePulse(obj)
+        function obj = onePulse(obj)
             %  ------- This is the app main routine. --------
 
             checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
@@ -221,30 +222,31 @@ classdef OneCycleClass
 
             %% Creating Masks
 
-            fileID = fopen(path_file_txt_exe_times, 'a+');
-            fprintf(fileID, '\r\n');
-            fclose(fileID);
+            if obj.flag_Segmentation
 
-            createMasksTiming = tic;
+                fileID = fopen(path_file_txt_exe_times, 'a+');
+                fprintf(fileID, '\r\n');
+                fclose(fileID);
+    
+                createMasksTiming = tic;
+    
+                fprintf("\n----------------------------------\n")
+                fprintf("Mask Creation\n")
+                fprintf("----------------------------------\n")
+    
+                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
+    
+                time_create_masks = toc(createMasksTiming);
+                fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
+                save_time(path_file_txt_exe_times, 'CreateMasks', time_create_masks)
+    
+                fileID = fopen(path_file_txt_exe_times, 'a+');
+                fprintf(fileID, '\r\n----------\r\n');
+                fclose(fileID);
 
-            fprintf("\n----------------------------------\n")
-            fprintf("Mask Creation\n")
-            fprintf("----------------------------------\n")
-
-            f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
-
-            [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
-
-            time_create_masks = toc(createMasksTiming);
-            fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
-            save_time(path_file_txt_exe_times, 'CreateMasks', time_create_masks)
-
-            fileID = fopen(path_file_txt_exe_times, 'a+');
-            fprintf(fileID, '\r\n----------\r\n');
-            fclose(fileID);
+            end
 
             %% PulseWave Analysis
-            % waitbar(0.25,progress_bar,"PulseWave analysis");
 
             if obj.flag_PulseWave_analysis
                 close all
@@ -270,6 +272,8 @@ classdef OneCycleClass
                 fprintf("\n----------------------------------\n")
                 fprintf("Pulse Analysis\n")
                 fprintf("----------------------------------\n")
+                
+                f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
                 [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
 
@@ -286,57 +290,58 @@ classdef OneCycleClass
 
                 fclose(fileID);
                 clear exec_times
+            end
 
-                % pulseVelocityTimer = tic;
-                %
-                % fprintf("\n----------------------------------\n")
-                % fprintf("Pulse Velocity\n")
-                % fprintf("----------------------------------\n")
-                %
-                % pulseVelocity(obj.M0_data_video, maskArtery, ToolBox, obj.directory)
-                %
-                % time_pulsevelocity = toc(pulseVelocityTimer);
-                % fprintf("- Pulse Velocity Calculations took : %ds\n", round(time_pulsevelocity))
-                % save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
+            % pulseVelocityTimer = tic;
+            %
+            % fprintf("\n----------------------------------\n")
+            % fprintf("Pulse Velocity\n")
+            % fprintf("----------------------------------\n")
+            %
+            % pulseVelocity(obj.M0_data_video, maskArtery, ToolBox, obj.directory)
+            %
+            % time_pulsevelocity = toc(pulseVelocityTimer);
+            % fprintf("- Pulse Velocity Calculations took : %ds\n", round(time_pulsevelocity))
+            % save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
 
-                if obj.flag_velocity_analysis
-                    bloodFlowVelocityTimer = tic;
-
-                    fprintf("\n----------------------------------\n")
-                    fprintf("Blood Flow Velocity Calculation\n")
-                    fprintf("----------------------------------\n")
-
-                    bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.M0_disp_video, ToolBox, obj.directory)
-                    % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
-
-                    time_velo = toc(bloodFlowVelocityTimer);
-                    fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
-                    save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
-                end
-
-                if obj.flag_bloodVolumeRate_analysis
-                    bloodVolumeRateTimer = tic;
-
-                    fprintf("\n----------------------------------\n")
-                    fprintf("Blood Volume Rate Calculation\n")
-                    fprintf("----------------------------------\n")
-
-                    bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
-                    bloodVolumeRateForAllRadii(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,obj.sysIdxList);
-
-                    time_volumeRate = toc(bloodVolumeRateTimer);
-                    fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
-                    save_time(path_file_txt_exe_times, 'Blood Volume rate', time_volumeRate)
-                end
-
-                tTotal = toc(totalTime);
+            if obj.flag_velocity_analysis
+                bloodFlowVelocityTimer = tic;
 
                 fprintf("\n----------------------------------\n")
-                fprintf("Total Pulsewave timing : %ds\n" , round(tTotal))
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-                fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', tTotal);
-                fclose(fileID);
+                fprintf("Blood Flow Velocity Calculation\n")
+                fprintf("----------------------------------\n")
+
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.M0_disp_video, ToolBox, obj.directory)
+                % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
+
+                time_velo = toc(bloodFlowVelocityTimer);
+                fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
+                save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
             end
+
+            if obj.flag_bloodVolumeRate_analysis
+                bloodVolumeRateTimer = tic;
+
+                fprintf("\n----------------------------------\n")
+                fprintf("Blood Volume Rate Calculation\n")
+                fprintf("----------------------------------\n")
+
+                bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                bloodVolumeRateForAllRadii(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,obj.sysIdxList);
+
+                time_volumeRate = toc(bloodVolumeRateTimer);
+                fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
+                save_time(path_file_txt_exe_times, 'Blood Volume rate', time_volumeRate)
+            end
+
+            tTotal = toc(totalTime);
+
+            fprintf("\n----------------------------------\n")
+            fprintf("Total Pulsewave timing : %ds\n" , round(tTotal))
+            fileID = fopen(path_file_txt_exe_times, 'a+');
+            fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', tTotal);
+            fclose(fileID);
+            
 
             %% Spectrum Analysis
 
