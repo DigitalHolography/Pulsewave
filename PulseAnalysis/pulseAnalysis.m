@@ -429,7 +429,7 @@ graphSignal(ToolBox, '6_ARI', folder, ...
     t, v_RMS_arterial_signal_smooth, '-', cArtery, ...
     t, v_RMS_arterial_signal, ':', cArtery, ...
     Title = sprintf('ARI = %0.2f, API = %0.2f', ARI, API), Legend = {'Smooth', 'Raw'},...
-    yLines = [min_vRMS, mean_vRMS, max_vRMS], yLineLabels={'','',''})
+    yLines = [0, min_vRMS, mean_vRMS, max_vRMS], yLineLabels={'','','',''})
 
 M0_ff_video = rescale(M0_ff_video);
 M0_ff_image = mean(M0_ff_video, 3);
@@ -448,7 +448,7 @@ fontsize(gca, 14, "points");
 c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
 c.Label.String = 'Arterial resistivity index';
 c.Label.FontSize = 14;
-% colormap(cmap);
+colormap(cmap);
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
 

@@ -24,6 +24,7 @@ classdef Parameters_json < handle
         masks_radius
         masks_vascular_threshold
         masks_vascular_classes
+        masks_correlation_vesselness_flag
         masks_arterial_threshold
         masks_arterial_classes
         masks_venous_threshold
@@ -144,6 +145,7 @@ classdef Parameters_json < handle
                 obj.masks_radius = parsedData.CreationOfMasks.CropCoroidRadius;
                 obj.masks_vascular_threshold = parsedData.CreationOfMasks.VascularCorrelationMapThreshold;
                 obj.masks_vascular_classes = parsedData.CreationOfMasks.VascularClasses;
+                obj.masks_correlation_vesselness_flag = parsedData.CreationOfMasks.CorrelationVesselnessFlag;
                 obj.masks_arterial_threshold = parsedData.CreationOfMasks.ArterialCorrelationMapThreshold;
                 obj.masks_arterial_classes = parsedData.CreationOfMasks.ArterialClasses;
                 obj.masks_venous_threshold = parsedData.CreationOfMasks.VenousCorrelationMapThreshold;

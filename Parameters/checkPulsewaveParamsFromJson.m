@@ -4,7 +4,7 @@ function [] = checkPulsewaveParamsFromJson(path)
     % parameter file. If not it creates it. If you find obsolete files it also
     % cleares them with the new parameters
 
-    jsonInput = fileread("DefaultPulsewaveParams.json");
+    jsonInput = fileread(fullfile("Parameters","DefaultPulsewaveParams.json"));
     init_data = jsondecode(jsonInput);
 
     %n_fields = count_fields_json(init_data);

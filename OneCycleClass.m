@@ -27,8 +27,6 @@ classdef OneCycleClass
         k double %interpolaton parameter % TODO move to pw params
         load_logs char
         
-        
-        
         flag_Segmentation
         flag_SH_analysis
         flag_PulseWave_analysis
