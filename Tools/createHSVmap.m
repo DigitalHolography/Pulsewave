@@ -16,6 +16,6 @@ function [hue, sat, val, cmap] = createHSVmap(Im, mask, hueValMin, hueValMax)
     ARI_s = ones(1, 256);
     ARI_v = rescale(sigmoid(ARI_x, 0.3, 5));
 
-    cmap = squeeze(hsv2rgb(ARI_h, ARI_s, ARI_v));
-
+    cmap = hsv2rgb(ARI_h, ARI_s, ARI_v);
+    cmap = squeeze(cmap);
 end
