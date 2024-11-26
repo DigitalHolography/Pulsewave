@@ -8,6 +8,7 @@ classdef Parameters_json < handle
         refAvgEnd
         videoStartFrameIndex
         videoEndFrameIndex
+        alphaConvolveNorm
         frameWidth
         frameHeight
         videoLength
@@ -122,6 +123,8 @@ classdef Parameters_json < handle
 
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
+
+                obj.alphaConvolveNorm = 0.01;
 
                 obj.frameWidth = parsedData.ResizeVideo.FrameWidth;
                 obj.frameHeight = parsedData.ResizeVideo.FrameHeight;

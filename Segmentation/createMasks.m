@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
+ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
 
 PW_params = Parameters_json(path);
 exportVideos = PW_params.exportVideos;
