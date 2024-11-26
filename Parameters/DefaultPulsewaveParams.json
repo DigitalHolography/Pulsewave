@@ -6,12 +6,14 @@
         "Start frame": 1,
         "End frame": -1
     },
+    "Moment Normalize Convolution parameter" : 0.001,
     "Resize video": {
         "Frame width": -1,
         "Frame height": -1,
         "Video length": -1
     },
     "Value of the interpolation parameter": 1,
+    "Remove Outliers option" : 0,
     "Veins Analysis": 0,
     "Export Videos": 1,
     "Gaussian Filter Size For Barycentre": 0.02,
