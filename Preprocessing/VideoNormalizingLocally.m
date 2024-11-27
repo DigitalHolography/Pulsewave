@@ -10,7 +10,7 @@ function obj = VideoNormalizingLocally(obj)
         M0_data_convoluated = double(mean(obj.M0_data_video,[1,2]));
     elseif alpha == 0
         % forces the pixel M0 normalisation;
-        M0_data_convoluated =  double(mean(obj.M0_data_video,[1,2]));
+        M0_data_convoluated =  double(obj.M0_data_video);
     else
         conv_size = round(alpha*(2*D-1));
         M0_data_convoluated = zeros([N,M,F]);
