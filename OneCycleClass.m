@@ -19,7 +19,7 @@ classdef OneCycleClass
         maskNeighbors
 
         sysIdxList % list of frame indexes counting carciac cycles
-        baryPos % x y position of the ONH
+        xy_barycenter % x y position of the ONH
         vRMS % video estimate of velocity map in retinal vessels
 
         directory char % directory of input data (from HoloDoppler or HoloVibes)
@@ -232,7 +232,7 @@ classdef OneCycleClass
                 fprintf("Mask Creation\n")
                 fprintf("----------------------------------\n")
     
-                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
+                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
     
                 time_create_masks = toc(createMasksTiming);
                 fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -309,7 +309,7 @@ classdef OneCycleClass
                 fprintf("Blood Flow Velocity Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video, ToolBox, obj.directory)
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video, obj.xy_barycenter, ToolBox, obj.directory)
                 % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
 
                 time_velo = toc(bloodFlowVelocityTimer);
@@ -324,8 +324,8 @@ classdef OneCycleClass
                 fprintf("Blood Volume Rate Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis);
-                bloodVolumeRateForAllRadii(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, ToolBox, obj.k, obj.directory, obj.flag_bloodVelocityProfile_analysis,obj.sysIdxList);
+                bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, ToolBox, obj.directory, obj.flag_bloodVelocityProfile_analysis);
+                bloodVolumeRateForAllRadii(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, obj.sysIdxList, ToolBox, obj.directory, obj.flag_bloodVelocityProfile_analysis);
 
                 time_volumeRate = toc(bloodVolumeRateTimer);
                 fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))

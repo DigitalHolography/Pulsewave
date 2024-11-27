@@ -25,8 +25,6 @@ classdef ToolBoxClass < handle
         f2 double
         minPCA double
         maxPCA double
-        x_barycentre double
-        y_barycentre double
         ScalingFactorVelocityInPlane double
         ScalingFactorVelocityCRA_AVG double
         ScalingFactorVelocityCRA_RMS double

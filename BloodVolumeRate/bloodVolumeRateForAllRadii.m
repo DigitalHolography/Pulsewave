@@ -1,4 +1,4 @@
-function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_video, ToolBox, k, path, flagBloodVelocityProfile, systolesIndexes)
+function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_video, xy_barycenter, systolesIndexes, ToolBox, path, flagBloodVelocityProfile)
 
     PW_params = Parameters_json(path);
 
@@ -11,23 +11,25 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_vi
     fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
     M0_disp_image = rescale(mean(M0_disp_video, 3));
 
+    [x_barycenter, y_barycenter] = xy_barycenter{:};
+
     %% All circles testing
 
     % for the all circles output
     numCircles = PW_params.nbCircles;
     maskSectionCircles = cell(1, numCircles);
     delta_rad = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2 / numCircles; %PW_params.radius_gap
-    mask_allSections = createMaskSection(M0_disp_image, maskArtery, (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2, (PW_params.velocityBigRadiusRatio) * (numY + numX) / 2, sprintf('_mask_artery_all_sections.png'), ToolBox, path);
+    mask_allSections = createMaskSection(M0_disp_image, maskArtery, (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2, (PW_params.velocityBigRadiusRatio) * (numY + numX) / 2, xy_barycenter, sprintf('_mask_artery_all_sections.png'), ToolBox, path);
 
     for i = 1:numCircles
         rad_in = (PW_params.velocitySmallRadiusRatio) * (numY + numX) / 2 + (i - 1) * delta_rad; %PW_params.radius_gap) * (M + N) / 2 + (i-1) * delta_rad ;
         rad_out = rad_in + delta_rad;
-        c1 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= rad_in;
-        c2 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= rad_out;
+        c1 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= rad_in;
+        c2 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= rad_out;
         maskSectionCircles(i) = {xor(c1, c2)};
 
         % save mask image
-        createMaskSection(M0_disp_image, maskArtery, rad_in, rad_out, sprintf('_mask_artery_section_circle_%d.png', i), ToolBox, path);
+        createMaskSection(M0_disp_image, maskArtery, rad_in, rad_out, xy_barycenter, sprintf('_mask_artery_section_circle_%d.png', i), ToolBox, path);
     end
 
     close(156);
@@ -81,7 +83,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_vi
     end
 
     for i = 1:numCircles
-        [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, i, force_width, 1);
+        [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(SubImg_locs_artery_Circles{i}, SubImg_width_artery_Circles{i}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, ToolBox, path, 'artery', flagBloodVelocityProfile, i, force_width, 1);
 
         if length(avgVolumeRate_artery) < 1
             continue
@@ -154,8 +156,8 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_vi
     section_width_plot = figure(430);
     mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsWidth')
     mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsWidth')
-    x_center = ToolBox.x_barycentre;
-    y_center = ToolBox.y_barycentre;
+    x_center = x_barycenter;
+    y_center = y_barycenter;
     
     
     for i = 1:numCircles
@@ -484,7 +486,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_disp_vi
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
 
-    close all
+    %close all
     fprintf("- Blood Volume Rate for all radii took : %ds\n", round(toc))
 
 end

@@ -1,4 +1,4 @@
- function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
+ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors, xy_barycenter] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
 
 PW_params = Parameters_json(path);
 exportVideos = PW_params.exportVideos;
@@ -39,9 +39,10 @@ f_AVG_mean = mean(f_AVG_video, 3);
 
 vascularImage = single(squeeze(M0_ff_img .* f_AVG_mean));
 blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0);
-[ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
+[yy,xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
+xy_barycenter = num2cell([xx,yy]);
 [y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
-cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+cercleMask = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 
 maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness | cercleMask, 1, 4);
@@ -65,17 +66,17 @@ R_VascularSignal = mean(M0_ff_video_centered .* vascularSignal_centered, 3) ./ (
 imwrite(rescale(R_VascularSignal), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_4_Correlation.png')))
 
 if ~isempty(PW_params.forcebarycenter)
-    ToolBox.y_barycentre = PW_params.forcebarycenter(1);
-    ToolBox.x_barycentre = PW_params.forcebarycenter(2);
+    yy = PW_params.forcebarycenter(1);
+    xx = PW_params.forcebarycenter(2);
     y_CRV = numY / 2;
     x_CRV = numX / 2;
 else
     vascularImage = double(M0_ff_img .* f_AVG_mean .* R_VascularSignal);
     blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0) .* maskDiaphragm;
-    [ToolBox.y_barycentre, ToolBox.x_barycentre] = find(blurred_mask == max(blurred_mask, [], 'all'));
+    [yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
 end
 
-cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+cercleMask = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 
 %% 1) 4) Segment Vessels
@@ -332,9 +333,9 @@ end
 
 %% Force Barycenter
 if ~isempty(PW_params.forcebarycenter)
-    ToolBox.y_barycentre = PW_params.forcebarycenter(1);
-    ToolBox.x_barycentre = PW_params.forcebarycenter(2);
-    cercleMask = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+    yy = PW_params.forcebarycenter(1);
+    xx = PW_params.forcebarycenter(2);
+    cercleMask = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 end
 
 %% Create CRA and CRV Mask
@@ -347,8 +348,8 @@ clear f_AVG_std f_AVG_mean
 radius1 = PW_params.velocitySmallRadiusRatio * (numY + numX) / 2;
 radius2 = PW_params.velocityBigRadiusRatio * (numY + numX) / 2;
 
-circleMask1 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= radius1;
-circleMask2 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= radius2;
+circleMask1 = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= radius1;
+circleMask2 = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= radius2;
 
 maskSection = xor(circleMask1, circleMask2);
 

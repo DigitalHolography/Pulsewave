@@ -1,4 +1,4 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, M0_disp_video, ToolBox, k, path, flagBloodVelocityProfile)
+function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, M0_disp_video, xy_barycenter, ToolBox, path, flagBloodVelocityProfile)
 
 PW_params = Parameters_json(path);
 
@@ -8,6 +8,8 @@ force_width = [];
 if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
+
+[x_barycenter, y_barycenter] = xy_barycenter{:};
 
 tic
 
@@ -25,8 +27,8 @@ fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames
 
 radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (numY + numX) / 2;
 radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (numY + numX) / 2;
-cercle_mask1 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= radius1;
-cercle_mask2 = sqrt((X - ToolBox.x_barycentre) .^ 2 + (Y - ToolBox.y_barycentre) .^ 2) <= radius2;
+cercle_mask1 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= radius1;
+cercle_mask2 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= radius2;
 
 maskSection = xor(cercle_mask1, cercle_mask2);
 
@@ -105,7 +107,7 @@ strYlabel = 'Velocity (mm.s-1)';
 
 %% Arteries
 
-[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery,~,~,~,crossSectionWidthArtery] = crossSectionAnalysis2(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width,1);
+[avgVolumeRateArtery, stdVolumeRateArtery, crossSectionAreaArtery, avgVelocityArtery, stdVelocityArtery, crossSectionMaskArtery,~,~,~,crossSectionWidthArtery] = crossSectionAnalysis2(SubImg_locs_artery, SubImg_width_artery, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, ToolBox, path, 'artery', flagBloodVelocityProfile, [], force_width,1);
 
 labelsArteries = cell(numSectionsArtery, 1);
 avgVolumeRateArtery_total = sum(avgVolumeRateArtery, 1);
@@ -157,7 +159,7 @@ end
 
 %% 2) 2) Veins
 if veins_analysis
-    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, stdVelocityVein, crossSectionMaskVein,~,~,~,crossSectionWidthVein] = crossSectionAnalysis2(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS, PW_params.flowRate_sliceHalfThickness, k, ToolBox, path, 'vein', flagBloodVelocityProfile, [], force_width,1);
+    [avgVolumeRateVein, stdVolumeRateVein, crossSectionAreaVein, avgVelocityVein, stdVelocityVein, crossSectionMaskVein,~,~,~,crossSectionWidthVein] = crossSectionAnalysis2(SubImg_locs_vein, SubImg_width_vein, maskVein, v_RMS, PW_params.flowRate_sliceHalfThickness, ToolBox, path, 'vein', flagBloodVelocityProfile, [], force_width,1);
 
     labelsVeins = cell(numSectionsVein, 1);
     avgVolumeRateVein_total = sum(avgVolumeRateVein, 1);
@@ -212,8 +214,8 @@ end
 M0_disp_image = rescale(mean(M0_disp_video,3));
 numerotation_plot = figure(300);
 numerotation_plot.Position = [100 100 600 600];
-x_center = ToolBox.x_barycentre;
-y_center = ToolBox.y_barycentre;
+x_center = x_barycenter;
+y_center = y_barycenter;
 graphMaskTags(300, M0_disp_image, crossSectionMaskArtery, SubImg_locs_artery, labelsArteries,x_center,y_center)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'arteries_numerotation.png')))
 

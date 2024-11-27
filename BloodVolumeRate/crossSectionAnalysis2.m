@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell, crossSectionWidth,stdCrossSectionWidth] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, k, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width,flag_show_fig)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles,stdVelocityProfiles, subImg_cell, crossSectionWidth,stdCrossSectionWidth] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, ToolBox, path, type_of_vessel, flagBloodVelocityProfile, circle, force_width,flag_show_fig)
     % validate_cross_section
     %   Detailed explanation goes here FIXME
     
@@ -13,6 +13,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
       numSections = size(locs, 1);
     
     PW_params = Parameters_json(path);
+    k = PW_params.k;
     subImg_cell         = cell([1 numSections]);
     subVideo_cell       = cell([1 numSections]);
     

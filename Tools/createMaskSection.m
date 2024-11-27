@@ -1,12 +1,12 @@
-function [maskSection, VesselImageRGB] = createMaskSection(meanIm, maskArtery,radius1,radius2,name_, ToolBox, path)
+function [maskSection, VesselImageRGB] = createMaskSection(meanIm, maskArtery,radius1,radius2, xy_barycenter,name_, ToolBox, path)
 
     PW_params = Parameters_json(path);
 
     [numX, numY] = size(maskArtery);
     [x, y] = meshgrid(1:numY, 1:numX);
 
-    xx = ToolBox.x_barycentre;
-    yy = ToolBox.y_barycentre;
+    xx = xy_barycenter{1};
+    yy = xy_barycenter{2};
 
     % skel = bwskel(logical(maskArtery), "MinBranchLength", 100); % create skeleton
     %
@@ -87,6 +87,7 @@ function [maskSection, VesselImageRGB] = createMaskSection(meanIm, maskArtery,ra
     axis off
     axis image
 
+    mkdir(fullfile(ToolBox.PW_path_png, 'mask')); % create dir if it doesnt exist
     imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', strcat(ToolBox.main_foldername, name_)), 'png');
 
 end

@@ -1,4 +1,4 @@
-function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, ToolBox, path)
+function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, xy_barycenter, ToolBox, path)
 
 PW_params = Parameters_json(path);
 veinsAnalysis = PW_params.veins_analysis;
@@ -186,7 +186,6 @@ tic
 
 radius1 = PW_params.velocityBigRadiusRatio * (numY + numX) / 2;
 radius2 = PW_params.velocitySmallRadiusRatio * (numY + numX) / 2;
-[maskSection] = createMaskSection(M0_ff_image, maskArtery, radius1, radius2, '_maskArterySection_rgb.png', ToolBox, path);
 maskArterySection = maskArtery & maskSection;
 maskVeinSection = maskVein & maskSection;
 
@@ -491,9 +490,9 @@ if PW_params.AllCirclesFlag
         r2 = radiusmid - j * deltarcentral;
 
         if mod(j, 10) == 0 % save one on 10
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, sprintf('_mask_artery_section_velocity_rgb%d.png', j), ToolBox, path);
+            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, sprintf('_mask_artery_section_velocity_rgb%d.png', j), ToolBox, path);
         else
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, '_mask_artery_section_velocity_rgb100.png', ToolBox, path);
+            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, '_mask_artery_section_velocity_rgb100.png', ToolBox, path);
         end
 
         maskArtery_section = maskArtery & maskSection;
@@ -520,9 +519,9 @@ if PW_params.AllCirclesFlag
         r2 = radius0 + (j - 1) * deltar;
 
         if mod(j, 10) == 0 % save one on 10
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, sprintf('_mask_artery_section_velocity_rgb%d.png', j), ToolBox, path);
+            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, sprintf('_mask_artery_section_velocity_rgb%d.png', j), ToolBox, path);
         else
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, '_mask_artery_section_velocity_rgb100.png', ToolBox, path);
+            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, '_mask_artery_section_velocity_rgb100.png', ToolBox, path);
         end
 
         maskArtery_section_only = maskArtery & maskSection;
