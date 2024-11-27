@@ -24,7 +24,6 @@ classdef OneCycleClass
 
         directory char % directory of input data (from HoloDoppler or HoloVibes)
         filenames char % name used for storing analysis data
-        k double %interpolaton parameter % TODO move to pw params
         load_logs char
         
         flag_Segmentation
@@ -59,11 +58,7 @@ classdef OneCycleClass
             %% Parameters
 
             checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
-            PW_params = Parameters_json(obj.directory);
-
-            obj.k = PW_params.k;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
-
             obj.load_logs = '\n=== LOADING : \r\n';
             
 
@@ -141,7 +136,7 @@ classdef OneCycleClass
             PW_params = Parameters_json(obj.directory);
             totalTime = tic;
 
-            obj.k = PW_params.k;
+            k = PW_params.k;
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
             ToolBox = obj.ToolBoxmaster;
 
@@ -359,7 +354,7 @@ classdef OneCycleClass
                 bin_y = 4;
                 bin_w = 16;
                 bin_t = 1;
-                SH_cube = reshape(videoSH, ceil(numX/(2^obj.k*bin_x)), ceil(numY/(2^obj.k*bin_y)),[], ceil(numFrames/bin_t));
+                SH_cube = reshape(videoSH, ceil(numX/(2^k*bin_x)), ceil(numY/(2^k*bin_y)),[], ceil(numFrames/bin_t));
 
                 tic
                 spectrum_analysis(obj.maskArtery, obj.maskBackground, SH_cube, ToolBox, obj.M0_data_video);
