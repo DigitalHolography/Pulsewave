@@ -6,7 +6,7 @@
         "Start frame": 1,
         "End frame": -1
     },
-    "Moment Normalize Convolution parameter": 0.001,
+    "Moment Normalize Convolution parameter": 1,
     "Resize video": {
         "Frame width": -1,
         "Frame height": -1,
@@ -59,7 +59,7 @@
         "Data reliability index threshold": 50
     },
     "Velocity": {
-        "Diff First Calculations Flag": -1,
+        "Diff First Calculations Flag": 0,
         "Local background width": 2
     },
     "Size of field": {
