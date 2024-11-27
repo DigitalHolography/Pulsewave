@@ -1,4 +1,4 @@
-function graphCombined(Videofield,mask,etiquettes_locs,etiquettes_values,signal,stdsignal,ToolBox,path,ylabl,xlabl,titl,unit,NameValueArgs)
+function graphCombined(Videofield,mask,etiquettes_locs,etiquettes_values,signal,stdsignal,xy_barycenter,ToolBox,path,ylabl,xlabl,titl,unit,NameValueArgs)
 % Combines a video and a signal to an animated gif combined on top of each
 % other frame by frame
 % Videofield : Video to be displayed on top grayscale
@@ -13,6 +13,7 @@ arguments
     etiquettes_values
     signal
     stdsignal
+    xy_barycenter
     ToolBox
     path
     ylabl
@@ -25,8 +26,7 @@ end
 
 Videofield_rescaled = rescale(Videofield);
 [numX, numY, numFrames] = size(Videofield_rescaled);
-x_center = ToolBox.x_barycentre;
-y_center = ToolBox.y_barycentre;
+[x_center,y_center] = xy_barycenter{:};
 ylimm = [min(signal),max(signal)];
 if NameValueArgs.skip
     startingvalue = numFrames-1;

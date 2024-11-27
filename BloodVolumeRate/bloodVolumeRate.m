@@ -315,11 +315,11 @@ end
 %% 5) 3) Artery Plot & Vein Plot progression
 
 
-graphCombined(M0_disp_video,crossSectionMaskArtery,SubImg_locs_artery,avgVolumeRateArtery,avgVolumeRateArtery_total,stdVolumeRateArtery_total,ToolBox,[],'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries','µL/min',skip=~exportVideos);
+graphCombined(M0_disp_video,crossSectionMaskArtery,SubImg_locs_artery,avgVolumeRateArtery,avgVolumeRateArtery_total,stdVolumeRateArtery_total,xy_barycenter,ToolBox,[],'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in arteries','µL/min',skip=~exportVideos);
 
 if veins_analysis
 
-    graphCombined(M0_disp_video,crossSectionMaskVein,SubImg_locs_vein,avgVolumeRateVein,avgVolumeRateVein_total,stdVolumeRateVein_total,ToolBox,[],'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in veins','µL/min',skip=~exportVideos,Color=[0 0 1]);
+    graphCombined(M0_disp_video,crossSectionMaskVein,SubImg_locs_vein,avgVolumeRateVein,avgVolumeRateVein_total,stdVolumeRateVein_total,xy_barycenter,ToolBox,[],'Blood Volume Rate (µL/min)','Time (s)','Total Blood Volume Rate in veins','µL/min',skip=~exportVideos,Color=[0 0 1]);
 
 end
 
