@@ -1,4 +1,4 @@
-function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, M0_ff_video, ToolBox, path)
+function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, ToolBox, path)
 
 PW_params = Parameters_json(path);
 veinsAnalysis = PW_params.veins_analysis;
@@ -13,6 +13,9 @@ tic
 M0_ff_video = rescale(M0_ff_video);
 M0_ff_image = mean(M0_ff_video, 3);
 [numX, numY, numFrames] = size(v_video);
+
+maskArtery = maskArtery & maskSection;
+maskVein = maskVein & maskSection;
 
 v_Artery = sum(v_video .* maskArtery, [1 2]) / nnz(maskArtery);
 v_Vein = sum(v_video .* maskVein, [1 2]) / nnz(maskVein);
@@ -58,29 +61,29 @@ if veinsAnalysis
     axis image; axis off;
     exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "v_imagesc_Mean_veins.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
 
-    v_mean_RGBA = setcmap(v_mean, maskArtery, cmapArtery);
-    v_mean_RGB = v_mean_RGBA .* maskArtery + M0_ff_image .* ~maskArtery;
+    v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
+    v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_artery_mean.png')))
 
-    v_mean_RGBA = setcmap(v_mean, maskArtery, cmapArtery);
-    v_mean_RGBV = setcmap(v_mean, maskVein, cmapVein);
-    v_mean_RGB = v_mean_RGBA .* maskArtery + v_mean_RGBV .* maskVein + M0_ff_image .* ~(maskArtery | maskVein);
+    v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
+    v_mean_Vein = setcmap(v_mean, maskVein, cmapVein);
+    v_mean_RGB = v_mean_Artery .* maskArtery + v_mean_Vein .* maskVein + M0_ff_image .* ~(maskArtery | maskVein) - (v_mean_Artery + v_mean_Vein)/2 .* (maskArtery & maskVein);
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
     parfor ii = 1:numFrames
         v_frame_Artery = setcmap(v_video_rescale(:, :, ii), maskArtery, cmapArtery);
         v_frame_Vein = setcmap(v_video_rescale(:, :, ii), maskVein, cmapVein);
-        v_video_RGB(:, :, :, ii) = v_frame_Artery .* maskArtery + v_frame_Vein .* maskVein + rescale(M0_ff_video(:, :, ii)) .* ~(maskArtery | maskVein);
+        v_video_RGB(:, :, :, ii) = v_frame_Artery .* maskArtery + v_frame_Vein .* maskVein + M0_ff_video(:, :, ii) .* ~(maskArtery | maskVein) - (v_frame_Artery + v_frame_Vein)/2 .* (maskArtery & maskVein);
     end
 
 else
-    v_mean_RGBA = setcmap(v_mean, maskArtery, cmapArtery);
-    v_mean_RGB = v_mean_RGBA .* maskArtery + M0_ff_image .* ~maskArtery;
+    v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
+    v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
     parfor ii = 1:numFrames
         v_frame_Artery = setcmap(v_video_rescale(:, :, ii), maskArtery, cmapArtery);
-        v_video_RGB(:, :, :, ii) = v_frame_Artery .* maskArtery + rescale(M0_ff_video(:, :, ii)) .* ~maskArtery;
+        v_video_RGB(:, :, :, ii) = v_frame_Artery .* maskArtery + M0_ff_video(:, :, ii) .* ~maskArtery;
     end
 
 end
@@ -464,94 +467,6 @@ if exportVideos
 end
 
 close all
-
-% %% Histogram of One_Cycle
-%
-% if ~isempty(v_oneCycle)
-%
-%     nInterpFrames = size(v_oneCycle, 3);
-%     v_histoArtery = round(v_oneCycle .* maskArtery);
-%     v_min = min(v_histoArtery, [], 'all');
-%     v_max = max(v_histoArtery, [], 'all');
-%
-%     X = linspace(v_min, v_max, v_max - v_min + 1);
-%     n = size(X, 2);
-%     histo = zeros(size(X, 2), nInterpFrames);
-%
-%     for frameIdx = 1:nInterpFrames
-%
-%         for xx = 1:numX
-%
-%             for yy = 1:numY
-%
-%                 if maskArterySection(xx, yy) ~= 0
-%                     i = find(X == v_histoArtery(xx, yy, frameIdx));
-%                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
-%                 end
-%
-%             end
-%
-%         end
-%
-%     end
-%
-%     figure(22)
-%     yAx = [v_min v_max];
-%     xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
-%     imagesc(xAx, yAx, histo)
-%     pbaspect([1.618 1 1]);
-%     set(gca, 'YDir', 'normal')
-%     colormap('hot')
-%     ylabel('Velocity (mm.s^{-1})')
-%     xlabel('Time (s)')
-%     title("Velocity histogram in arteries")
-%
-%     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.png')))
-%     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityArteriesOneCycle.eps')))
-%
-%     if veinsAnalysis
-%         v_histoVeins = round(v_oneCycle .* maskVein);
-%         v_min = min(v_histoVeins, [], 'all');
-%         v_max = max(v_histoVeins, [], 'all');
-%
-%         X = linspace(v_min, v_max, v_max - v_min + 1);
-%         n = size(X, 2);
-%         histo = zeros(size(X, 2), nInterpFrames);
-%
-%         for frameIdx = 1:nInterpFrames
-%
-%             for xx = 1:numX
-%
-%                 for yy = 1:numY
-%
-%                     if maskVeinSection(xx, yy) ~= 0
-%                         i = find(X == v_histoVeins(xx, yy, frameIdx));
-%                         histo(i, frameIdx) = histo(i, frameIdx) + 1;
-%                     end
-%
-%                 end
-%
-%             end
-%
-%         end
-%
-%         figure(23)
-%         yAx = [v_min v_max];
-%         xAx = [0 n * ToolBox.stride / (1000 * ToolBox.fs)];
-%         imagesc(xAx, yAx, histo)
-%         set(gca, 'YDir', 'normal')
-%         colormap('bone')
-%         ylabel('Velocity (mm.s^{-1})')
-%         xlabel('Time (s)')
-%         title("Velocity histogram in veins")
-%
-%         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.png')))
-%         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'histogramVelocityVeinsOneCycle.eps')))
-%
-%     end
-%
-%     fprintf("- Velocity Histograms Timing : %ds\n", round(toc))
-% end
 
 %% Velocity funnel Histogram in arteries (exactly the same but with an increasing number of points)
 %FIXME prctile 10% Y = percentil(X,[5 95])

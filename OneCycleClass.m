@@ -309,7 +309,7 @@ classdef OneCycleClass
                 fprintf("Blood Flow Velocity Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.M0_disp_video, ToolBox, obj.directory)
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video, ToolBox, obj.directory)
                 % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video, ToolBox, obj.directory)
 
                 time_velo = toc(bloodFlowVelocityTimer);
