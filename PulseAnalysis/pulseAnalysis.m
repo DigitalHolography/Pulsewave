@@ -1,4 +1,4 @@
-function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M2_data_video, M0_data_video, M0_ff_video, sysIdxList, maskArtery, maskVein, maskBackground, flag_ExtendedPulseWave_analysis, ToolBox, path)
+function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M2_data_video, M0_data_video, M0_ff_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis, ToolBox, path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
@@ -18,6 +18,10 @@ entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
 f_AVG_mean = mean(f_AVG_video, 3);
 numFramesInterp = PW_params.oneCycleNinterp;
+
+maskArtery = maskArtery & maskSection;
+maskVein = maskVein & maskSection;
+maskBackground = maskVein & maskSection;
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
