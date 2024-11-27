@@ -105,7 +105,7 @@ classdef OneCycleClass
             fprintf("\n----------------------------------\n")
             fprintf("Moment Normalizing\n")
             fprintf("----------------------------------\n")
-            obj = VideoNormalizing(obj);
+            obj = VideoNormalizingLocally(obj);
             fprintf("- Moment Normalizing took : %ds\n", round(toc))
 
             % Video resize (preprocess interpolation interpolate)

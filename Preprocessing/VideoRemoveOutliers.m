@@ -1,5 +1,11 @@
 function obj = VideoRemoveOutliers(obj)
     %% Outlier Cleaning
+
+    PW_params = Parameters_json(obj.directory);
+
+    if ~PW_params.removeOutliers
+        return 
+    end
     [numX, numY, numFrames] = size(obj.f_RMS_video);
     window_size = ceil(numFrames / 50);
 

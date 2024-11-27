@@ -8,10 +8,12 @@ classdef Parameters_json < handle
         refAvgEnd
         videoStartFrameIndex
         videoEndFrameIndex
+        alphaConvolveNorm
         frameWidth
         frameHeight
         videoLength
         k
+        removeOutliers
         radius_ratio
         radius_gap
         gauss_filt_size_for_barycentre
@@ -124,11 +126,15 @@ classdef Parameters_json < handle
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
 
+                obj.alphaConvolveNorm = parsedData.MomentNormalizeConvolutionParameter;
+
                 obj.frameWidth = parsedData.ResizeVideo.FrameWidth;
                 obj.frameHeight = parsedData.ResizeVideo.FrameHeight;
                 obj.videoLength = parsedData.ResizeVideo.VideoLength;
 
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
+
+                obj.removeOutliers = parsedData.RemoveOutliersOption;
 
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
