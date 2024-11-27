@@ -273,7 +273,7 @@ classdef OneCycleClass
                 
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
+                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.maskSection, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
@@ -377,7 +377,7 @@ classdef OneCycleClass
             end
 
             displaySuccessMsg(1);
-            close all
+            %close all
 
         end
 
