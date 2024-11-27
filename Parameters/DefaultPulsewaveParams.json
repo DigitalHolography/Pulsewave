@@ -6,12 +6,14 @@
         "Start frame": 1,
         "End frame": -1
     },
+    "Moment Normalize Convolution parameter": 0.001,
     "Resize video": {
         "Frame width": -1,
         "Frame height": -1,
         "Video length": -1
     },
     "Value of the interpolation parameter": 1,
+    "Remove Outliers option": 0,
     "Veins Analysis": 0,
     "Export Videos": 1,
     "Gaussian Filter Size For Barycentre": 0.02,
@@ -31,6 +33,7 @@
             0,
             1
         ],
+        "Correlation Vesselness Flag": 0,
         "Arterial Correlation Map Threshold": -2,
         "Arterial Classes": [
             0,
@@ -51,11 +54,12 @@
         "Systole threshold ratio of maximum": 0.7
     },
     "Creation of one cycle": {
+        "Interpolation points": 256,
         "Out of noise threshold": 85,
         "Data reliability index threshold": 50
     },
     "Velocity": {
-        "Diff First Calculations Flag": 0,
+        "Diff First Calculations Flag": -1,
         "Local background width": 2
     },
     "Size of field": {

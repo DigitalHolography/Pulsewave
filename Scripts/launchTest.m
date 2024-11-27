@@ -19,7 +19,7 @@ for ind = 1:length(paths)
     end
     last_PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
 
-    copyfile('DefaultPulsewaveParams.json',fullfile(pw_path,'json','InputPulsewaveParams.json'));
+    copyfile(fullfile('Parameters','DefaultPulsewaveParams.json'),fullfile(pw_path,'json','InputPulsewaveParams.json'));
 
     if isfile(fullfile(pw_path,'mask','forceMaskArtery.png'))
         movefile(fullfile(pw_path,'mask','forceMaskArtery.png'),fullfile(pw_path,'mask','oldForceMaskArtery.png'));
