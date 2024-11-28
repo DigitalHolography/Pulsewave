@@ -11,7 +11,7 @@ classdef OneCycleClass
         f_AVG_video % AVG M1/M0
 
         SH_data_hypervideo % SH raw
-        
+
         maskArtery
         maskVein
         maskBackground
@@ -25,7 +25,7 @@ classdef OneCycleClass
         directory char % directory of input data (from HoloDoppler or HoloVibes)
         filenames char % name used for storing analysis data
         load_logs char
-        
+
         flag_Segmentation
         flag_SH_analysis
         flag_PulseWave_analysis
@@ -44,7 +44,7 @@ classdef OneCycleClass
 
             disp(path)
 
-            if ~isfolder(path) % if th input path is a .holo file with moments inside 
+            if ~isfolder(path) % if th input path is a .holo file with moments inside
                 [filepath, name, ~] = fileparts(path);
                 mkdir(fullfile(filepath, name));
                 obj.directory = fullfile(filepath, name);
@@ -52,7 +52,7 @@ classdef OneCycleClass
             else
                 obj.directory = path;
                 tmp_idx = regexp(path, '\');
-                obj.filenames = obj.directory(tmp_idx(end-1) + 1:end -1);
+                obj.filenames = obj.directory(tmp_idx(end - 1) + 1:end -1);
             end
 
             %% Parameters
@@ -60,7 +60,6 @@ classdef OneCycleClass
             checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
             obj.load_logs = '\n=== LOADING : \r\n';
-            
 
             %% Video loading
 
@@ -68,7 +67,7 @@ classdef OneCycleClass
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
-                obj.M0_disp_video = rescale(ff_correction(videoM0, 30))*255;
+                obj.M0_disp_video = rescale(ff_correction(videoM0, 30)) * 255;
                 obj.M0_data_video = videoM0;
                 obj.M1_data_video = videoM1;
                 obj.M2_data_video = videoM2;
@@ -103,6 +102,11 @@ classdef OneCycleClass
             obj = VideoNormalizingLocally(obj);
             fprintf("- Moment Normalizing took : %ds\n", round(toc))
 
+            % clear space
+            obj.M0_data_video = [];
+            obj.M1_data_video = [];
+            obj.M2_data_video = [];
+
             % Video resize (preprocess interpolation interpolate)
             tic
             fprintf("\n----------------------------------\n")
@@ -126,7 +130,7 @@ classdef OneCycleClass
             fprintf("----------------------------------\n")
             obj = VideoRemoveOutliers(obj);
             fprintf("- Video Outlier Cleaning took : %ds\n", round(toc))
-        
+
         end
 
         function obj = onePulse(obj)
@@ -185,7 +189,7 @@ classdef OneCycleClass
                 resultBranch = strtrim(resultBranch);
                 MessBranch = 'Current branch : %s \r';
             else
-                
+
                 vers = readlines('version.txt');
                 MessBranch = ['PulseWave GitHub version ', char(vers)];
             end
@@ -220,19 +224,19 @@ classdef OneCycleClass
                 fileID = fopen(path_file_txt_exe_times, 'a+');
                 fprintf(fileID, '\r\n');
                 fclose(fileID);
-    
+
                 createMasksTiming = tic;
-    
+
                 fprintf("\n----------------------------------\n")
                 fprintf("Mask Creation\n")
                 fprintf("----------------------------------\n")
-    
+
                 [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_disp_video, obj.f_AVG_video, obj.directory, ToolBox);
-    
+
                 time_create_masks = toc(createMasksTiming);
                 fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
                 save_time(path_file_txt_exe_times, 'CreateMasks', time_create_masks)
-    
+
                 fileID = fopen(path_file_txt_exe_times, 'a+');
                 fprintf(fileID, '\r\n----------\r\n');
                 fclose(fileID);
@@ -265,10 +269,10 @@ classdef OneCycleClass
                 fprintf("\n----------------------------------\n")
                 fprintf("Pulse Analysis\n")
                 fprintf("----------------------------------\n")
-                
+
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M2_data_video, obj.M0_data_video, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.maskSection, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
+                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.maskSection, obj.flag_ExtendedPulseWave_analysis, ToolBox, obj.directory);
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
@@ -330,18 +334,16 @@ classdef OneCycleClass
             tTotal = toc(totalTime);
 
             fprintf("\n----------------------------------\n")
-            fprintf("Total Pulsewave timing : %ds\n" , round(tTotal))
+            fprintf("Total Pulsewave timing : %ds\n", round(tTotal))
             fileID = fopen(path_file_txt_exe_times, 'a+');
             fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', tTotal);
             fclose(fileID);
-            
 
             %% Spectrum Analysis
 
-            if obj.flag_SH_analysis && isfile(fullfile(obj.directory, 'raw', [strcat(ToolBox.main_foldername, '_SH'),  '.raw']))
+            if obj.flag_SH_analysis && isfile(fullfile(obj.directory, 'raw', [strcat(ToolBox.main_foldername, '_SH'), '.raw']))
 
                 %% Import SH
-
 
                 tmpname = strcat(ToolBox.main_foldername, '_SH');
                 ext = '.raw';
@@ -354,7 +356,7 @@ classdef OneCycleClass
                 bin_y = 4;
                 bin_w = 16;
                 bin_t = 1;
-                SH_cube = reshape(videoSH, ceil(numX/(2^k*bin_x)), ceil(numY/(2^k*bin_y)),[], ceil(numFrames/bin_t));
+                SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
 
                 tic
                 spectrum_analysis(obj.maskArtery, obj.maskBackground, SH_cube, ToolBox, obj.M0_data_video);
@@ -364,7 +366,7 @@ classdef OneCycleClass
                 save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
 
                 tic
-                spectrogram(obj.maskArtery, obj.maskNeighbors,obj.maskSection, SH_cube, ToolBox);
+                spectrogram(obj.maskArtery, obj.maskNeighbors, obj.maskSection, SH_cube, ToolBox);
                 disp('Spectrogram timing :')
                 time = toc;
                 disp(time)
