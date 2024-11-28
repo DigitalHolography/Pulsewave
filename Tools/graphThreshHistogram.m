@@ -53,7 +53,7 @@ set(gca, 'Linewidth', 2)
 pbaspect([1.68 1 1])
 box on
 hold off;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s.png', name))))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s.eps', name))))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.png', name))))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.eps', name))))
 
 end

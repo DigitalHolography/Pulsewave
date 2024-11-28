@@ -23,7 +23,7 @@ for i = 1:numClasses
 end
 
 level = multithresh(image(mask), numClasses - 1);
-graphThreshHistogram(image, level, mask, color', sprintf('%s_Histo', name), ToolBox)
+graphThreshHistogram(image, level, mask, color', name, ToolBox)
 level = [-1 level];
 quantizedImage = imquantize(image - 2 * ~mask, level);
 imwrite(rescale(quantizedImage), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s_Quantize.png", ToolBox.main_foldername, name)))
