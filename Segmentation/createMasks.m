@@ -42,11 +42,11 @@ blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycent
 [yy,xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
 xy_barycenter = num2cell([xx,yy]);
 [y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
-cercleMask = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
-cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 
-maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness | cercleMask, 1, 4);
-imwrite(maskVesselnessClean | cercleMask, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_3_choroidClean.png')))
+maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness | maskCircle, 1, 4);
+imwrite(maskVesselnessClean | maskCircle, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_3_choroidClean.png')))
 
 %%  1) 3) Compute first correlation
 cVascular = [0 0 0];
@@ -76,8 +76,8 @@ else
     [yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
 end
 
-cercleMask = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
-cercleMask = cercleMask | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 
 %% 1) 4) Segment Vessels
 cArtery = [255 22 18] / 255;
@@ -293,7 +293,7 @@ imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 imwrite(maskVein, cmapVein, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'vein_3_3_Final.png')))
 imwrite(maskVessel, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_3_Final.png')))
 imwrite(maskNeighbors, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskNeighbors.png')));
-imwrite(rescale(uint8(cat(3, uint8(M0_ff_img) + uint8(maskArteryClean) * 255, uint8(M0_ff_img) + uint8(cercleMask), uint8(M0_ff_img) + uint8(maskVeinClean) * 255))), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_4_Final.png')))
+imwrite(rescale(uint8(cat(3, uint8(M0_ff_img) + uint8(maskArteryClean) * 255, uint8(M0_ff_img) + uint8(maskCircle), uint8(M0_ff_img) + uint8(maskVeinClean) * 255))), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_3_4_Final.png')))
 
 %% SENSITIVITY & SPECIFICITY
 % Add targetMaskArtery.png and targetMaskVein.png in a mask folder inside
@@ -335,7 +335,7 @@ end
 if ~isempty(PW_params.forcebarycenter)
     yy = PW_params.forcebarycenter(1);
     xx = PW_params.forcebarycenter(2);
-    cercleMask = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+    maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
 end
 
 %% Create CRA and CRV Mask
@@ -406,7 +406,7 @@ imwrite(mat2gray(maskCRV), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s"
 
 %% new masks
 
-labeled = bwlabel(and(maskArtery, not(cercleMask)));
+labeled = bwlabel(and(maskArtery, not(maskCircle)));
 imwrite(rescale(labeled), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskLabeled.png')), 'png');
 imwrite(bwskel(maskArtery), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskSkeletonArtery.png')), 'png');
 imwrite(bwskel(maskVein), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskSkeletonVein.png')), 'png');

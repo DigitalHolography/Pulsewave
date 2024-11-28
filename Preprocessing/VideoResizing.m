@@ -4,12 +4,9 @@ function obj = VideoResizing(obj)
     out_height = PW_params.frameHeight;
     out_width = PW_params.frameWidth;
     out_numFrames = PW_params.videoLength;
+    [numX, numY, numFrames] = size(obj.M0_disp_video);
 
-    if out_numFrames < 0
-        return % do nothing if not required
-    end
-
-    if out_numFrames < numFrames
+    if out_numFrames < numFrames && out_numFrames > 0
         % we average the input images to get out_numFrames frames
 
         % batch = floor(numFrames / out_numFrames);
@@ -71,7 +68,12 @@ function obj = VideoResizing(obj)
     end
 
     if out_height < 0 && out_width < 0
-        return % do nothing if not required
+        if numX ~= numY
+            out_width = max(numX,numY);
+            out_height = max(numX,numY);
+        elseif out_numFrames < 0
+            return % do nothing if not required
+        end
     end
 
     if out_height < 0

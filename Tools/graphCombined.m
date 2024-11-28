@@ -27,7 +27,7 @@ end
 Videofield_rescaled = rescale(Videofield);
 [numX, numY, numFrames] = size(Videofield_rescaled);
 [x_center,y_center] = xy_barycenter{:};
-ylimm = [min(signal),max(signal)];
+ylimm = [min(-1,min(signal)),max(signal)*1.3];
 if NameValueArgs.skip
     startingvalue = numFrames-1;
 else

@@ -32,12 +32,12 @@ classdef pulse < matlab.apps.AppBase
     methods (Access = private)
         function Load(app, path)
 
-            for n = 1:length(app.files)
-                if length(app.files)~=app.files{n}.nbFiles
-                    app.ErrorLabel.Text = "Error: number of files not correct";
-                    return ;
-                end
-            end 
+            % for n = 1:length(app.files)
+            %     if length(app.files)~=app.files{n}.nbFiles
+            %         app.ErrorLabel.Text = "Error: number of files not correct";
+            %         return ;
+            %     end
+            % end 
 
             app.Lamp.Color = [1, 0, 0];
             drawnow;
