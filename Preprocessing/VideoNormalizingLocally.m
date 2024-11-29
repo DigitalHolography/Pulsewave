@@ -23,6 +23,9 @@ else
     
     S = sum(obj.M0_data_video, [1, 2]);
     S2 = sum(M0_data_convoluated, [1, 2]);
+
+    
+    imwrite(rescale(mean(M0_data_convoluated,3)),fullfile(obj.directory,'pulsewave', sprintf("%s_alpha=%s_%s", obj.filenames, num2str(alpha), 'M0_Convolution_Norm.png')), 'png');
     
     M0_data_convoluated = M0_data_convoluated .* S ./ S2; % normalizing to get the average with alpha = 0;
 end

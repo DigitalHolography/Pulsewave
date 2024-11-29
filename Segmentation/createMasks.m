@@ -85,13 +85,14 @@ cVein = [18 23 255] / 255;
 
 cmapArtery = [0 0 0; cArtery];
 cmapVein = [0 0 0; cVein];
+cmapVessels = [cVein; cArtery];
 
 if PW_params.masks_vascular_threshold >= -1 && PW_params.masks_vascular_threshold <= 1
     % IF Manual Thresholds have been set between -1 and 1 then they are used
     
     firstMaskArtery = (R_VascularSignal > PW_params.masks_vascular_threshold) .* maskVesselnessClean;
     firstMaskVein = (R_VascularSignal < PW_params.masks_vascular_threshold) .* maskVesselnessClean;
-    graphThreshHistogram(R_VascularSignal, PW_params.masks_vascular_threshold, maskVesselnessClean, {'blue','red'}, 'all_1_5', ToolBox)
+    graphThreshHistogram(R_VascularSignal, PW_params.masks_vascular_threshold, maskVesselnessClean, cmapVessels, 'all_1_5', ToolBox)
     
 else
     % ELSE automatic Otsu segmentation is performed
@@ -213,7 +214,7 @@ end
 if PW_params.masks_arterial_threshold >= -1 && PW_params.masks_arterial_threshold <= 1
     % Manual Threshold
     maskArtery = R_ArteryVessel >= PW_params.masks_arterial_threshold;
-    graphThreshHistogram(R_ArteryVessel, PW_params.masks_arterial_threshold, maskArtery, {'white', 'red'}, 'artery_2_3', ToolBox)
+    graphThreshHistogram(R_ArteryVessel, PW_params.masks_arterial_threshold, maskArtery, cmapArtery, 'artery_2_3', ToolBox)
 else
     % Automatic Otsu Threshold
     arterialClasses = PW_params.masks_arterial_classes;
@@ -227,7 +228,7 @@ imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 if PW_params.masks_venous_threshold >= -1 && PW_params.masks_venous_threshold <= 1
     % Manual Threshold
     maskVein = R_VeinVessel >= PW_params.masks_venous_threshold;
-    graphThreshHistogram(R_VeinVessel, PW_params.masks_venous_threshold, maskVein, {'white', 'blue'}, 'vein_2_3', ToolBox)
+    graphThreshHistogram(R_VeinVessel, PW_params.masks_venous_threshold, maskVein, cmapVein, 'vein_2_3', ToolBox)
     
 else
     % Automatic Otsu Threshold

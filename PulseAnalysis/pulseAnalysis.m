@@ -1,4 +1,4 @@
-function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_ff_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis, ToolBox, path)
+function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis, ToolBox, path)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
@@ -19,9 +19,9 @@ exportVideos = PW_params.exportVideos;
 f_AVG_mean = mean(f_AVG_video, 3);
 numFramesInterp = PW_params.oneCycleNinterp;
 
-maskArtery = maskArtery & maskSection;
-maskVein = maskVein & maskSection;
-maskBackground = maskBackground & maskSection;
+maskArterySection = maskArtery & maskSection;
+maskVeinSection = maskVein & maskSection;
+maskBackgroundSection = maskBackground & maskSection;
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -121,7 +121,7 @@ if entirePulseAnalysis
     titleString = 'RMS Doppler frequency (kHz)';
     set(colorTitleHandle, 'String', titleString);
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '1_colorbarRMSFrequency.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToomaskArterylBox.main_foldername, '1_colorbarRMSFrequency.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '1_colorbarRMSFrequency.eps')))
 
     exec_times_id = [exec_times_id, "Doppler RMS frequency heatmap"];
@@ -131,15 +131,15 @@ if entirePulseAnalysis
 
     tic
 
-    background_signal = f_RMS_video .* maskBackground;
-    background_signal = squeeze(sum(background_signal, [1 2])) / nnz(maskBackground);
+    background_signal = f_RMS_video .* maskBackgroundSection;
+    background_signal = squeeze(sum(background_signal, [1 2])) / nnz(maskBackgroundSection);
 
-    arterial_signal = f_RMS_video .* maskArtery;
-    arterial_signal = squeeze(sum(arterial_signal, [1 2])) / nnz(maskArtery);
+    arterial_signal = f_RMS_video .* maskArterySection;
+    arterial_signal = squeeze(sum(arterial_signal, [1 2])) / nnz(maskArterySection);
 
     if veinsAnalysis
-        venous_signal = f_RMS_video .* maskVein;
-        venous_signal = squeeze(sum(venous_signal, [1 2])) / nnz(maskVein);
+        venous_signal = f_RMS_video .* maskVeinSection;
+        venous_signal = squeeze(sum(venous_signal, [1 2])) / nnz(maskVeinSection);
     end
 
     if veinsAnalysis
@@ -296,15 +296,15 @@ parfor frameIdx = 1:numFrames
 end
 
 graphSignal(ToolBox, '5_Arteries_fRMS', folder, ...
-    t, squeeze(sum(f_RMS_video .* maskArtery, [1, 2]) / nnz(maskArtery)), '-', cArtery, ...
-    t, squeeze(sum(f_RMS_background .* maskArtery, [1, 2]) / nnz(maskArtery)), '--', cBlack, ...
+    t, squeeze(sum(f_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
+    t, squeeze(sum(f_RMS_background .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '--', cBlack, ...
     Title = 'Average f_{RMS} in Arteries', xlabel = strXlabel, ylabel = strYlabel, ...
     Legend = {'Arteries', 'Background'})
 
 if veinsAnalysis
     graphSignal(ToolBox, '5_Veins_fRMS', folder, ...
-        t, squeeze(sum(f_RMS_video .* maskVein, [1, 2]) / nnz(maskVein)), '-', cVein, ...
-        t, squeeze(sum(f_RMS_background .* maskVein, [1, 2]) / nnz(maskVein)), '--', cBlack, ...
+        t, squeeze(sum(f_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '-', cVein, ...
+        t, squeeze(sum(f_RMS_background .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '--', cBlack, ...
         Title = 'Average f_{RMS} in Veins', xlabel = strXlabel, ylabel = strYlabel, ...
         Legend = {'Veins', 'Background'})
 end
@@ -339,12 +339,12 @@ v_RMS_video = ToolBox.ScalingFactorVelocityInPlane * delta_f_RMS;
 
 if veinsAnalysis
     graphSignal(ToolBox, '6_Vessels_velocity', folder, ...
-        t, squeeze(sum(v_RMS_video .* maskArtery, [1, 2]) / nnz(maskArtery)), '-', cArtery, ...
-        t, squeeze(sum(v_RMS_video .* maskVein, [1, 2]) / nnz(maskVein)), '-', cVein, ...
+        t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
+        t, squeeze(sum(v_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '-', cVein, ...
         Title = 'Average estimated velocity in Arteries and Veins', xlabel = strXlabel, ylabel = 'mm/s')
 else
     graphSignal(ToolBox, '6_Arteries_velocity', folder, ...
-        t, squeeze(sum(v_RMS_video .* maskArtery, [1, 2]) / nnz(maskArtery)), '-', cArtery, ...
+        t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         Title = 'Average estimated velocity in Arteries', xlabel = strXlabel, ylabel = 'mm/s')
 end
 
@@ -401,7 +401,7 @@ end
 
 % ARI
 
-v_RMS_arterial_signal = squeeze(sum(v_RMS_video .* maskArtery, [1 2])) / nnz(maskArtery);
+v_RMS_arterial_signal = squeeze(sum(v_RMS_video .* maskArterySection, [1 2])) / nnz(maskArterySection);
 v_RMS_arterial_signal = filloutliers(v_RMS_arterial_signal, 'center');
 v_RMS_arterial_signal_smooth = smoothdata(v_RMS_arterial_signal, 'rlowess');
 
@@ -417,8 +417,8 @@ graphSignal(ToolBox, '6_ARI', folder, ...
     Title = sprintf('ARI = %0.2f, API = %0.2f', ARI, API), Legend = {'Smooth', 'Raw'}, ...
     yLines = [0, min_vRMS, mean_vRMS, max_vRMS], yLineLabels = {'', '', '', ''})
 
-M0_ff_video = rescale(M0_ff_video);
-M0_ff_image = mean(M0_ff_video, 3);
+M0_disp_video = rescale(M0_disp_video);
+M0_ff_image = mean(M0_disp_video, 3);
 [hue_ARI, sat_ARI, val_ARI, cmap] = ARI2HSVmap(ARI, M0_ff_image, maskArtery, ToolBox);
 % arterial resistivity map RGB
 ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
@@ -447,7 +447,7 @@ if exportVideos
     f71.Position = [300, 300, 570, 630];
 
     for frameIdx = 1:numFrames
-        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery, ToolBox);
+        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_disp_video(:, :, frameIdx), maskArtery, ToolBox);
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     end
 
@@ -479,20 +479,20 @@ if entirePulseAnalysis
     tic
 
     fprintf("Average Pulse\n")
-    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(f_RMS_video, M0_data_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
+    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(f_RMS_video, M0_disp_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
 
     clear f_RMS_video f_RMS_video
 
     fprintf("Average Pulse minus Background\n")
-    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_data_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
+    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_disp_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
 
     clear delta_f_RMS
 
-    avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
+    avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArterySection, [1 2])) / nnz(maskArterySection);
     avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
 
     v_OneCycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
-    ArterialResistivityIndex(v_OneCycle, M0_ff_video, maskArtery, ToolBox, path)
+    ArterialResistivityIndex(v_OneCycle, M0_disp_video, maskArtery, ToolBox, path)
 
     if exportVideos
         % avi

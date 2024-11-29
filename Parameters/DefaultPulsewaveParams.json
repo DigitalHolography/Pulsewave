@@ -30,18 +30,23 @@
         "Vascular Correlation Map Threshold": -2,
         "Vascular Classes": [
             -1,
+            -1,
             0,
             1
         ],
-        "Correlation Vesselness Flag": 0,
+        "Correlation Vesselness Flag": 1,
         "Arterial Correlation Map Threshold": -2,
         "Arterial Classes": [
             0,
+            0,
+            1,
             1
         ],
         "Venous Correlation Map Threshold": -2,
         "Venous Classes": [
             0,
+            0,
+            -1,
             -1
         ],
         "Minimum seed area size": 150,
