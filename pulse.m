@@ -152,6 +152,12 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: LoadfolderButton
         function LoadfolderButtonPushed(app, event)
             % clearing before loading
+            if ~isempty(app.file)
+                last_dir = app.file.directory;
+            else 
+                last_dir = [];
+            end
+
             app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
@@ -164,7 +170,11 @@ classdef pulse < matlab.apps.AppBase
                 app.EditParametersButton.Enable = true;
             else
                 f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
-                selected_dir = uigetdir();
+                selected_dir = uigetdir(last_dir);
+                if selected_dir == 0
+                    disp('No folder selected')
+                    return 
+                end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(selected_dir);
@@ -175,6 +185,7 @@ classdef pulse < matlab.apps.AppBase
         end
         function LoadHoloButtonPushed(app, event)
             % clearing before loading
+
             app.file =  [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
@@ -188,6 +199,10 @@ classdef pulse < matlab.apps.AppBase
             else
                 f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
                 [selected_holo,path_holo] = uigetfile('*.holo');
+                if selected_dir == 0
+                    disp('No file selected')
+                    return 
+                end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(fullfile(path_holo,selected_holo));
