@@ -24,7 +24,7 @@ classdef pulse < matlab.apps.AppBase
     end
 
     properties (Access = private)
-        files = {}
+        file 
         drawer_list = {}
         flag_is_load
     end
@@ -59,15 +59,15 @@ classdef pulse < matlab.apps.AppBase
             totalLoadingTime = tic;
 
             try
-                % add files to the drawer list
+                % add file 
                 tic
                 fprintf("\n----------------------------------\n")
                 fprintf("Video Loading\n")
                 fprintf("----------------------------------\n")
-                app.files{end + 1} = OneCycleClass(path);
+                app.file = OneCycleClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
-                app.files{end} = app.files{end}.preprocessData();
+                app.file = app.file.preprocessData();
 
                 %% End
                 app.LoadfolderButton.Enable = true ;
@@ -152,7 +152,7 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: LoadfolderButton
         function LoadfolderButtonPushed(app, event)
             % clearing before loading
-            app.files = {};
+            app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
@@ -175,7 +175,7 @@ classdef pulse < matlab.apps.AppBase
         end
         function LoadHoloButtonPushed(app, event)
             % clearing before loading
-            app.files = {};
+            app.file =  [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
@@ -220,25 +220,25 @@ classdef pulse < matlab.apps.AppBase
             app.ErrorLabel.Text = "" ;
             drawnow;
 
-            for n = 1:length(app.files)
+            for n = 1
 
                 fprintf("==============================\n")
-                app.files{n}.flag_Segmentation = app.SegmentationCheckBox.Value;
-                app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
-                app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
-                app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
-                app.files{n}.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
-                app.files{n}.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
-                app.files{n}.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
+                app.file.flag_Segmentation = app.SegmentationCheckBox.Value;
+                app.file.flag_SH_analysis = app.SHanalysisCheckBox.Value;
+                app.file.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
+                app.file.flag_velocity_analysis = app.velocityCheckBox.Value;
+                app.file.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
+                app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
+                app.file.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
 
                 try
 
-                    app.files{n} = app.files{n}.onePulse();
+                    app.file = app.file.onePulse();
 
                 catch ME
 
                     fprintf("==============================\nERROR\n==============================\n")
-                    disp(['Error with file : ', app.files{n}.directory])
+                    disp(['Error with file : ', app.file.directory])
                     disp(ME.identifier)
                     disp(ME.message)
                     for i = 1:size(ME.stack,1)
@@ -252,7 +252,7 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: ClearButton
         function ClearButtonPushed(app, event)
-            app.files = {};
+            app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
@@ -431,7 +431,7 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, event)
             if (app.flag_is_load)
-                winopen(fullfile(app.files{end}.ToolBoxmaster.PW_path_main,'json','InputPulsewaveParams.json'));
+                winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json','InputPulsewaveParams.json'));
             end
         end
     end
