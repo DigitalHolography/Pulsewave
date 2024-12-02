@@ -1,8 +1,8 @@
-function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(video, videoM0, mask, sysIdxList, numInterp, path, ToolBox)
+function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(ToolBox, video, videoM0, mask, sysIdxList, numInterp)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 
-PW_params = Parameters_json(path);
+PW_params = Parameters_json(ToolBox.PW_path);
 
 tic
 

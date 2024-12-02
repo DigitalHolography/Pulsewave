@@ -1,6 +1,6 @@
-function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors, xy_barycenter] = createMasks(M0_ff_video, f_AVG_video, path, ToolBox)
+function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors, xy_barycenter] = createMasks(ToolBox, M0_ff_video, f_AVG_video)
 
-PW_params = Parameters_json(path);
+PW_params = Parameters_json(ToolBox.PW_path);
 exportVideos = PW_params.exportVideos;
 
 mkdir(ToolBox.PW_path_png, 'mask')
@@ -13,11 +13,13 @@ close all
 %% 1) First Masks and Correlation
 
 [numX, numY, numFrames] = size(M0_ff_video);
+M0_ff_video = rescale(M0_ff_video);
 [X, Y] = meshgrid(1:numX, 1:numY);
-maskDiaphragm = sqrt((X - numX / 2) .^ 2 + (Y - numY / 2) .^ 2) <= PW_params.masks_diaphragmRadius * (numY + numX) / 2;
+L = (numY + numX) / 2;
+maskDiaphragm = sqrt((X - numX / 2) .^ 2 + (Y - numY / 2) .^ 2) <= PW_params.masks_diaphragmRadius * L;
 imwrite(rescale(maskDiaphragm), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_0_maskDiaphragm.png')))
 
-M0_ff_img = squeeze(mean(M0_ff_video, 3));
+M0_ff_img = rescale(squeeze(mean(M0_ff_video, 3)));
 M0_ff_video_centered = M0_ff_video - M0_ff_img;
 imwrite(rescale(M0_ff_img), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_0_M0.png')))
 
@@ -42,8 +44,8 @@ blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycent
 [yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
 xy_barycenter = num2cell([xx, yy]);
 [y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
-maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
-maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * L;
+maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * L;
 
 maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness | maskCircle, 1, 4);
 imwrite(maskVesselnessClean | maskCircle, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_3_choroidClean.png')))
@@ -76,8 +78,8 @@ else
     [yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
 end
 
-maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
-maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * L;
+maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * L;
 
 %% 1) 4) Segment Vessels
 cArtery = [255 22 18] / 255;
@@ -92,14 +94,14 @@ if PW_params.masks_vascular_threshold >= -1 && PW_params.masks_vascular_threshol
     
     firstMaskArtery = (R_VascularSignal > PW_params.masks_vascular_threshold) .* maskVesselnessClean;
     firstMaskVein = (R_VascularSignal < PW_params.masks_vascular_threshold) .* maskVesselnessClean;
-    graphThreshHistogram(R_VascularSignal, PW_params.masks_vascular_threshold, maskVesselnessClean, cmapVessels, 'all_1_5', ToolBox)
+    graphThreshHistogram(ToolBox, R_VascularSignal, PW_params.masks_vascular_threshold, maskVesselnessClean, cmapVessels, 'all_1_5')
     
 else
     % ELSE automatic Otsu segmentation is performed
     % Number of classes for Vessels: 4
     % 1 & 2 = Veins & CoroidalVessels, 3 = CoroidalVessel, 4 = Arteries
     vascularClasses = PW_params.masks_vascular_classes;
-    [firstMaskArtery, firstMaskVein] = autoOtsuThresholding(R_VascularSignal, maskVesselnessClean, vascularClasses, 'all_1_5', ToolBox);
+    [firstMaskArtery, firstMaskVein] = autoOtsuThresholding(ToolBox, R_VascularSignal, maskVesselnessClean, vascularClasses, 'all_1_5');
 end
 
 imwrite(logical(firstMaskArtery), cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'artery_1_5_FirstMask.png')))
@@ -179,25 +181,25 @@ if correlation_Vesselness_flag
     maskSegmentationClean = maskDiaphragm;
     
     R_ArteryVessel = imgaussfilt(R_ArterialSignal) .* maskSegmentationClean;
-    graphThreshHistogram(R_ArteryVessel, 0, maskDiaphragm, [0 0 0; cArtery], 'artery_2_2_R_Histo', ToolBox)
+    graphThreshHistogram(ToolBox, R_ArteryVessel, 0, maskDiaphragm, [0 0 0; cArtery], 'artery_2_2_R_Histo')
     R_ArteryVessel = R_ArteryVessel .* (R_ArteryVessel > 0);
     
     R_ChoroidVessel = R_ChoroidalSignal .* maskDiaphragm;
-    graphThreshHistogram(R_ChoroidVessel, 0, maskDiaphragm, [0 0 0; cChoroid], 'choroid_2_2_R_Histo', ToolBox)
+    graphThreshHistogram(ToolBox, R_ChoroidVessel, 0, maskDiaphragm, [0 0 0; cChoroid], 'choroid_2_2_R_Histo')
     
     R_VeinVessel = imgaussfilt(R_ChoroidalSignal - R_ArterialSignal) .* maskSegmentationClean;
-    graphThreshHistogram(R_VeinVessel, 0, maskDiaphragm, [0 0 0; cVein], 'vein_2_2_R_Histo', ToolBox)
+    graphThreshHistogram(ToolBox, R_VeinVessel, 0, maskDiaphragm, [0 0 0; cVein], 'vein_2_2_R_Histo')
     R_VeinVessel = R_VeinVessel .* (R_VeinVessel > 0);
     
 else
     maskSegmentationClean = maskVesselnessClean;
     
     R_ArteryVessel = R_ArterialSignal .* maskSegmentationClean;
-    graphThreshHistogram(R_ArteryVessel, 0, maskDiaphragm, [0 0 0; cArtery], 'artery_2_2_R_Histo', ToolBox)
+    graphThreshHistogram(ToolBox, R_ArteryVessel, 0, maskDiaphragm, [0 0 0; cArtery], 'artery_2_2_R_Histo')
     R_ArteryVessel = R_ArteryVessel .* (R_ArteryVessel > 0);
     
     R_VeinVessel = R_VenousSignal .* maskSegmentationClean;
-    graphThreshHistogram(R_VeinVessel, 0, maskDiaphragm, [0 0 0; cVein], 'vein_2_2_R_Histo', ToolBox)
+    graphThreshHistogram(ToolBox, R_VeinVessel, 0, maskDiaphragm, [0 0 0; cVein], 'vein_2_2_R_Histo')
     R_VeinVessel = R_VeinVessel .* (R_VeinVessel > 0);
     
 end
@@ -214,11 +216,11 @@ end
 if PW_params.masks_arterial_threshold >= -1 && PW_params.masks_arterial_threshold <= 1
     % Manual Threshold
     maskArtery = R_ArteryVessel >= PW_params.masks_arterial_threshold;
-    graphThreshHistogram(R_ArteryVessel, PW_params.masks_arterial_threshold, maskArtery, cmapArtery, 'artery_2_3', ToolBox)
+    graphThreshHistogram(ToolBox, R_ArteryVessel, PW_params.masks_arterial_threshold, maskArtery, cmapArtery, 'artery_2_3')
 else
     % Automatic Otsu Threshold
     arterialClasses = PW_params.masks_arterial_classes;
-    maskArtery = autoOtsuThresholding(R_ArteryVessel, maskSegmentationClean, arterialClasses, 'artery_2_3', ToolBox);
+    maskArtery = autoOtsuThresholding(ToolBox, R_ArteryVessel, maskSegmentationClean, arterialClasses, 'artery_2_3');
     maskArtery = maskArtery | firstMaskArteryClean;
     
 end
@@ -228,12 +230,12 @@ imwrite(maskArtery, cmapArtery, fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 if PW_params.masks_venous_threshold >= -1 && PW_params.masks_venous_threshold <= 1
     % Manual Threshold
     maskVein = R_VeinVessel >= PW_params.masks_venous_threshold;
-    graphThreshHistogram(R_VeinVessel, PW_params.masks_venous_threshold, maskVein, cmapVein, 'vein_2_3', ToolBox)
+    graphThreshHistogram(ToolBox, R_VeinVessel, PW_params.masks_venous_threshold, maskVein, cmapVein, 'vein_2_3')
     
 else
     % Automatic Otsu Threshold
     venousClasses = PW_params.masks_venous_classes;
-    [~, maskVein] = autoOtsuThresholding(R_VeinVessel, maskSegmentationClean, venousClasses, 'vein_2_3', ToolBox);
+    [~, maskVein] = autoOtsuThresholding(ToolBox, R_VeinVessel, maskSegmentationClean, venousClasses, 'vein_2_3');
     maskVein = maskVein | firstMaskVeinClean;
     
 end
@@ -327,18 +329,21 @@ catch
 end
 
 %% Force Create Masks
-if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
+if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png'))
     maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
-    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
-    maskVessel = maskArtery | maskVein;
-    maskBackground = not(maskVessel);
 end
+if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
+    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
+end
+
+maskVessel = maskArtery | maskVein;
+maskBackground = not(maskVessel);
 
 %% Force Barycenter
 if ~isempty(PW_params.forcebarycenter)
     yy = PW_params.forcebarycenter(1);
     xx = PW_params.forcebarycenter(2);
-    maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * (numY + numX) / 2;
+    maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * L;
 end
 
 %% Create CRA and CRV Mask
@@ -348,48 +353,21 @@ maskCRV = f_AVG_mean < (-PW_params.CRACRV_Threshold * f_AVG_std);
 clear f_AVG_std f_AVG_mean
 
 %% Create Mask Section
-radius1 = PW_params.velocitySmallRadiusRatio * (numY + numX) / 2;
-radius2 = PW_params.velocityBigRadiusRatio * (numY + numX) / 2;
+r1 = PW_params.velocitySmallRadiusRatio * L;
+r2 = PW_params.velocityBigRadiusRatio * L;
 
-circleMask1 = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= radius1;
-circleMask2 = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= radius2;
-
-maskSection = xor(circleMask1, circleMask2);
-
-%% Create Colormap Artery/Vein
-
-M0_ff_img = mat2gray(M0_ff_img);
-M0_ff_img_RGB = cat(3, M0_ff_img, M0_ff_img, M0_ff_img);
-maskSectionRGB = cat(3, maskSection, maskSection, maskSection);
-
-[hueA, satA, valA] = createHSVmap(M0_ff_img, ~maskSection & maskArtery, 0, 0);
-[hueV, satV, valV] = createHSVmap(M0_ff_img, ~maskSection & maskVein, 0.7, 0.7);
-[hueSectionA, satSectionA, valSectionA] = createHSVmap(M0_ff_img, maskSection & maskArtery, 0.15, 0.15);
-[hueSectionV, satSectionV, valSectionV] = createHSVmap(M0_ff_img, maskSection & maskVein, 0.5, 0.5);
-
-hueVessel = hueA .* (~maskSection & maskArtery) + hueV .* (~maskSection & maskVein) + hueSectionA .* (maskSection & maskArtery) + hueSectionV .* (maskSection & maskVein);
-satVessel = satA .* (~maskSection & maskArtery) + satV .* (~maskSection & maskVein) + satSectionA .* (maskSection & maskArtery) + satSectionV .* (maskSection & maskVein);
-valVessel = valA .* (~maskSection & maskArtery) + valV .* (~maskSection & maskVein) + valSectionA .* (maskSection & maskArtery) + valSectionV .* (maskSection & maskVein);
-
-vesselImageRGB = hsv2rgb(hueVessel, satVessel, valVessel) + maskSectionRGB .* ~maskVessel + (M0_ff_img_RGB .* ~maskVessel);
-
-%% Create Colormap Artery Only
-
-hueArtery = hueA .* (~maskSection & maskArtery) + hueSectionA .* (maskSection & maskArtery);
-satArtery = satA .* (~maskSection & maskArtery) + satSectionA .* (maskSection & maskArtery);
-valArtery = valA .* (~maskSection & maskArtery) + valSectionA .* (maskSection & maskArtery);
-
-VesselImageRGB_Artery = hsv2rgb(hueArtery, satArtery, valArtery) + maskSectionRGB .* ~maskArtery + (M0_ff_img_RGB .* ~maskArtery);
+maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery);
+createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein);
 
 %% Create Segmentation Map
 
 segmentationMap = zeros(numX, numY, 3);
-segmentationMap(:, :, 1) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img + maskArtery;
-segmentationMap(:, :, 2) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img;
-segmentationMap(:, :, 3) = M0_ff_img - (maskArtery + maskVein) .* M0_ff_img + maskVein;
-segmentationMapArtery(:, :, 1) = M0_ff_img - (maskArtery) .* M0_ff_img + maskArtery;
-segmentationMapArtery(:, :, 2) = M0_ff_img - maskArtery .* M0_ff_img;
-segmentationMapArtery(:, :, 3) = M0_ff_img - maskArtery .* M0_ff_img;
+segmentationMap(:, :, 1) = M0_ff_img .* ~(maskArtery | maskVein) + maskArtery;
+segmentationMap(:, :, 2) = M0_ff_img .* ~(maskArtery | maskVein);
+segmentationMap(:, :, 3) = M0_ff_img .* ~(maskArtery | maskVein) + maskVein;
+segmentationMapArtery(:, :, 1) = M0_ff_img .* ~maskArtery + maskArtery;
+segmentationMapArtery(:, :, 2) = M0_ff_img .* ~maskArtery;
+segmentationMapArtery(:, :, 3) = M0_ff_img .* ~maskArtery;
 figure, imagesc(segmentationMapArtery), axis image
 imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
 imwrite(segmentationMapArtery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arterySegmentation.png')), 'png');
@@ -402,8 +380,6 @@ imwrite(mat2gray(single(maskArtery)), fullfile(ToolBox.PW_path_png, 'mask', spri
 imwrite(mat2gray(single(maskVein)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskVein.png')), 'png');
 imwrite(mat2gray(single(maskVessel)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskVessel.png')), 'png');
 imwrite(mat2gray(single(maskBackground)), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskBackground.png')), 'png');
-imwrite(vesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'vesselMap.png')), 'png');
-imwrite(VesselImageRGB_Artery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'vesselMapArtery.png')), 'png');
 imwrite(mat2gray(maskCRA), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRA.png')), 'png');
 imwrite(mat2gray(maskCRV), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskCRV.png')), 'png');
 

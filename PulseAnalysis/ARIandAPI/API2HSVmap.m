@@ -1,4 +1,4 @@
-function [hue, sat, val, cmap] = API2HSVmap(API, Im, mask, ToolBox)
+function [hue, sat, val, cmap] = API2HSVmap(API, Im, mask)
 
     tolVal = [0.02, 0.98];
 

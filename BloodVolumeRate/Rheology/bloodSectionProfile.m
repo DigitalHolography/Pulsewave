@@ -1,10 +1,9 @@
-function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, ToolBox, circle_num)
+function [] = bloodSectionProfile(ToolBox, SubImage_cell, SubVideo_cell, type_of_vessel, circle_num)
 
 nb_section = size(SubImage_cell, 2);
 numFrames = size(SubVideo_cell{1}, 3);
 n_interp = 100;
-[path, ~, ~] = fileparts(ToolBox.PW_path_main);
-PW_params = Parameters_json(path);
+PW_params = Parameters_json(ToolBox.PW_path);
 %interpolation parameter
 k = 2;
 
@@ -20,6 +19,7 @@ for ii = 1:nb_section
         if nargin > 4
             subImg = SubImage_cell{circle_num, ii};
             subVideo = SubVideo_cell{circle_num, ii};
+            nameFig = sprintf("%s_%s", type_of_vessel, circle_num);
         else
             subImg = SubImage_cell{ii};
             subVideo = SubVideo_cell{ii};
@@ -69,7 +69,7 @@ for ii = 1:nb_section
     average_velocity_profile_std = squeeze(mean(velocity_profiles_std, 3));
     mimin = min(average_velocity_profile(:));
     [mamax, idx_mamax] = max(average_velocity_profile(:));
-    video_name = strcat('_velocity_profile_', type_of_vessel);
+    video_name = strcat('_velocity_profile_', nameFig);
     v = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, strcat(video_name, '.avi')))); % avi
     vMP4 = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, strcat(video_name, '.mp4'))), 'MPEG-4'); % mp4
     open(v);
@@ -107,7 +107,7 @@ for ii = 1:nb_section
     if PW_params.exportVideos
         
         timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-        gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityProfile")), timePeriod, 0.04, numFrames);
+        gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, sprintf("velocityProfile_%s", nameFig))), timePeriod, 0.04, numFrames);
         
         for frameIdx = 1:numFrames
             tmp_velocity_profile = squeeze(average_velocity_profile(:, frameIdx));
@@ -126,7 +126,7 @@ for ii = 1:nb_section
             [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2], 'Lower', [0 -5 1.5], 'Upper', [80 3 6]);
             R2_tmp_fit = R2_tmp_fit.rsquare;
             
-            fifig = figure(2302);
+            fifig = figure("Visible","off");
             
             fill(fullTime2, inBetween, Color_std);
             hold on
@@ -194,7 +194,7 @@ for ii = 1:nb_section
     fit_velocity_profile_systole = Vmax_list(idx_syst) * (1 - (1 - alpha_list(idx_syst)) .* abs(x_section) .^ beta_list(idx_syst));
     fit_velocity_profile_diastole = Vmax_list(end) * (1 - (1 - alpha_list(end)) .* abs(x_section) .^ beta_list(end));
     
-    figure(2300)
+    figure("Visible","off")
     % plot(x_section,average_velocity_profile_systole,'-k',...
     % x_section,average_velocity_profile_diastole,'-k',...
     %     x_section,fit_velocity_profile_systole,'-r',...
@@ -230,9 +230,12 @@ for ii = 1:nb_section
     ylim([0.9 * mimin 1.1 * mamax]);
     ylabel('velocity (mm/s)', 'FontSize', 14);
     
-    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.png', nameFig))))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.eps', nameFig))))
     
-    figure(2301)
+    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+
+    figure("Visible","off")
     plot(fullTime, viscosity_list, 'k-', 'LineWidth', 2)
     pbaspect([1.618 1 1]);
     
@@ -247,26 +250,9 @@ for ii = 1:nb_section
     ylabel('Viscosity (cP)', 'FontSize', 14);
     set(gca, 'LineWidth', 2);
     axis tight;
-    
-    % png
-    if strcmp(type_of_vessel, 'artery')
-        print('-f2301', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_velocity_cross_section_artery.png')));
-        print('-f2300', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_viscosity_in_time_artery.png')));
-        % eps
-        print('-f2301', '-depsc', fullfile(ToolBox.PW_path_eps, strcat(ToolBox.main_foldername, '_velocity_cross_section_artery.eps')));
-        print('-f2300', '-depsc', fullfile(ToolBox.PW_path_eps, strcat(ToolBox.main_foldername, '_viscosity_in_time_artery.eps')));
-        
-    else
-        
-        print('-f2301', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_velocity_cross_section_vein.png')));
-        print('-f2300', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_viscosity_in_time_vein.png')));
-        % eps
-        print('-f2301', '-depsc', fullfile(ToolBox.PW_path_eps, strcat(ToolBox.main_foldername, '_velocity_cross_section_vein.eps')));
-        print('-f2300', '-depsc', fullfile(ToolBox.PW_path_eps, strcat(ToolBox.main_foldername, '_viscosity_in_time_vein.eps')));
-        
-    end
-    
-    close 2300
-    close 2301
+
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
+
     
 end

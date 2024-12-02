@@ -1,4 +1,4 @@
-function graphThreshHistogram(R, thresholds, mask, colors, name, ToolBox)
+function graphThreshHistogram(ToolBox, R, thresholds, mask, colors, name)
 %FIG_HISTOGRAM Summary of this function goes here
 %   Detailed explanation goes here
 % Set the threshold
@@ -7,7 +7,7 @@ numLevel = size(thresholds, 2);
 numColors = size(colors, 1);
 
 figure('Visible','off')
-imagesc(R.*mask)
+imagesc(R .* mask)
 title('Correlation with Colorbar');
 colormap(cmapPerception('rocket'))
 colorbar

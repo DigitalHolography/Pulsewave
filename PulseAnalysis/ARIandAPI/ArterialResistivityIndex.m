@@ -1,58 +1,37 @@
-function [] = ArterialResistivityIndex(v_RMS, flatfieldM0, maskArtery, ToolBox, path)
+function [] = ArterialResistivityIndex(ToolBox, t, arterial_signal, M0_ff_video, maskArtery)
 
-PW_params = Parameters_json(path);
+PW_params = Parameters_json(ToolBox.PW_path);
 exportVideos = PW_params.exportVideos;
+folder = 'volumeRate';
+[numX, numY, numFrames] = size(M0_ff_video);
 
-[numX, numY, numFrames] = size(flatfieldM0);
+M0_ff_video = rescale(M0_ff_video);
+M0_ff_image = mean(M0_ff_video, 3);
 
-meanIm = rescale(mean(flatfieldM0, 3));
-flatfieldM0 = rescale(flatfieldM0);
+arterial_signal = filloutliers(arterial_signal, 'center');
+arterial_signal_smooth = smoothdata(arterial_signal, 'rlowess');
 
-[ARI, ARImap] = construct_resistivity_index(v_RMS, maskArtery);
-[API, APImap] = construct_pulsatility_index(v_RMS, maskArtery);
+%% ARI CALC
 
-%% Arterial Resisitivity Index
+min_vRMS = min(arterial_signal_smooth);
+max_vRMS = max(arterial_signal_smooth);
+ARI = (max_vRMS - min_vRMS) / max_vRMS;
 
-[hue_ARI, sat_ARI, val_ARI, cmap] = ARI2HSVmap(ARI, meanIm, maskArtery, ToolBox);
-% arterial resistivity map RGB
+%% ARI FIG
+
+% ARI Graph
+graphSignal(ToolBox, '6_ARI', folder, ...
+    t, arterial_signal_smooth, '-', cArtery, ...
+    t, arterial_signal, ':', cArtery, ...
+    Title = sprintf('ARI = %0.2f', ARI), Legend = {'Smooth', 'Raw'}, ...
+    yLines = [0, min_vRMS, max_vRMS], yLineLabels = {'', '', ''})
+
+% ARI Map
+[hue_ARI, sat_ARI, val_ARI, cmapARI] = ARI2HSVmap(ARI, M0_ff_image, maskArtery);
 ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-ARImapRGB = ARImapRGB .* maskArtery + ones(numX, numY, 3) .* meanIm .* ~maskArtery;
+ARImapRGB = ARImapRGB .* maskArtery + M0_ff_image .* ~maskArtery;
 
-if exportVideos
-
-    ARIvideoRGB = zeros(numX, numY, 3, numFrames);
-
-    for frameIdx = 1:numFrames
-        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, flatfieldM0(:, :, frameIdx), maskArtery, ToolBox);
-        %sat_ARI = sat_ARI.*(val_ARI.*maskArtery);
-        ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-        img_M0 = flatfieldM0(:, :, frameIdx);
-        ARIvideoRGB(:, :, :, frameIdx) = ARIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(numX, numY, 3, 1) .* img_M0 .* ~maskArtery;
-    end
-
-    % save video
-    % avi
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_ARIVideo')));
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, frameIdx)));
-    end
-
-    close(w);
-    % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, '_ARIVideo')), 'MPEG-4');
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, squeeze(ARIvideoRGB(:, :, :, frameIdx)));
-    end
-
-    close(w);
-
-end
-%% ARTERIAL RESISTIVITY FIGURES
-figure(70)
+figure("Visible", "off")
 imagesc(ARImapRGB);
 title(strcat('Arterial Resistivity Index avg. : ', sprintf(" %3.2f", ARI)));
 axis image
@@ -62,157 +41,108 @@ fontsize(gca, 14, "points");
 c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
 c.Label.String = 'Arterial resistivity index';
 c.Label.FontSize = 14;
-colormap(cmap);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
-
-imwrite(ARImapRGB, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapColored.png')), 'png')
-imwrite(rescale(ARImap), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARIMapRaw.png')), 'png')
-
-% Save colorbar
-colorfig = figure(113);
-colorfig.Units = 'normalized';
-colormap(cmap)
-hCB = colorbar('north');
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca, 14, "points");
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapColorbar.eps')))
+colormap(cmapARI);
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
 
 if exportVideos
-    f71 = figure(71);
-    f71.Position = [300, 300, 570, 630];
-
+    % ARI GIF
+    
+    ARIvideoRGB = zeros(numX, numY, 3, numFrames);
     timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialResistivityIndex")), timePeriod, 0.04, numFrames);
-
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, numFrames);
+    f = figure("Visible", "off");
+    f.Position = [300, 300, 570, 630];
+    
+    for frameIdx = 1:numFrames
+        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery);
+        ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+    end
+    
     for frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
         axis image
         axis off
         set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
+        fontsize(gca, 18, "points");
         c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
         c.Label.String = 'Arterial resistivity index';
-        c.Label.FontSize = 12;
-
-        colormap(cmap);
-
-        frame = getframe(f71, [40 10 500 600]);
+        c.Label.FontSize = 18;
+        colormap(cmapARI);
+        frame = getframe(f);
         gifWriter.write(frame, frameIdx);
-
     end
-
+    
     gifWriter.generate();
     gifWriter.delete();
+    
 end
 
-%% Arterial Pulsatility Index
+%% API CALC
 
-[hue_API, sat_API, val_API, cmap] = API2HSVmap(API, meanIm, maskArtery, ToolBox);
-% arterial resistivity map RGB
+mean_vRMS = mean(arterial_signal_smooth);
+API = (max_vRMS - min_vRMS) / mean_vRMS;
+
+%% API FIG
+
+% API Graph
+graphSignal(ToolBox, '6_API', folder, ...
+    t, arterial_signal_smooth, '-', cArtery, ...
+    t, arterial_signal, ':', cArtery, ...
+    Title = sprintf('API = %0.2f', API), Legend = {'Smooth', 'Raw'}, ...
+    yLines = [0, min_vRMS, mean_RMS, max_vRMS], yLineLabels = {'', '', '', ''})
+
+% API Map
+[hue_API, sat_API, val_API, cmapAPI] = API2HSVmap(API, M0_ff_image, maskArtery);
 APImapRGB = hsv2rgb(hue_API, sat_API, val_API);
-APImapRGB = APImapRGB .* maskArtery + ones(numX, numY, 3) .* meanIm .* ~maskArtery;
+APImapRGB = rescale(APImapRGB .* maskArtery) + M0_ff_image .* ~maskArtery;
 
-if exportVideos
-
-    APIvideoRGB = zeros(numX, numY, 3, numFrames);
-
-    for frameIdx = 1:numFrames
-        [hue_API, sat_API, val_API] = API2HSVmap(API, flatfieldM0(:, :, frameIdx), maskArtery, ToolBox);
-        APIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_API, sat_API, val_API);
-        img_M0 = flatfieldM0(:, :, frameIdx);
-        APIvideoRGB(:, :, :, frameIdx) = APIvideoRGB(:, :, :, frameIdx) .* maskArtery + ones(numX, numY, 3, 1) .* img_M0 .* ~maskArtery;
-    end
-    APIvideoRGB (APIvideoRGB < 0) = 0;
-    % save video
-    % avi
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_APIVideo')));
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, squeeze(APIvideoRGB(:, :, :, frameIdx)));
-    end
-
-    close(w);
-    % mp4
-    w = VideoWriter(fullfile(ToolBox.PW_path_mp4, strcat(ToolBox.main_foldername, '_APIVideo')), 'MPEG-4');
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, squeeze(APIvideoRGB(:, :, :, frameIdx)));
-    end
-
-    close(w);
-
-end
-%% ARTERIAL PULSATILITY FIGURES
-
-figure(72)
+figure("Visible", "off")
 imagesc(APImapRGB);
 title(strcat('Arterial Pulsatility Index avg. : ', sprintf(" %3.2f", API)));
 axis image
 axis off
 set(gca, 'LineWidth', 2);
 fontsize(gca, 14, "points");
-c = colorbar('southoutside', 'Ticks', linspace(0, 2, 6));
+c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
 c.Label.String = 'Arterial pulsatility index';
 c.Label.FontSize = 14;
-colormap(cmap);
-clim([0 1.6])
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.eps')))
-
-imwrite(APImapRGB, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'APIMapColored.png')), 'png')
-imwrite(rescale(APImap), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'APIMapRaw.png')), 'png')
-
-% Save colorbar
-colorfig = figure(113);
-colorfig.Units = 'normalized';
-colormap(cmap)
-hCB = colorbar('north');
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-clim([0 1.6])
-fontsize(gca, 14, "points");
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'APImapColorbar.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'APImapColorbar.eps')))
-
-f73 = figure(73);
-f73.Position = [300, 300, 570, 630];
+colormap(cmapAPI);
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.eps')))
 
 if exportVideos
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ArterialPulsatilityIndex")), timePeriod, 0.04, numFrames);
-
+    % API GIF
+    
+    ARIvideoRGB = zeros(numX, numY, 3, numFrames);
+    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, numFrames);
+    f = figure("Visible", "off");
+    f.Position = [300, 300, 570, 630];
+    
     for frameIdx = 1:numFrames
-        imagesc(APIvideoRGB(:, :, :, frameIdx));
-        title(strcat('Arterial pulsatility index value : ', sprintf(" %3.2f", API)));
+        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery);
+        ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
+    end
+    
+    for frameIdx = 1:numFrames
+        imagesc(ARIvideoRGB(:, :, :, frameIdx));
+        title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
         axis image
         axis off
         set(gca, 'LineWidth', 2);
-        fontsize(gca, 12, "points");
+        fontsize(gca, 18, "points");
         c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-        c.Label.String = 'Arterial pulsatility index';
-        c.Label.FontSize = 12;
-
-        colormap(cmap);
-
-        frame = getframe(f73, [40 10 500 600]);
+        c.Label.String = 'Arterial resistivity index';
+        c.Label.FontSize = 18;
+        colormap(cmapARI);
+        frame = getframe(f);
         gifWriter.write(frame, frameIdx);
-
     end
-
+    
     gifWriter.generate();
     gifWriter.delete();
+    
 end
-
-close all
 
 end

@@ -5,6 +5,7 @@ classdef ToolBoxClass < handle
 
     properties
         %Path of the PW dir and the output dir inside
+        PW_path char
         PW_path_main char
         PW_path_dir char
         PW_path_png char
@@ -45,7 +46,8 @@ classdef ToolBoxClass < handle
 
         function obj = ToolBoxClass(path)
 
-            PW_params = Parameters_json(path);
+            obj.PW_path = path;
+            PW_params = Parameters_json(obj.PW_path);
 
             %% Creating paths
             idx = 0;

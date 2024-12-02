@@ -1,4 +1,4 @@
-function [] = plot2txt(tabx, taby, filename, ToolBox)
+function [] = plot2txt(ToolBox, tabx, taby, filename)
     tabx = reshape(tabx, [length(tabx) 1]);
     taby = reshape(taby, [length(tabx) 1]);
     tmp = [tabx, taby];

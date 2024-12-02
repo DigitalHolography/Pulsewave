@@ -1,8 +1,8 @@
-function [] = spectrum_analysis(~, ~, SH_cube, ToolBox, data_M0)
+function [] = spectrum_analysis(ToolBox, ~, ~, SH_cube, data_M0)
 
     fs = ToolBox.fs / 2;
     f1 = ToolBox.f1;
-    f2 = (ToolBox.f1+ToolBox.f2)/2;
+    f2 = (ToolBox.f1 + ToolBox.f2) / 2;
     f3 = ToolBox.f2;
     cubeFrameLength = size(SH_cube, 4);
     batch_size = size(SH_cube, 3);
@@ -98,8 +98,8 @@ function [] = spectrum_analysis(~, ~, SH_cube, ToolBox, data_M0)
 
     %% save video
 
-    writeVideoOnDisc(SH_ColorVideoRGB,fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')));
-    writeGifOnDisc(SH_ColorVideoRGB,fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')),0.1);
+    writeVideoOnDisc(SH_ColorVideoRGB, fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')));
+    writeGifOnDisc(SH_ColorVideoRGB, fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')), 0.1);
 
     imwrite(ImHSVscaled, fullfile(ToolBox.PW_path_png, [ToolBox.main_foldername, '_ColorDoppler.png']), 'png');
 

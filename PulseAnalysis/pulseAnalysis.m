@@ -1,4 +1,4 @@
-function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis, ToolBox, path)
+function [v_RMS_video, exec_times] = pulseAnalysis(ToolBox, f_RMS_video, f_AVG_video, M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis)
 
 % Variable : LocalBKG_artery, Taille : 10631287200 bytes
 % Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
@@ -12,7 +12,7 @@ function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_
 exec_times_id = [];
 exec_times_time = [];
 
-PW_params = Parameters_json(path);
+PW_params = Parameters_json(ToolBox.PW_path);
 veinsAnalysis = PW_params.veins_analysis;
 entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
@@ -121,7 +121,7 @@ if entirePulseAnalysis
     titleString = 'RMS Doppler frequency (kHz)';
     set(colorTitleHandle, 'String', titleString);
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToomaskArterylBox.main_foldername, '1_colorbarRMSFrequency.png')))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '1_colorbarRMSFrequency.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '1_colorbarRMSFrequency.eps')))
 
     exec_times_id = [exec_times_id, "Doppler RMS frequency heatmap"];
@@ -399,78 +399,6 @@ if exportVideos
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
 
-% ARI
-
-v_RMS_arterial_signal = squeeze(sum(v_RMS_video .* maskArterySection, [1 2])) / nnz(maskArterySection);
-v_RMS_arterial_signal = filloutliers(v_RMS_arterial_signal, 'center');
-v_RMS_arterial_signal_smooth = smoothdata(v_RMS_arterial_signal, 'rlowess');
-
-min_vRMS = min(v_RMS_arterial_signal_smooth);
-max_vRMS = max(v_RMS_arterial_signal_smooth);
-mean_vRMS = mean(v_RMS_arterial_signal_smooth);
-ARI = (max_vRMS - min_vRMS) / max_vRMS;
-API = (max_vRMS - min_vRMS) / mean_vRMS;
-
-graphSignal(ToolBox, '6_ARI', folder, ...
-    t, v_RMS_arterial_signal_smooth, '-', cArtery, ...
-    t, v_RMS_arterial_signal, ':', cArtery, ...
-    Title = sprintf('ARI = %0.2f, API = %0.2f', ARI, API), Legend = {'Smooth', 'Raw'}, ...
-    yLines = [0, min_vRMS, mean_vRMS, max_vRMS], yLineLabels = {'', '', '', ''})
-
-M0_disp_video = rescale(M0_disp_video);
-M0_ff_image = mean(M0_disp_video, 3);
-[hue_ARI, sat_ARI, val_ARI, cmap] = ARI2HSVmap(ARI, M0_ff_image, maskArtery, ToolBox);
-% arterial resistivity map RGB
-ARImapRGB = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-ARImapRGB = rescale(ARImapRGB .* maskArtery) + rescale(M0_ff_image .* ~maskArtery);
-
-figure(70)
-imagesc(ARImapRGB);
-title(strcat('Arterial Resistivity Index avg. : ', sprintf(" %3.2f", ARI)));
-axis image
-axis off
-set(gca, 'LineWidth', 2);
-fontsize(gca, 14, "points");
-c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-c.Label.String = 'Arterial resistivity index';
-c.Label.FontSize = 14;
-colormap(cmap);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
-
-if exportVideos
-
-    ARIvideoRGB = zeros(numX, numY, 3, numFrames);
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, numFrames);
-    f71 = figure(71);
-    f71.Position = [300, 300, 570, 630];
-
-    for frameIdx = 1:numFrames
-        [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_disp_video(:, :, frameIdx), maskArtery, ToolBox);
-        ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
-    end
-
-    for frameIdx = 1:numFrames
-        imagesc(ARIvideoRGB(:, :, :, frameIdx));
-        title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 18, "points");
-        c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
-        c.Label.String = 'Arterial resistivity index';
-        c.Label.FontSize = 18;
-        colormap(cmap);
-        frame = getframe(f71);
-        gifWriter.write(frame, frameIdx);
-    end
-
-    gifWriter.generate();
-    gifWriter.delete();
-
-end
-
 clear LocalBackground_in_vessels f_RMS_background
 
 if entirePulseAnalysis
@@ -479,12 +407,12 @@ if entirePulseAnalysis
     tic
 
     fprintf("Average Pulse\n")
-    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(f_RMS_video, M0_disp_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
+    [onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(ToolBox, f_RMS_video, M0_disp_video, maskArtery, sysIdxList, numFramesInterp);
 
     clear f_RMS_video f_RMS_video
 
     fprintf("Average Pulse minus Background\n")
-    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_disp_video, maskArtery, sysIdxList, numFramesInterp, path, ToolBox);
+    [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(ToolBox, delta_f_RMS, M0_disp_video, maskArtery, sysIdxList, numFramesInterp);
 
     clear delta_f_RMS
 
@@ -492,7 +420,7 @@ if entirePulseAnalysis
     avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
 
     v_OneCycle = (onePulseVideominusBKG .* maskArtery + onePulseVideo .* ~maskArtery) * ToolBox.ScalingFactorVelocityInPlane;
-    ArterialResistivityIndex(v_OneCycle, M0_disp_video, maskArtery, ToolBox, path)
+    ArterialResistivityIndex(ToolBox, v_OneCycle, M0_disp_video, maskArtery)
 
     if exportVideos
         % avi
@@ -560,6 +488,9 @@ if entirePulseAnalysis
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
+
+    v_Artery = squeeze(sum(v_RMS .* maskArtery), [1 2]) / nnz(sum(maskArtery));
+    ArterialResistivityIndex(ToolBox, v_Artery, M0_ff_video, maskArtery)
 
     exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
     exec_times_time = [exec_times_time, toc];
@@ -844,7 +775,7 @@ if entirePulseAnalysis
         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.png')))
         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.eps')))
 
-        plot2txt(t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane', ToolBox)
+        plot2txt(ToolBox, t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane')
 
         figure(101)
 
@@ -873,7 +804,7 @@ if entirePulseAnalysis
 
         l = h.XData;
         m = h.YData;
-        plot2txt(l, m, 'ArterialDopplerSignal', ToolBox)
+        plot2txt(ToolBox, l, m, 'ArterialDopplerSignal')
 
         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'all_cycles.png')))
         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'all_cycles.eps')))
@@ -904,7 +835,7 @@ if entirePulseAnalysis
         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.png')))
         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.eps')))
 
-        plot2txt(t, avgArterialPulseHz, 'AvgArterialPulseHz', ToolBox)
+        plot2txt(ToolBox, t, avgArterialPulseHz, 'AvgArterialPulseHz')
 
         figure(103)
         plot(t(1:end - 1), diff_avgPulse, 'k-', LineWidth = 2);
@@ -928,7 +859,7 @@ if entirePulseAnalysis
         exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.png')))
         exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.eps')))
 
-        plot2txt(t(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative', ToolBox)
+        plot2txt(ToolBox, t(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative')
     end
 
     clear idx_sys
