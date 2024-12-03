@@ -1,4 +1,4 @@
 function outToolBox = getGlobalToolBox
-global ToolBox
-outToolBox = ToolBox;
+global ToolBoxGlobal
+outToolBox = ToolBoxGlobal;
 end

@@ -1,8 +1,7 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circle, force_width, flag_show_fig)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circle, force_width, flag_show_fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
-ToolBox = getGlobalToolBox;
 if strcmp(type_of_vessel, 'artery')
     name_section = 'A';
 else
@@ -28,9 +27,6 @@ crossSectionMask = zeros(numX, numY);
 mask_sections = zeros(numX, numY, numSections);
 
 % %% VARIABLES FOR VELOCITY PROFILE VIDEO
-
-mkdir(ToolBox.PW_path_png, 'crossSection')
-mkdir(ToolBox.PW_path_png, 'projection')
 
 tilt_angle_list = zeros(1, length(locs));
 
@@ -151,16 +147,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
             
             % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
-            w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(sectionIdx) '.avi'])));
-            tmp_video = mat2gray(Video_subIm_rotate);
-            open(w)
-            
-            for theta = 1:length(angles)
-                writeVideo(w, tmp_video(:, :, theta));
-            end
-            
-            close(w);
-            
+                        
             f = figure('Visible', 'off');
             r_ = ((1:length(profile)) - centt) * (PW_params.cropSection_pixelSize / 2 ^ k) * 1000;
             stdprofile = std(subImg, [], 1);

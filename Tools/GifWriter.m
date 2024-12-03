@@ -125,7 +125,7 @@ classdef GifWriter < handle
 
             close(h)
 
-            fprintf("   - %s.gif : took %ds to create\n",obj.name, round(toc(obj.t)));
+            fprintf("    - %s.gif took %ds\n",obj.name, round(toc(obj.t)));
         end
 
     end

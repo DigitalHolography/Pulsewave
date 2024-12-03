@@ -32,13 +32,18 @@ L = (numY + numX) / 2;
 %% 1. Mask Sectionning for all circles
 
 % for the all circles output
+tic
 numCircles = PW_params.nbCircles;
 maskSectionCircles = zeros(numX, numY, numCircles);
 
 r1 = (PW_params.velocitySmallRadiusRatio) * L;
 r2 = (PW_params.velocityBigRadiusRatio) * L;
 dr = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * L / numCircles; %PW_params.radius_gap
-maskAllSections = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
+if veins_analysis
+    maskAllSections = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery, maskVein);
+else
+    maskAllSections = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
+end
 
 parfor circleIdx = 1:numCircles
     rad_in = r1 + (circleIdx - 1) * dr;
@@ -49,13 +54,17 @@ parfor circleIdx = 1:numCircles
 
     % save mask image
     if veins_analysis
-        createMaskSection(M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery, maskVein);
+        createMaskSection(ToolBox, M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_vessel_section_circle_%d', circleIdx), maskArtery, maskVein);
     else
-        createMaskSection(M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery);
+        createMaskSection(ToolBox, M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery);
     end
 end
 
+fprintf("    1. Mask Sectionning for all circles output took %ds\n", round(toc))
+
 %% 2. Properties of the sections for all circles output
+
+tic
 
 locs_A = cell(numCircles, 1);
 widths_A = cell(numCircles, 1);
@@ -108,37 +117,84 @@ parfor circleIdx = 1:numCircles
 
 end
 
-%% 3. Sections analysis for all circles output
+fprintf("    2. Initialisation of the sections for all circles output took %ds\n", round(toc))
 
-vr_AVG_A_r = zeros(numCircles, max(numSections_A), numFrames, 'single');
-vr_STD_A_Mat = zeros(numCircles, max(numSections_A), numFrames, 'single');
-area_A_r = zeros(numCircles, max(numSections_A), 'single');
-width_A_r = zeros(numCircles, numY, numX, 'single');
-stdCrossSectionWidthR = zeros(numCircles, max(numSections_A), 'single');
-velocity_profiles_r = cell([numCircles max(numSections_A)]);
-std_velocity_profiles_r = cell([numCircles max(numSections_A)]);
-sub_images_r = cell([numCircles max(numSections_A)]);
+%% 3. Cross-sections analysis for all circles output
 
-for circleIdx = 1:numCircles
-    [vrAVG_A, vr_STD_A, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(locs_A{circleIdx}, widths_A{circleIdx}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, 'artery', flagBloodVelocityProfile, circleIdx, force_width, 1);
+tic
 
-    if length(vrAVG_A) < 1
+% Parameters 
+flowRate_sliceHalfThickness = PW_params.flowRate_sliceHalfThickness;
+
+% Arteries Cross-sections analysis
+% Initialisation of the cells for arteries
+vr_avg_A_r = cell(1, numCircles);
+vr_std_A_r = cell(1, numCircles);
+area_A_r = cell(1, numCircles);
+width_avg_A_r = cell(1, numCircles);
+width_std_A_r = cell(1, numCircles);
+v_profiles_avg_A_r = cell(1, numCircles);
+v_profiles_std_A_r = cell(1, numCircles);
+sub_images_A_r = cell(1, numCircles);
+
+mkdir(ToolBox.PW_path_png, 'crossSection')
+mkdir(ToolBox.PW_path_png, 'projection')
+
+% Cross-Section Analysis of the arteries
+parfor circleIdx = 1:numCircles
+    [vr_avg_A, vr_std_A, area_A, ~, ~, width_avg_A, v_profiles_avg_A, v_profiles_std_A, subImg_cell_A, ~, width_std_A] = crossSectionAnalysis2(ToolBox, locs_A{circleIdx}, widths_A{circleIdx}, maskArtery, v_RMS, flowRate_sliceHalfThickness, 'artery', flagBloodVelocityProfile, circleIdx, force_width, 1);
+
+    if length(vr_avg_A) < 1
         continue
     end
-
-    vr_AVG_A_r(circleIdx, 1:numSections_A(circleIdx), :) = reshape(vrAVG_A, 1, numSections_A(circleIdx), numFrames);
-    vr_STD_A_Mat(circleIdx, 1:numSections_A(circleIdx), :) = reshape(vr_STD_A, 1, numSections_A(circleIdx), numFrames);
-    area_A_r(circleIdx, 1:numSections_A(circleIdx)) = reshape(cross_section_area_artery, 1, numSections_A(circleIdx));
-    stdCrossSectionWidthR(circleIdx, 1:numSections_A(circleIdx)) = reshape(stdCrossSectionWidth, 1, numSections_A(circleIdx));
-    width_A_r(circleIdx, :, :) = reshape(cross_section_mask_artery, 1, numX, numY);
-
-    for j = 1:numSections_A(circleIdx)
-        velocity_profiles_r{circleIdx, j} = velocity_profiles{j};
-        std_velocity_profiles_r{circleIdx, j} = std_velocity_profiles{j};
-        sub_images_r{circleIdx, j} = rescale(subImg_cell{j});
-    end
+    numSection = numSections_A(circleIdx);
+    vr_avg_A_r{circleIdx} = reshape(vr_avg_A, 1, numSection, numFrames);
+    vr_std_A_r{circleIdx} = reshape(vr_std_A, 1, numSection, numFrames);
+    area_A_r{circleIdx} = reshape(area_A, 1, numSection);
+    width_std_A_r{circleIdx} = reshape(width_std_A, 1, numSection);
+    width_avg_A_r{circleIdx} = reshape(width_avg_A, 1, numX, numY);
+    v_profiles_avg_A_r{circleIdx} = v_profiles_avg_A;
+    v_profiles_std_A_r{circleIdx} = v_profiles_std_A;
+    sub_images_A_r{circleIdx} = rescale(subImg_cell_A);
 
 end
+
+% Vein Cross-sections analysis
+if veins_analysis
+    % Initialisation of the cells for veins
+    vr_avg_V_r = cell(1, numCircles);
+    vr_std_V_r = cell(1, numCircles);
+    area_V_r = cell(1, numCircles);
+    width_avg_V_r = cell(1, numCircles);
+    width_std_V_r = cell(1, numCircles);
+    v_profiles_avg_V_r = cell(1, numCircles);
+    v_profiles_std_V_r = cell(1, numCircles);
+    sub_images_V_r = cell(1, numCircles);
+
+    % Cross-Section Analysis of the veins
+    parfor circleIdx = 1:numCircles
+        [vr_avg_V, vr_std_V, area_V, ~, ~, width_avg_V, v_profiles_avg_V, v_profiles_std_V, subImg_cell_V, ~, width_std_V] = crossSectionAnalysis2(ToolBox, locs_V{circleIdx}, widths_V{circleIdx}, maskVein, v_RMS, flowRate_sliceHalfThickness, 'vein', flagBloodVelocityProfile, circleIdx, force_width, 1);
+
+        if length(vr_avg_V) < 1
+            continue
+        end
+        numSection = numSections_V(circleIdx);
+        vr_avg_V_r{circleIdx} = reshape(vr_avg_V, 1, numSection, numFrames);
+        vr_std_V_r{circleIdx} = reshape(vr_std_V, 1, numSection, numFrames);
+        area_V_r{circleIdx} = reshape(area_V, 1, numSection);
+        width_std_V_r{circleIdx} = reshape(width_std_V, 1, numSection);
+        width_avg_V_r{circleIdx} = reshape(width_avg_V, 1, numX, numY);
+        v_profiles_avg_V_r{circleIdx} = v_profiles_avg_V;
+        v_profiles_std_V_r{circleIdx} = v_profiles_std_V;
+        sub_images_V_r{circleIdx} = rescale(subImg_cell_V);
+
+    end
+end
+
+fprintf("    3. Cross-sections analysis for all circles output took %ds\n", round(toc))
+
+%% 4. Sections Image
+tic
 
 if isempty(PW_params.forcewidth)
     index_start = systolesIndexes(1);
@@ -148,47 +204,55 @@ else
     index_end = numFrames;
 end
 
-colors = lines(numCircles);
+sectionImage(numCircles, M0_ff_img, width_avg_A_r, 'arteries')
+sectionImage(numCircles, M0_ff_img, width_avg_V_r, 'veins')
 
-imgRGB = repmat(M0_ff_img, 1, 1, 3);
+fprintf("    4. Section image took %ds\n", round(toc))
 
-for circleIdx = 1:numCircles
-    indxs = find(width_A_r(circleIdx, :, :) > 0);
-    imgRGB(indxs) = colors(circleIdx, 1);
-    imgRGB(numY * numX + indxs) = colors(circleIdx, 2);
-    imgRGB(2 * numY * numX + indxs) = colors(circleIdx, 3);
+%% 5. Width Image
 
-    if circleIdx > 1 % intersections should be drawn in white
-        indxs = find(width_A_r(circleIdx, :, :) > 0 & width_A_r(circleIdx - 1, :, :) > 0);
-        imgRGB(indxs) = 1;
-        imgRGB(numY * numX + indxs) = 1;
-        imgRGB(2 * numY * numX + indxs) = 1;
-    end
-
-end
-
-figure("Visible","off")
-imshow(imgRGB)
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'ateries_sections.png')))
-
+% Arteries
 figure("Visible","off")
 % fill with zero images the zeros parts
-subimage_size = size(sub_images_r{1, 1}, 1);
+subimage_cells = sub_images_A_r{1};
+subimage_size = size(subimage_cells{1}, 1);
 
 for circleIdx = 1:numCircles
 
     for j = 1:max(numSections_A)
 
-        if isempty(sub_images_r{circleIdx, j})
-            sub_images_r{circleIdx, j} = zeros(subimage_size, 'single');
+        if isempty(sub_images_A_r{circleIdx}{j})
+            sub_images_A_r{circleIdx}{j} = zeros(subimage_size, 'single');
         end
 
     end
 
 end
 
-montage(sub_images_r(1:numCircles, 1:max(numSections_A)), "Size", [max(numSections_A), numCircles])
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'all_sections_with_increasing_radius.png')))
+montage(cell2mat(sub_images_A_r), "Size", [max(numSections_A), numCircles])
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, '5_all_arteries_sections_with_increasing_radius.png')))
+
+% Veins
+figure("Visible","off")
+% fill with zero images the zeros parts
+subimage_size = size(sub_images_V_r{1, 1}, 1);
+
+for circleIdx = 1:numCircles
+
+    for j = 1:max(numSections_V)
+
+        if isempty(sub_images_V_r{circleIdx, j})
+            sub_images_V_r{circleIdx, j} = zeros(subimage_size, 'single');
+        end
+
+    end
+
+end
+
+montage(sub_images_V_r(1:numCircles, 1:max(numSections_V)), "Size", [max(numSections_V), numCircles])
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, '5_all_veins_sections_with_increasing_radius.png')))
+
+%% 6. Cross-Section Width Image
 
 section_width_plot = figure("Visible","off");
 mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsWidth')
@@ -200,7 +264,7 @@ for circleIdx = 1:numCircles
     section_width_plot.Position = [200 200 600 600];
     crossSectionWidthArtery = 2 * sqrt(area_A_r(circleIdx, 1:numSections_A(circleIdx)) / pi) * 1000;
     etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 1)), "µm");
-    graphMaskTags(section_width_plot, M0_ff_img, squeeze(width_A_r(circleIdx, :, :)), locs_A{circleIdx}, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
+    graphMaskTags(section_width_plot, M0_ff_img, squeeze(width_avg_A_r(circleIdx, :, :)), locs_A{circleIdx}, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
     title(sprintf("%s", 'Cross section width in arteries (µm)'));
     set(gca, 'FontSize', 14)
     vesselWidthsVideo(:, :, :, circleIdx) = frame2im(getframe(section_width_plot));
@@ -211,6 +275,8 @@ end
 
 writeGifOnDisc(vesselWidthsVideo, 'sectionsWidth.gif', 0.1);
 
+
+
 figure("Visible","off")
 cross_section_hist = histogram(2 * sqrt(area_A_r(area_A_r ~= 0) / pi) * 1000, 50, FaceColor = 'k');
 aa = axis;
@@ -219,14 +285,14 @@ axis(aa);
 title('Histogram of sections width (µm)');
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'histogram_of_section_width.png')))
 writematrix(2 * sqrt(area_A_r / pi) * 1000, fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'section_widths.txt')));
-writematrix(stdCrossSectionWidthR * PW_params.cropSection_pixelSize / (2 ^ PW_params.k) * 1000, fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'standard_deviation_section_width.txt')));
+writematrix(width_std_A_r * PW_params.cropSection_pixelSize / (2 ^ PW_params.k) * 1000, fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'standard_deviation_section_width.txt')));
 
 plot_Bvr_full_field = figure("Visible","off");
 
 Color_std = [0.7 0.7 0.7];
 rad = ((PW_params.velocitySmallRadiusRatio * (numX + numY) / 2) + dr / 2:dr:(PW_params.velocityBigRadiusRatio * (numX + numY) / 2) - dr / 2)'';
-BvrR = sum(vr_AVG_A_r, 2);
-std_BvrR = sqrt(sum(vr_STD_A_Mat .^ 2, 2)); % sqrt of the sum of variances
+BvrR = sum(vr_avg_A_r, 2);
+std_BvrR = sqrt(sum(vr_std_A_r .^ 2, 2)); % sqrt of the sum of variances
 mean_BvrR = squeeze(mean(BvrR(:, :, index_start:index_end), 3))';
 mean_std_BvrR = squeeze(rms(std_BvrR(:, :, index_start:index_end), 3))'; % quadratic mean
 curve1 = mean_BvrR + 0.5 * mean_std_BvrR;
@@ -335,14 +401,14 @@ if flagBloodVelocityProfile
         plot_mean_velocity_profiles = figure("Visible","off");
 
         for j = 1:numSections_A(circleIdx)
-            plot(mean(velocity_profiles_r{circleIdx, j}, 2))
+            plot(mean(v_profiles_avg_A_r{circleIdx, j}, 2))
             hold on
         end
 
         colors = lines(numSections_A(circleIdx));
 
         for j = 1:numSections_A(circleIdx)
-            profile = mean(velocity_profiles_r{circleIdx, j}, 2);
+            profile = mean(v_profiles_avg_A_r{circleIdx, j}, 2);
 
             if any(profile < 0) % edge case when there is negative velocities
                 [~, locs] = findpeaks(-profile);
@@ -364,7 +430,7 @@ if flagBloodVelocityProfile
                 indx = find(profile > 0);
             end
 
-            plot(indx, ones([1 length(indx)]) * mean(mean(velocity_profiles_r{circleIdx, j}, 2)), 'Color', colors(j, :))
+            plot(indx, ones([1 length(indx)]) * mean(mean(v_profiles_avg_A_r{circleIdx, j}, 2)), 'Color', colors(j, :))
             hold on
         end
 
@@ -380,8 +446,8 @@ if flagBloodVelocityProfile
 
         for j = 1:numSections_A(circleIdx)
 
-            profile = mean(velocity_profiles_r{circleIdx, j}, 2); % mean velocity profile
-            profile_std = mean(std_velocity_profiles_r{circleIdx, j}, 2);
+            profile = mean(v_profiles_avg_A_r{circleIdx, j}, 2); % mean velocity profile
+            profile_std = mean(v_profiles_std_A_r{circleIdx, j}, 2);
 
             if any(profile < 0) % edge case when there is negative velocities
                 [~, locs] = findpeaks(-profile);
@@ -506,7 +572,7 @@ axP = axis;
 axis tight
 axT = axis;
 axis([axT(1), axT(2), axP(3), axP(4)])
-xlim([pulseTime(1) -1/2 * pulseTime(end), 3/2 * pulseTime(end)])
+xlim([pulseTime(1)-1/2 * pulseTime(end), 3/2 * pulseTime(end)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')

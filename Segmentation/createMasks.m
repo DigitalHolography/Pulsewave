@@ -282,19 +282,12 @@ maskArteryClean = maskArteryClean | imdilate(skelArtery, minWidthSE);
 maskVeinClean = maskVeinClean | imdilate(skelVein, minWidthSE);
 
 clear skelArtery skelVein
-%% 3) Bonus) Force Create Masks
-if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
-    fprintf("FORCED MASK\n")
-    maskArteryClean = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
-    maskVeinClean = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
-end
 
 %% 3) 3) Create Vessel and Background Mask
 maskArtery = maskArteryClean;
 maskVein = maskVeinClean;
 
 maskVessel = maskArtery | maskVein;
-maskBackground = not(maskVessel);
 
 if PW_params.veins_analysis
     maskNeighbors = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width)) - (maskArtery | maskVein);
@@ -327,13 +320,13 @@ try
     TNVein = nnz(~targetMaskVein & ~maskVeinClean);
     
     fileID = fopen(fullfile(ToolBox.PW_path_log, sprintf("%s_confusionMatrix.txt", ToolBox.main_foldername)), 'w');
-    fprintf(fileID, "Artery Sensitivity: %0.2f %%\n", 100 * TPArtery / (TPArtery + FNArtery));
-    fprintf(fileID, "Artery Specificity: %0.2f %%\n", 100 * TNArtery / (TNArtery + FPArtery));
-    fprintf(fileID, "Vein Sensitivity: %0.2f %%\n", 100 * TPVein / (TPVein + FNVein));
-    fprintf(fileID, "Vein Specificity: %0.2f %%\n", 100 * TNVein / (TNVein + FPVein));
+    fprintf(fileID, "    Artery Sensitivity: %0.2f %%\n", 100 * TPArtery / (TPArtery + FNArtery));
+    fprintf(fileID, "    Artery Specificity: %0.2f %%\n", 100 * TNArtery / (TNArtery + FPArtery));
+    fprintf(fileID, "    Vein Sensitivity: %0.2f %%\n", 100 * TPVein / (TPVein + FNVein));
+    fprintf(fileID, "    Vein Specificity: %0.2f %%\n", 100 * TNVein / (TNVein + FPVein));
     fclose(fileID);
 catch
-    fprintf("No target masks to perform sensitivity & specificity evaluation\n")
+    fprintf("    No target masks to perform sensitivity & specificity evaluation\n")
 end
 
 %% Force Create Masks
@@ -364,8 +357,8 @@ clear f_AVG_std f_AVG_mean
 r1 = PW_params.velocitySmallRadiusRatio * L;
 r2 = PW_params.velocityBigRadiusRatio * L;
 
-maskSection = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery);
-createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein);
+maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery);
+createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein);
 
 %% Create Segmentation Map
 

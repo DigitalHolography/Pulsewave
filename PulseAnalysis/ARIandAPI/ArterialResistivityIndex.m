@@ -55,12 +55,12 @@ if exportVideos
     f = figure("Visible", "off");
     f.Position = [300, 300, 570, 630];
     
-    for frameIdx = 1:numFrames
+    parfor frameIdx = 1:numFrames
         [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery);
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     end
     
-    for frameIdx = 1:numFrames
+    parfor frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
         axis image
@@ -121,12 +121,14 @@ if exportVideos
     f = figure("Visible", "off");
     f.Position = [300, 300, 570, 630];
     
-    for frameIdx = 1:numFrames
+    tic
+    parfor frameIdx = 1:numFrames
         [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery);
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     end
-    
-    for frameIdx = 1:numFrames
+    toc
+    tic
+    parfor frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
         axis image
@@ -140,7 +142,7 @@ if exportVideos
         frame = getframe(f);
         gifWriter.write(frame, frameIdx);
     end
-    
+    toc
     gifWriter.generate();
     gifWriter.delete();
     

@@ -491,9 +491,9 @@ if PW_params.AllCirclesFlag
         r2 = radiusmid - j * deltarcentral;
 
         if mod(j, 10) == 0 % save one on 10
-            [maskSection] = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, sprintf('mask_artery_section_velocity_rgb%d', j), maskArtery);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, sprintf('mask_artery_section_velocity_rgb%d', j), maskArtery);
         else
-            [maskSection] = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_section_velocity_rgb100', maskArtery);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_section_velocity_rgb100', maskArtery);
         end
 
         maskArtery_section = maskArtery & maskSection;
@@ -520,9 +520,9 @@ if PW_params.AllCirclesFlag
         r2 = radius0 + (j - 1) * deltar;
 
         if mod(j, 10) == 0 % save one on 10
-            [maskSection] = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, sprintf('mask_artery_section_velocity_rgb%d', j), maskArtery);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, sprintf('mask_artery_section_velocity_rgb%d', j), maskArtery);
         else
-            [maskSection] = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_section_velocity_rgb100', maskArtery);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_section_velocity_rgb100', maskArtery);
         end
 
         maskArtery_section_only = maskArtery & maskSection;

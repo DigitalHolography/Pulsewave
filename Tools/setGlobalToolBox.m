@@ -1,4 +1,4 @@
 function setGlobalToolBox(ToolBoxIn)
-global ToolBox
-ToolBox = ToolBoxIn;
+global ToolBoxGlobal
+ToolBoxGlobal = ToolBoxIn;
 end

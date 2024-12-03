@@ -1,6 +1,7 @@
-function [maskSection, VesselImageRGB] = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein)
+function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein)
 
 arguments
+    ToolBox
     M0_ff_img
     r1
     r2
@@ -9,9 +10,6 @@ arguments
     maskArtery
     maskVein = []
 end
-
-ToolBox = getGlobalToolBox;
-mkdir(fullfile(ToolBox.PW_path_png, 'mask')); % create dir if it doesnt exist
 
 [numX, numY] = size(maskArtery);
 [x, y] = meshgrid(1:numY, 1:numX);

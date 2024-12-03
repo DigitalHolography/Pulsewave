@@ -45,7 +45,7 @@ if entirePulseAnalysis
     tic
 
     %  Doppler AVG frequency heatmap
-    figure(10)
+    figure("Visible", "off")
     imagesc(f_AVG_mean);
     colormap gray
     title('AVG frequency map RAW');
@@ -62,7 +62,7 @@ if entirePulseAnalysis
     clear f_AVG_mean
 
     % Colorbar for AVG image
-    colorfig = figure(11);
+    colorfig = figure("Visible", "off");
     colorfig.Units = 'normalized';
     colormap(c);
     colormap gray
@@ -90,7 +90,7 @@ if entirePulseAnalysis
     f_RMS = squeeze(mean(f_RMS_video, 3));
 
     %  Doppler AVG frequency heatmap
-    figure(20)
+    figure("Visible", "off")
     imagesc(f_RMS);
     colormap gray
     title('RMS frequency map RAW');
@@ -107,7 +107,7 @@ if entirePulseAnalysis
     clear f_RMS
 
     % Colorbar for AVG image
-    colorfig = figure(21);
+    colorfig = figure("Visible", "off");
     colorfig.Units = 'normalized';
     colormap(c);
     colormap gray
@@ -157,6 +157,8 @@ if entirePulseAnalysis
             Title = 'Arterial Pulse Waveform and Background Signal', xlabel = strXlabel, ylabel = strYlabel, ...
             Legends = {'Artery', 'Background'}, TxtName = {'FullArterialSignal', 'FullBackgroundSignal'})
     end
+
+    fprintf("    2. Calculation of raw signals of arteries, background and veins took %ds\n", round(toc))
 
     exec_times_id = [exec_times_id, "Calculate raw signals"];
     exec_times_time = [exec_times_time, toc];
@@ -212,6 +214,8 @@ if entirePulseAnalysis
         Legend = {'filtered arterial pulse', 'residual'}, ...
         yLines = [0 std(noise) 2 * std(noise) 3 * std(noise)], yLineLabels = {'', '1 std', '2 std', '3 std'}, ...
         TxtName = {'FilteredArterialPulse', 'ResidualArterialPulse'})
+    
+    fprintf("    3. Smoothing signals took %ds\n", round(toc))
 
     exec_times_id = [exec_times_id, "Smoothing signals"];
     exec_times_time = [exec_times_time, toc];
@@ -274,6 +278,8 @@ if entirePulseAnalysis
             TxtFigX = textsX, TxtFigY = textsY, TxtFigString = texts)
     end
 
+    fprintf("    4.  Calculation of pulse signal derivative and finding/smoothing pulses signals took %ds\n", round(toc))
+
 end
 
 %% 5) Local BKG Artery and Veins %~1min
@@ -310,6 +316,7 @@ if veinsAnalysis
         Legend = {'Veins', 'Background'})
 end
 
+fprintf("    5. Local BKG Artery and Veins calculation took %ds\n", round(toc))
 exec_times_time = [exec_times_time, toc];
 
 %% 6) Difference calculation
@@ -351,7 +358,7 @@ end
 
 exec_times_time = [exec_times_time, toc];
 
-f18 = figure(18);
+f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
 LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVesselDilated + ones(numX, numY) * mean(f_RMS_background, 'all') .* ~maskVesselDilated;
 imagesc(LocalBackground_in_vessels);
@@ -368,7 +375,7 @@ imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'puls
 
 range(1:2) = clim;
 
-f18 = figure(19);
+f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
 in_vessels = mean(delta_f_RMS, 3) .* maskVesselDilated;
 imagesc(in_vessels);
@@ -398,6 +405,9 @@ if exportVideos
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.avi')));
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
+
+
+fprintf("    6. Difference calculation took %ds\n", round(toc))
 
 clear LocalBackground_in_vessels f_RMS_background
 
