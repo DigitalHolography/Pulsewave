@@ -6,7 +6,6 @@ ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path);
 
 veins_analysis = PW_params.veins_analysis;
-exportVideos = PW_params.exportVideos;
 force_width = [];
 
 if ~isempty(PW_params.forcewidth)
@@ -204,78 +203,24 @@ else
     index_end = numFrames;
 end
 
-sectionImage(numCircles, M0_ff_img, width_avg_A_r, 'arteries')
-sectionImage(numCircles, M0_ff_img, width_avg_V_r, 'veins')
-
-fprintf("    4. Section image took %ds\n", round(toc))
-
-%% 5. Width Image
-
-% Arteries
-figure("Visible","off")
-% fill with zero images the zeros parts
-subimage_cells = sub_images_A_r{1};
-subimage_size = size(subimage_cells{1}, 1);
-
-for circleIdx = 1:numCircles
-
-    for j = 1:max(numSections_A)
-
-        if isempty(sub_images_A_r{circleIdx}{j})
-            sub_images_A_r{circleIdx}{j} = zeros(subimage_size, 'single');
-        end
-
-    end
-
+sectionImage(numCircles, M0_ff_img, width_avg_A_r, 'Artery')
+if veins_analysis
+    sectionImage(numCircles, M0_ff_img, width_avg_V_r, 'Vein')
 end
 
-montage(cell2mat(sub_images_A_r), "Size", [max(numSections_A), numCircles])
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, '5_all_arteries_sections_with_increasing_radius.png')))
-
-% Veins
-figure("Visible","off")
-% fill with zero images the zeros parts
-subimage_size = size(sub_images_V_r{1, 1}, 1);
-
-for circleIdx = 1:numCircles
-
-    for j = 1:max(numSections_V)
-
-        if isempty(sub_images_V_r{circleIdx, j})
-            sub_images_V_r{circleIdx, j} = zeros(subimage_size, 'single');
-        end
-
-    end
-
+widthImage(sub_images_A_r, numSections_A, 'artery')
+if veins_analysis
+    widthImage(sub_images_V_r, numSections_V, 'vein')
 end
 
-montage(sub_images_V_r(1:numCircles, 1:max(numSections_V)), "Size", [max(numSections_V), numCircles])
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, '5_all_veins_sections_with_increasing_radius.png')))
-
-%% 6. Cross-Section Width Image
-
-section_width_plot = figure("Visible","off");
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsWidth')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsWidth')
-x_center = x_barycenter;
-y_center = y_barycenter;
-
-for circleIdx = 1:numCircles
-    section_width_plot.Position = [200 200 600 600];
-    crossSectionWidthArtery = 2 * sqrt(area_A_r(circleIdx, 1:numSections_A(circleIdx)) / pi) * 1000;
-    etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 1)), "µm");
-    graphMaskTags(section_width_plot, M0_ff_img, squeeze(width_avg_A_r(circleIdx, :, :)), locs_A{circleIdx}, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
-    title(sprintf("%s", 'Cross section width in arteries (µm)'));
-    set(gca, 'FontSize', 14)
-    vesselWidthsVideo(:, :, :, circleIdx) = frame2im(getframe(section_width_plot));
-
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername, circleIdx, 'crossSectionWidthArteryImage.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername, circleIdx, 'crossSectionWidthArteryImage.eps')))
+crossSectionWidthImage(M0_ff_img, xy_barycenter, area_A_r, numSections_A, width_avg_A_r, locs_A, 'Artery')
+if veins_analysis
+    crossSectionWidthImage(M0_ff_img, xy_barycenter, area_V_r, numSections_V, width_avg_V_r, locs_V, 'Vein')
 end
 
-writeGifOnDisc(vesselWidthsVideo, 'sectionsWidth.gif', 0.1);
+fprintf("    4. Sections Images Generation took %ds\n", round(toc))
 
-
+%% 7. Cross-Section Width Histogram
 
 figure("Visible","off")
 cross_section_hist = histogram(2 * sqrt(area_A_r(area_A_r ~= 0) / pi) * 1000, 50, FaceColor = 'k');
@@ -289,7 +234,6 @@ writematrix(width_std_A_r * PW_params.cropSection_pixelSize / (2 ^ PW_params.k) 
 
 plot_Bvr_full_field = figure("Visible","off");
 
-Color_std = [0.7 0.7 0.7];
 rad = ((PW_params.velocitySmallRadiusRatio * (numX + numY) / 2) + dr / 2:dr:(PW_params.velocityBigRadiusRatio * (numX + numY) / 2) - dr / 2)'';
 BvrR = sum(vr_avg_A_r, 2);
 std_BvrR = sqrt(sum(vr_std_A_r .^ 2, 2)); % sqrt of the sum of variances
