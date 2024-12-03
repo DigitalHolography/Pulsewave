@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circle, force_width, flag_show_fig)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circle, force_width, flag_show_fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
@@ -321,7 +321,7 @@ end % sectionIdx
 
 if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
     
-    bloodSectionProfile(ToolBox, subImg_cell, subVideo_cell, type_of_vessel);
+    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel);
     % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
     
 end

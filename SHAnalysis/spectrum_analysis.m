@@ -1,4 +1,4 @@
-function [] = spectrum_analysis(ToolBox, ~, ~, SH_cube, data_M0)
+function [] = spectrum_analysis(~, ~, SH_cube, data_M0)
 
     fs = ToolBox.fs / 2;
     f1 = ToolBox.f1;

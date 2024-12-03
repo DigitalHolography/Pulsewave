@@ -1,6 +1,6 @@
-function pulseVelocity(ToolBox, M, maskArtery)
+function pulseVelocity(M, maskArtery)
 %
-[maskLongArtery, L, adjMatrix] = getLongestArteryBranch(ToolBox, maskArtery, M);
+[maskLongArtery, L, adjMatrix] = getLongestArteryBranch(maskArtery, M);
 close all
 %PWV = pulseWaveVelocity(M,maskLongArtery,ToolBox,path);
 end

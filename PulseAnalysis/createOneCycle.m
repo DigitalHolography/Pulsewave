@@ -1,4 +1,4 @@
-function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(ToolBox, video, videoM0, mask, sysIdxList, numInterp)
+function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(video, videoM0, mask, sysIdxList, numInterp)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 

@@ -1,4 +1,4 @@
-function [sys_index_list, fullPulseWave] = find_systole_index(ToolBox, video, maskArtery)
+function [sys_index_list, fullPulseWave] = find_systole_index(video, maskArtery)
 
     PW_params = Parameters_json(ToolBox.PW_path);
 

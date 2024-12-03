@@ -1,8 +1,7 @@
-function graphSignalStd(ToolBox, figId, signal, stdsignal, numFrames, ylabl, xlabl, titl, unit, NameValueArgs)
+function graphSignalStd(figId, signal, stdsignal, numFrames, ylabl, xlabl, titl, unit, NameValueArgs)
 % Plots on an existing graph the signal and its std
 
 arguments
-    ToolBox
     figId
     signal
     stdsignal

@@ -1,4 +1,4 @@
-function [maskLongArtery, L, adjMatrix] = getLongestArteryBranch(ToolBox, maskArtery, U)
+function [maskLongArtery, L, adjMatrix] = getLongestArteryBranch(maskArtery, U)
 % Returns the longest artery branch mask
 PW_params = Parameters_json(ToolBox.PW_path);
 [numX, numY] = size(maskArtery);

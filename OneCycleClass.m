@@ -102,11 +102,6 @@ classdef OneCycleClass
             obj = VideoNormalizingLocally(obj);
             fprintf("- Moment Normalizing took : %ds\n", round(toc))
             
-            % clear space
-            obj.M0_data_video = [];
-            obj.M1_data_video = [];
-            obj.M2_data_video = [];
-            
             % Video resize (preprocess interpolation interpolate)
             tic
             fprintf("\n----------------------------------\n")
@@ -137,6 +132,7 @@ classdef OneCycleClass
             %  ------- This is the app main routine. --------
             
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
+            global ToolBox
             ToolBox = obj.ToolBoxmaster;
             checkPulsewaveParamsFromJson(ToolBox.PW_path); % checks compatibility between found PW params and Default PW params of this version of PW.
             PW_params = Parameters_json(ToolBox.PW_path);
@@ -231,7 +227,7 @@ classdef OneCycleClass
                 fprintf("Mask Creation\n")
                 fprintf("----------------------------------\n")
                 
-                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(ToolBox, obj.M0_disp_video, obj.f_AVG_video);
+                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_disp_video, obj.f_AVG_video);
                 
                 time_create_masks = toc(createMasksTiming);
                 fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -258,7 +254,7 @@ classdef OneCycleClass
                 fprintf("Find Systole\n")
                 fprintf("----------------------------------\n")
                 
-                [obj.sysIdxList, ~] = find_systole_index(ToolBox, obj.M0_disp_video, obj.maskArtery);
+                [obj.sysIdxList, ~] = find_systole_index(obj.M0_disp_video, obj.maskArtery);
                 
                 time_sys_idx = toc(findSystoleTimer);
                 fprintf("- FindSystoleIndex took : %ds\n", round(time_sys_idx))
@@ -272,7 +268,7 @@ classdef OneCycleClass
                 
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
                 
-                [obj.vRMS, exec_times] = pulseAnalysis(ToolBox, obj.f_RMS_video, f_AVG_mean, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.maskSection, obj.flag_ExtendedPulseWave_analysis);
+                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.maskSection, obj.flag_ExtendedPulseWave_analysis);
                 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
@@ -295,7 +291,7 @@ classdef OneCycleClass
             % fprintf("Pulse Velocity\n")
             % fprintf("----------------------------------\n")
             %
-            % pulseVelocity(ToolBox, obj.M0_data_video, maskArtery)
+            % pulseVelocity(obj.M0_data_video, maskArtery)
             %
             % time_pulsevelocity = toc(pulseVelocityTimer);
             % fprintf("- Pulse Velocity Calculations took : %ds\n", round(time_pulsevelocity))
@@ -308,8 +304,8 @@ classdef OneCycleClass
                 fprintf("Blood Flow Velocity Calculation\n")
                 fprintf("----------------------------------\n")
                 
-                bloodFlowVelocity(ToolBox, obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video, obj.xy_barycenter)
-                % bloodFlowVelocityFullField(ToolBox, vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video)
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video, obj.xy_barycenter)
+                % bloodFlowVelocityFullField(vRMS, vOneCycle, maskArtery, maskVein, obj.M0_data_video)
                 
                 time_velo = toc(bloodFlowVelocityTimer);
                 fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
@@ -323,8 +319,8 @@ classdef OneCycleClass
                 fprintf("Blood Volume Rate Calculation\n")
                 fprintf("----------------------------------\n")
                 
-                % bloodVolumeRate(ToolBox, obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, obj.flag_bloodVelocityProfile_analysis);
-                bloodVolumeRateForAllRadii(ToolBox, obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, obj.sysIdxList, obj.flag_bloodVelocityProfile_analysis);
+                % bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, obj.flag_bloodVelocityProfile_analysis);
+                bloodVolumeRateForAllRadii(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, obj.sysIdxList, obj.flag_bloodVelocityProfile_analysis);
                 
                 time_volumeRate = toc(bloodVolumeRateTimer);
                 fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
@@ -359,20 +355,21 @@ classdef OneCycleClass
                 SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
                 
                 tic
-                spectrum_analysis(obj.maskArtery, obj.maskBackground, SH_cube, ToolBox, obj.M0_data_video);
+                spectrum_analysis(obj.maskArtery, obj.maskBackground, SH_cube, obj.M0_data_video);
                 disp('Spectrum analysis :')
                 time = toc;
                 disp(time)
                 save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
                 
                 tic
-                spectrogram(ToolBox, obj.maskArtery, obj.maskNeighbors, obj.maskSection, SH_cube);
+                spectrogram(obj.maskArtery, obj.maskNeighbors, obj.maskSection, SH_cube);
                 disp('Spectrogram timing :')
                 time = toc;
                 disp(time)
                 save_time(path_file_txt_exe_times, 'spectrogram', time)
             end
             
+            clear ToolBox
             displaySuccessMsg(1);
             %close all
             

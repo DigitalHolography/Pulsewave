@@ -1,7 +1,6 @@
-function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein)
+function [maskSection, VesselImageRGB] = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein)
 
 arguments
-    ToolBox
     M0_ff_img
     r1
     r2

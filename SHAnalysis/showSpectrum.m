@@ -1,4 +1,4 @@
-function [spec_plot, delt_spec_plot] = showSpectrum(ToolBox, maskArtery, maskBackground, maskSection, SH)
+function [spec_plot, delt_spec_plot] = showSpectrum(maskArtery, maskBackground, maskSection, SH)
 % Shows the spectrum of the preview batch if any
 
 fs = ToolBox.fs;

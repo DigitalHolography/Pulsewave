@@ -1,4 +1,4 @@
-function PWV = pulseWaveVelocity(ToolBox, U, mask)
+function PWV = pulseWaveVelocity(U, mask)
 % Computes the pulse wave velocity based on a cross correlation computation
 % U is the field over which we compute the velocity and mask is the mask of
 % the selected retinal artery

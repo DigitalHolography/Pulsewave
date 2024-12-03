@@ -1,4 +1,4 @@
-function [avg_blood_rate, avg_blood_velocity, size_section, new_mask] = SectionAnalysis(ToolBox, mask, k)
+function [avg_blood_rate, avg_blood_velocity, size_section, new_mask] = SectionAnalysis(mask, k)
 PW_params = Parameters_json(ToolBox.PW_path);
 
 skel = bwskel(logical(mask));

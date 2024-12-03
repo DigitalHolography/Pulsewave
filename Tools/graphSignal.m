@@ -1,8 +1,7 @@
-function graphSignal(ToolBox, filename, folder, x, y, style, color, opt)
+function graphSignal(filename, folder, x, y, style, color, opt)
 % Graph Function for Signal display
 
 arguments
-    ToolBox
     filename {mustBeText}
     folder {mustBeText}
 end
@@ -79,7 +78,7 @@ end
 if ~isempty(opt.TxtName)
     
     for n = 1:length(opt.TxtName)
-        plot2txt(ToolBox, x{n}, y{n}, opt.TxtName{n})
+        plot2txt(x{n}, y{n}, opt.TxtName{n})
     end
     
 end

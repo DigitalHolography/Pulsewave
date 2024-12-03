@@ -1,4 +1,4 @@
-function graphCombined(ToolBox, Videofield, mask, etiquettes_locs, etiquettes_values, signal, stdsignal, xy_barycenter, ylabl, xlabl, titl, unit, NameValueArgs)
+function graphCombined(Videofield, mask, etiquettes_locs, etiquettes_values, signal, stdsignal, xy_barycenter, ylabl, xlabl, titl, unit, NameValueArgs)
 % Combines a video and a signal to an animated gif combined on top of each
 % other frame by frame
 % Videofield : Video to be displayed on top grayscale
@@ -7,7 +7,6 @@ function graphCombined(ToolBox, Videofield, mask, etiquettes_locs, etiquettes_va
 % (leave empty if no etiquettes required)
 % etiquettes_values, values inside etiquettes (tags) (nbetiquettes numFrames)
 arguments
-    ToolBox
     Videofield
     mask
     etiquettes_locs
@@ -55,7 +54,7 @@ for frameIdx = startingvalue:numFrames
     signal_plot = figure(530);
     signal_plot.Position = [200 200 600 300];
     
-    graphSignalStd(ToolBox, signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx)
+    graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx)
     
     signal_plot_frame = getframe(signal_plot);
     signal_plot_video(:, :, :, frameIdx) = signal_plot_frame.cdata;

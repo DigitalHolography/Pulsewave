@@ -1,4 +1,4 @@
-function [] = bloodVolumeRateForAllRadii(ToolBox, maskArtery, maskVein, v_RMS, M0_ff_video, xy_barycenter, systolesIndexes, flagBloodVelocityProfile)
+function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_ff_video, xy_barycenter, systolesIndexes, flagBloodVelocityProfile)
 
 tic
 
@@ -36,7 +36,7 @@ maskSectionCircles = zeros(numX, numY, numCircles);
 r1 = (PW_params.velocitySmallRadiusRatio) * L;
 r2 = (PW_params.velocityBigRadiusRatio) * L;
 dr = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * L / numCircles; %PW_params.radius_gap
-maskAllSections = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
+maskAllSections = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
 
 parfor circleIdx = 1:numCircles
     rad_in = r1 + (circleIdx - 1) * dr;
@@ -47,9 +47,9 @@ parfor circleIdx = 1:numCircles
 
     % save mask image
     if veins_analysis
-        createMaskSection(ToolBox, M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery, maskVein);
+        createMaskSection(M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery, maskVein);
     else
-        createMaskSection(ToolBox, M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery);
+        createMaskSection(M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery);
     end
 end
 
@@ -118,7 +118,7 @@ std_velocity_profiles_r = cell([numCircles max(numSections_A)]);
 sub_images_r = cell([numCircles max(numSections_A)]);
 
 for circleIdx = 1:numCircles
-    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(ToolBox, locs_A{circleIdx}, widths_A{circleIdx}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, 'artery', flagBloodVelocityProfile, circleIdx, force_width, 1);
+    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(locs_A{circleIdx}, widths_A{circleIdx}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, 'artery', flagBloodVelocityProfile, circleIdx, force_width, 1);
 
     if length(avgVolumeRate_artery) < 1
         continue
@@ -322,11 +322,11 @@ set(gca, 'Linewidth', 2)
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateallradxtime.png')))
 
-ArterialResistivityIndex(ToolBox, fullTime, mean_BvrT, M0_ff_video, maskArtery)
+ArterialResistivityIndex(fullTime, mean_BvrT, M0_ff_video, maskArtery)
 
 figure(4350)
 %maskNeigbors = mat2gray(mean(imread(fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png'))), 3)) > 0; % import mask neigbors
-graphCombined(ToolBox, M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT, mean_std_BvrT, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos);
+graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT, mean_std_BvrT, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos);
 
 if flagBloodVelocityProfile
     mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles'));

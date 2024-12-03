@@ -1,4 +1,4 @@
-function [] = spectrogram(ToolBox, maskArtery, maskBackground, maskSection, SH_cube)
+function [] = spectrogram(maskArtery, maskBackground, maskSection, SH_cube)
 %% Variables
 cubeSize = size(SH_cube, 1);
 cubeFreqLength = size(SH_cube, 3);
@@ -23,7 +23,7 @@ open(video)
 
 %% Display
 % Avg Spectrogram plot
-[ArterySpectrum, ~, DeltaSpectrum] = createSpectrum(ToolBox, maskArtery, maskBackground, SH_cube(:, :, :, 1));
+[ArterySpectrum, ~, DeltaSpectrum] = createSpectrum(maskArtery, maskBackground, SH_cube(:, :, :, 1));
 
 % A = zeros((cubeFreqLength - f1) * k_int, cubeFrameLength);
 % BG = zeros((cubeFreqLength - f1) * k_int, cubeFrameLength);
@@ -60,7 +60,7 @@ AVG_backgroundSpectrum = zeros(1, cubeFreqLength * 2 * k_int);
 
 for i = 1:cubeFrameLength
     %Spectro
-    [ArterySpectrum, BgSpectrum, DeltaSpectrum, ~, Lorenz_Arteries, Lorenz_BKG, M0_artery, M0_background, M1M0_artery, M1M0_background, M2M0_artery, M2M0_background] = createSpectrum(ToolBox, maskArtery, maskBackground, SH_cube(:, :, :, i));
+    [ArterySpectrum, BgSpectrum, DeltaSpectrum, ~, Lorenz_Arteries, Lorenz_BKG, M0_artery, M0_background, M1M0_artery, M1M0_background, M2M0_artery, M2M0_background] = createSpectrum (maskArtery, maskBackground, SH_cube(:, :, :, i));
     AVG_M0_artery(i) = sum(M0_artery, "all") / nnz(M0_artery);
     AVG_M0_background(i) = sum(M0_background, "all") / nnz(M0_background);
     AVG_M1M0_artery(i) = sum(M1M0_artery, "all") / nnz(M1M0_artery);
@@ -227,12 +227,12 @@ print('-f38', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldern
 print('-f39', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_arterySpectrogram.png')));
 print('-f40', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_backgroundSpectrogram.png')));
 
-[spec_plot, delt_spec_plot] = showSpectrum(ToolBox, maskArtery, maskBackground, maskSection, SH_cube(:, :, :, 1));
+[spec_plot, delt_spec_plot] = showSpectrum(maskArtery, maskBackground, maskSection, SH_cube(:, :, :, 1));
 figure(spec_plot); axis tight; ax1 = axis; ax1(3) = ax1(3) - 30; ax1(4) = ax1(4); axis(ax1);
 figure(delt_spec_plot); axis tight; ax2 = axis; ax2(3) = ax2(3) - 30; ax2(4) = ax2(4); axis(ax2);
 
 for i = 1:cubeFrameLength
-    [spec_plot, delt_spec_plot] = showSpectrum(ToolBox, maskArtery, maskBackground, maskSection, SH_cube(:, :, :, i));
+    [spec_plot, delt_spec_plot] = showSpectrum(maskArtery, maskBackground, maskSection, SH_cube(:, :, :, i));
     figure(spec_plot); axis(ax1);
     figure(delt_spec_plot); axis(ax2);
     specVideo(:, :, :, i) = frame2im(getframe(spec_plot));

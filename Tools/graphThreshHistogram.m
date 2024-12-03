@@ -1,4 +1,4 @@
-function graphThreshHistogram(ToolBox, R, thresholds, mask, colors, name)
+function graphThreshHistogram(R, thresholds, mask, colors, name)
 %FIG_HISTOGRAM Summary of this function goes here
 %   Detailed explanation goes here
 % Set the threshold
