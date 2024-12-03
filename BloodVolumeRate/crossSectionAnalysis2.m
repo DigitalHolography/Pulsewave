@@ -2,6 +2,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
+ToolBox = getGlobalToolBox;
 if strcmp(type_of_vessel, 'artery')
     name_section = 'A';
 else

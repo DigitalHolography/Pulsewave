@@ -1,5 +1,6 @@
 function [ArterySpectrum, BgSpectrum, DeltaSpectrum, sizeSHFreq, Lorenz_Arteries, Lorenz_BKG, M0_artery, M0_background, M1M0_artery, M1M0_background, M2M0_artery, M2M0_background] = createSpectrum(maskArtery, maskBackground, SH)
 
+ToolBox = getGlobalToolBox;
 SH_arteries = SH .* maskArtery;
 SH_background = SH .* maskBackground;
 fs = ToolBox.fs;

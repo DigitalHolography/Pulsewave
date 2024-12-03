@@ -132,8 +132,8 @@ classdef OneCycleClass
             %  ------- This is the app main routine. --------
             
             obj.ToolBoxmaster = ToolBoxClass(obj.directory);
-            global ToolBox
-            ToolBox = obj.ToolBoxmaster;
+            setGlobalToolBox(obj.ToolBoxmaster)
+            ToolBox = getGlobalToolBox;
             checkPulsewaveParamsFromJson(ToolBox.PW_path); % checks compatibility between found PW params and Default PW params of this version of PW.
             PW_params = Parameters_json(ToolBox.PW_path);
             totalTime = tic;

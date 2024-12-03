@@ -2,6 +2,7 @@ function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, M0_disp_video, xy_bar
 
 tic
 
+ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path);
 
 veins_analysis = PW_params.veins_analysis;
@@ -37,21 +38,21 @@ cercle_mask2 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= radius
 
 maskSection = xor(cercle_mask1, cercle_mask2);
 
-figure(1)
-imagesc(maskSection), axis image
+% figure(1)
+% imagesc(maskSection), axis image
 
 %% 1) Find the locations of the sections
 %% 1) 1) Arteries
 
 maskSectionArtery = maskSection .* maskArtery;
 
-figure(110)
-imagesc(maskSectionArtery .* v_RMS_AVG), axis image
+% figure(110)
+% imagesc(maskSectionArtery .* v_RMS_AVG), axis image
 
 maskSectionArtery = bwlabel(maskSectionArtery);
 
-figure(111)
-imagesc(maskSectionArtery), axis image
+% figure(111)
+% imagesc(maskSectionArtery), axis image
 
 numSectionsArtery = max(maskSectionArtery, [], 'all');
 masksSectionsArtery = zeros(numX, numY, numSectionsArtery);
@@ -78,13 +79,13 @@ if veins_analysis
     
     maskSectionVein = maskSection .* maskVein;
     
-    figure(120)
-    imagesc(maskSectionVein .* v_RMS_AVG), axis image
+    % figure(120)
+    % imagesc(maskSectionVein .* v_RMS_AVG), axis image
     
     maskSectionVein = bwlabel(maskSectionVein);
     
-    figure(121), axis image
-    imagesc(maskSectionVein)
+    % figure(121), axis image
+    % imagesc(maskSectionVein)
     
     numSectionsVein = max(maskSectionVein, [], 'all');
     masksSectionsVein = zeros(numX, numY, numSectionsVein);
@@ -126,7 +127,7 @@ for sectionIdx = 1:numSectionsArtery
 end
 
 % Velocity Over Sections
-figure(220)
+figure("Visible","off")
 plot(fullTime, avgVelocityArtery, 'LineWidth', 2)
 title('Blood velocity in artery sections');
 legend(labelsArteries);
@@ -141,7 +142,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s",
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'velocityArteryEverySection.eps')))
 
 % Mean Velocity
-velocityArtery_plot = figure(221);
+velocityArtery_plot = figure("Visible","off");
 velocityArtery_plot.Position = [200 475 600 300];
 
 graphSignalStd(velocityArtery_plot, avgVelocityArtery_total, stdVelocityArtery_total, numFrames, strYlabel, strXlabel, "Total velocity in arteries", 'mm/s')
@@ -177,7 +178,7 @@ if veins_analysis
     end
     
     % Velocity Over Sections
-    figure(220)
+    figure("Visible","off")
     plot(fullTime, avgVelocityVein, 'LineWidth', 2)
     title('Blood velocity in vein sections');
     legend(labelsVeins);
@@ -192,7 +193,7 @@ if veins_analysis
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'velocityVeinEverySection.eps')))
     
     % Mean Velocity
-    velocityVein_plot = figure(221);
+    velocityVein_plot = figure("Visible","off");
     velocityVein_plot.Position = [200 475 600 300];
     
     graphSignalStd(velocityVein_plot, avgVelocityVein_total, stdVelocityVein_total, numFrames, strYlabel, strXlabel, "Total velocity in arteries", 'mm/s')
@@ -216,7 +217,7 @@ end
 
 %% 3) Vein and artery numerotation
 M0_disp_image = rescale(mean(M0_disp_video, 3));
-numerotation_plot = figure(300);
+numerotation_plot = figure("Visible","off");
 numerotation_plot.Position = [100 100 600 600];
 x_center = x_barycenter;
 y_center = y_barycenter;
@@ -224,7 +225,7 @@ graphMaskTags(300, M0_disp_image, crossSectionMaskArtery, SubImg_locs_artery, la
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'arteries_numerotation.png')))
 
 if veins_analysis
-    numerotationv_plot = figure(301);
+    numerotationv_plot = figure("Visible","off");
     numerotationv_plot.Position = [100 100 600 600];
     graphMaskTags(301, M0_disp_image, crossSectionMaskVein, SubImg_locs_vein, labelsVeins, x_center, y_center, Color = [0 0 1]);
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'veins_numerotation.png')));
@@ -238,7 +239,7 @@ end
 
 %% 4) 2) Average BVR figure and Section widths
 
-volume_rate_plot = figure(420);
+volume_rate_plot = figure("Visible","off");
 volume_rate_plot.Position = [200 200 600 600];
 etiquettes_frame_values = round(mean(avgVolumeRateArtery(:, :), 2), 1);
 graphMaskTags(volume_rate_plot, M0_disp_image, crossSectionMaskArtery, SubImg_locs_artery, etiquettes_frame_values, x_center, y_center);
@@ -248,7 +249,7 @@ set(gca, 'FontSize', 14)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateArteryImage.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateArteryImage.eps')))
 
-section_width_plot = figure(430);
+section_width_plot = figure("Visible","off");
 section_width_plot.Position = [200 200 600 600];
 etiquettes_frame_values = append(string(round(crossSectionWidthArtery * PW_params.cropSection_pixelSize / (2 ^ PW_params.k) * 1000, 1)), "µm");
 graphMaskTags(section_width_plot, M0_disp_image, crossSectionMaskArtery, SubImg_locs_artery, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
@@ -260,7 +261,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s",
 
 if veins_analysis
     
-    volume_rate_plot = figure(520);
+    volume_rate_plot = figure("Visible","off");
     volume_rate_plot.Position = [200 200 600 600];
     etiquettes_frame_values = round(mean(avgVolumeRateVein(:, :), 2), 1);
     graphMaskTags(volume_rate_plot, M0_disp_image, crossSectionMaskVein, SubImg_locs_vein, etiquettes_frame_values, x_center, y_center, Color = [0 0 1]);
@@ -270,7 +271,7 @@ if veins_analysis
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateVeinImage.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'volumeRateVeinImage.eps')))
     
-    section_width_plot = figure(530);
+    section_width_plot = figure("Visible","off");
     section_width_plot.Position = [200 200 600 600];
     etiquettes_frame_values = append(string(round(crossSectionWidthVein * PW_params.cropSection_pixelSize / (2 ^ PW_params.k) * 1000, 1)), "µm");
     graphMaskTags(section_width_plot, M0_disp_image, crossSectionMaskVein, SubImg_locs_vein, etiquettes_frame_values, x_center, y_center, Color = [0 0 1], Fontsize = 12);
@@ -285,7 +286,7 @@ end
 %% 5) Plot Volume Rate
 %% 5) 1) Artery plot
 
-volumeRateArtery_plot = figure(510);
+volumeRateArtery_plot = figure("Visible","off");
 volumeRateArtery_plot.Position = [200 200 600 300];
 
 graphSignalStd(volumeRateArtery_plot, avgVolumeRateArtery_total, stdVolumeRateArtery_total, numFrames, 'Blood volume rate (µL/min)', 'Time (s)', "Total blood volume rate in arteries", "µL/min", ylimm = [0 max(avgVolumeRateArtery_total)])
@@ -300,7 +301,7 @@ plot2txt(fullTime, stdVolumeRateArtery_total, 'STDVolumeRateArteryTotal')
 
 if veins_analysis
     
-    volumeRateVein_plot = figure(520);
+    volumeRateVein_plot = figure("Visible","off");
     volumeRateVein_plot.Position = [200 475 600 300];
     
     graphSignalStd(volumeRateVein_plot, avgVolumeRateVein_total, stdVolumeRateVein_total, numFrames, 'Blood volume rate (µL/min)', 'Time (s)', "Total blood volume rate in veins", "µL/min", ylimm = [0 max(avgVolumeRateArtery_total)])
@@ -394,7 +395,7 @@ meanVolumeRate = mean(avgVolumeRateArtery_total(:));
 
 ARI = (maxVolumeRate - minVolumeRate) / maxVolumeRate;
 
-figure(610)
+figure("Visible","off")
 
 curve1 = avgVolumeRateArtery_total + 0.5 * stdVolumeRateArtery_total;
 curve2 = avgVolumeRateArtery_total - 0.5 * stdVolumeRateArtery_total;
@@ -431,7 +432,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s",
 
 API = (maxVolumeRate - minVolumeRate) / meanVolumeRate;
 
-figure(620)
+figure("Visible","off")
 
 curve1 = avgVolumeRateArtery_total + 0.5 * stdVolumeRateArtery_total;
 curve2 = avgVolumeRateArtery_total - 0.5 * stdVolumeRateArtery_total;

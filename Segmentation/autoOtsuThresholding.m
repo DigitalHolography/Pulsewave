@@ -3,6 +3,7 @@ function [maskArtery, maskVein, maskChoroid] = autoOtsuThresholding(image, mask,
 %   Detailed explanation goes here
 % classes = [0 0 1 1] a 0 and 1 matrix where 1 is the class selected and 0 the rejected
 
+ToolBox = getGlobalToolBox;
 cArtery = [255 22 18] / 255;
 cVein = [18 23 255] / 255;
 cChoroid = [0 179 0] / 255;

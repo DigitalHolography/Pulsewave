@@ -30,7 +30,8 @@ arguments
     opt.xLineLabels = {}
 end
 
-figure %(Visible="off")
+ToolBox = getGlobalToolBox;
+figure(Visible="off")
 hold on
 
 for n = 1:length(y)

@@ -1,5 +1,6 @@
 function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, xy_barycenter)
 
+ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path);
 veinsAnalysis = PW_params.veins_analysis;
 exportVideos = PW_params.exportVideos;

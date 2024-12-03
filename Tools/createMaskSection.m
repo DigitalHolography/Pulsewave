@@ -10,6 +10,7 @@ arguments
     maskVein = []
 end
 
+ToolBox = getGlobalToolBox;
 mkdir(fullfile(ToolBox.PW_path_png, 'mask')); % create dir if it doesnt exist
 
 [numX, numY] = size(maskArtery);

@@ -1,5 +1,6 @@
 function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, circle_num)
 
+ToolBox = getGlobalToolBox;
 nb_section = size(SubImage_cell, 2);
 numFrames = size(SubVideo_cell{1}, 3);
 n_interp = 100;

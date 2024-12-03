@@ -14,6 +14,7 @@ arguments
     NameValueArgs.cropIndx double = 0
 end
 
+ToolBox = getGlobalToolBox;
 mean_signal = mean(signal);
 
 if NameValueArgs.cropIndx > 0

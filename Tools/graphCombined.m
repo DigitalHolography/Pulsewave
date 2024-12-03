@@ -22,6 +22,7 @@ arguments
     NameValueArgs.Color (1, 3) double = [1 0 0]
 end
 
+ToolBox = getGlobalToolBox;
 Videofield_rescaled = rescale(Videofield);
 [numX, numY, numFrames] = size(Videofield_rescaled);
 [x_center, y_center] = xy_barycenter{:};

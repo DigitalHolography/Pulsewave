@@ -1,8 +1,10 @@
 function [] = ArterialResistivityIndex(t, arterial_signal, M0_ff_video, maskArtery)
 
+ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path);
 exportVideos = PW_params.exportVideos;
 folder = 'volumeRate';
+cArtery = [255 22 18] / 255;
 [numX, numY, numFrames] = size(M0_ff_video);
 
 M0_ff_video = rescale(M0_ff_video);

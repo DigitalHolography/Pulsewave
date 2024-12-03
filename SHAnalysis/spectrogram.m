@@ -1,5 +1,8 @@
 function [] = spectrogram(maskArtery, maskBackground, maskSection, SH_cube)
+
 %% Variables
+
+ToolBox = getGlobalToolBox;
 cubeSize = size(SH_cube, 1);
 cubeFreqLength = size(SH_cube, 3);
 cubeFrameLength = size(SH_cube, 4);

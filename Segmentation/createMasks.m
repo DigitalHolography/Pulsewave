@@ -1,5 +1,6 @@
 function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, maskSection, maskNeighbors, xy_barycenter] = createMasks(M0_ff_video, f_AVG_video)
 
+ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path);
 exportVideos = PW_params.exportVideos;
 

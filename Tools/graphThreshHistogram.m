@@ -3,6 +3,7 @@ function graphThreshHistogram(R, thresholds, mask, colors, name)
 %   Detailed explanation goes here
 % Set the threshold
 
+ToolBox = getGlobalToolBox;
 numLevel = size(thresholds, 2);
 numColors = size(colors, 1);
 

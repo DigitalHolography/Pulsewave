@@ -12,6 +12,7 @@ function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_
 exec_times_id = [];
 exec_times_time = [];
 
+ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path);
 veinsAnalysis = PW_params.veins_analysis;
 entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
