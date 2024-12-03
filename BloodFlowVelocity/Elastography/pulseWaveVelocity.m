@@ -14,10 +14,8 @@ implay(rescale(U) .* mask);
 N_frame = size(U, 3);
 [X, Y] = meshgrid(1:numY, 1:numX);
 
-timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-
-x_bary = ToolBox.x_barycentre;
-y_bary = ToolBox.y_barycentre;
+x_bary = ToolBox.x_barycenter;
+y_bary = ToolBox.y_barycenter;
 
 % radii approach
 % m = floor((numX+numY)/2/10);

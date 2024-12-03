@@ -7,7 +7,7 @@ PW_params = Parameters_json(ToolBox.PW_path);
 %% Skeletonize and label the individual branches
 skel = bwskel(maskArtery);
 [x, y] = meshgrid(1:numY, 1:numX);
-cercleMask = sqrt((x - ToolBox.x_barycentre) .^ 2 + (y - ToolBox.y_barycentre) .^ 2) <= PW_params.masks_radius / 6 * (numY + numX) / 2; % making a mask to cut the center
+cercleMask = sqrt((x - ToolBox.x_barycenter) .^ 2 + (y - ToolBox.y_barycenter) .^ 2) <= PW_params.masks_radius / 6 * (numY + numX) / 2; % making a mask to cut the center
 
 skel = skel & ~cercleMask; % takes out arteries near the center
 [L, n] = bwlabel(skel & ~imdilate(bwmorph(skel, 'branchpoints'), strel('disk', 2))); % labeling the skeleton with branch points off to get individual branches
@@ -76,8 +76,8 @@ dist_closest_branch = Inf;
 for i = 1:length(bp) % iterates over all branch points
     [xx, yy] = ind2sub(size(maskArtery), bp(i));
     
-    if (xx - ToolBox.x_barycentre) ^ 2 + (yy - ToolBox.y_barycentre) ^ 2 < dist_closest_branch && conn(L(bp(i))) == idx_most_frequent_conn
-        dist_closest_branch = (xx - ToolBox.x_barycentre) ^ 2 + (yy - ToolBox.y_barycentre) ^ 2;
+    if (xx - ToolBox.x_barycenter) ^ 2 + (yy - ToolBox.y_barycenter) ^ 2 < dist_closest_branch && conn(L(bp(i))) == idx_most_frequent_conn
+        dist_closest_branch = (xx - ToolBox.x_barycenter) ^ 2 + (yy - ToolBox.y_barycenter) ^ 2;
         closest_branch = L(bp(i));
     end
     

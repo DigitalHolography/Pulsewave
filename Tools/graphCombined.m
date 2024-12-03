@@ -25,7 +25,8 @@ end
 ToolBox = getGlobalToolBox;
 Videofield_rescaled = rescale(Videofield);
 [numX, numY, numFrames] = size(Videofield_rescaled);
-[x_center, y_center] = xy_barycenter{:};
+x_barycenter = xy_barycenter(1);
+y_barycenter = xy_barycenter(2);
 ylimm = [min(-1, min(signal)), max(signal) * 1.3];
 
 if NameValueArgs.skip
@@ -44,7 +45,7 @@ for frameIdx = startingvalue:numFrames
         etiquettes_frame_values = [];
     end
     
-    graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_center, y_center, Color = NameValueArgs.Color);
+    graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = NameValueArgs.Color);
     title(sprintf("%s : %02.0f %s", titl, round(signal(frameIdx))), unit);
     set(gca, 'FontSize', 14)
     video_plot_frame = getframe(video_plot);
@@ -64,10 +65,8 @@ end
 
 combined_plot_video = cat(1, mat2gray(video_plot_video), mat2gray(signal_plot_video));
 
-timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-
 if ~NameValueArgs.skip
-    writeGifOnDisc(combined_plot_video, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s_combined.gif", ToolBox.PW_folder_name, titl)), timePeriod);
+    writeGifOnDisc(combined_plot_video, sprintf("%s_combined.gif", titl));
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(combined_plot_video), fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, sprintf('%s_combined.avi', titl))));
 else
     imwrite(combined_plot_video(:, :, :, end), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, titl)));

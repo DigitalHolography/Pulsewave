@@ -16,8 +16,8 @@ mkdir(fullfile(ToolBox.PW_path_png, 'mask')); % create dir if it doesnt exist
 [numX, numY] = size(maskArtery);
 [x, y] = meshgrid(1:numY, 1:numX);
 
-xx = xy_barycenter{1};
-yy = xy_barycenter{2};
+xx = xy_barycenter(1);
+yy = xy_barycenter(2);
 
 % skel = bwskel(logical(maskArtery), "MinBranchLength", 100); % create skeleton
 %

@@ -13,7 +13,8 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 
-[x_barycenter, y_barycenter] = xy_barycenter{:};
+x_barycenter = xy_barycenter(1);
+y_barycenter = xy_barycenter(2);
 
 mkdir(ToolBox.PW_path_png, 'volumeRate')
 mkdir(ToolBox.PW_path_eps, 'volumeRate')
@@ -39,7 +40,7 @@ r2 = (PW_params.velocityBigRadiusRatio) * L;
 dr = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * L / numCircles; %PW_params.radius_gap
 maskAllSections = createMaskSection(M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
 
-for circleIdx = 1:numCircles
+parfor circleIdx = 1:numCircles
     rad_in = r1 + (circleIdx - 1) * dr;
     rad_out = rad_in + dr;
     c1 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= rad_in;
@@ -109,27 +110,27 @@ end
 
 %% 3. Sections analysis for all circles output
 
-vr_AVG_A = zeros(numCircles, max(numSections_A), numFrames, 'single');
-vr_STD_A = zeros(numCircles, max(numSections_A), numFrames, 'single');
-area_A = zeros(numCircles, max(numSections_A), 'single');
-cross_section_mask_artery_r = zeros(numCircles, numY, numX, 'single');
+vr_AVG_A_r = zeros(numCircles, max(numSections_A), numFrames, 'single');
+vr_STD_A_Mat = zeros(numCircles, max(numSections_A), numFrames, 'single');
+area_A_r = zeros(numCircles, max(numSections_A), 'single');
+width_A_r = zeros(numCircles, numY, numX, 'single');
 stdCrossSectionWidthR = zeros(numCircles, max(numSections_A), 'single');
 velocity_profiles_r = cell([numCircles max(numSections_A)]);
 std_velocity_profiles_r = cell([numCircles max(numSections_A)]);
 sub_images_r = cell([numCircles max(numSections_A)]);
 
 for circleIdx = 1:numCircles
-    [avgVolumeRate_artery, stdVolumeRate_artery, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(locs_A{circleIdx}, widths_A{circleIdx}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, 'artery', flagBloodVelocityProfile, circleIdx, force_width, 1);
+    [vrAVG_A, vr_STD_A, cross_section_area_artery, ~, ~, cross_section_mask_artery, velocity_profiles, std_velocity_profiles, subImg_cell, ~, stdCrossSectionWidth] = crossSectionAnalysis2(locs_A{circleIdx}, widths_A{circleIdx}, maskArtery, v_RMS, PW_params.flowRate_sliceHalfThickness, 'artery', flagBloodVelocityProfile, circleIdx, force_width, 1);
 
-    if length(avgVolumeRate_artery) < 1
+    if length(vrAVG_A) < 1
         continue
     end
 
-    vr_AVG_A(circleIdx, 1:numSections_A(circleIdx), :) = reshape(avgVolumeRate_artery, 1, numSections_A(circleIdx), numFrames);
-    vr_STD_A(circleIdx, 1:numSections_A(circleIdx), :) = reshape(stdVolumeRate_artery, 1, numSections_A(circleIdx), numFrames);
-    area_A(circleIdx, 1:numSections_A(circleIdx)) = reshape(cross_section_area_artery, 1, numSections_A(circleIdx));
+    vr_AVG_A_r(circleIdx, 1:numSections_A(circleIdx), :) = reshape(vrAVG_A, 1, numSections_A(circleIdx), numFrames);
+    vr_STD_A_Mat(circleIdx, 1:numSections_A(circleIdx), :) = reshape(vr_STD_A, 1, numSections_A(circleIdx), numFrames);
+    area_A_r(circleIdx, 1:numSections_A(circleIdx)) = reshape(cross_section_area_artery, 1, numSections_A(circleIdx));
     stdCrossSectionWidthR(circleIdx, 1:numSections_A(circleIdx)) = reshape(stdCrossSectionWidth, 1, numSections_A(circleIdx));
-    cross_section_mask_artery_r(circleIdx, :, :) = reshape(cross_section_mask_artery, 1, numX, numY);
+    width_A_r(circleIdx, :, :) = reshape(cross_section_mask_artery, 1, numX, numY);
 
     for j = 1:numSections_A(circleIdx)
         velocity_profiles_r{circleIdx, j} = velocity_profiles{j};
@@ -152,13 +153,13 @@ colors = lines(numCircles);
 imgRGB = repmat(M0_ff_img, 1, 1, 3);
 
 for circleIdx = 1:numCircles
-    indxs = find(cross_section_mask_artery_r(circleIdx, :, :) > 0);
+    indxs = find(width_A_r(circleIdx, :, :) > 0);
     imgRGB(indxs) = colors(circleIdx, 1);
     imgRGB(numY * numX + indxs) = colors(circleIdx, 2);
     imgRGB(2 * numY * numX + indxs) = colors(circleIdx, 3);
 
     if circleIdx > 1 % intersections should be drawn in white
-        indxs = find(cross_section_mask_artery_r(circleIdx, :, :) > 0 & cross_section_mask_artery_r(circleIdx - 1, :, :) > 0);
+        indxs = find(width_A_r(circleIdx, :, :) > 0 & width_A_r(circleIdx - 1, :, :) > 0);
         imgRGB(indxs) = 1;
         imgRGB(numY * numX + indxs) = 1;
         imgRGB(2 * numY * numX + indxs) = 1;
@@ -197,9 +198,9 @@ y_center = y_barycenter;
 
 for circleIdx = 1:numCircles
     section_width_plot.Position = [200 200 600 600];
-    crossSectionWidthArtery = 2 * sqrt(area_A(circleIdx, 1:numSections_A(circleIdx)) / pi) * 1000;
+    crossSectionWidthArtery = 2 * sqrt(area_A_r(circleIdx, 1:numSections_A(circleIdx)) / pi) * 1000;
     etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 1)), "µm");
-    graphMaskTags(section_width_plot, M0_ff_img, squeeze(cross_section_mask_artery_r(circleIdx, :, :)), locs_A{circleIdx}, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
+    graphMaskTags(section_width_plot, M0_ff_img, squeeze(width_A_r(circleIdx, :, :)), locs_A{circleIdx}, etiquettes_frame_values, x_center, y_center, Fontsize = 12);
     title(sprintf("%s", 'Cross section width in arteries (µm)'));
     set(gca, 'FontSize', 14)
     vesselWidthsVideo(:, :, :, circleIdx) = frame2im(getframe(section_width_plot));
@@ -208,24 +209,24 @@ for circleIdx = 1:numCircles
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_%s", ToolBox.main_foldername, circleIdx, 'crossSectionWidthArteryImage.eps')))
 end
 
-writeGifOnDisc(vesselWidthsVideo, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s", ToolBox.main_foldername, 'sectionsWidth.gif')), 0.1);
+writeGifOnDisc(vesselWidthsVideo, 'sectionsWidth.gif', 0.1);
 
 figure("Visible","off")
-cross_section_hist = histogram(2 * sqrt(area_A(area_A ~= 0) / pi) * 1000, 50, FaceColor = 'k');
+cross_section_hist = histogram(2 * sqrt(area_A_r(area_A_r ~= 0) / pi) * 1000, 50, FaceColor = 'k');
 aa = axis;
 aa(4) = aa(4) * 1.14;
 axis(aa);
 title('Histogram of sections width (µm)');
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'histogram_of_section_width.png')))
-writematrix(2 * sqrt(area_A / pi) * 1000, fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'section_widths.txt')));
+writematrix(2 * sqrt(area_A_r / pi) * 1000, fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'section_widths.txt')));
 writematrix(stdCrossSectionWidthR * PW_params.cropSection_pixelSize / (2 ^ PW_params.k) * 1000, fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'standard_deviation_section_width.txt')));
 
 plot_Bvr_full_field = figure("Visible","off");
 
 Color_std = [0.7 0.7 0.7];
 rad = ((PW_params.velocitySmallRadiusRatio * (numX + numY) / 2) + dr / 2:dr:(PW_params.velocityBigRadiusRatio * (numX + numY) / 2) - dr / 2)'';
-BvrR = sum(vr_AVG_A, 2);
-std_BvrR = sqrt(sum(vr_STD_A .^ 2, 2)); % sqrt of the sum of variances
+BvrR = sum(vr_AVG_A_r, 2);
+std_BvrR = sqrt(sum(vr_STD_A_Mat .^ 2, 2)); % sqrt of the sum of variances
 mean_BvrR = squeeze(mean(BvrR(:, :, index_start:index_end), 3))';
 mean_std_BvrR = squeeze(rms(std_BvrR(:, :, index_start:index_end), 3))'; % quadratic mean
 curve1 = mean_BvrR + 0.5 * mean_std_BvrR;
@@ -264,12 +265,11 @@ for circleIdx = 1:numCircles
     plot(fullTime, squeeze(BvrR(circleIdx, :, :)), 'LineWidth', 2);
 end
 
-axis tight;
-aa = axis;
-aa(3) = -10;
-aa(4) = 95;
-axis(aa);
-hold off
+axis padded
+axP = axis;
+axis tight
+axT = axis;
+axis([axT(1), axT(2), axP(3), axP(4)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')

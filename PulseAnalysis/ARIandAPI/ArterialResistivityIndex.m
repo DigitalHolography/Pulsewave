@@ -51,8 +51,7 @@ if exportVideos
     % ARI GIF
     
     ARIvideoRGB = zeros(numX, numY, 3, numFrames);
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, numFrames);
+    gifWriter = GifWriter("ARI", numFrames);
     f = figure("Visible", "off");
     f.Position = [300, 300, 570, 630];
     
@@ -93,7 +92,7 @@ graphSignal('6_API', folder, ...
     t, arterial_signal_smooth, '-', cArtery, ...
     t, arterial_signal, ':', cArtery, ...
     Title = sprintf('API = %0.2f', API), Legend = {'Smooth', 'Raw'}, ...
-    yLines = [0, min_vRMS, mean_RMS, max_vRMS], yLineLabels = {'', '', '', ''})
+    yLines = [0, min_vRMS, mean_vRMS, max_vRMS], yLineLabels = {'', '', '', ''})
 
 % API Map
 [hue_API, sat_API, val_API, cmapAPI] = API2HSVmap(API, M0_ff_image, maskArtery);
@@ -118,7 +117,7 @@ if exportVideos
     % API GIF
     
     ARIvideoRGB = zeros(numX, numY, 3, numFrames);
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "ARI")), timePeriod, 0.04, numFrames);
+    gifWriter = GifWriter("API", numFrames);
     f = figure("Visible", "off");
     f.Position = [300, 300, 570, 630];
     

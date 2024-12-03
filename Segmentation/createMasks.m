@@ -25,9 +25,8 @@ M0_ff_video_centered = M0_ff_video - M0_ff_img;
 imwrite(rescale(M0_ff_img), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_0_M0.png')))
 
 if exportVideos
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
     M0_ff_rescaled_video = rescale(M0_ff_video);
-    writeGifOnDisc(M0_ff_rescaled_video, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "M0")), timePeriod)
+    writeGifOnDisc(M0_ff_rescaled_video, "M0")
 end
 
 %% 1) 1) Compute vesselness response
@@ -37,14 +36,22 @@ maskVesselness = logical(imbinarize(vesselnessM0 .* maskDiaphragm));
 imwrite(rescale(vesselnessM0), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_1_Vesselness.png')))
 imwrite(maskVesselness, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_2_vesselMask.png')))
 
-%% 1) 2) Compute the barycentres and the circle mask
+%% 1) 2) Compute the barycenters and the circle mask
 f_AVG_mean = mean(f_AVG_video, 3);
 
-vascularImage = single(squeeze(M0_ff_img .* f_AVG_mean));
-blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0);
-[yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
-xy_barycenter = num2cell([xx, yy]);
-[y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
+if ~isempty(PW_params.forcebarycenter)
+    yy = PW_params.forcebarycenter(1);
+    xx = PW_params.forcebarycenter(2);
+    x_CRV = numX / 2;
+    y_CRV = numY / 2;
+else
+    vascularImage = double(M0_ff_img .* f_AVG_mean);
+    blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycenter * numX, 'Padding', 0) .* maskDiaphragm;
+    [yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
+    [y_CRV, x_CRV] = find(blurred_mask == min(blurred_mask, [], 'all'));
+end
+
+xy_barycenter = [xx, yy];
 maskCircle = sqrt((X - xx) .^ 2 + (Y - yy) .^ 2) <= PW_params.masks_radius * L;
 maskCircle = maskCircle | sqrt((X - x_CRV) .^ 2 + (Y - y_CRV) .^ 2) <= PW_params.masks_radius * L;
 
@@ -75,7 +82,7 @@ if ~isempty(PW_params.forcebarycenter)
     x_CRV = numX / 2;
 else
     vascularImage = double(M0_ff_img .* f_AVG_mean .* R_VascularSignal);
-    blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycentre * numX, 'Padding', 0) .* maskDiaphragm;
+    blurred_mask = imgaussfilt(vascularImage, PW_params.gauss_filt_size_for_barycenter * numX, 'Padding', 0) .* maskDiaphragm;
     [yy, xx] = find(blurred_mask == max(blurred_mask, [], 'all'));
 end
 

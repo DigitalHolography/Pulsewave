@@ -13,7 +13,8 @@ if ~isempty(PW_params.forcewidth)
     force_width = PW_params.forcewidth;
 end
 
-[x_barycenter, y_barycenter] = xy_barycenter{:};
+x_barycenter = xy_barycenter(1);
+y_barycenter = xy_barycenter(2);
 
 mkdir(ToolBox.PW_path_png, 'volumeRate')
 mkdir(ToolBox.PW_path_eps, 'volumeRate')
@@ -29,8 +30,7 @@ M0_ff_img = rescale(mean(M0_ff_video, 3));
 v_RMS_AVG = mean(v_RMS, 3);
 L = (numY + numX) / 2;
 
-%% 0) Change mask section
-
+%% 1. Mask Sectionning for all circles
 radius1 = (PW_params.radius_ratio - PW_params.radius_gap) * (numY + numX) / 2;
 radius2 = (PW_params.radius_ratio + PW_params.radius_gap) * (numY + numX) / 2;
 cercle_mask1 = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2) <= radius1;

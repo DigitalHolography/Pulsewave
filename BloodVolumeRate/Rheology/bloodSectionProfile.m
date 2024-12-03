@@ -107,8 +107,7 @@ for ii = 1:nb_section
     
     if PW_params.exportVideos
         
-        timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-        gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, sprintf("velocityProfile_%s", nameFig))), timePeriod, 0.04, numFrames);
+        gifWriter = GifWriter(sprintf("velocityProfile_%s", nameFig), numFrames);
         
         for frameIdx = 1:numFrames
             tmp_velocity_profile = squeeze(average_velocity_profile(:, frameIdx));
