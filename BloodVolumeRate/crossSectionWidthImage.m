@@ -16,7 +16,7 @@ section_width_plot.Position = [200 200 600 600];
 vesselWidthsVideo = zeros(width, height, 3, numCircles);
 
 for circleIdx = 1:numCircles
-    crossSectionWidthArtery = 2 * sqrt(area_r{circleIdx}(1:numSections(circleIdx)) / pi) * 1000;
+    crossSectionWidthArtery = 2 * sqrt(area_r(1:numSections(circleIdx), :) / pi) * 1000;
     etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 1)), "µm");
     graphMaskTags(section_width_plot, M0_ff_img, squeeze(width_avg_r{circleIdx}(:, :)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Fontsize = 12);
     title(sprintf("%s", 'Cross section width in arteries (µm)'));
