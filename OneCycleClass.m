@@ -139,6 +139,10 @@ classdef OneCycleClass
             totalTime = tic;
             
             k = PW_params.k;
+
+            if PW_params.repreprocess % if re preprocessing required (in case of re interpolation, registering, resizing...)
+                obj = obj.preprocessData();
+            end
             
             mkdir(ToolBox.PW_path_dir);
             mkdir(ToolBox.PW_path_png);
