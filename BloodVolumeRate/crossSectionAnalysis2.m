@@ -12,18 +12,21 @@ numSections = size(locs, 1);
 
 PW_params = Parameters_json(ToolBox.PW_path);
 k = PW_params.k;
-subImg_cell = cell([1 numSections]);
 subVideo_cell = cell([1 numSections]);
 
 [numX, numY, numFrames] = size(v_RMS);
-crossSectionWidth = zeros(numSections, 1);
-stdCrossSectionWidth = zeros(numSections, 1);
+
+avgVolumeRate = zeros(numSections, numFrames);
+stdVolumeRate = zeros(numSections, numFrames);
 crossSectionArea = zeros(numSections, 1);
 avgVelocity = zeros(numSections, numFrames);
-avgVolumeRate = zeros(numSections, numFrames);
 stdVelocity = zeros(numSections, numFrames);
-stdVolumeRate = zeros(numSections, numFrames);
 crossSectionMask = zeros(numX, numY);
+velocityProfiles = cell([1 numSections]);
+stdVelocityProfiles = cell([1 numSections]);
+subImg_cell = cell([1 numSections]);
+crossSectionWidth = zeros(numSections, 1);
+stdCrossSectionWidth = zeros(numSections, 1);
 mask_sections = zeros(numX, numY, numSections);
 
 % %% VARIABLES FOR VELOCITY PROFILE VIDEO
@@ -32,8 +35,6 @@ tilt_angle_list = zeros(1, length(locs));
 
 v_RMS_mean_masked = squeeze(mean(v_RMS, 3)) .* mask;
 v_RMS_masked = v_RMS .* mask;
-velocityProfiles = cell([1 numSections]);
-stdVelocityProfiles = cell([1 numSections]);
 
 insert = '';
 
