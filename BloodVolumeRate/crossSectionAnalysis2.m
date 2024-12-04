@@ -10,7 +10,7 @@ end
 
 numSections = size(locs, 1);
 
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 k = PW_params.k;
 subImg_cell = cell([1 numSections]);
 subVideo_cell = cell([1 numSections]);

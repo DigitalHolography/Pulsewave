@@ -8,7 +8,7 @@ function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMa
     %   mask (logical, numX x numY) : result of the region growing segmentation
 
 %% INITIALISATION
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
     [numX, numY] = size(img);
     mask = seed_map; % will be update at each step ;  represents the pixels already visited

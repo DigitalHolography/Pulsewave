@@ -1,8 +1,12 @@
-function [] = checkPulsewaveParamsFromJson(path)
+function [PW_paramsNames] = checkPulsewaveParamsFromJson(path)
 
-    % This function checks if in the file you can find a default Pulsewave
-    % parameter file. If not it creates it. If you find obsolete files it also
-    % cleares them with the new parameters
+    % This function checks if in the folder you can find a Pulsewave
+    % parameter file. If not it creates a Default one. If you find obsolete files it also
+    % fills them with the new parameters
+
+    % Additionally this function returns the list of the names of all valid
+    % PulseWaveParameters files found (they must be in the form
+    % 'InputPulsewaveParams*.json')
 
     jsonInput = fileread(fullfile("Parameters","DefaultPulsewaveParams.json"));
     init_data = jsondecode(jsonInput);
@@ -10,8 +14,9 @@ function [] = checkPulsewaveParamsFromJson(path)
     %n_fields = count_fields_json(init_data);
 
     % [~,filename,~] = fileparts(path);
-    filename_json = 'InputPulsewaveParams.json';
     dir_path_json = fullfile(path, 'pulsewave', 'json');
+    jsonFiles = dir(fullfile(dir_path_json, 'InputPulsewaveParams*.json'));
+    filename_json = jsonFiles(1).name;
 
     %filename_json = strcat(filename,filename_json);
     jsonFilePath = fullfile(dir_path_json, filename_json);
@@ -78,6 +83,19 @@ function [] = checkPulsewaveParamsFromJson(path)
         fprintf(fileID, jsonData);
         fclose(fileID);
 
+    end
+
+
+    % At this point at least one fparameter file exists. We collect the
+    % names of all and return it.
+    jsonFiles = dir(fullfile(dir_path_json, 'InputPulsewaveParams*.json'));
+
+    % Initialize a cell array to store the file names
+    PW_paramsNames = cell(1, numel(jsonFiles));
+    
+    % Store each file name in the cell array
+    for i = 1:numel(jsonFiles)
+        PW_paramsNames{i} = jsonFiles(i).name;
     end
 
 end

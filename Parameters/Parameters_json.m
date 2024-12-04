@@ -3,6 +3,7 @@ classdef Parameters_json < handle
 
     properties
         path
+        name
         registerVideoFlag
         refAvgStart
         refAvgEnd
@@ -103,8 +104,9 @@ classdef Parameters_json < handle
 
     methods
 
-        function obj = Parameters_json(dir_path)
+        function obj = Parameters_json(dir_path,filename)
             obj.path = dir_path;
+            obj.name = filename;
 
             obj = obj.GetParameters();
         end
@@ -112,7 +114,7 @@ classdef Parameters_json < handle
         function obj = GetParameters(obj)
             % Constructor method
             %[~, filename, ~] = fileparts(obj.path);
-            filename_json = 'InputPulsewaveParams.json';
+            filename_json =  obj.name;
             dir_path_json = fullfile(obj.path, 'pulsewave', 'json');
             jsonPath = fullfile(dir_path_json, filename_json);
 

@@ -1,6 +1,6 @@
 function obj = VideoInterpolating(obj) %ref = TRUE indicates the object is the reference
 [numX, numY, numFrames] = size(obj.M0_disp_video);
-PW_params = Parameters_json(obj.directory);
+PW_params = Parameters_json(obj.directory,obj.PW_param_name);
 kInterp = PW_params.k;
 numX = (numX - 1) * (2 ^ kInterp - 1) + numX;
 numY = (numY - 1) * (2 ^ kInterp - 1) + numY;

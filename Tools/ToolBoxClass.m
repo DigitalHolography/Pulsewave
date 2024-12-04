@@ -17,6 +17,7 @@ classdef ToolBoxClass < handle
         PW_path_json char
         PW_path_log char
         PW_path_pulswave char
+        PW_param_name char
         main_foldername char
         PW_folder_name char
         stride double
@@ -44,10 +45,11 @@ classdef ToolBoxClass < handle
 
     methods
 
-        function obj = ToolBoxClass(path)
+        function obj = ToolBoxClass(path,PW_param_name)
 
             obj.PW_path = path;
-            PW_params = Parameters_json(obj.PW_path);
+            obj.PW_param_name = PW_param_name;
+            PW_params = Parameters_json(obj.PW_path,obj.PW_param_name);
 
             %% Creating paths
             idx = 0;

@@ -29,7 +29,7 @@ classdef GifWriter < handle
             end
 
             ToolBox = getGlobalToolBox;
-            PW_params = Parameters_json(ToolBox.PW_path);
+            PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
             obj.name = name;
             obj.filename = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, name));
             if ~isnan(timePeriodMin)

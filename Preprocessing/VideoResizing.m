@@ -1,6 +1,6 @@
 function obj = VideoResizing(obj)
 
-PW_params = Parameters_json(obj.directory);
+PW_params = Parameters_json(obj.directory,obj.PW_param_name);
 
 out_height = PW_params.frameHeight;
 out_width = PW_params.frameWidth;

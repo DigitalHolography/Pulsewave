@@ -23,6 +23,8 @@ classdef OneCycleClass
         vRMS % video estimate of velocity map in retinal vessels
         
         directory char % directory of input data (from HoloDoppler or HoloVibes)
+        PW_params_names cell  % filenames of all the current input parameters ('InputPulsewaveParams.json' for example by default))
+        PW_param_name char % current filename
         filenames char % name used for storing analysis data
         load_logs char
         
@@ -57,8 +59,9 @@ classdef OneCycleClass
             
             %% Parameters
             
-            checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
-            obj.ToolBoxmaster = ToolBoxClass(obj.directory);
+            obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
+            obj.PW_param_name = obj.PW_params_names{1}; % default behavior
+            obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
             obj.load_logs = '\n=== LOADING : \r\n';
             
             %% Video loading
@@ -131,11 +134,11 @@ classdef OneCycleClass
         function obj = onePulse(obj)
             %  ------- This is the app main routine. --------
             
-            obj.ToolBoxmaster = ToolBoxClass(obj.directory);
+            obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
             setGlobalToolBox(obj.ToolBoxmaster)
             ToolBox = getGlobalToolBox;
             checkPulsewaveParamsFromJson(ToolBox.PW_path); % checks compatibility between found PW params and Default PW params of this version of PW.
-            PW_params = Parameters_json(ToolBox.PW_path);
+            PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
             totalTime = tic;
             
             k = PW_params.k;
@@ -165,9 +168,9 @@ classdef OneCycleClass
                 warning('no rendering parameters were found')
             end
             
-            % copyin the input parameters to the result folder
+            % copying the input parameters to the result folder
             path_dir_json = fullfile(ToolBox.PW_path, 'pulsewave', 'json');
-            path_file_json_params = fullfile(path_dir_json, 'InputPulsewaveParams.json');
+            path_file_json_params = fullfile(path_dir_json, obj.PW_param_name);
             copyfile(path_file_json_params, ToolBox.PW_path_json);
             
             % saving times

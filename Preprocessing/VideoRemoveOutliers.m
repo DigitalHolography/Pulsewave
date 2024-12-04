@@ -1,7 +1,7 @@
 function obj = VideoRemoveOutliers(obj)
 %% Outlier Cleaning
 
-PW_params = Parameters_json(obj.directory);
+PW_params = Parameters_json(obj.directory,obj.PW_param_name);
 
 if ~PW_params.removeOutliers
     return

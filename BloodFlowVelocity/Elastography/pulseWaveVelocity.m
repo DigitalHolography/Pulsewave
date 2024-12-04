@@ -6,7 +6,7 @@ function PWV = pulseWaveVelocity(U, mask)
 % U(x,y,t) usually M0
 % center the [x,y] barycenter (the center of the CRA)
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
 implay(rescale(U) .* mask);
 

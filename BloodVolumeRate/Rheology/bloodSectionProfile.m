@@ -4,7 +4,7 @@ ToolBox = getGlobalToolBox;
 nb_section = size(SubImage_cell, 2);
 numFrames = size(SubVideo_cell{1}, 3);
 n_interp = 100;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 %interpolation parameter
 k = 2;
 

@@ -3,7 +3,7 @@ function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_ff_vide
 tic
 
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
 veins_analysis = PW_params.veins_analysis;
 force_width = [];

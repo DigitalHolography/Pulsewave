@@ -1,6 +1,6 @@
 function obj = VideoNormalizingLocally(obj)
 
-PW_params = Parameters_json(obj.directory);
+PW_params = Parameters_json(obj.directory,obj.PW_param_name);
 
 [N, M, F] = size(obj.M0_data_video);
 alpha = PW_params.alphaConvolveNorm;

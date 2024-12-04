@@ -1,6 +1,6 @@
 function obj = VideoCropping(obj)
     %Crop a video (matrix dim 3)
-    PW_params = Parameters_json(obj.directory);
+    PW_params = Parameters_json(obj.directory,obj.PW_param_name);
     firstFrame = PW_params.videoStartFrameIndex;
     lastFrame = PW_params.videoEndFrameIndex;
     [~, ~, numFrames] = size(obj.M0_disp_video);

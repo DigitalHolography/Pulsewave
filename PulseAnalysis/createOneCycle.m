@@ -3,7 +3,7 @@ function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = crea
 %   sys_index_list : list of systole indexes in video
 
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
 tic
 

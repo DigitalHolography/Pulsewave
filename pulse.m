@@ -67,6 +67,8 @@ classdef pulse < matlab.apps.AppBase
                 app.file = OneCycleClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
+
+                
                 app.file = app.file.preprocessData();
 
                 %% End
@@ -234,8 +236,14 @@ classdef pulse < matlab.apps.AppBase
             app.Lamp.Color = [1, 0, 0];
             app.ErrorLabel.Text = "" ;
             drawnow;
+            
+            % Actualizes the input Parameters
+            app.file.PW_params_names = checkPulsewaveParamsFromJson(app.file.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
 
-            for n = 1
+
+            for i = 1:length(app.file.PW_params_names)
+
+                app.file.PW_param_name = app.file.PW_params_names{i};
 
                 fprintf("==============================\n")
                 app.file.flag_Segmentation = app.SegmentationCheckBox.Value;

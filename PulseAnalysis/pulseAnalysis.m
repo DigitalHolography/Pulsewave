@@ -13,7 +13,7 @@ exec_times_id = [];
 exec_times_time = [];
 
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 veinsAnalysis = PW_params.veins_analysis;
 entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
