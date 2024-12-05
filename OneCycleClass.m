@@ -25,7 +25,7 @@ classdef OneCycleClass
         directory char % directory of input data (from HoloDoppler or HoloVibes)
         PW_params_names cell  % filenames of all the current input parameters ('InputPulsewaveParams.json' for example by default))
         PW_param_name char % current filename
-        filenames char % name used for storing analysis data
+        filenames char % name id used for storing the measured rendered data
         load_logs char
         
         flag_Segmentation
@@ -43,15 +43,21 @@ classdef OneCycleClass
     methods
         
         function obj = OneCycleClass(path)
+            % creation of an instance of the main class
+            % input is the rendered measurement data
+            % path is either a directory (from HoloDoppler) or a .holo file path (from HoloVibes)
+            % rendered data mainly consists of the short time Doppler spectrum Moments videos 
             
             disp(path)
             
-            if ~isfolder(path) % if th input path is a .holo file with moments inside
+            if ~isfolder(path) % if the input path is a .holo file with moments inside
                 [filepath, name, ~] = fileparts(path);
-                mkdir(fullfile(filepath, name));
+                if ~ isfolder(fullfile(filepath, name)) % creates a result folder in the location as the file
+                    mkdir(fullfile(filepath, name)); 
+                end
                 obj.directory = fullfile(filepath, name);
                 obj.filenames = name;
-            else
+            else % if input is a directory from HoloDoppler
                 obj.directory = path;
                 tmp_idx = regexp(path, '\');
                 obj.filenames = obj.directory(tmp_idx(end - 1) + 1:end -1);
@@ -59,8 +65,9 @@ classdef OneCycleClass
             
             %% Parameters
             
-            obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
-            obj.PW_param_name = obj.PW_params_names{1}; % default behavior
+            % looks for existing parameters and checks compatibility between found PW params and Default PW params of this version of PW.
+            obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory); 
+            obj.PW_param_name = obj.PW_params_names{1}; % default behavior takes the first found parameter file ('InputPulseWaveParameters.json')
             obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
             obj.load_logs = '\n=== LOADING : \r\n';
             
