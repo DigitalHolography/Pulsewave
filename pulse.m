@@ -454,7 +454,7 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, event)
             if (app.flag_is_load)
-                winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json','InputPulsewaveParams.json'));
+                winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
             end
         end
     end

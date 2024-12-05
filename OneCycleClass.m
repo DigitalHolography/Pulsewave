@@ -169,12 +169,6 @@ classdef OneCycleClass
             fprintf("==================================\n")
             fprintf("Loading Input Parameters\n")
             
-            try
-                copyfile(fullfile(ToolBox.PW_path, 'log', 'RenderingParameters.json'), ToolBox.PW_path_log)
-            catch
-                warning('no rendering parameters were found')
-            end
-            
             % copying the input parameters to the result folder
             path_dir_json = fullfile(ToolBox.PW_path, 'pulsewave', 'json');
             path_file_json_params = fullfile(path_dir_json, obj.PW_param_name);

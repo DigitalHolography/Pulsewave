@@ -140,6 +140,9 @@ classdef ToolBoxClass < handle
                 obj.maxPCA = 0;
             end
 
+            if exist(fullfile(path, 'log', 'RenderingParameters.json')) % copies a simple log version for readability
+                copyfile(fullfile(path, 'log', 'RenderingParameters.json'), obj.PW_path_log)
+            end
             %% Calculation of the Sacling Factors
 
             %           obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm
