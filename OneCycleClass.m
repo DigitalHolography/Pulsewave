@@ -75,6 +75,7 @@ classdef OneCycleClass
             
             if ~isfolder(path) % if holo file with moments inside is the input
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
+                obj.load_logs = strcat(obj.load_logs, '\r', ['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
                 obj.M0_disp_video = rescale(ff_correction(videoM0, 30)) * 255;
