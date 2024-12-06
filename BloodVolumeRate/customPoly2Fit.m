@@ -17,7 +17,9 @@ function [p1, p2, p3, rsquared, p1_err, p2_err, p3_err] = customPoly2Fit(x, y)
     X = [x.^2, x, ones(size(x))];
     
     % Solve for the coefficients using the normal equation
+    warning('off', 'MATLAB:nearlySingularMatrix');
     p = (X' * X) \ (X' * y);
+    warning('on', 'MATLAB:nearlySingularMatrix');
     
     % Extract coefficients
     p1 = p(1);

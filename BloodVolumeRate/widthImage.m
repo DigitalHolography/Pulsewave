@@ -1,26 +1,30 @@
-function widthImage(sub_images_r,  name)
+function widthImage(sub_images_r, numSections,  name)
 
-numCircles = size(sub_images_r, 1);
 ToolBox = getGlobalToolBox;
 
+numCircles = size(sub_images_r, 2);
 figure("Visible","off")
-numSectionMax = size(sub_images_r, 1);
+numSectionMax = max(numSections);
 % fill with zero images the zeros parts
-subimage_size = size(sub_images_r{1,1},1);
+subimage_size = size(sub_images_r{1, 1}{1, 1});
+
+sub_images_mat = zeros(subimage_size(1), subimage_size(2), numSectionMax * numCircles);
 
 for circleIdx = 1:numCircles
 
     for sectionIdx = 1:numSectionMax
-
-        if isempty(sub_images_r{circleIdx, sectionIdx})
-            sub_images_r{circleIdx, sectionIdx} = zeros(subimage_size, 'single');
+        
+        if size(sub_images_r{1, circleIdx}, 2) < numSectionMax
+            sub_images_r{1, circleIdx}(end + 1) = {zeros(subimage_size, 'single')};
         end
+
+        sub_images_mat(:, :, ((sectionIdx-1) * numCircles) + circleIdx) = sub_images_r{1, circleIdx}{1, sectionIdx};
 
     end
 
 end
 
-montage(sub_images_r(1:numCircles,1:numSectionMax),"Size",[numSectionMax, numCircles])
+montage(sub_images_mat, "Size", [numSectionMax, numCircles])
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('5_all_%s_sections_with_increasing_radius.png', name))))
 
 end

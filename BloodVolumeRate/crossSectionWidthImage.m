@@ -1,7 +1,7 @@
-function crossSectionWidthImage(M0_ff_img, xy_barycenter, area_r, numSections, width_avg_r, locs, name)
+function crossSectionWidthImage(M0_ff_img, xy_barycenter, area, mask_r, locs, name)
 
 ToolBox = getGlobalToolBox;
-numCircles = size(area_r, 2);
+numCircles = size(area, 2);
 
 section_width_plot = figure("Visible","off");
 
@@ -12,20 +12,44 @@ x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
 
 section_width_plot.Position = [200 200 600 600];
-[~, ~, width, height] = gca.Position;
-vesselWidthsVideo = zeros(width, height, 3, numCircles);
+vesselWidthsVideo = zeros(600, 600, 3, numCircles);
+
+if strcmp(name, 'Artery') == 1
+    color = [1 0 0];
+    titleFig = "arteries";
+else
+    color = [0 0 1];
+    titleFig = "veins";
+end
+
+ratio_etiquette = 1.2;
 
 for circleIdx = 1:numCircles
-    crossSectionWidthArtery = 2 * sqrt(area_r(1:numSections(circleIdx), :) / pi) * 1000;
-    etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 1)), "µm");
-    graphMaskTags(section_width_plot, M0_ff_img, squeeze(width_avg_r{circleIdx}(:, :)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Fontsize = 12);
-    title(sprintf("%s", 'Cross section width in arteries (µm)'));
+    crossSectionWidthArtery = 2 * sqrt(squeeze(area(circleIdx, :)) / pi) * 1000;
+    etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 0)), "µm");
+
+    image_RGB = repmat(M0_ff_img - M0_ff_img .* squeeze(mask_r(:, :, circleIdx)), 1, 1, 3) + reshape(color, 1, 1, 3) .* squeeze(mask_r(:, :, circleIdx)) .* M0_ff_img; % adding the Red value to the mask pixels
+    imagesc(image_RGB);
+    axis image
+    axis off
+
+    if ~isempty(locs{circleIdx})
+
+        for etIdx = 1:length(locs{circleIdx})
+            new_x = x_barycenter + ratio_etiquette * (locs{circleIdx}(etIdx, 2) - x_barycenter);
+            new_y = y_barycenter + ratio_etiquette * (locs{circleIdx}(etIdx, 1) - y_barycenter);
+            text(new_x, new_y, sprintf(string(etiquettes_frame_values(etIdx))), "FontWeight", "bold", "FontSize", 12, "Color", "white", "BackgroundColor", "black");
+        end
+
+    end
+
+    title(sprintf("Cross section width in %s (µm)", titleFig));
     set(gca, 'FontSize', 14)
-    vesselWidthsVideo(:, :, :, circleIdx) = frame2im(getframe(section_width_plot));
+    vesselWidthsVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(section_width_plot)));
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_crossSectionWidth%sImage.png", ToolBox.main_foldername, circleIdx, name)))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_crossSectionWidth%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
 end
 
-writeGifOnDisc(vesselWidthsVideo, 'sectionsWidth.gif', 0.1);
+writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.1);
 end

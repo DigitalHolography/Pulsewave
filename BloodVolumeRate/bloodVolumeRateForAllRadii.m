@@ -80,7 +80,7 @@ parfor circleIdx = 1:numCircles
     [labels_A, numSection_A] = bwlabel(maskSection_A);
     row_A = zeros(numSection_A, 1);
     col_A = zeros(numSection_A, 1);
-    width_A = zeros(numSection_A);
+    width_A = zeros(numSection_A, 1);
 
     for sectionIdx = 1:numSection_A
         [row, col] = find(labels_A == sectionIdx);
@@ -96,9 +96,9 @@ parfor circleIdx = 1:numCircles
     if veins_analysis
         maskSection_V = maskSectionCircles(:, :, circleIdx) .* maskVein;
         [labels_V, numSection_V] = bwlabel(maskSection_V);
-        row_V = zeros(numSection_V);
-        col_V = zeros(numSection_V);
-        width_V = zeros(numSection_V);
+        row_V = zeros(numSection_V, 1);
+        col_V = zeros(numSection_V, 1);
+        width_V = zeros(numSection_V, 1);
 
         for sectionIdx = 1:numSection_V
             [row, col] = find(labels_V == sectionIdx);
@@ -124,9 +124,14 @@ tic
 mkdir(ToolBox.PW_path_png, 'crossSection')
 mkdir(ToolBox.PW_path_png, 'projection')
 
-[vr_avg_A_r, vr_std_A_r, area_A_r, mask_A_r, v_profiles_avg_A_r, v_profiles_std_A_r, sub_images_A_r] = crossSectionAnalysisAllRad(numSections_A, locs_A, widths_A, maskArtery, v_RMS, 'artery', flagBloodVelocityProfile, force_width);
+[vr_avg_A_r, vr_std_A_r, area_A_r, mask_A_r, v_profiles_avg_A_r, v_profiles_std_A_r, sub_images_A_r, width_std_A_r] = crossSectionAnalysisAllRad(numSections_A, locs_A, widths_A, maskArtery, v_RMS, 'artery', flagBloodVelocityProfile, force_width);
 if veins_analysis
-    [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
+    [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r, width_std_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
+end
+
+[area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat, v_profiles_avg_A_mat, v_profiles_std_A_mat] = reshapeSections(numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r, v_profiles_avg_A_r, v_profiles_std_A_r);
+if veins_analysis
+    [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat, v_profiles_avg_V_mat, v_profiles_std_V_mat] = reshapeSections(numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r, v_profiles_avg_V_r, v_profiles_std_V_r);
 end
 
 fprintf("    3. Cross-sections analysis for all circles output took %ds\n", round(toc))
@@ -147,26 +152,26 @@ if veins_analysis
     sectionImage(M0_ff_img, mask_V_r, 'Vein')
 end
 
-widthImage(sub_images_A_r, 'artery')
+widthImage(sub_images_A_r, numSections_A, 'artery')
 if veins_analysis
-    widthImage(sub_images_V_r, 'vein')
+    widthImage(sub_images_V_r, numSections_V, 'vein')
 end
 
-crossSectionWidthImage(M0_ff_img, xy_barycenter, area_A_r, numSections_A, mask_A_r, locs_A, 'Artery')
+crossSectionWidthImage(M0_ff_img, xy_barycenter, area_A_mat, mask_A_r, locs_A, 'Artery')
 if veins_analysis
-    crossSectionWidthImage(M0_ff_img, xy_barycenter, area_V_r, numSections_V, mask_V_r, locs_V, 'Vein')
+    crossSectionWidthImage(M0_ff_img, xy_barycenter, area_V_mat, mask_V_r, locs_V, 'Vein')
 end
 
-widthHistogram(area_A_r, 'artery')
+widthHistogram(area_A_mat, width_std_A_mat, 'artery')
 if veins_analysis
-    widthHistogram(area_V_r, 'vein')
+    widthHistogram(area_V_mat, width_std_V_mat, 'vein')
 end
 
 rad = ((PW_params.velocitySmallRadiusRatio * (numX + numY) / 2) + dr / 2:dr:(PW_params.velocityBigRadiusRatio * (numX + numY) / 2) - dr / 2);
 
-[mean_BvrT_A, mean_std_BvrT_A] = plotRadius(vr_avg_A_r, vr_std_A_r, rad, index_start, index_end, 'Artery');
+[mean_BvrT_A, mean_std_BvrT_A] = plotRadius(vr_avg_A_mat, vr_std_A_mat, fullTime, rad, index_start, index_end, 'Artery');
 if veins_analysis
-    [mean_BvrT_V, mean_std_BvrT_V] = plotRadius(vr_avg_V_r, vr_std_V_r, rad, index_start, index_end, 'Vein');
+    [mean_BvrT_V, mean_std_BvrT_V] = plotRadius(vr_avg_V_mat, vr_std_V_mat, fullTime, rad, index_start, index_end, 'Vein');
 end
 
 fprintf("    4. Sections Images Generation took %ds\n", round(toc))
@@ -188,9 +193,9 @@ end
 %% 6. Arterial Indicators
 tic
 
-graphCombined(M0_ff_video, imdilate(mask, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos);
+graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos);
 if veins_analysis
-    graphCombined(M0_ff_video, imdilate(mask, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos);
+    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos);
 end
 
 ArterialResistivityIndex(fullTime, mean_BvrT_A, M0_ff_video, maskArtery)

@@ -60,7 +60,7 @@ if exportVideos
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     end
     
-    parfor frameIdx = 1:numFrames
+    for frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
         axis image
@@ -128,7 +128,7 @@ if exportVideos
     end
     toc
     tic
-    parfor frameIdx = 1:numFrames
+    for frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
         axis image

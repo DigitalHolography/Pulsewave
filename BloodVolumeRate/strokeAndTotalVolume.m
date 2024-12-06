@@ -69,7 +69,6 @@ title(sprintf("Retinal Stroke Volume : %02.0f nL and Total Volume : %02.0f nL", 
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 box on
 set(gca, 'LineWidth', 2)
-box ('on', Clipping = 'off')
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
 end

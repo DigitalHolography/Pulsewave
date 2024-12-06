@@ -2,19 +2,20 @@ function interpolatedBloodVelocityProfile(v_profiles_avg_r, v_profiles_std_r, nu
 
 ToolBox = getGlobalToolBox;
 numCircles = size(v_profiles_avg_r, 2);
+Color_std = [0.7 0.7 0.7];
 
 for circleIdx = 1:numCircles
     figure("Visible","off");
 
-    for j = 1:numSections(circleIdx)
-        plot(mean(v_profiles_avg_r{circleIdx, j}, 2))
+    for sectionIdx = 1:numSections(circleIdx)
+        plot(mean(v_profiles_avg_r{circleIdx}{sectionIdx}, 2))
         hold on
     end
 
     colors = lines(numSections(circleIdx));
 
-    for j = 1:numSections(circleIdx)
-        profile = mean(v_profiles_avg_r{circleIdx, j}, 2);
+    for sectionIdx = 1:numSections(circleIdx)
+        profile = mean(v_profiles_avg_r{circleIdx}{sectionIdx}, 2);
 
         if any(profile < 0) % edge case when there is negative velocities
             [~, locs] = findpeaks(-profile);
@@ -36,7 +37,7 @@ for circleIdx = 1:numCircles
             indx = find(profile > 0);
         end
 
-        plot(indx, ones([1 length(indx)]) * mean(mean(v_profiles_avg_r{circleIdx, j}, 2)), 'Color', colors(j, :))
+        plot(indx, ones([1 length(indx)]) * mean(mean(v_profiles_avg_r{circleIdx}{sectionIdx}, 2)), 'Color', colors(sectionIdx, :))
         hold on
     end
 
@@ -48,10 +49,10 @@ for circleIdx = 1:numCircles
     interp_profile = zeros([numSections(circleIdx), numInterp], 'single');
     interp_profile_std = zeros([numSections(circleIdx), numInterp], 'single');
 
-    for j = 1:numSections(circleIdx)
+    for sectionIdx = 1:numSections(circleIdx)
 
-        profile = mean(v_profiles_avg_r{circleIdx, j}, 2); % mean velocity profile
-        profile_std = mean(v_profiles_std_r{circleIdx, j}, 2);
+        profile = mean(v_profiles_avg_r{circleIdx}{sectionIdx}, 2); % mean velocity profile
+        profile_std = mean(v_profiles_std_r{circleIdx}{sectionIdx}, 2);
 
         if any(profile < 0) % edge case when there is negative velocities
             [~, locs] = findpeaks(-profile);
@@ -73,8 +74,8 @@ for circleIdx = 1:numCircles
             indx = find(profile > 0);
         end
 
-        interp_profile(j, :) = interp1(1:length(indx), profile(indx), linspace(1, length(indx), numInterp));
-        interp_profile_std(j, :) = interp1(1:length(indx), profile_std(indx), linspace(1, length(indx), numInterp));
+        interp_profile(sectionIdx, :) = interp1(1:length(indx), profile(indx), linspace(1, length(indx), numInterp));
+        interp_profile_std(sectionIdx, :) = interp1(1:length(indx), profile_std(indx), linspace(1, length(indx), numInterp));
     end
 
     mean_interp_profile = mean(interp_profile, 1);

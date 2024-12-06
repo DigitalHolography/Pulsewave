@@ -1,8 +1,10 @@
-function [mean_BvrT, mean_std_BvrT] = plotRadius(vr_avg_r, vr_std_r, rad, index_start, index_end, name)
+function [mean_BvrT, mean_std_BvrT] = plotRadius(vr_avg_r, vr_std_r, fullTime, rad, index_start, index_end, name)
 
 ToolBox = getGlobalToolBox;
 
 numCircles = size(vr_avg_r, 2);
+Color_std = [0.7 0.7 0.7];
+
 BvrR = sum(vr_avg_r, 2);
 std_BvrR = sqrt(sum(vr_std_r .^ 2, 2)); % sqrt of the sum of variances
 
@@ -12,7 +14,7 @@ mean_std_BvrR = squeeze(rms(std_BvrR(:, :, index_start:index_end), 3))'; % quadr
 curve1 = mean_BvrR + 0.5 * mean_std_BvrR;
 curve2 = mean_BvrR - 0.5 * mean_std_BvrR;
 rad2 = [rad, fliplr(rad)];
-inBetween = [curve1, fliplr(curve2)]';
+inBetween = [curve1, fliplr(curve2)];
 
 fill(rad2, inBetween, Color_std);
 hold on;
@@ -22,12 +24,12 @@ plot(rad, mean_BvrR, '-k', 'LineWidth', 2);
 yline(mean(mean_BvrR), '--k', 'LineWidth', 2);
 legend({'', '', '', '', sprintf('mean = %0.2f µL/min', mean(mean_BvrR)), '', ''});
 
-axis tight;
-aa = axis;
-aa(3) = -5;
-aa(4) = 95;
-axis(aa);
-hold off
+axis padded
+axP = axis;
+axis tight
+axT = axis;
+axis([axT(1), axT(2), 0, axP(4)])
+box on
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('radius in pixels')
