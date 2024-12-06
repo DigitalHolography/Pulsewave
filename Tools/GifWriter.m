@@ -3,6 +3,7 @@ classdef GifWriter < handle
     %   Detailed explanation goes here
 
     properties
+        name
         filename
         images
         timePeriod
@@ -10,20 +11,40 @@ classdef GifWriter < handle
         numX
         numY
         numFrames
+        numFramesFixed
         isRGB
+        t
     end
 
     methods
 
-        function obj = GifWriter(filename, timePeriod, timePeriodMin, gifLength)
+        function obj = GifWriter(name, gifLength, timePeriodMin, numFramesFixed)
             %GifWriter Construct an instance of this class
             %   filename: where want your Gif to be built
             %   time_period_min: minimal time between each frame of your GIF
 
-            obj.filename = filename;
-            obj.timePeriodMin = timePeriodMin;
-            obj.timePeriod = timePeriod; % ToolBox.stride / ToolBox.fs / 1000
+            arguments
+                name
+                gifLength
+                timePeriodMin = NaN
+                numFramesFixed = NaN
+            end
+
+            ToolBox = getGlobalToolBox;
+            PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+            obj.name = name;
+            obj.filename = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, name));
+
+            if isnan(timePeriodMin)
+                obj.timePeriodMin = PW_params.timePeriodMin;
+            else
+                obj.timePeriodMin = timePeriodMin;
+            end
+            obj.numFramesFixed = numFramesFixed;
+
+            obj.timePeriod = ToolBox.stride / ToolBox.fs / 1000;
             obj.numFrames = gifLength;
+            obj.t = tic;
 
         end
 
@@ -58,15 +79,18 @@ classdef GifWriter < handle
             h = waitbar(0, 'Generate GIF file...');
 
             if obj.timePeriod < obj.timePeriodMin
-
-                num_T = floor(obj.numFrames * obj.timePeriod / obj.timePeriodMin);
+                if  isnan(obj.numFramesFixed)
+                    num_T = floor(obj.numFrames * obj.timePeriod / obj.timePeriodMin);
+                else
+                    num_T = obj.numFramesFixed;
+                end
 
                 if obj.isRGB
-                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.numX obj.numY num_T], "nearest");
-                    images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.numX obj.numY num_T], "nearest");
-                    images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.numX obj.numY num_T], "nearest");
+                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.numX, obj.numY, num_T], "nearest");
+                    images_interp(:, :, 2, :) = imresize3(squeeze(obj.images(:, :, 2, :)), [obj.numX, obj.numY, num_T], "nearest");
+                    images_interp(:, :, 3, :) = imresize3(squeeze(obj.images(:, :, 3, :)), [obj.numX, obj.numY, num_T], "nearest");
                 else
-                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.numX obj.numY num_T], "nearest");
+                    images_interp(:, :, 1, :) = imresize3(squeeze(obj.images(:, :, 1, :)), [obj.numX, obj.numY, num_T], "nearest");
                 end
 
                 for tt = 1:num_T
@@ -108,6 +132,8 @@ classdef GifWriter < handle
             end
 
             close(h)
+
+            fprintf("    - %s.gif took %ds\n",obj.name, round(toc(obj.t)));
         end
 
     end

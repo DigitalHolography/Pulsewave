@@ -1,29 +1,30 @@
-function [maskArtery, maskVein, maskChoroid] = autoOtsuThresholding(image, mask, classes, name, ToolBox)
+function [maskArtery, maskVein, maskChoroid] = autoOtsuThresholding(image, mask, classes, name)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % classes = [0 0 1 1] a 0 and 1 matrix where 1 is the class selected and 0 the rejected
 
+ToolBox = getGlobalToolBox;
 cArtery = [255 22 18] / 255;
 cVein = [18 23 255] / 255;
 cChoroid = [0 179 0] / 255;
 
 numClasses = size(classes, 1);
-color = zeros(3, numClasses);
+color = zeros(numClasses, 3);
 for i = 1:numClasses
     switch classes(i)
         case 1
-            color(:, i) = cArtery;
+            color(i, :) = cArtery;
         case -1
-            color(:, i) = cVein;
+            color(i, :) = cVein;
         case 0
-            color(:, i) = [1 1 1];
+            color(i, :) = [1 1 1];
         case 2
-            color(:, i) = cChoroid;
+            color(i, :) = cChoroid;
     end
 end
 
 level = multithresh(image(mask), numClasses - 1);
-graphThreshHistogram(image, level, mask, color', sprintf('%s_Histo', name), ToolBox)
+graphThreshHistogram(image, level, mask, color, name)
 level = [-1 level];
 quantizedImage = imquantize(image - 2 * ~mask, level);
 imwrite(rescale(quantizedImage), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s_Quantize.png", ToolBox.main_foldername, name)))

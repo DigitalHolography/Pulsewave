@@ -1,6 +1,7 @@
-function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, xy_barycenter, ToolBox, path)
+function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, xy_barycenter)
 
-PW_params = Parameters_json(path);
+ToolBox = getGlobalToolBox;
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 veinsAnalysis = PW_params.veins_analysis;
 exportVideos = PW_params.exportVideos;
 
@@ -29,6 +30,8 @@ cmapArtery = cmapPerception('rocket');
 cmapVein = cmapPerception('mako');
 
 %% 1) VELOCITY VIDEO ~3min
+tVelocityVideo = tic;
+
 v_video_RGB = zeros(numX, numY, 3, numFrames);
 v_video_rescale = rescale(v_video);
 v_mean = squeeze(mean(v_video_rescale(:, :, :), 3));
@@ -94,8 +97,7 @@ end
 parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
 
 if exportVideos
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    writeGifOnDisc(v_video_RGB, fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "flowMap")), timePeriod);
+    writeGifOnDisc(v_video_RGB, "flowMap");
 end
 
 % mp4
@@ -158,8 +160,7 @@ end
 if exportVideos
     f3 = figure(13); % v Gif
     f3.Position = [300, 300, 600, 630];
-    timePeriod = ToolBox.stride / ToolBox.fs / 1000;
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "v_video")), timePeriod, 0.04, numFrames);
+    gifWriter = GifWriter("v_video", numFrames);
 
     for frameIdx = 1:numFrames
         imagesc(v_video_RGB(:, :, :, frameIdx));
@@ -177,7 +178,7 @@ if exportVideos
     gifWriter.delete();
 end
 
-fprintf("- Velocity Map Timing : %ds\n", round(toc))
+fprintf("- Velocity Map Timing : %ds\n", round(toc(tVelocityVideo)))
 
 %% 2) HISTOGRAM
 %% Init of histogram axis
@@ -233,7 +234,7 @@ f = getframe(gcf);
 histoVideoArtery = zeros(numX_fig, numY_fig, 3, numFrames);
 
 if exportVideos
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityArtery")), timePeriod, 0.04, numFrames);
+    gifWriter = GifWriter("histogramVelocityArtery", numFrames);
 
     for frameIdx = 1:numFrames
 
@@ -345,7 +346,7 @@ if veinsAnalysis
     histoVideoVein = zeros(numX_fig, numY_fig, 3, numFrames);
 
     if exportVideos
-        gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "histogramVelocityVeins")), timePeriod, 0.04, numFrames);
+        gifWriter = GifWriter("histogramVelocityVeins", numFrames);
 
         for frameIdx = 1:numFrames
 
@@ -455,7 +456,7 @@ if exportVideos
         imwrite(cat(1, v_mean_RGB4Gif, mat2gray(histoVideoArtery(:, :, :, end))), fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'AVGflowVideoCombined.png')))
     end
 
-    gifWriter = GifWriter(fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, "velocityHistogramCombined")), timePeriod, 0.04, numFrames);
+    gifWriter = GifWriter("velocityHistogramCombined", numFrames);
 
     for frameIdx = 1:numFrames
         gifWriter.write(combinedGifs(:, :, :, frameIdx), frameIdx);
@@ -490,9 +491,9 @@ if PW_params.AllCirclesFlag
         r2 = radiusmid - j * deltarcentral;
 
         if mod(j, 10) == 0 % save one on 10
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, sprintf('_mask_artery_section_velocity_rgb%d.png', j), ToolBox, path);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, sprintf('mask_artery_section_velocity_rgb%d', j), maskArtery);
         else
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, '_mask_artery_section_velocity_rgb100.png', ToolBox, path);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_section_velocity_rgb100', maskArtery);
         end
 
         maskArtery_section = maskArtery & maskSection;
@@ -519,9 +520,9 @@ if PW_params.AllCirclesFlag
         r2 = radius0 + (j - 1) * deltar;
 
         if mod(j, 10) == 0 % save one on 10
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, sprintf('_mask_artery_section_velocity_rgb%d.png', j), ToolBox, path);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, sprintf('mask_artery_section_velocity_rgb%d', j), maskArtery);
         else
-            [maskSection] = createMaskSection(ImgM0, maskArtery, r1, r2, xy_barycenter, '_mask_artery_section_velocity_rgb100.png', ToolBox, path);
+            [maskSection] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_section_velocity_rgb100', maskArtery);
         end
 
         maskArtery_section_only = maskArtery & maskSection;

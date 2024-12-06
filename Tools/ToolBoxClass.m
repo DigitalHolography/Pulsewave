@@ -5,6 +5,7 @@ classdef ToolBoxClass < handle
 
     properties
         %Path of the PW dir and the output dir inside
+        PW_path char
         PW_path_main char
         PW_path_dir char
         PW_path_png char
@@ -16,6 +17,7 @@ classdef ToolBoxClass < handle
         PW_path_json char
         PW_path_log char
         PW_path_pulswave char
+        PW_param_name char
         main_foldername char
         PW_folder_name char
         stride double
@@ -43,9 +45,11 @@ classdef ToolBoxClass < handle
 
     methods
 
-        function obj = ToolBoxClass(path)
+        function obj = ToolBoxClass(path,PW_param_name)
 
-            PW_params = Parameters_json(path);
+            obj.PW_path = path;
+            obj.PW_param_name = PW_param_name;
+            PW_params = Parameters_json(obj.PW_path,obj.PW_param_name);
 
             %% Creating paths
             idx = 0;
@@ -84,6 +88,16 @@ classdef ToolBoxClass < handle
             obj.PW_path_mp4 = fullfile(obj.PW_path_dir, 'mp4');
             obj.PW_path_json = fullfile(obj.PW_path_dir, 'json');
             obj.PW_path_log = fullfile(obj.PW_path_dir, 'log');
+
+            mkdir(obj.PW_path_dir);
+            mkdir(obj.PW_path_png);
+            mkdir(obj.PW_path_eps);
+            mkdir(obj.PW_path_gif);
+            mkdir(obj.PW_path_txt);
+            mkdir(obj.PW_path_avi);
+            mkdir(obj.PW_path_mp4);
+            mkdir(obj.PW_path_json);
+            mkdir(obj.PW_path_log);
 
             %% Reading Cache Parameters from .mat
             dir_path_mat = fullfile(path, 'mat');
@@ -136,6 +150,9 @@ classdef ToolBoxClass < handle
                 obj.maxPCA = 0;
             end
 
+            if isfile(fullfile(path, 'log', 'RenderingParameters.json')) % copies a simple log version for readability
+                copyfile(fullfile(path, 'log', 'RenderingParameters.json'), obj.PW_path_log)
+            end
             %% Calculation of the Sacling Factors
 
             %           obj.ScalingFactorVelocityInPlane = 1000 * 1000 * PW_params.lambda / PW_params.opticalIndex * (3/PW_params.theta)^(1/2); % 1000 for kHz -> Hz and 1000 for m -> mm

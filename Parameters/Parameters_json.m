@@ -3,6 +3,7 @@ classdef Parameters_json < handle
 
     properties
         path
+        name
         registerVideoFlag
         refAvgStart
         refAvgEnd
@@ -14,9 +15,10 @@ classdef Parameters_json < handle
         videoLength
         k
         removeOutliers
+        repreprocess
         radius_ratio
         radius_gap
-        gauss_filt_size_for_barycentre
+        gauss_filt_size_for_barycenter
         oneCycleNinterp
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
@@ -97,12 +99,14 @@ classdef Parameters_json < handle
         nbCircles
         forcewidth
         forcebarycenter
+        timePeriodMin
     end
 
     methods
 
-        function obj = Parameters_json(dir_path)
+        function obj = Parameters_json(dir_path,filename)
             obj.path = dir_path;
+            obj.name = filename;
 
             obj = obj.GetParameters();
         end
@@ -110,7 +114,7 @@ classdef Parameters_json < handle
         function obj = GetParameters(obj)
             % Constructor method
             %[~, filename, ~] = fileparts(obj.path);
-            filename_json = 'InputPulsewaveParams.json';
+            filename_json =  obj.name;
             dir_path_json = fullfile(obj.path, 'pulsewave', 'json');
             jsonPath = fullfile(dir_path_json, filename_json);
 
@@ -136,10 +140,12 @@ classdef Parameters_json < handle
 
                 obj.removeOutliers = parsedData.RemoveOutliersOption;
 
+                obj.repreprocess = parsedData.PreprocessOnExecute;
+
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
 
-                obj.gauss_filt_size_for_barycentre = parsedData.GaussianFilterSizeForBarycentre;
+                obj.gauss_filt_size_for_barycenter = parsedData.GaussianFilterSizeForBarycenter;
 
                 obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
                 obj.flatField_border = parsedData.FlatFieldCorrection.Border;
@@ -220,6 +226,7 @@ classdef Parameters_json < handle
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
                 obj.forcewidth = parsedData.Other.ForceWidthInPixels;
                 obj.forcebarycenter = parsedData.Other.ForceBarycenter;
+                obj.timePeriodMin = parsedData.Other.MinimumGifPeriod;
 
             else
                 error('The json file could not be found.');

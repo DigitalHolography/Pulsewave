@@ -24,7 +24,7 @@ classdef pulse < matlab.apps.AppBase
     end
 
     properties (Access = private)
-        files = {}
+        file 
         drawer_list = {}
         flag_is_load
     end
@@ -32,12 +32,12 @@ classdef pulse < matlab.apps.AppBase
     methods (Access = private)
         function Load(app, path)
 
-            for n = 1:length(app.files)
-                if length(app.files)~=app.files{n}.nbFiles
-                    app.ErrorLabel.Text = "Error: number of files not correct";
-                    return ;
-                end
-            end 
+            % for n = 1:length(app.files)
+            %     if length(app.files)~=app.files{n}.nbFiles
+            %         app.ErrorLabel.Text = "Error: number of files not correct";
+            %         return ;
+            %     end
+            % end 
 
             app.Lamp.Color = [1, 0, 0];
             drawnow;
@@ -59,15 +59,17 @@ classdef pulse < matlab.apps.AppBase
             totalLoadingTime = tic;
 
             try
-                % add files to the drawer list
+                % add file 
                 tic
                 fprintf("\n----------------------------------\n")
                 fprintf("Video Loading\n")
                 fprintf("----------------------------------\n")
-                app.files{end + 1} = OneCycleClass(path);
+                app.file = OneCycleClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
-                app.files{end} = app.files{end}.preprocessData();
+
+                
+                app.file = app.file.preprocessData();
 
                 %% End
                 app.LoadfolderButton.Enable = true ;
@@ -152,7 +154,13 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: LoadfolderButton
         function LoadfolderButtonPushed(app, event)
             % clearing before loading
-            app.files = {};
+            if ~isempty(app.file)
+                last_dir = app.file.directory;
+            else 
+                last_dir = [];
+            end
+
+            app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
@@ -164,7 +172,11 @@ classdef pulse < matlab.apps.AppBase
                 app.EditParametersButton.Enable = true;
             else
                 f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
-                selected_dir = uigetdir();
+                selected_dir = uigetdir(last_dir);
+                if selected_dir == 0
+                    disp('No folder selected')
+                    return 
+                end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(selected_dir);
@@ -175,7 +187,8 @@ classdef pulse < matlab.apps.AppBase
         end
         function LoadHoloButtonPushed(app, event)
             % clearing before loading
-            app.files = {};
+
+            app.file =  [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
@@ -188,6 +201,10 @@ classdef pulse < matlab.apps.AppBase
             else
                 f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
                 [selected_holo,path_holo] = uigetfile('*.holo');
+                if selected_dir == 0
+                    disp('No file selected')
+                    return 
+                end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(fullfile(path_holo,selected_holo));
@@ -219,26 +236,32 @@ classdef pulse < matlab.apps.AppBase
             app.Lamp.Color = [1, 0, 0];
             app.ErrorLabel.Text = "" ;
             drawnow;
+            
+            % Actualizes the input Parameters
+            app.file.PW_params_names = checkPulsewaveParamsFromJson(app.file.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
 
-            for n = 1:length(app.files)
+
+            for i = 1:length(app.file.PW_params_names)
+
+                app.file.PW_param_name = app.file.PW_params_names{i};
 
                 fprintf("==============================\n")
-                app.files{n}.flag_Segmentation = app.SegmentationCheckBox.Value;
-                app.files{n}.flag_SH_analysis = app.SHanalysisCheckBox.Value;
-                app.files{n}.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
-                app.files{n}.flag_velocity_analysis = app.velocityCheckBox.Value;
-                app.files{n}.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
-                app.files{n}.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
-                app.files{n}.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
+                app.file.flag_Segmentation = app.SegmentationCheckBox.Value;
+                app.file.flag_SH_analysis = app.SHanalysisCheckBox.Value;
+                app.file.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
+                app.file.flag_velocity_analysis = app.velocityCheckBox.Value;
+                app.file.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
+                app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
+                app.file.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
 
                 try
 
-                    app.files{n} = app.files{n}.onePulse();
+                    app.file = app.file.onePulse();
 
                 catch ME
 
                     fprintf("==============================\nERROR\n==============================\n")
-                    disp(['Error with file : ', app.files{n}.directory])
+                    disp(['Error with file : ', app.file.directory])
                     disp(ME.identifier)
                     disp(ME.message)
                     for i = 1:size(ME.stack,1)
@@ -252,7 +275,7 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: ClearButton
         function ClearButtonPushed(app, event)
-            app.files = {};
+            app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
@@ -431,7 +454,7 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, event)
             if (app.flag_is_load)
-                winopen(fullfile(app.files{end}.ToolBoxmaster.PW_path_main,'json','InputPulsewaveParams.json'));
+                winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
             end
         end
     end

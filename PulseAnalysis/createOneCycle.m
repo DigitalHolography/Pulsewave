@@ -1,8 +1,9 @@
-function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(video, videoM0, mask, sysIdxList, numInterp, path, ToolBox)
+function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = createOneCycle(video, videoM0, mask, sysIdxList, numInterp)
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 
-PW_params = Parameters_json(path);
+ToolBox = getGlobalToolBox;
+PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
 tic
 
@@ -72,7 +73,7 @@ if numSys > 0 % we have detected at least two systoles
     dataReliabilityIndex = dataReliabilityIndex ./ max(dataReliabilityIndex, [], 'all') * 100;
 
     for ii = 1:numSys
-        fprintf("    data reliability index for pulse %d : %0.2f %%\n", ii, dataReliabilityIndex(ii));
+        fprintf("        data reliability index for pulse %d : %0.2f %%\n", ii, dataReliabilityIndex(ii));
     end
 
     % [U,S,V] = svd(pulseMatrix);
@@ -144,7 +145,7 @@ if numSys > 0 % we have detected at least two systoles
     end
 
 else % if M = 0
-    fprintf("Less than two systoles were detected");
+    fprintf("        Less than two systoles were detected");
     cyclesSignal = squeeze(sum(video(:, :, :) .* mask, [1 2]) / nnz(mask));
     cyclesSignal = interp1(cyclesSignal, 1:numInterp);
     tmp = interp3(video, size(video, 1), size(video, 2), numInterp);
@@ -164,4 +165,4 @@ oneCycleVideo = circshift(oneCycleVideo, -shift, 3);
 oneCycleVideoM0 = circshift(oneCycleVideoM0, -shift, 3);
 cyclesSignal = circshift(cyclesSignal, -shift, 2); % shift pulse to start & end with bottom diastole
 
-fprintf('- CreateOneCycle took %ds\n', round(toc));
+fprintf('    - CreateOneCycle took %ds\n', round(toc));

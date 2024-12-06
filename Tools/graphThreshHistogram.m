@@ -1,9 +1,21 @@
-function graphThreshHistogram(R, thresholds, mask, colors, name, ToolBox)
+function graphThreshHistogram(R, thresholds, mask, colors, name)
 %FIG_HISTOGRAM Summary of this function goes here
 %   Detailed explanation goes here
 % Set the threshold
+
+ToolBox = getGlobalToolBox;
 numLevel = size(thresholds, 2);
 numColors = size(colors, 1);
+
+figure('Visible','off')
+imagesc(R .* mask)
+title('Correlation with Colorbar');
+colormap(cmapPerception('rocket'))
+colorbar
+axis off
+axis image
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_CorrMapColorbar.png', name))))
+
 
 if size(colors, 1) ~= numLevel + 1
     error('Wrong size for colors, there should be N+1 colors for N levels\n numLevel = %d and numColors = %d', numLevel, numColors)
@@ -53,7 +65,7 @@ set(gca, 'Linewidth', 2)
 pbaspect([1.68 1 1])
 box on
 hold off;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s.png', name))))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s.eps', name))))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.png', name))))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.eps', name))))
 
 end
