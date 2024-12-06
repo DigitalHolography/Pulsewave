@@ -46,6 +46,10 @@
 *.idb
 *.pdb
 
+# Python files
+*.py
+*.ipynb
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

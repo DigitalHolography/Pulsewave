@@ -1,13 +1,12 @@
-function graphSignal(ToolBox, filename, folder, x, y, style, color, opt)
+function graphSignal(filename, folder, x, y, style, color, opt)
 % Graph Function for Signal display
 
 arguments
-    ToolBox
     filename {mustBeText}
     folder {mustBeText}
 end
 
-arguments(Repeating)
+arguments (Repeating)
     x {mustBeNumeric}
     y {mustBeNumeric}
     style
@@ -15,9 +14,9 @@ arguments(Repeating)
 end
 
 arguments
-    opt.xlabel {mustBeText}  = 'default'
-    opt.ylabel {mustBeText}  = 'default'
-    opt.Title {mustBeText}  = 'default'
+    opt.xlabel {mustBeText} = 'default'
+    opt.ylabel {mustBeText} = 'default'
+    opt.Title {mustBeText} = 'default'
     opt.LineWidth = 2
     opt.Fontsize = 14
     opt.Legends = {}
@@ -31,29 +30,37 @@ arguments
     opt.xLineLabels = {}
 end
 
-figure%(Visible="off")
+ToolBox = getGlobalToolBox;
+figure(Visible="off")
 hold on
+
 for n = 1:length(y)
     plot(x{n}, y{n}, style{n}, 'Color', color{n}, 'LineWidth', opt.LineWidth)
-
+    
 end
 
 if ~isempty(opt.TxtFigX)
+    
     for n = 1:length(opt.TxtFigX)
         text(opt.TxtFigX(n), opt.TxtFigY(n), opt.TxtFigString{n})
     end
+    
 end
 
 if ~isempty(opt.yLines)
+    
     for n = 1:length(opt.yLines)
         yline(opt.yLines(n), ':', opt.yLineLabels{n}, LineWidth = opt.LineWidth);
     end
+    
 end
 
 if ~isempty(opt.xLines)
+    
     for n = 1:length(opt.xLines)
         xline(opt.xLines(n), ':', obj.xLineLabels{n}, LineWidth = opt.LineWidth);
     end
+    
 end
 
 title(opt.Title)
@@ -70,9 +77,11 @@ if ~isempty(opt.Legends)
 end
 
 if ~isempty(opt.TxtName)
+    
     for n = 1:length(opt.TxtName)
-        plot2txt(x{n}, y{n}, opt.TxtName{n}, ToolBox)
+        plot2txt(x{n}, y{n}, opt.TxtName{n})
     end
+    
 end
 
 axis padded

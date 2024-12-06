@@ -1,7 +1,7 @@
 function obj = VideoRegistering(obj)
     tic
     % Registers the video using intensity based registration
-    PW_params = Parameters_json(obj.directory);
+    PW_params = Parameters_json(obj.directory,obj.PW_param_name);
 
     if ~PW_params.registerVideoFlag
         return % do nothing if not required

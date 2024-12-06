@@ -43,6 +43,8 @@ classdef GuiCache
         iterative_registration logical
         temporal_filter_flag logical
         temporal_filter double
+        registration_disc logical
+        registration_disc_ratio double
 
         % color image parameters
         color_f1 double
@@ -110,6 +112,8 @@ classdef GuiCache
             obj.low_memory = app.lowmemoryCheckBox.Value;
             obj.rephasing = app.rephasingCheckBox.Value;
             obj.save_raw = app.saverawvideosCheckBox.Value;
+            obj.registration_disc = app.registrationdiscCheckBox.Value;
+            obj.registration_disc_ratio = app.regDiscRatioEditField.Value;
 
             obj.color_f1 = app.compositef1EditField.Value;
             obj.color_f2 = app.compositef2EditField.Value;
@@ -136,8 +140,8 @@ classdef GuiCache
             obj.num_subapertures_positions = app.subapnumpositionsEditField.Value;
             obj.subaperture_margin = app.subaperturemarginEditField.Value;
             obj.SubAp_PCA = app.SubAp_PCACheckBox.Value;
-            obj.minSubAp_PCA = app.minSubAp_PCAEditField_2.Value;
-            obj.maxSubAp_PCA = app.maxSubAp_PCAEditField_2.Value;
+            obj.minSubAp_PCA = app.minSubAp_PCAEditField.Value;
+            obj.maxSubAp_PCA = app.maxSubAp_PCAEditField.Value;
             obj.zernike_projection = app.ZernikeProjectionCheckBox.Value;
             obj.shack_hartmann_ref_image = app.referenceimageDropDown.Value;
 
@@ -146,432 +150,51 @@ classdef GuiCache
 
         function load2Gui(obj, app)
             % set gui parameters from cache
-            try
-                app.batchsizeEditField.Value = obj.batch_size;
-                app.max_PCAEditField.Limits = [0 double(app.batchsizeEditField.Value)];
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
 
-            % try
-            %     app.numworkersSpinner.Value = obj.nb_cpu_cores;
-            % end
+            app.batchsizeEditField.Value = loadGUIVariable(obj.batch_size);
+            app.max_PCAEditField.Limits = loadGUIVariable([0 double(app.batchsizeEditField.Value)]);
+            app.spatialTransformationDropDown.Value = loadGUIVariable(obj.spatialTransformation);
+            app.refbatchsizeEditField.Value = loadGUIVariable(obj.ref_batch_size);
+            app.batchstrideEditField.Value = loadGUIVariable(obj.batch_stride);
+            app.Switch.Value = loadGUIVariable(obj.z_switch);
+            app.zretinaEditField.Value = loadGUIVariable(obj.z_retina);
+            app.zirisEditField.Value = loadGUIVariable(obj.z_iris);
+            app.time_transform = loadGUIVariable(obj.time_transform);
+            app.blurEditField.Value = loadGUIVariable(obj.blur);
+            app.ImageChoiceDropDown.Value = loadGUIVariable(strrep(obj.imageChoice, '_', ' '));
+            app.timetransformDropDown.Value = loadGUIVariable(obj.time_transform.type);
+            app.SVDCheckBox.Value = loadGUIVariable(obj.SVD);
+            app.f1EditField.Value = loadGUIVariable(obj.time_transform.f1);
+            app.f2EditField.Value = loadGUIVariable(obj.time_transform.f2);
+            app.min_PCAEditField.Value = loadGUIVariable(obj.time_transform.min_PCA);
+            app.max_PCAEditField.Value = loadGUIVariable(obj.time_transform.max_PCA);
+            app.imageregistrationCheckBox.Value = loadGUIVariable(obj.registration);
+            app.iterativeregistrationCheckBox.Value = loadGUIVariable(obj.iterative_registration);
+            app.wavelengthEditField.Value = loadGUIVariable(obj.wavelength);
+            app.outputvideoDropDown.Value = loadGUIVariable(strrep(obj.output_videos, '_', ' '));
+            app.lowmemoryCheckBox.Value = loadGUIVariable(obj.low_memory);
+            app.rephasingCheckBox.Value = loadGUIVariable(obj.rephasing);
+            app.NotesTextArea.Value = loadGUIVariable(obj.notes);
+            app.positioninfileSlider.Value = loadGUIVariable(obj.position_in_file);
+            app.EditField.Value = loadGUIVariable(obj.position_in_file);
+            app.IterativeoptimizationCheckBox.Value = loadGUIVariable(obj.iterative_aberration_compensation);
+            app.masknumiterEditField.Value = loadGUIVariable(obj.mask_num_iter);
+            app.ShackHartmannCheckBox.Value = loadGUIVariable(obj.shack_hartmann_aberration_compensation);
+            app.ZernikeProjectionCheckBox.Value = loadGUIVariable(obj.zernike_projection);
+            app.referenceimageDropDown.Value = loadGUIVariable(obj.shack_hartmann_ref_image);
+            app.shackhartmannzernikeranksEditField.Value = loadGUIVariable(obj.shack_hartmann_zernike_ranks);
+            app.imagesubapsizeratioEditField.Value = loadGUIVariable(obj.image_subapertures_size_ratio);
+            app.subapnumpositionsEditField.Value = loadGUIVariable(obj.num_subapertures_positions);
+            app.subaperturemarginEditField.Value = loadGUIVariable(obj.subaperture_margin);
+            app.SubAp_PCACheckBox.Value = loadGUIVariable(obj.SubAp_PCA);
+            app.minSubAp_PCAEditField.Value = loadGUIVariable(obj.minSubAp_PCA);
+            app.maxSubAp_PCAEditField.Value = loadGUIVariable(obj.maxSubAp_PCA);
+            app.compositef1EditField.Value = loadGUIVariable(obj.color_f1);
+            app.compositef2EditField.Value = loadGUIVariable(obj.color_f2);
+            app.compositef3EditField.Value = loadGUIVariable(obj.color_f3);
+            app.lowfrequencyCheckBox.Value = loadGUIVariable(obj.low_frequency);
+            app.saverawvideosCheckBox.Value = loadGUIVariable(obj.save_raw);
 
-            try
-                app.spatialTransformationDropDown.Value = obj.spatialTransformation;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.refbatchsizeEditField.Value = obj.ref_batch_size;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.batchstrideEditField.Value = obj.batch_stride;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.Switch.Value = obj.z_switch;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.zretinaEditField.Value = obj.z_retina;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.zirisEditField.Value = obj.z_iris;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.time_transform = obj.time_transform;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.blurEditField.Value = obj.blur;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.ImageChoiceDropDown.Value = strrep(obj.imageChoice, '_', ' ');
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.timetransformDropDown.Value = obj.time_transform.type;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.SVDCheckBox.Value = obj.SVD;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.f1EditField.Value = obj.time_transform.f1;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.f2EditField.Value = obj.time_transform.f2;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.min_PCAEditField.Value = obj.time_transform.min_PCA;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.max_PCAEditField.Value = obj.time_transform.max_PCA;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.imageregistrationCheckBox.Value = obj.registration;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.iterativeregistrationCheckBox.Value = obj.iterative_registration;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.wavelengthEditField.Value = obj.wavelength;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.outputvideoDropDown.Value = strrep(obj.output_videos, '_', ' ');
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.lowmemoryCheckBox.Value = obj.low_memory;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.rephasingCheckBox.Value = obj.rephasing;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.NotesTextArea.Value = obj.notes;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.positioninfileSlider.Value = obj.position_in_file;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.EditField.Value = obj.position_in_file;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.IterativeoptimizationCheckBox.Value = obj.iterative_aberration_compensation;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.masknumiterEditField.Value = obj.mask_num_iter;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            %             app.zernikestolEditField.Value = obj.low_order_zernikes;
-            %             app.maxconstraintEditField.Value = obj.low_order_max_constraint;
-            try
-                app.ShackHartmannCheckBox.Value = obj.shack_hartmann_aberration_compensation;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.ZernikeProjectionCheckBox.Value = obj.zernike_projection;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.referenceimageDropDown.Value = obj.shack_hartmann_ref_image;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.shackhartmannzernikeranksEditField.Value = obj.shack_hartmann_zernike_ranks;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.imagesubapsizeratioEditField.Value = obj.image_subapertures_size_ratio;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.subapnumpositionsEditField.Value = obj.num_subapertures_positions;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.subaperturemarginEditField.Value = obj.subaperture_margin;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.SubAp_PCACheckBox.Value = obj.SubAp_PCA;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.minSubAp_PCAEditField_2.Value = obj.minSubAp_PCA;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.maxSubAp_PCAEditField_2.Value = obj.maxSubAp_PCA;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.compositef1EditField.Value = obj.color_f1;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.compositef2EditField.Value = obj.color_f2;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.compositef3EditField.Value = obj.color_f3;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.lowfrequencyCheckBox.Value = obj.low_frequency;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
-
-            try
-                app.saverawvideosCheckBox.Value = obj.save_raw;
-            catch ME
-                disp('Error Message:')
-                disp(ME.message)
-                for i = 1:numel(ME.stack)
-                    ME.stack(i)
-                end
-            end
 
         end
 

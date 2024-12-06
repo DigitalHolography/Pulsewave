@@ -1,11 +1,10 @@
-function graphSignalStd(figId, signal, stdsignal, ToolBox, numFrames, ylabl, xlabl, titl, unit, NameValueArgs)
+function graphSignalStd(figId, signal, stdsignal, numFrames, ylabl, xlabl, titl, unit, NameValueArgs)
 % Plots on an existing graph the signal and its std
 
 arguments
     figId
     signal
     stdsignal
-    ToolBox
     numFrames
     ylabl
     xlabl
@@ -15,6 +14,7 @@ arguments
     NameValueArgs.cropIndx double = 0
 end
 
+ToolBox = getGlobalToolBox;
 mean_signal = mean(signal);
 
 if NameValueArgs.cropIndx > 0

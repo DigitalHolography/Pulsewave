@@ -1,5 +1,8 @@
 function obj = readRaw(obj)
 
+% if ~exist(strcat(obj.filenames, '_moment0.raw')) | ~exist(strcat(obj.filenames, '_moment1.raw')) | ~exist(strcat(obj.filenames, '_moment2.raw'))
+%     error(' No raw moment files found. Please check folder path. Filenames should end with (_moment0.raw, _moment1.raw, _moment2.raw)) .')
+% end
 logs = obj.load_logs;
 dir_path_avi = fullfile(obj.directory, 'avi');
 NameRefAviFile = strcat(obj.filenames, '_M0');
@@ -67,7 +70,7 @@ try
 
 catch ME
     disp(['ID: ' ME.identifier])
-    % fprintf("No Raw Files, please select a Holowave folder with raw files exported")
+    % 
     rethrow(ME)
 
 end

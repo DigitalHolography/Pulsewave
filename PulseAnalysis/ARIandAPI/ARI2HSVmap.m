@@ -1,4 +1,4 @@
-function [hue, sat, val, cmap] = ARI2HSVmap(ARI, Im, mask, ToolBox)
+function [hue, sat, val, cmap] = ARI2HSVmap(ARI, Im, mask)
 
     hue = zeros(size(Im)); %ARImap
 

@@ -6,17 +6,18 @@
         "Start frame": 1,
         "End frame": -1
     },
-    "Moment Normalize Convolution parameter": 0.001,
+    "Moment Normalize Convolution parameter": 1,
     "Resize video": {
         "Frame width": -1,
         "Frame height": -1,
         "Video length": -1
     },
     "Value of the interpolation parameter": 1,
-    "Remove Outliers option": 0,
-    "Veins Analysis": 0,
+    "Remove Outliers option": 1,
+    "Preprocess on execute": 0,
+    "Veins Analysis": 1,
     "Export Videos": 1,
-    "Gaussian Filter Size For Barycentre": 0.02,
+    "Gaussian Filter Size For Barycenter": 0.02,
     "Flat field correction": {
         "GW ratio": 0.07,
         "Border": 0.15,
@@ -28,22 +29,12 @@
         "Vesselnes parameter beta": 0.8,
         "Crop coroid radius": 0.07,
         "Vascular Correlation Map Threshold": -2,
-        "Vascular Classes": [
-            -1,
-            0,
-            1
-        ],
+        "Vascular Classes": [-1, -1, 0, 1],
         "Correlation Vesselness Flag": 0,
         "Arterial Correlation Map Threshold": -2,
-        "Arterial Classes": [
-            0,
-            1
-        ],
+        "Arterial Classes": [0, 0, 0, 1],
         "Venous Correlation Map Threshold": -2,
-        "Venous Classes": [
-            0,
-            -1
-        ],
+        "Venous Classes": [0, 0, 0, -1],
         "Minimum seed area size": 150,
         "Diaphragm radius": 0.40,
         "Central Retina Vein Artery threshold": 3,
@@ -59,7 +50,7 @@
         "Data reliability index threshold": 50
     },
     "Velocity": {
-        "Diff First Calculations Flag": -1,
+        "Diff First Calculations Flag": 0,
         "Local background width": 2
     },
     "Size of field": {
@@ -117,6 +108,7 @@
         "Number of sides": 120,
         "All Circles": 0,
         "Force Width In Pixels": [],
-        "Force Barycenter": []
+        "Force Barycenter": [],
+        "Minimum Gif Period": 0.04
     }
 }

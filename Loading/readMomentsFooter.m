@@ -37,7 +37,7 @@ fseek(fd, footer_skip, 'bof');
 footer_unparsed = fread(fd, footer_size, '*char');
 footer_parsed = jsondecode(convertCharsToStrings(footer_unparsed));
 fclose(fd);
-json_txt = jsonencode(footer_parsed);
+json_txt = jsonencode(footer_parsed, PrettyPrint=true);
 fid = fopen(fullfile(directory,'Holovibes_rendering_parameters.json'),'w+');
 fprintf(fid,json_txt);
 fclose(fid);
