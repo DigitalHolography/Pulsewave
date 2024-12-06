@@ -1,7 +1,9 @@
 function crossSectionWidthImage(M0_ff_img, xy_barycenter, area, mask_r, locs, name)
 
 ToolBox = getGlobalToolBox;
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 numCircles = size(area, 1);
+exportVideos = PW_params.exportVideos;
 
 section_width_plot = figure("Visible","off");
 
@@ -50,6 +52,7 @@ for circleIdx = 1:numCircles
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_crossSectionWidth%sImage.png", ToolBox.main_foldername, circleIdx, name)))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_crossSectionWidth%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
 end
-
-writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.1);
+if exportVideos
+    writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.1, 10);
+end
 end
