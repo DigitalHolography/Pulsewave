@@ -68,7 +68,7 @@ classdef OneCycleClass
             % looks for existing parameters and checks compatibility between found PW params and Default PW params of this version of PW.
             obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory); 
             obj.PW_param_name = obj.PW_params_names{1}; % default behavior takes the first found parameter file ('InputPulseWaveParameters.json')
-            obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
+            % obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
             obj.load_logs = '\n=== LOADING : \r\n';
             
             %% Video loading
@@ -154,16 +154,6 @@ classdef OneCycleClass
             if PW_params.repreprocess % if re preprocessing required (in case of re interpolation, registering, resizing...)
                 obj = obj.preprocessData();
             end
-            
-            mkdir(ToolBox.PW_path_dir);
-            mkdir(ToolBox.PW_path_png);
-            mkdir(ToolBox.PW_path_eps);
-            mkdir(ToolBox.PW_path_gif);
-            mkdir(ToolBox.PW_path_txt);
-            mkdir(ToolBox.PW_path_avi);
-            mkdir(ToolBox.PW_path_mp4);
-            mkdir(ToolBox.PW_path_json);
-            mkdir(ToolBox.PW_path_log);
             
             fprintf("==================================\n")
             fprintf("File: %s\n", ToolBox.PW_folder_name)

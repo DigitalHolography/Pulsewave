@@ -1,9 +1,8 @@
-function [] = ArterialResistivityIndex(t, arterial_signal, M0_ff_video, maskArtery)
+function [] = ArterialResistivityIndex(t, arterial_signal, M0_ff_video, maskArtery, name, folder)
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 exportVideos = PW_params.exportVideos;
-folder = 'volumeRate';
 cArtery = [255 22 18] / 255;
 [numX, numY, numFrames] = size(M0_ff_video);
 
@@ -44,14 +43,14 @@ c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
 c.Label.String = 'Arterial resistivity index';
 c.Label.FontSize = 14;
 colormap(cmapARI);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s", ToolBox.main_foldername, 'ARImapFig.eps')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s_ARImapFig.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s_ARImapFig.eps", ToolBox.main_foldername, name)))
 
 if exportVideos
     % ARI GIF
     
     ARIvideoRGB = zeros(numX, numY, 3, numFrames);
-    gifWriter = GifWriter("ARI", numFrames);
+    gifWriter = GifWriter(sprintf("%s_ARI", name), numFrames);
     f = figure("Visible", "off");
     f.Position = [300, 300, 570, 630];
     
@@ -110,24 +109,22 @@ c = colorbar('southoutside', 'Ticks', linspace(0, 1, 6));
 c.Label.String = 'Arterial pulsatility index';
 c.Label.FontSize = 14;
 colormap(cmapAPI);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s", ToolBox.main_foldername, 'APImapFig.eps')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s_APImapFig.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s_APImapFig.eps", ToolBox.main_foldername, name)))
 
 if exportVideos
     % API GIF
     
     ARIvideoRGB = zeros(numX, numY, 3, numFrames);
-    gifWriter = GifWriter("API", numFrames);
+    gifWriter = GifWriter(sprintf("%s_API", name), numFrames);
     f = figure("Visible", "off");
     f.Position = [300, 300, 570, 630];
     
-    tic
     parfor frameIdx = 1:numFrames
         [hue_ARI, sat_ARI, val_ARI] = ARI2HSVmap(ARI, M0_ff_video(:, :, frameIdx), maskArtery);
         ARIvideoRGB(:, :, :, frameIdx) = hsv2rgb(hue_ARI, sat_ARI, val_ARI);
     end
-    toc
-    tic
+    
     for frameIdx = 1:numFrames
         imagesc(ARIvideoRGB(:, :, :, frameIdx));
         title(strcat('Arterial resistivity index value : ', sprintf(" %3.2f", ARI)));
@@ -142,7 +139,6 @@ if exportVideos
         frame = getframe(f);
         gifWriter.write(frame, frameIdx);
     end
-    toc
     gifWriter.generate();
     gifWriter.delete();
     

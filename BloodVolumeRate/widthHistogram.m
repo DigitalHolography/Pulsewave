@@ -1,7 +1,7 @@
 function widthHistogram(area, width_std, name)
 
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 
 figure("Visible","off")
 histogram(2 * sqrt(area(area ~= 0) / pi) * 1000, 50, FaceColor = 'k');

@@ -13,11 +13,8 @@ if size(size(data)) == [1,3]
     data = reshape(data,size(data,1),size(data,2),1,size(data,3));
 end
 numFrames = size(data,4);
-if ~isnan(timePeriodMin)
-    gifWriter = GifWriter(filename, numFrames);
-else
-    gifWriter = GifWriter(filename, numFrames, timePeriodMin);
-end
+
+gifWriter = GifWriter(filename, numFrames, timePeriodMin);
 
 for frameIdx = 1:numFrames
     gifWriter.write(data(:, :, :, frameIdx), frameIdx);

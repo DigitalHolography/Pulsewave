@@ -89,6 +89,16 @@ classdef ToolBoxClass < handle
             obj.PW_path_json = fullfile(obj.PW_path_dir, 'json');
             obj.PW_path_log = fullfile(obj.PW_path_dir, 'log');
 
+            mkdir(obj.PW_path_dir);
+            mkdir(obj.PW_path_png);
+            mkdir(obj.PW_path_eps);
+            mkdir(obj.PW_path_gif);
+            mkdir(obj.PW_path_txt);
+            mkdir(obj.PW_path_avi);
+            mkdir(obj.PW_path_mp4);
+            mkdir(obj.PW_path_json);
+            mkdir(obj.PW_path_log);
+
             %% Reading Cache Parameters from .mat
             dir_path_mat = fullfile(path, 'mat');
             file_path_mat = fullfile(dir_path_mat, [obj.main_foldername, '.mat']);
@@ -140,7 +150,7 @@ classdef ToolBoxClass < handle
                 obj.maxPCA = 0;
             end
 
-            if exist(fullfile(path, 'log', 'RenderingParameters.json')) % copies a simple log version for readability
+            if isfile(fullfile(path, 'log', 'RenderingParameters.json')) % copies a simple log version for readability
                 copyfile(fullfile(path, 'log', 'RenderingParameters.json'), obj.PW_path_log)
             end
             %% Calculation of the Sacling Factors

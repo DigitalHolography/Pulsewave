@@ -1,7 +1,7 @@
 function [maskLongArtery, L, adjMatrix] = getLongestArteryBranch(maskArtery, U)
 % Returns the longest artery branch mask
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 [numX, numY] = size(maskArtery);
 
 %% Skeletonize and label the individual branches

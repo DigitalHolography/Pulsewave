@@ -1,7 +1,7 @@
 function interpolatedBloodVelocityProfile(v_profiles_avg_r, v_profiles_std_r, numSections, rad, numInterp)
 
 ToolBox = getGlobalToolBox;
-numCircles = size(v_profiles_avg_r, 2);
+numCircles = size(v_profiles_avg_r, 1);
 Color_std = [0.7 0.7 0.7];
 
 for circleIdx = 1:numCircles

@@ -2,7 +2,7 @@ function [mean_BvrT, mean_std_BvrT] = plotRadius(vr_avg_r, vr_std_r, fullTime, r
 
 ToolBox = getGlobalToolBox;
 
-numCircles = size(vr_avg_r, 2);
+numCircles = size(vr_avg_r, 1);
 Color_std = [0.7 0.7 0.7];
 
 BvrR = sum(vr_avg_r, 2);

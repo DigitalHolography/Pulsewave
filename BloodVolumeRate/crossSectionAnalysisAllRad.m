@@ -2,7 +2,7 @@ function [vr_avg_r, vr_std_r, area_r, mask_r, v_profiles_avg_r, v_profiles_std_r
 
 % Parameters 
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path);
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 flowRate_sliceHalfThickness = PW_params.flowRate_sliceHalfThickness;
 [numX, numY, ~] = size(v_RMS);
 numCircles = size(numSections, 2);

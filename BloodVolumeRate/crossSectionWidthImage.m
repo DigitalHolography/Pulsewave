@@ -1,7 +1,7 @@
 function crossSectionWidthImage(M0_ff_img, xy_barycenter, area, mask_r, locs, name)
 
 ToolBox = getGlobalToolBox;
-numCircles = size(area, 2);
+numCircles = size(area, 1);
 
 section_width_plot = figure("Visible","off");
 

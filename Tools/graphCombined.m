@@ -66,7 +66,7 @@ end
 combined_plot_video = cat(1, mat2gray(video_plot_video), mat2gray(signal_plot_video));
 
 if ~NameValueArgs.skip
-    writeGifOnDisc(combined_plot_video, sprintf("%s_combined.gif", titl));
+    writeGifOnDisc(combined_plot_video, sprintf("%s_combined", titl), 0.04);
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(combined_plot_video), fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, sprintf('%s_combined.avi', titl))));
 else
     imwrite(combined_plot_video(:, :, :, end), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, titl)));

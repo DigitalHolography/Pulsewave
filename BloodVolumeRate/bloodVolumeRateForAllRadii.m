@@ -1,9 +1,7 @@
 function [] = bloodVolumeRateForAllRadii(maskArtery, maskVein, v_RMS, M0_ff_video, xy_barycenter, systolesIndexes, flagBloodVelocityProfile)
 
-tic
-
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 
 veins_analysis = PW_params.veins_analysis;
 force_width = [];
@@ -15,8 +13,10 @@ end
 x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
 
-mkdir(ToolBox.PW_path_png, 'volumeRate')
-mkdir(ToolBox.PW_path_eps, 'volumeRate')
+folder = 'volumeRate';
+
+mkdir(ToolBox.PW_path_png, folder)
+mkdir(ToolBox.PW_path_eps, folder)
 
 [numX, numY, numFrames] = size(v_RMS);
 [X, Y] = meshgrid(1:numY, 1:numX);
@@ -129,9 +129,9 @@ if veins_analysis
     [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r, width_std_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
 end
 
-[area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat, v_profiles_avg_A_mat, v_profiles_std_A_mat] = reshapeSections(numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r, v_profiles_avg_A_r, v_profiles_std_A_r);
+[area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat] = reshapeSections(numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r);
 if veins_analysis
-    [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat, v_profiles_avg_V_mat, v_profiles_std_V_mat] = reshapeSections(numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r, v_profiles_avg_V_r, v_profiles_std_V_r);
+    [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat] = reshapeSections(numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r);
 end
 
 fprintf("    3. Cross-sections analysis for all circles output took %ds\n", round(toc))
@@ -180,7 +180,7 @@ fprintf("    4. Sections Images Generation took %ds\n", round(toc))
 tic
 
 if flagBloodVelocityProfile
-    mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles'));
+    mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
 
     interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, rad, 50)
     if veins_analysis
@@ -195,15 +195,13 @@ tic
 
 graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos);
 if veins_analysis
-    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos);
+    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos, Color=[0 0 1]);
 end
 
-ArterialResistivityIndex(fullTime, mean_BvrT_A, M0_ff_video, maskArtery)
+ArterialResistivityIndex(fullTime, mean_BvrT_A, M0_ff_video, maskArtery, 'BVR', folder)
 
 strokeAndTotalVolume(mean_BvrT_A, mean_std_BvrT_A, systolesIndexes, fullTime, 1000)
 
 fprintf("    6. Arterial Indicators Images Generation took %ds\n", round(toc))
-%close all
-fprintf("- Blood Volume Rate for all radii took : %ds\n", round(toc))
 
 end

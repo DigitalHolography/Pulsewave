@@ -1,5 +1,7 @@
 function strokeAndTotalVolume(mean_BvrT, mean_std_BvrT, systolesIndexes, fullTime, numInterp)
 
+ToolBox = getGlobalToolBox;
+
 figure("Visible","off");
 
 [interp_BvrT, avgLength, interp_std_BvrT] = interpSignal(mean_BvrT, systolesIndexes, numInterp, mean_std_BvrT);

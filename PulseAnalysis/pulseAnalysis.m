@@ -13,11 +13,10 @@ exec_times_id = [];
 exec_times_time = [];
 
 ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 veinsAnalysis = PW_params.veins_analysis;
 entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
-f_AVG_mean = mean(f_AVG_video, 3);
 
 maskArterySection = maskArtery & maskSection;
 maskVeinSection = maskVein & maskSection;
@@ -126,8 +125,6 @@ axis off
 axis image
 imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_LocalBackground_in_vessels.png')))
 
-range(1:2) = clim;
-
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
 in_vessels = mean(delta_f_RMS, 3) .* maskVesselDilated;
@@ -143,8 +140,6 @@ axis off
 axis image
 imwrite(rescale(in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_Df_in_vessels.png')))
 
-range(1:2) = clim;
-
 if exportVideos
     f_RMS_video_rescale = rescale(f_RMS_video);
     f_RMS_background_rescale = rescale(f_RMS_background);
@@ -159,19 +154,12 @@ if exportVideos
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
 
-
 fprintf("    2. Difference calculation took %ds\n", round(toc))
 
 clear LocalBackground_in_vessels f_RMS_background
 
 if entirePulseAnalysis
-    [exec_times_id,exec_times_time]=entirePulseAnalysis(f_AVG_mean,exec_times_id,exec_times_time,...
-    f_RMS_video, ...
-    maskBackgroundSection, ...
-    maskArterySection,...
-    maskVeinSection,...
-    veinsAnalysis,...
-    sysIdxList);
+    [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_disp_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_RMS_video, exec_times_id, exec_times_time, maskBackgroundSection, maskArterySection, maskVeinSection, sysIdxList);
 end
 
 exec_times = [exec_times_id; exec_times_time];
