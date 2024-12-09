@@ -24,10 +24,10 @@ M0_ff_img = rescale(squeeze(mean(M0_ff_video, 3)));
 M0_ff_video_centered = M0_ff_video - M0_ff_img;
 imwrite(rescale(M0_ff_img), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, 'all_1_0_M0.png')))
 
-if exportVideos
-    M0_ff_rescaled_video = rescale(M0_ff_video);
-    writeGifOnDisc(M0_ff_rescaled_video, "M0")
-end
+
+M0_ff_rescaled_video = rescale(M0_ff_video);
+writeGifOnDisc(M0_ff_rescaled_video, "M0")
+
 
 %% 1) 1) Compute vesselness response
 vesselnessM0 = vesselness_filter(M0_ff_img, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
