@@ -4,6 +4,7 @@ classdef pulse < matlab.apps.AppBase
     properties (Access = public)
         PulsewaveUIFigure             matlab.ui.Figure
         EditParametersButton          matlab.ui.control.Button
+        EditMasksButton               matlab.ui.control.Button
         NumberofWorkersSpinner        matlab.ui.control.Spinner
         NumberofWorkersSpinnerLabel   matlab.ui.control.Label
         SHanalysisCheckBox            matlab.ui.control.CheckBox
@@ -201,7 +202,7 @@ classdef pulse < matlab.apps.AppBase
             else
                 f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
                 [selected_holo,path_holo] = uigetfile('*.holo');
-                if selected_dir == 0
+                if selected_holo == 0
                     disp('No file selected')
                     return 
                 end
@@ -454,7 +455,27 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, event)
             if (app.flag_is_load)
-                winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
+                if exist(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name))
+                   
+                    winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
+                end
+            end
+        end
+
+        % Button pushed function: EditMasksButton
+        function EditMasksButtonPushed(app, event)
+            if (app.flag_is_load)
+                if ~exist(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
+                    mkdir(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
+                end
+                try 
+
+                    winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'));
+
+                catch 
+                    disp("opening failed.")
+                end
+                
             end
         end
     end
@@ -624,7 +645,17 @@ classdef pulse < matlab.apps.AppBase
             app.EditParametersButton.Position = [276 238 130 28];
             app.EditParametersButton.Text = 'Edit Parameters';
             app.EditParametersButton.Enable = 'off';
-
+            
+            % Create EditMasksButton
+            app.EditMasksButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.EditMasksButton.ButtonPushedFcn = createCallbackFcn(app, @EditMasksButtonPushed, true);
+            app.EditMasksButton.BackgroundColor = [0.502 0.502 0.502];
+            app.EditMasksButton.FontSize = 16;
+            app.EditMasksButton.FontColor = [0.9412 0.9412 0.9412];
+            app.EditMasksButton.Position = [250 200 130 28];
+            app.EditMasksButton.Text = 'Edit Masks';
+            app.EditMasksButton.Enable = 'on';
+            
             % Show the figure after all components are created
             app.PulsewaveUIFigure.Visible = 'on';
         end
