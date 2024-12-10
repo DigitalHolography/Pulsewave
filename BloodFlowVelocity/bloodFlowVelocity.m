@@ -12,19 +12,16 @@ tic
 
 % TRUE MIN and MAX V but not realistic
 M0_ff_video = rescale(M0_ff_video);
-M0_ff_image = mean(M0_ff_video, 3);
+M0_ff_image = rescale(mean(M0_ff_video, 3));
 [numX, numY, numFrames] = size(v_video);
 
 maskArtery = maskArtery & maskSection;
 maskVein = maskVein & maskSection;
 
-v_Artery = sum(v_video .* maskArtery, [1 2]) / nnz(maskArtery);
-v_Vein = sum(v_video .* maskVein, [1 2]) / nnz(maskVein);
-
-v_maxArteries = max(v_Artery(:));
-v_maxVeins = max(v_Vein(:));
-v_minArteries = min(v_Artery(:));
-v_minVeins = min(v_Vein(:));
+v_maxArteries = max(v_video(maskArtery), [], 'all');
+v_maxVeins = max(v_video(maskVein), [], 'all');
+v_minArteries = min(v_video(maskArtery), [], 'all');
+v_minVeins = min(v_video(maskVein), [], 'all');
 
 cmapArtery = cmapPerception('rocket');
 cmapVein = cmapPerception('mako');
@@ -36,39 +33,21 @@ v_video_RGB = zeros(numX, numY, 3, numFrames);
 v_video_rescale = rescale(v_video);
 v_mean = squeeze(mean(v_video_rescale(:, :, :), 3));
 
+velocityIm(v_mean, maskArtery, cmapArtery, colorbarOn = true)
+velocityColorbar(cmapArtery, v_minArteries, v_maxArteries, 'Arteries')
+
+v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
+
 if veinsAnalysis
-    % v Vessels
-    figure
-    colormap turbo
-    imagesc(v_mean)
-    c = colorbar;
-    c.Label.String = 'mm/s';
-    axis image; axis off;
-    exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "v_imagesc_Mean.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
 
-    % v Artery
-    figure
-    colormap(cmapArtery)
-    imagesc(v_mean .* maskArtery)
-    c = colorbar;
-    c.Label.String = 'mm/s';
-    axis image; axis off;
-    exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "v_imagesc_Mean_arteries.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
+    velocityIm(v_mean, (maskArtery | maskVein), turbo, colorbarOn = true)
 
-    % v Vein
-    figure
-    colormap(cmapVein);
-    imagesc(v_mean .* maskVein);
-    c = colorbar;
-    c.Label.String = 'mm/s';
-    axis image; axis off;
-    exportgraphics(gcf, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, "v_imagesc_Mean_veins.png")), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
+    velocityIm(v_mean, maskVein, cmapVein, colorbarOn = true)
+    velocityColorbar(cmapVein, v_minVeins, v_maxVeins, 'Veins')
 
-    v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
     v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_artery_mean.png')))
 
-    v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
     v_mean_Vein = setcmap(v_mean, maskVein, cmapVein);
     v_mean_RGB = v_mean_Artery .* maskArtery + v_mean_Vein .* maskVein + M0_ff_image .* ~(maskArtery | maskVein) - (v_mean_Artery + v_mean_Vein)/2 .* (maskArtery & maskVein);
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
@@ -80,7 +59,6 @@ if veinsAnalysis
     end
 
 else
-    v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
     v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
@@ -91,91 +69,14 @@ else
 
 end
 
-%% Saving video
-% avi
-
-parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
-
 if exportVideos
     writeGifOnDisc(v_video_RGB, "flowMap");
-end
 
-% mp4
-parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')), 'MPEG-4');
+    % avi
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
 
-% save video
-% avi
-w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "v_video.avi")));
-
-open(w)
-
-for frameIdx = 1:numFrames
-    writeVideo(w, squeeze(v_video_RGB(:, :, :, frameIdx)));
-end
-
-close(w);
-% mp4
-w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "v_video.mp4")), 'MPEG-4');
-open(w)
-
-for frameIdx = 1:numFrames
-    writeVideo(w, squeeze(v_video_RGB(:, :, :, frameIdx)));
-end
-
-close(w);
-
-% Save colorbar
-colorfig = figure(11);
-colorfig.Units = 'normalized';
-colormap(cmapArtery)
-%hCB = colorbar('north');
-hCB = colorbar('north', 'Ticks', [0, 1], 'TickLabels', {string(round(v_minArteries, 1)), string(round(v_maxArteries, 1))});
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-hCB.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca, 15, "points");
-
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityArteries.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityArteries.eps')))
-
-if veinsAnalysis
-    % Save colorbar
-    colorfig = figure(12);
-    colorfig.Units = 'normalized';
-    colormap(cmapVein)
-    %hCB = colorbar('north');
-    hCB = colorbar('north', 'Ticks', [0, 1], 'TickLabels', {string(round(v_minVeins, 1)), string(round(v_maxVeins, 1))});
-    set(gca, 'Visible', false)
-    set(gca, 'LineWidth', 3);
-    hCB.Position = [0.10 0.3 0.81 0.35];
-    colorfig.Position(4) = 0.1000;
-    fontsize(gca, 15, "points");
-
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityVeins.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'colorbarVelocityVeins.eps')))
-
-end
-
-if exportVideos
-    f3 = figure(13); % v Gif
-    f3.Position = [300, 300, 600, 630];
-    gifWriter = GifWriter("v_video", numFrames);
-
-    for frameIdx = 1:numFrames
-        imagesc(v_video_RGB(:, :, :, frameIdx));
-        title('Flow Map');
-        axis image
-        axis off
-        set(gca, 'LineWidth', 2);
-        fontsize(gca, 14, "points");
-
-        gifWriter.write(v_video_RGB(:, :, :, frameIdx), frameIdx);
-
-    end
-
-    gifWriter.generate();
-    gifWriter.delete();
+    % mp4
+    parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')), 'MPEG-4');
 end
 
 fprintf("- Velocity Map Timing : %ds\n", round(toc(tVelocityVideo)))
