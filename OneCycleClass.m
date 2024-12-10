@@ -68,7 +68,7 @@ classdef OneCycleClass
             % looks for existing parameters and checks compatibility between found PW params and Default PW params of this version of PW.
             obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory); 
             obj.PW_param_name = obj.PW_params_names{1}; % default behavior takes the first found parameter file ('InputPulseWaveParameters.json')
-            % obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
+            obj.ToolBoxmaster = ToolBoxClass(obj.directory, obj.PW_param_name);
             obj.load_logs = '\n=== LOADING : \r\n';
             
             %% Video loading
@@ -349,7 +349,7 @@ classdef OneCycleClass
                 [numX, numY, numFrames] = size(obj.f_RMS_video);
                 bin_x = 4;
                 bin_y = 4;
-                bin_w = 16;
+                % bin_w = 16;
                 bin_t = 1;
                 SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
                 
