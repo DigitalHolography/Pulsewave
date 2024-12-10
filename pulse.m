@@ -3,6 +3,7 @@ classdef pulse < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         PulsewaveUIFigure             matlab.ui.Figure
+        PreProcessButton              matlab.ui.control.Button
         EditParametersButton          matlab.ui.control.Button
         EditMasksButton               matlab.ui.control.Button
         NumberofWorkersSpinner        matlab.ui.control.Spinner
@@ -33,13 +34,6 @@ classdef pulse < matlab.apps.AppBase
     methods (Access = private)
         function Load(app, path)
 
-            % for n = 1:length(app.files)
-            %     if length(app.files)~=app.files{n}.nbFiles
-            %         app.ErrorLabel.Text = "Error: number of files not correct";
-            %         return ;
-            %     end
-            % end 
-
             app.Lamp.Color = [1, 0, 0];
             drawnow;
             holo=true;
@@ -47,16 +41,7 @@ classdef pulse < matlab.apps.AppBase
                 holo =false;
                 path = strcat(path, '\');
             end
-            parfor_arg = app.NumberofWorkersSpinner.Value ;
-
-            poolobj = gcp('nocreate'); % check if a pool already exist
-            if isempty(poolobj)
-                parpool(parfor_arg); % create a new pool
-            elseif poolobj.NumWorkers ~= parfor_arg
-                delete(poolobj); %close the current pool to create a new one with correct num of workers
-                parpool(parfor_arg);
-            end
-
+            
             totalLoadingTime = tic;
 
             try
@@ -67,10 +52,6 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("----------------------------------\n")
                 app.file = OneCycleClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
-
-
-                
-                app.file = app.file.preprocessData();
 
                 %% End
                 app.LoadfolderButton.Enable = true ;
@@ -218,9 +199,15 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: ExecuteButton
         function ExecuteButtonPushed(app, event)
+            if ~app.flag_is_load
+                disp("no input loaded")
+                return
+            end
 
-            %             delete(gcp('nocreate')); % closeparallel CPU pool
-            %             parpool;% launch parallel CPU pool
+            if isempty(app.file.f_RMS_video)
+                disp("input not preprocessed")
+                return
+            end
 
             warning('off');
             parfor_arg = app.NumberofWorkersSpinner.Value ;
@@ -272,6 +259,57 @@ classdef pulse < matlab.apps.AppBase
                 end
             end
             app.Lamp.Color = [0, 1, 0];
+        end
+
+        function PreProcessButtonPushed(app, event)
+            if ~app.flag_is_load 
+                disp('no input loaded.')
+                return
+            end
+            app.Lamp.Color = [1, 0, 0];
+            drawnow;
+
+            parfor_arg = app.NumberofWorkersSpinner.Value ;
+            poolobj = gcp('nocreate'); % check if a pool already exist
+            if isempty(poolobj)
+                parpool(parfor_arg); % create a new pool
+            elseif poolobj.NumWorkers ~= parfor_arg
+                delete(poolobj); %close the current pool to create a new one with correct num of workers
+                parpool(parfor_arg);
+            end
+
+            totalPreProcessTime = tic;
+
+            try
+                tic
+                fprintf("\n----------------------------------\n")
+                fprintf("Video PreProcessing\n")
+                fprintf("----------------------------------\n")
+                app.file = app.file.preprocessData();
+                fprintf("- Video PreProcessing took : %ds\n", round(toc))
+            catch exception
+
+                fprintf("==============================\nERROR\n==============================\n")
+                if ~isempty(app.file)
+                    fprintf('Error while preprocessing : %s\n', app.file.directory)
+                else
+                    fprintf('Error while preprocessing : %s\n', 'xx')
+                end
+                fprintf("%s\n",exception.identifier)
+                fprintf("%s\n",exception.message)
+
+                for i = 1:size(exception.stack,1)
+                    fprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
+                end
+
+                fprintf("==============================\n")
+                app.Lamp.Color = [1, 1/2, 0];
+
+            end
+
+            fprintf("------------------------------\n")
+            fprintf("- Total PreProcess timing took : %ds\n", round(toc(totalPreProcessTime)))
+            
         end
 
         % Button pushed function: ClearButton
@@ -413,6 +451,7 @@ classdef pulse < matlab.apps.AppBase
                     tic
                     %app.PulsewaveanalysisCheckBox.Value = true;
                     app.Load(app.drawer_list{i});
+                    app.PreProcessButtonPushed();
                     app.ExecuteButtonPushed();
                     app.ClearButtonPushed();
                     toc
@@ -456,9 +495,13 @@ classdef pulse < matlab.apps.AppBase
         function EditParametersButtonPushed(app, event)
             if (app.flag_is_load)
                 if exist(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name))
-                   
+                    disp(['opening : ', fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name)])
                     winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
+                else
+                    disp(['couldnt open : ',fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name)])
                 end
+            else
+                disp('No input loaded')
             end
         end
 
@@ -475,6 +518,8 @@ classdef pulse < matlab.apps.AppBase
                 catch 
                     disp("opening failed.")
                 end
+            else
+                disp('No input loaded')
                 
             end
         end
@@ -644,7 +689,17 @@ classdef pulse < matlab.apps.AppBase
             app.EditParametersButton.FontColor = [0.9412 0.9412 0.9412];
             app.EditParametersButton.Position = [276 238 130 28];
             app.EditParametersButton.Text = 'Edit Parameters';
-            app.EditParametersButton.Enable = 'off';
+            app.EditParametersButton.Enable = 'on';
+
+            % Create PreProcessButton
+            app.PreProcessButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.PreProcessButton.ButtonPushedFcn = createCallbackFcn(app, @PreProcessButtonPushed, true);
+            app.PreProcessButton.BackgroundColor = [0.502 0.502 0.502];
+            app.PreProcessButton.FontSize = 16;
+            app.PreProcessButton.FontColor = [0.9412 0.9412 0.9412];
+            app.PreProcessButton.Position = [191 322 130 28];
+            app.PreProcessButton.Text = 'Pre Process';
+            app.PreProcessButton.Enable = 'on';
             
             % Create EditMasksButton
             app.EditMasksButton = uibutton(app.PulsewaveUIFigure, 'push');
