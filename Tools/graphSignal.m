@@ -1,4 +1,4 @@
-function graphSignal(filename, folder, x, y, style, color, opt)
+function [f] = graphSignal(filename, folder, x, y, style, color, opt)
 % Graph Function for Signal display
 
 arguments
@@ -31,7 +31,7 @@ arguments
 end
 
 ToolBox = getGlobalToolBox;
-figure(Visible="off")
+f = figure(Visible="off");
 hold on
 
 for n = 1:length(y)

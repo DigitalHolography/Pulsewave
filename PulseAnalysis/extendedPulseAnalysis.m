@@ -1,4 +1,4 @@
-function [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_ff_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_RMS_video, ...
+function [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_ff_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_video, ...
     exec_times_id, exec_times_time, maskBackground, maskArtery, maskVein, sysIdxList)
 
 ToolBox = getGlobalToolBox;
@@ -327,7 +327,7 @@ fileID = fopen(fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_folde
 fprintf(fileID, '%f %f \r\n', tmp');
 fclose(fileID);
 
-figure(33)
+figure("Visible", "off")
 
 for ii = 1:size(cycles_signal, 1)
 
@@ -353,7 +353,7 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
 
-ArterialResistivityIndex(t, v_RMS_video, M0_ff_video, maskArtery, 'v', folder)
+ArterialResistivityIndex(t, v_video, M0_ff_video, maskArtery, 'v', folder)
 
 exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
 exec_times_time = [exec_times_time, toc];
@@ -400,7 +400,7 @@ if ~isnan(onePulseVideoM0)
     %% PLOT
 
     % diastolic Doppler frequency heatmap
-    figure(79)
+    figure("Visible", "off")
     imagesc(heatmap_dia_raw);
     colormap gray
     title('bottom diastole RMS frequency map');
@@ -419,7 +419,7 @@ if ~isnan(onePulseVideoM0)
     clear heatmap_dia_raw
 
     % diastolic Doppler frequency heatmap
-    f80 = figure(80);
+    f80 = figure("Visible", "off");
     imagesc(heatmap_dia);
     colormap gray
     title('bottom diastole RMS frequency map flatfield');
@@ -437,7 +437,7 @@ if ~isnan(onePulseVideoM0)
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFlatfieldFig.eps')))
 
     % systolic Doppler frequency heatmap
-    f89 = figure(89);
+    f89 = figure("Visible", "off");
     f89.Position = [1100 500 380 420];
     imagesc(heatmap_sys_raw);
     colormap gray
@@ -456,11 +456,11 @@ if ~isnan(onePulseVideoM0)
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFig.png')))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFig.eps')))
 
-    % figure(85)
+    % figure("Visible", "off")
     % clim([min(range),max(range)]);
 
     % systolic Doppler frequency heatmap
-    f90 = figure(90);
+    f90 = figure("Visible", "off");
     f90.Position = [1100 500 380 420];
     imagesc(heatmap_sys);
     colormap gray
@@ -536,7 +536,7 @@ if ~isnan(onePulseVideoM0)
     fclose(fileID);
 
     %
-    figure(100)
+    figure("Visible", "off")
     plot(interp_t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'k-', LineWidth = 2);
     xline(interp_t(idx_T_diff_max + 1), ':', {}, LineWidth = 2)
     text(interp_t(idx_T_diff_max + 1), min(avgArterialPulseVelocityInPlane(:)) + 0.1 * (max(avgArterialPulseVelocityInPlane(:)) - min(avgArterialPulseVelocityInPlane(:))), ' (1)', 'FontSize', 14); %Display at minimum+x %
@@ -556,7 +556,7 @@ if ~isnan(onePulseVideoM0)
 
     plot2txt(interp_t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane')
 
-    figure(101)
+    figure("Visible", "off")
 
     for ii = 1:size(cycles_signal, 1)
 
@@ -590,7 +590,7 @@ if ~isnan(onePulseVideoM0)
 
     clear cycles_signal
 
-    figure(102)
+    figure("Visible", "off")
     plot(interp_t, avgArterialPulseHz, 'k.', ...
         interp_t(1:idx_sys), pulse_arteries_blurred_sys(1:idx_sys), 'k-', ...
         interp_t(idx_sys:numFramesInterp), pulse_arteries_blurred_dia(1:(numFramesInterp - idx_sys + 1)), 'k-', ...
@@ -616,7 +616,7 @@ if ~isnan(onePulseVideoM0)
 
     plot2txt(interp_t, avgArterialPulseHz, 'AvgArterialPulseHz')
 
-    figure(103)
+    figure("Visible", "off")
     plot(interp_t(1:end - 1), diff_avgPulse, 'k-', LineWidth = 2);
     x = 0;
     yline(x, ':', LineWidth = 2);
@@ -640,117 +640,6 @@ if ~isnan(onePulseVideoM0)
 
     plot2txt(interp_t(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative')
 end
-
-%% Analysis CRA & CRV Kept in case we want to study CRA/CRV again
-%
-% fullCRAPulse = fullVideoM1M0 .* maskCRA;
-% fullCRAPulse = squeeze(sum(fullCRAPulse, [1 2]))/nnz(maskCRA);
-%
-% fullCRVPulse = fullVideoM1M0 .* maskCRV;
-% fullCRVPulse = squeeze(sum(fullCRVPulse, [1 2]))/nnz(maskCRV);
-%
-% %
-% fullBackgroundM1M0Signal = fullVideoM1M0 .* maskBackgroundM1M0;
-% fullBackgroundM1M0Signal = squeeze(sum(fullBackgroundM1M0Signal, [1 2]))/nnz(maskBackgroundM1M0);
-%
-%
-% figure(102)
-% plot(fullTime,fullCRAPulse,'-k', fullTime,fullBackgroundM1M0Signal,':k','LineWidth',2) ;
-% title('CRA pulse waveform and backgroundAVG signal'); % averaged outside of segmented vessels
-% legend('CRA pulse','backgroundAVG') ;
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
-%
-% figure(103)
-% plot(fullTime,fullCRVPulse,'-k', fullTime,fullBackgroundM1M0Signal,':k','LineWidth',2) ;
-% title('CRV pulse waveform and backgroundAVG signal'); % averaged outside of segmented vessels
-% legend('CRV pulse','backgroundAVG') ;
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
-%
-% % Renormalization to avoid bias
-% fullCRAPulseMinusBackground = fullCRAPulse - fullBackgroundM1M0Signal;
-% fullCRAPulse = fullCRAPulseMinusBackground;
-% fullCRVPulseMinusBackground = fullCRVPulse - fullBackgroundM1M0Signal;
-% fullCRVPulse = fullCRVPulseMinusBackground;
-%
-% % le plus simple fonctionne bien : soustraire le bkg.
-% A = ones(size(fullVideoM1M0));
-% % B = ones(size(dataCube));
-% for pp = 1:size(fullVideoM1M0,3)
-% %     A(:,:,pp) = A(:,:,pp) * fullBackgroundSignal(pp) * avgFullArterialPulse / avgFullBackgroundSignal;
-%       A(:,:,pp) = A(:,:,pp) * fullBackgroundM1M0Signal(pp);
-% %     B(:,:,pp) = B(:,:,pp) * fullBackgroundSignal(pp);
-% end
-% fullVideoM1M0 = fullVideoM1M0 - A ;
-% % dataCube = dataCube - A .* maskVessel;
-% % dataCube = dataCube - B .* maskBackground;
-%
-%
-% % remove outliers
-% % 1st pass
-% disp('remove outliers... 1st pass.');
-% [idxOutPw,fullCRAPulseRmOut] = discardPulseWaveOutliers(fullCRAPulse,3);
-% [idxOutBkg,fullBackgroundSignalRmOut] = discardPulseWaveOutliers(fullBackgroundM1M0Signal,3);
-% dataReliabilityIndex1 = ceil(100*(1-0.5*(length(idxOutPw)/length(fullCRAPulse) + length(idxOutBkg)/length(fullBackgroundM1M0Signal))));
-% disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
-%
-% [idxOutPw,fullCRVPulseRmOut] = discardPulseWaveOutliers(fullCRVPulse,3);
-% [idxOutBkg,fullBackgroundSignalRmOut] = discardPulseWaveOutliers(fullBackgroundM1M0Signal,3);
-% dataReliabilityIndex1 = ceil(100*(1-0.5*(length(idxOutPw)/length(fullCRVPulse) + length(idxOutBkg)/length(fullBackgroundM1M0Signal))));
-% disp(['data reliability index 1 : ' num2str(dataReliabilityIndex1) ' %']);
-%
-% % smooth trendline data by iterative local linear regression.
-% % fullArterialPulseClean = smoothdata(fullArterialPulse,'rloess');
-% fullCRAPulseClean = smoothdata(fullCRAPulseRmOut,'lowess');
-% fullCRVPulseClean = smoothdata(fullCRVPulseRmOut,'lowess');
-% fullBackgroundSignalClean = smoothdata(fullBackgroundSignalRmOut,'lowess');
-%
-%
-% figure(108)
-% plot(fullTime,fullCRAPulse,':k', ...
-%     fullTime,fullCRAPulseClean,'-k', ...
-%     'LineWidth',2) ;
-% title('CRA pulse minus backgroundAVG vs. filtered pulse');
-% legend('<p(t)> - <b(t)>','local linear regression');
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
-%
-% figure(110)
-% plot(fullTime,fullCRVPulse,':k', ...
-%     fullTime,fullCRVPulseClean,'-k', ...
-%     'LineWidth',2) ;
-% title('CRV pulse minus backgroundAVG vs. filtered pulse');
-% legend('<p(t)> - <b(t)>','local linear regression');
-% fontsize(gca,12,"points") ;
-% xlabel(strXlabel,'FontSize',14) ;
-% pbaspect([1.618 1 1]) ;
-% set(gca, 'LineWidth', 2);
-% axis tight;
-
-%
-% % png
-% print('-f108','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRAfilteredPulse.png'))) ;
-% print('-f110','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRVfilteredPulse.png'))) ;
-% print('-f24','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'flattenedDopplerHeatMap.png'))) ;
-% print('-f77','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'zeroLagXcorr.png'))) ;
-% print('-f99','-dpng',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'timeLags.png'))) ;
-%
-% % eps
-% print('-f108','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRAfilteredPulse.eps'))) ;
-% print('-f110','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'CRVfilteredPulse.eps'))) ;
-% print('-f77','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'zeroLagXcorr.eps'))) ;
-% print('-f99','-depsc',fullfile(one_cycle_dir, 'pulseAnalysis', sprintf("%s_%s",ToolBox.main_foldername, 'timeLags.eps'))) ;
-%
 
 clear idx_sys
 clear max_diff_pulse
