@@ -1,4 +1,4 @@
-classdef OneCycleClass
+classdef OneCycleClass < handle
     
     properties
         
