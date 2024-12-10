@@ -20,7 +20,7 @@ classdef pulse < matlab.apps.AppBase
         Lamp                          matlab.ui.control.Lamp
         ClearButton                   matlab.ui.control.Button
         LoadfolderButton              matlab.ui.control.Button
-        LoadHoloButton              matlab.ui.control.Button
+        LoadHoloButton                matlab.ui.control.Button
         ExecuteButton                 matlab.ui.control.Button
     end
 

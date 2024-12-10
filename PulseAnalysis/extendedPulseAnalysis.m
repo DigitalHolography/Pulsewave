@@ -1,5 +1,5 @@
 function [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_ff_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_RMS_video, ...
-    exec_times_id, exec_times_time, maskBackgroundSection, maskArterySection, maskVeinSection, sysIdxList)
+    exec_times_id, exec_times_time, maskBackground, maskArtery, maskVein, sysIdxList)
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
@@ -116,15 +116,15 @@ exec_times_time = [exec_times_time, toc];
 
 tic
 
-background_signal = f_RMS_video .* maskBackgroundSection;
-background_signal = squeeze(sum(background_signal, [1 2])) / nnz(maskBackgroundSection);
+background_signal = f_RMS_video .* maskBackground;
+background_signal = squeeze(sum(background_signal, [1 2])) / nnz(maskBackground);
 
-arterial_signal = f_RMS_video .* maskArterySection;
-arterial_signal = squeeze(sum(arterial_signal, [1 2])) / nnz(maskArterySection);
+arterial_signal = f_RMS_video .* maskArtery;
+arterial_signal = squeeze(sum(arterial_signal, [1 2])) / nnz(maskArtery);
 
 if veinsAnalysis
-    venous_signal = f_RMS_video .* maskVeinSection;
-    venous_signal = squeeze(sum(venous_signal, [1 2])) / nnz(maskVeinSection);
+    venous_signal = f_RMS_video .* maskVein;
+    venous_signal = squeeze(sum(venous_signal, [1 2])) / nnz(maskVein);
 end
 
 if veinsAnalysis
@@ -271,23 +271,24 @@ tic
 interp_t = 1:numFramesInterp;
 
 fprintf("    Average Pulse\n")
-[onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(f_RMS_video, M0_ff_video, maskArterySection, sysIdxList, numFramesInterp);
+[onePulseVideo, ~, ~, onePulseVideoM0] = createOneCycle(f_RMS_video, M0_ff_video, maskArtery, sysIdxList, numFramesInterp);
 
 clear f_RMS_video f_RMS_video
 
 fprintf("    Average Pulse minus Background\n")
-[onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_ff_video, maskArterySection, sysIdxList, numFramesInterp);
+[onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_ff_video, maskArtery, sysIdxList, numFramesInterp);
 
 clear delta_f_RMS
 
-avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArterySection, [1 2])) / nnz(maskArterySection);
+avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
 avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
-avgArterialPulseOneCycle = squeeze(sum(onePulseVideominusBKG .* maskArterySection, [1 2])) / nnz(maskArterySection)* ToolBox.ScalingFactorVelocityInPlane;
 
 [X, Y, T_Interp] = meshgrid(1:numX, 1:numY, 1:numFramesInterp);
-M0_ff_interp_video = interp3(M0_ff_video, X, Y, T_Interp);
+M0_ff_interp = interp3(M0_ff_video, X, Y, T_Interp);
 
-ArterialResistivityIndex(interp_t, avgArterialPulseOneCycle, M0_ff_interp_video, maskArterySection, 'OneCycle', folder)
+v_RMS_interp = onePulseVideominusBKG * ToolBox.ScalingFactorVelocityInPlane;
+
+ArterialResistivityIndex(interp_t, v_RMS_interp, M0_ff_interp, maskArtery, 'OneCycle', folder)
 
 if exportVideos
     % avi
@@ -352,8 +353,7 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
 
-v_Artery = squeeze(sum(v_RMS_video .* maskArterySection, [1 2]) / nnz(maskArterySection));
-ArterialResistivityIndex(t, v_Artery, M0_ff_video, maskArterySection, 'v', folder)
+ArterialResistivityIndex(t, v_RMS_video, M0_ff_video, maskArtery, 'v', folder)
 
 exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
 exec_times_time = [exec_times_time, toc];
