@@ -56,7 +56,7 @@ for frameIdx = startingvalue:numFrames
     signal_plot = figure(530);
     signal_plot.Position = [200 200 600 300];
     
-    graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx)
+    graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx);
     
     signal_plot_frame = getframe(signal_plot);
     signal_plot_video(:, :, :, frameIdx) = signal_plot_frame.cdata;

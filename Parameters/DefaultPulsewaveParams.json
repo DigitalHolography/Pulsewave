@@ -14,7 +14,6 @@
     },
     "Value of the interpolation parameter": 1,
     "Remove Outliers option": 0,
-    "Preprocess on execute": 0,
     "Veins Analysis": 1,
     "Export Videos": 1,
     "Gaussian Filter Size For Barycenter": 0.02,

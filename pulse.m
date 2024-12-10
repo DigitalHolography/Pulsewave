@@ -26,7 +26,7 @@ classdef pulse < matlab.apps.AppBase
     end
 
     properties (Access = private)
-        file 
+        file
         drawer_list = {}
         flag_is_load
     end
@@ -41,11 +41,11 @@ classdef pulse < matlab.apps.AppBase
                 holo =false;
                 path = strcat(path, '\');
             end
-            
+
             totalLoadingTime = tic;
 
             try
-                % add file 
+                % add file
                 tic
                 fprintf("\n----------------------------------\n")
                 fprintf("Video Loading\n")
@@ -127,9 +127,10 @@ classdef pulse < matlab.apps.AppBase
                     "Developed by the DigitalHolographyFoundation\n" + ...
                     "==========================================\n",v(1));
             end
-            addpath("BloodFlowVelocity\","BloodFlowVelocity\Elastography\","BloodVolumeRate\","BloodVolumeRate\Rheology\","Loading\","Parameters\","Preprocessing\","PulseAnalysis\","PulseAnalysis\ARIandAPI\","Scripts\","Segmentation\","SHAnalysis\","Tools\")
+            addpath("BloodFlowVelocity\","BloodFlowVelocity\Elastography\","BloodVolumeRate\","BloodVolumeRate\Rheology\","Loading\","Parameters\","Preprocessing\","PulseAnalysis\","Scripts\","Segmentation\","SHAnalysis\","Tools\")
             app.PulsewaveUIFigure.Name = ['Pulsewave ',char(v(1))];
             app.updateCheckboxes();
+            app.flag_is_load = false;
             displaySplashScreen();
         end
 
@@ -138,7 +139,7 @@ classdef pulse < matlab.apps.AppBase
             % clearing before loading
             if ~isempty(app.file)
                 last_dir = app.file.directory;
-            else 
+            else
                 last_dir = [];
             end
 
@@ -157,15 +158,15 @@ classdef pulse < matlab.apps.AppBase
                 selected_dir = uigetdir(last_dir);
                 if selected_dir == 0
                     disp('No folder selected')
-                    return 
+                    return
                 end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(selected_dir);
-                
+
             end
 
-            
+
         end
         function LoadHoloButtonPushed(app, event)
             % clearing before loading
@@ -174,7 +175,7 @@ classdef pulse < matlab.apps.AppBase
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
-            
+
             clear Parameters_json
             if (app.flag_is_load)
                 disp("Files already loaded")
@@ -185,12 +186,12 @@ classdef pulse < matlab.apps.AppBase
                 [selected_holo,path_holo] = uigetfile('*.holo');
                 if selected_holo == 0
                     disp('No file selected')
-                    return 
+                    return
                 end
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(fullfile(path_holo,selected_holo));
-                
+
             end
 
             app.ErrorLabel.Text = "" ;
@@ -204,7 +205,7 @@ classdef pulse < matlab.apps.AppBase
                 return
             end
 
-            if isempty(app.file.f_RMS_video)
+            if ~app.file.is_preprocessed
                 disp("input not preprocessed")
                 return
             end
@@ -224,7 +225,7 @@ classdef pulse < matlab.apps.AppBase
             app.Lamp.Color = [1, 0, 0];
             app.ErrorLabel.Text = "" ;
             drawnow;
-            
+
             % Actualizes the input Parameters
             app.file.PW_params_names = checkPulsewaveParamsFromJson(app.file.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
 
@@ -262,8 +263,12 @@ classdef pulse < matlab.apps.AppBase
         end
 
         function PreProcessButtonPushed(app, event)
-            if ~app.flag_is_load 
+            if ~app.flag_is_load
                 disp('no input loaded.')
+                return
+            end
+            if app.file.is_preprocessed
+                disp('input already preprocessed. reload if needed.')
                 return
             end
             app.Lamp.Color = [1, 0, 0];
@@ -309,7 +314,7 @@ classdef pulse < matlab.apps.AppBase
 
             fprintf("------------------------------\n")
             fprintf("- Total PreProcess timing took : %ds\n", round(toc(totalPreProcessTime)))
-            
+
         end
 
         % Button pushed function: ClearButton
@@ -461,34 +466,34 @@ classdef pulse < matlab.apps.AppBase
             delete(d);
         end
 
-        
 
-        
+
+
 
         % Checkbox update function:
         function updateCheckboxes(app, event)
-%             if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
-%                 app.PulsewaveanalysisCheckBox.Enable = true;
-%                 if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
-%                 
-%                     app.ExtendedPulsewaveCheckBox.Enable = true;
-%                     app.velocityCheckBox.Enable = true;
-%                     app.bloodVolumeRateCheckBox.Enable = true;
-%                     app.bloodVelocityProfileCheckBox.Enable = true;
-%                 else
-%                     app.ExtendedPulsewaveCheckBox.Enable = false;
-%                     app.velocityCheckBox.Enable = false;
-%                     app.bloodVolumeRateCheckBox.Enable = false;
-%                     app.bloodVelocityProfileCheckBox.Enable = false;
-%                 end
-% 
-%             else
-%                 app.PulsewaveanalysisCheckBox.Enable = false;
-%                 app.ExtendedPulsewaveCheckBox.Enable = false;
-%                 app.velocityCheckBox.Enable = false;
-%                 app.bloodVolumeRateCheckBox.Enable = false;
-%                 app.bloodVelocityProfileCheckBox.Enable = false;
-%             end
+            %             if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
+            %                 app.PulsewaveanalysisCheckBox.Enable = true;
+            %                 if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
+            %
+            %                     app.ExtendedPulsewaveCheckBox.Enable = true;
+            %                     app.velocityCheckBox.Enable = true;
+            %                     app.bloodVolumeRateCheckBox.Enable = true;
+            %                     app.bloodVelocityProfileCheckBox.Enable = true;
+            %                 else
+            %                     app.ExtendedPulsewaveCheckBox.Enable = false;
+            %                     app.velocityCheckBox.Enable = false;
+            %                     app.bloodVolumeRateCheckBox.Enable = false;
+            %                     app.bloodVelocityProfileCheckBox.Enable = false;
+            %                 end
+            %
+            %             else
+            %                 app.PulsewaveanalysisCheckBox.Enable = false;
+            %                 app.ExtendedPulsewaveCheckBox.Enable = false;
+            %                 app.velocityCheckBox.Enable = false;
+            %                 app.bloodVolumeRateCheckBox.Enable = false;
+            %                 app.bloodVelocityProfileCheckBox.Enable = false;
+            %             end
         end
 
         % Button pushed function: EditParametersButton
@@ -511,16 +516,55 @@ classdef pulse < matlab.apps.AppBase
                 if ~exist(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
                     mkdir(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
                 end
-                try 
-
+                try
                     winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'));
-
-                catch 
+                catch
                     disp("opening failed.")
+                end
+                try
+                    PW_folder_name = strcat(app.file.ToolBoxmaster.main_foldername, '_PW');
+                    list_dir = dir(app.file.ToolBoxmaster.PW_path_main);
+                    idx=0;
+                    for i=1:length(list_dir)
+                        if contains(list_dir(i).name, PW_folder_name)
+                            match = regexp(list_dir(i).name, '\d+$', 'match');
+                            if ~isempty(match) && str2double(match{1}) >= idx
+                                idx = str2double(match{1}) ; %suffix
+                            end
+                        end
+                    end
+                    PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
+                    PW_path_dir = fullfile(app.file.ToolBoxmaster.PW_path_main, PW_folder_name);
+
+                    disp(['Copying from : ',fullfile(PW_path_dir,'png','mask')])
+                    copyfile(fullfile(PW_path_dir,'png','mask',sprintf("%s_maskArtery.png",app.file.ToolBoxmaster.main_foldername)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','MaskArtery.png'));
+                    copyfile(fullfile(PW_path_dir,'png','mask',sprintf("%s_maskVein.png",app.file.ToolBoxmaster.main_foldername)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','MaskVein.png'));
+                catch
+                    disp("last auto mask copying failed.")
+                end
+                try
+
+                    copyfile(fullfile(app.file.ToolBoxmaster.PW_path,'png',sprintf("%s_M0.png",app.file.ToolBoxmaster.main_foldername)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','M0.png'));
+                    PW_folder_name = strcat(app.file.ToolBoxmaster.main_foldername, '_PW');
+                    list_dir = dir(app.file.ToolBoxmaster.PW_path_main);
+                    idx=0;
+                    for i=1:length(list_dir)
+                        if contains(list_dir(i).name, PW_folder_name)
+                            match = regexp(list_dir(i).name, '\d+$', 'match');
+                            if ~isempty(match) && str2double(match{1}) >= idx
+                                idx = str2double(match{1}) ; %suffix
+                            end
+                        end
+                    end
+                    PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
+                    copyfile(fullfile(PW_path_dir,'gif',sprintf("%s_M0.gif",PW_folder_name)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','M0.gif'));
+                catch
+
+                    disp("last M0 png and gif copying failed")
                 end
             else
                 disp('No input loaded')
-                
+
             end
         end
     end
@@ -690,6 +734,7 @@ classdef pulse < matlab.apps.AppBase
             app.EditParametersButton.Position = [276 238 130 28];
             app.EditParametersButton.Text = 'Edit Parameters';
             app.EditParametersButton.Enable = 'on';
+            app.EditParametersButton.Tooltip = 'Find the pulse wave parameters here.';
 
             % Create PreProcessButton
             app.PreProcessButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -700,7 +745,7 @@ classdef pulse < matlab.apps.AppBase
             app.PreProcessButton.Position = [191 322 130 28];
             app.PreProcessButton.Text = 'Pre Process';
             app.PreProcessButton.Enable = 'on';
-            
+
             % Create EditMasksButton
             app.EditMasksButton = uibutton(app.PulsewaveUIFigure, 'push');
             app.EditMasksButton.ButtonPushedFcn = createCallbackFcn(app, @EditMasksButtonPushed, true);
@@ -710,7 +755,8 @@ classdef pulse < matlab.apps.AppBase
             app.EditMasksButton.Position = [250 200 130 28];
             app.EditMasksButton.Text = 'Edit Masks';
             app.EditMasksButton.Enable = 'on';
-            
+            app.EditMasksButton.Tooltip = 'Open mask folder and use forceMaskArtery.png and forceMaskVein.png to force the segmentation';
+
             % Show the figure after all components are created
             app.PulsewaveUIFigure.Visible = 'on';
         end

@@ -15,7 +15,6 @@ classdef Parameters_json < handle
         videoLength
         k
         removeOutliers
-        repreprocess
         radius_ratio
         radius_gap
         gauss_filt_size_for_barycenter
@@ -139,8 +138,6 @@ classdef Parameters_json < handle
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
 
                 obj.removeOutliers = parsedData.RemoveOutliersOption;
-
-                obj.repreprocess = parsedData.PreprocessOnExecute;
 
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
