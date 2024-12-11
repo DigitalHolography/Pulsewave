@@ -198,7 +198,7 @@ if veins_analysis
     graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos, Color=[0 0 1]);
 end
 
-ArterialResistivityIndex(t, mean_BvrT_A, M0_ff_video, maskArtery, 'BVR', folder)
+ArterialResistivityIndex(t, mean_BvrT_A, maskArtery, 'BVR', folder)
 
 strokeAndTotalVolume(mean_BvrT_A, mean_std_BvrT_A, systolesIndexes, t, 1000)
 

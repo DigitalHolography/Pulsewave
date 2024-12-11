@@ -283,13 +283,6 @@ clear delta_f_RMS
 avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
 avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
 
-[X, Y, T_Interp] = meshgrid(1:numX, 1:numY, 1:numFramesInterp);
-M0_ff_interp = interp3(M0_ff_video, X, Y, T_Interp);
-
-v_RMS_interp = onePulseVideominusBKG * ToolBox.ScalingFactorVelocityInPlane;
-
-ArterialResistivityIndex(interp_t, v_RMS_interp, M0_ff_interp, maskArtery, 'OneCycle', folder)
-
 if exportVideos
     % avi
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(onePulseVideo), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'one_cycle.avi')));
@@ -353,7 +346,7 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
 
-ArterialResistivityIndex(t, v_video, M0_ff_video, maskArtery, 'v', folder)
+ArterialResistivityIndex(t, v_video, maskArtery, 'v', folder)
 
 exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
 exec_times_time = [exec_times_time, toc];
