@@ -305,7 +305,7 @@ classdef OneCycleClass < handle
                 fprintf("Blood Flow Velocity Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video, obj.xy_barycenter)
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video)
 
                 time_velo = toc(bloodFlowVelocityTimer);
                 fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))

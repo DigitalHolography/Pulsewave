@@ -1,32 +1,45 @@
-function [cmap] = cmapLAB(color1, color2, n, colorn, posn)
+function [cmap] = cmapLAB(n, color_n, pos_n)
 
 arguments
-    color1
-    color2
     n = 256
 end
 
 arguments (Repeating)
-    colorn
-    posn
+    color_n
+    pos_n
 end
 
-numArgs = size(colorn, 1);
+pos_n{1} = 0;
+pos_n{end} = 1;
 
-for i = 1:numArgs
+numArgs = size(color_n, 2);
 
-lab1 = rgb2lab(color1);
-lab2 = rgb2lab(color2);
+L = zeros(n, 1);
+a = zeros(n, 1);
+b = zeros(n, 1);
 
-dL = lab2(1) - lab1(1);
-da = lab2(2) - lab1(2);
-db = lab2(3) - lab1(3);
+for i = 1:numArgs - 1
 
-x = linspace(0, 1, n);
+    n1 = round(n * pos_n{i} + 1);
+    n2 = round(n * pos_n{i + 1});
 
-L = lab1(1) + dL * x;
-a = lab1(2) + da * x;
-b = lab1(3) + db * x;
+    color1 = color_n{i};
+    color2 = color_n{i + 1};
+
+    lab1 = rgb2lab(color1);
+    lab2 = rgb2lab(color2);
+
+    dL = lab2(1) - lab1(1);
+    da = lab2(2) - lab1(2);
+    db = lab2(3) - lab1(3);
+
+    x = linspace(0, 1, n2 - n1 + 1);
+
+    L(n1:n2) = lab1(1) + dL * x;
+    a(n1:n2) = lab1(2) + da * x;
+    b(n1:n2) = lab1(3) + db * x;
+
+end
 
 cmap = zeros(n, 3);
 
