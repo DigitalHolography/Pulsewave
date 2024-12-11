@@ -47,4 +47,8 @@ for idx = 1:n
     cmap(idx, :) = lab2rgb([L(idx) a(idx) b(idx)]);
 end
 
+cmap(cmap > 1) = 1;
+cmap(cmap < 0) = 0;
+cmap(isnan(cmap)) = 0;
+
 end
