@@ -68,7 +68,7 @@ t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 tLabel = 'Time(s)';
 yLabel = 'Power Doppler (a.u.)';
 
-graphSignal('vascularSignal', folder, t, squeeze(vascularSignal), '-', cVascular, Title = 'Venous Signal', xlabel = tLabel, ylabel = yLabel)
+graphSignal('vascularSignal', folder, t, squeeze(vascularSignal), '-', cVascular, Title = 'Venous Signal', xlabel = tLabel, ylabel = yLabel);
 
 % compute local-to-average signal wave zero-lag correlation
 vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
@@ -146,14 +146,14 @@ arterialSignal = mean(M0_ff_video .* firstMaskArteryClean .* maskDiaphragm, [1 2
 arterialSignal = arterialSignal ./ nnz(firstMaskArteryClean .* maskDiaphragm);
 arterialSignal_centered = arterialSignal - mean(arterialSignal, 3);
 
-graphSignal('arterialSignal', folder, t, squeeze(arterialSignal), '-', cArtery, Title = 'Arterial Signal', xlabel = tLabel, ylabel = yLabel)
+graphSignal('arterialSignal', folder, t, squeeze(arterialSignal), '-', cArtery, Title = 'Arterial Signal', xlabel = tLabel, ylabel = yLabel);
 
 % compute signal in 3 dimentions for correlation in main veins
 venousSignal = mean(M0_ff_video .* firstMaskVeinClean, [1 2]);
 venousSignal = venousSignal ./ nnz(firstMaskVeinClean);
 venousSignal_centered = venousSignal - mean(venousSignal, 3);
 
-graphSignal('venousSignal', folder, t, squeeze(venousSignal), '-', cVein, Title = 'Venous Signal', xlabel = tLabel, ylabel = yLabel)
+graphSignal('venousSignal', folder, t, squeeze(venousSignal), '-', cVein, Title = 'Venous Signal', xlabel = tLabel, ylabel = yLabel);
 
 % compute signal in 3 dimentions for correlation in choroids
 
@@ -161,13 +161,13 @@ choroidalSignal = mean(M0_ff_video .* firstMaskChoroid, [1 2]);
 choroidalSignal = choroidalSignal ./ nnz(firstMaskChoroid);
 choroidalSignal_centered = choroidalSignal - mean(choroidalSignal, 3);
 
-graphSignal('choroidalSignal', folder, t, squeeze(choroidalSignal), '-', cChoroid, Title = 'Choroidal Signal', xlabel = tLabel, ylabel = yLabel)
+graphSignal('choroidalSignal', folder, t, squeeze(choroidalSignal), '-', cChoroid, Title = 'Choroidal Signal', xlabel = tLabel, ylabel = yLabel);
 
 graphSignal('everySignal', folder, ...
     t, squeeze(vascularSignal), '--', cVascular, ...
     t, squeeze(arterialSignal), '-', cArtery, ...
     t, squeeze(venousSignal), '-', cVein, ...
-    Title = 'Signals used for correlation maps', xlabel = tLabel, ylabel = yLabel, Legends = {'Vessel', 'Artery', 'Vein'})
+    Title = 'Signals used for correlation maps', xlabel = tLabel, ylabel = yLabel, Legends = {'Vessel', 'Artery', 'Vein'});
 
 clear arterialSignal venousSignal choroidalSignal vascularSignal
 
@@ -369,7 +369,7 @@ segmentationMap(:, :, 3) = M0_ff_img .* ~(maskArtery | maskVein) + maskVein;
 segmentationMapArtery(:, :, 1) = M0_ff_img .* ~maskArtery + maskArtery;
 segmentationMapArtery(:, :, 2) = M0_ff_img .* ~maskArtery;
 segmentationMapArtery(:, :, 3) = M0_ff_img .* ~maskArtery;
-figure, imagesc(segmentationMapArtery), axis image
+figure; imagesc(segmentationMapArtery), axis image
 imwrite(segmentationMap, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arteryVeinSegmentation.png')), 'png');
 imwrite(segmentationMapArtery, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'arterySegmentation.png')), 'png');
 

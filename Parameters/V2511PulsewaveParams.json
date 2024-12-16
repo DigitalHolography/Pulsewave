@@ -13,7 +13,8 @@
         "Video length": -1
     },
     "Value of the interpolation parameter": 1,
-    "Remove Outliers option": 0,
+    "Remove Outliers option": 1,
+    "Preprocess on execute": 0,
     "Veins Analysis": 1,
     "Export Videos": 1,
     "Gaussian Filter Size For Barycenter": 0.02,
@@ -29,7 +30,7 @@
         "Crop coroid radius": 0.07,
         "Vascular Correlation Map Threshold": -2,
         "Vascular Classes": [-1, -1, 0, 1],
-        "Correlation Vesselness Flag": 0,
+        "Correlation Vesselness Flag": 1,
         "Arterial Correlation Map Threshold": -2,
         "Arterial Classes": [0, 0, 0, 1],
         "Venous Correlation Map Threshold": -2,

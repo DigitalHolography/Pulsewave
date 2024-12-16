@@ -1,4 +1,9 @@
-function [cmap] = cmapPerception(color)
+function [interp_cmap] = cmapPerception(color, m)
+
+arguments
+    color {mustBeText}
+    m = 256
+end
 
 if strcmp(color, 'rocket') == 1
     cmap = [
@@ -517,6 +522,14 @@ elseif strcmp(color, 'mako') == 1
         [0.8564431, 0.95309792, 0.88414253];
         [0.86429066, 0.95635719, 0.89067759];
         [0.87218969, 0.95960708, 0.89725384]];
+end
+
+
+N = round(linspace(1,256, m));
+if N < 256
+    interp_cmap = cmap(N, :);
+else
+    interp_cmap = cmap;
 end
 
 end

@@ -53,6 +53,6 @@ for circleIdx = 1:numCircles
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsWidth', sprintf("%s_circle_%d_crossSectionWidth%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
 end
 if exportVideos
-    writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.1, 10);
+    writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
 end
 end
