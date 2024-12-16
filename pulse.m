@@ -286,11 +286,11 @@ classdef pulse < matlab.apps.AppBase
             totalPreProcessTime = tic;
             
             try
-                tic
                 fprintf("\n----------------------------------\n")
                 fprintf("Video PreProcessing\n")
                 fprintf("----------------------------------\n")
                 app.file = app.file.preprocessData();
+                app.Lamp.Color = [0, 1, 0];
                 fprintf("- Video PreProcessing took : %ds\n", round(toc))
             catch exception
                 
