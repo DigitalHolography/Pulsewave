@@ -30,10 +30,11 @@ tVelocityVideo = tic;
 v_video_RGB = zeros(numX, numY, 3, numFrames);
 
 v_max = max(v_video(maskSection));
-v_min = min(v_video(maskSection));
+v_min = 0;
 
 v_mean = squeeze(mean(v_video(:, :, :), 3));
-v_rescaled = (v_video - v_min) / v_max;
+v_rescaled = v_video .* (v_video > 0);
+v_rescaled = (v_rescaled - v_min) / v_max;
 v_mean_rescaled = squeeze(mean(v_rescaled(:, :, :), 3));
 
 velocityIm(v_mean, maskArtery, cmapArtery, 'arteries', colorbarOn = true);
