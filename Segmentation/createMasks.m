@@ -2,7 +2,6 @@ function [maskArtery, maskVein, maskVessel, maskBackground, maskCRA, maskCRV, ma
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
-exportVideos = PW_params.exportVideos;
 
 mkdir(ToolBox.PW_path_png, 'mask')
 mkdir(fullfile(ToolBox.PW_path_png, 'mask'), 'steps')

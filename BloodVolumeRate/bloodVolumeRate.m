@@ -134,6 +134,11 @@ if veins_analysis
     [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat] = reshapeSections(numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r);
 end
 
+plot2txtForAllRadSection(t, vr_avg_A_r, vr_std_A_r, vr_avg_A_mat, vr_std_A_mat, 'A')
+if veins_analysis
+    plot2txtForAllRadSection(t, vr_avg_V_r, vr_std_V_r, vr_avg_V_mat, vr_std_V_mat, 'V')
+end
+
 fprintf("    3. Cross-sections analysis for all circles output took %ds\n", round(toc))
 
 %% 4. Sections Image
