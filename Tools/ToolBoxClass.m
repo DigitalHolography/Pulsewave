@@ -183,11 +183,11 @@ classdef ToolBoxClass < handle
             % clean up temp variable
             diary on
             % turn on diary logging
-            fprintf("======================================\n")
+            fprintf("==========================================\n")
             fprintf("Current Folder Path: %s\n", obj.PW_path)
             fprintf("Current File: %s\n", obj.PW_folder_name)
             fprintf("Start Computer Time: %s\n", datetime('now', 'Format', 'yyyy/MM/dd HH:mm:ss'))
-            fprintf("==================================\n")
+            fprintf("==========================================\n")
 
             fprintf("Loading Input Parameters\n")
 

@@ -159,7 +159,7 @@ classdef OneCycleClass < handle
             % saving times
             path_file_txt_exe_times = fullfile(ToolBox.PW_path_log, sprintf('%s_execution_times.txt', ToolBox.PW_folder_name));
             fileID = fopen(path_file_txt_exe_times, 'w');
-            fprintf(fileID, 'EXECUTION TIMES : \r\n==================\n\r\n');
+            fprintf(fileID, 'EXECUTION TIMES : \r\n==========================================\n\r\n');
             fclose(fileID);
 
             %% Creating Masks

@@ -65,7 +65,7 @@ classdef pulse < matlab.apps.AppBase
                 
             catch ME
                 
-                fprintf("==============================\nERROR\n==============================\n")
+                fprintf("==========================================\nERROR\n==========================================\n")
                 fprintf('Error while loading : %s\n', path)
                 fprintf("%s\n",ME.identifier)
                 fprintf("%s\n",ME.message)
@@ -86,14 +86,14 @@ classdef pulse < matlab.apps.AppBase
                     
                 end
                 
-                fprintf("==============================\n")
+                fprintf("==========================================\n")
                 
                 diary off
                 app.Lamp.Color = [1, 1/2, 0];
                 
             end
             
-            fprintf("------------------------------\n")
+            fprintf("----------------------------------\n")
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
             
         end
@@ -235,7 +235,7 @@ classdef pulse < matlab.apps.AppBase
                 
                 app.file.PW_param_name = app.file.PW_params_names{i};
                 
-                fprintf("==============================\n")
+                fprintf("==========================================\n")
                 app.file.flag_Segmentation = app.SegmentationCheckBox.Value;
                 app.file.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.file.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
@@ -251,14 +251,14 @@ classdef pulse < matlab.apps.AppBase
                     
                     diary off
 
-                    fprintf("==============================\nERROR\n==============================\n")
+                    fprintf("==========================================\nERROR\n==========================================\n")
                     disp(['Error with file : ', app.file.directory])
                     disp(ME.identifier)
                     disp(ME.message)
                     for stackIdx = 1:size(ME.stack,1)
                         fprintf('%s : %s, line : %d \n',ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
                     end
-                    fprintf("==============================\n")
+                    fprintf("==========================================\n")
                 end
             end
             app.Lamp.Color = [0, 1, 0];
@@ -296,7 +296,7 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("- Video PreProcessing took : %ds\n", round(toc))
             catch ME
                 
-                fprintf("==============================\nERROR\n==============================\n")
+                fprintf("==========================================\nERROR\n==========================================\n")
                 if ~isempty(app.file)
                     fprintf('Error while preprocessing : %s\n', app.file.directory)
                 else
@@ -309,12 +309,12 @@ classdef pulse < matlab.apps.AppBase
                     fprintf('%s : %s, line : %d \n', ME.stack(i).file, ME.stack(i).name, ME.stack(i).line);
                 end
                 
-                fprintf("==============================\n")
+                fprintf("==========================================\n")
                 app.Lamp.Color = [1, 1/2, 0];
                 
             end
             
-            fprintf("------------------------------\n")
+            fprintf("----------------------------------\n")
             fprintf("- Total PreProcess timing took : %ds\n", round(toc(totalPreProcessTime)))
             
         end

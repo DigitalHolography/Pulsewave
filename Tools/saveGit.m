@@ -31,10 +31,10 @@ function saveGit(load_logs)
 
             fileID = fopen(path_file_log, 'w');
 
-            fprintf(fileID, '==================\rGIT VERSION :\r');
+            fprintf(fileID, '==========================================\rGIT VERSION :\r');
             fprintf(fileID, MessBranch, resultBranch);
             fprintf(fileID, MessHash, resultHash);
-            fprintf(fileID, '==================\r\n ');
+            fprintf(fileID, '==========================================\r\n ');
 
             fprintf(fileID, load_logs);
 
