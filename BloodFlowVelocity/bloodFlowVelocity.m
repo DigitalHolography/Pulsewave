@@ -11,62 +11,57 @@ mkdir(ToolBox.PW_path_eps, 'bloodFlowVelocity')
 tic
 
 % TRUE MIN and MAX V but not realistic
-v_video_abs = abs(v_video);
 M0_ff_video = rescale(M0_ff_video);
 M0_ff_image = rescale(mean(M0_ff_video, 3));
 [numX, numY, numFrames] = size(v_video);
 
-maskArterySection = maskArtery & maskSection;
-maskVeinSection = maskVein & maskSection;
+% AV = Artery AND Vein
+maskAV = maskArtery & maskVein;
+maskArterySection = maskArtery & maskSection & ~maskAV;
+maskVeinSection = maskVein & maskSection & ~maskAV;
 
-radius1 = PW_params.velocityBigRadiusRatio * (numY + numX) / 2;
-radius2 = PW_params.velocitySmallRadiusRatio * (numY + numX) / 2;
-
-v_maxArteries = max(v_video(maskArterySection), [], 'all');
-v_maxVeins = max(v_video(maskVeinSection), [], 'all');
-v_minArteries = min(v_video(maskArterySection), [], 'all');
-v_minVeins = min(v_video(maskVeinSection), [], 'all');
-
-cmapArtery = cmapPerception('rocket');
-cmapVein = cmapPerception('mako');
+cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
 
 %% 1) VELOCITY VIDEO ~3min
 tVelocityVideo = tic;
 
 v_video_RGB = zeros(numX, numY, 3, numFrames);
-v_Artery = sum(v_video_abs .* maskArterySection, [1 2]) ./ nnz(maskArterySection);
-v_Vein = sum(v_video_abs .* maskVeinSection, [1 2]) ./ nnz(maskVeinSection);
 
-maxArtery = max(v_Artery);
-maxVein = max(v_Vein);
+v_max = max(v_video(maskSection));
+v_min = min(v_video(maskSection));
 
-v_video_abs(v_video_abs > max(maxArtery, maxVein)) = max(maxArtery, maxVein);
-v_video_rescale = rescale(v_video_abs );
-v_mean = squeeze(mean(v_video_rescale(:, :, :), 3));
+v_mean = squeeze(mean(v_video(:, :, :), 3));
+v_rescaled = (v_video - v_min) / v_max;
+v_mean_rescaled = squeeze(mean(v_rescaled(:, :, :), 3));
 
 velocityIm(v_mean, maskArtery, cmapArtery, 'arteries', colorbarOn = true);
-velocityColorbar(cmapArtery, v_minArteries, v_maxArteries, 'Arteries');
+velocityColorbar(cmapArtery, v_min, v_max, 'Arteries');
 
-v_mean_Artery = setcmap(v_mean, maskArtery, cmapArtery);
+v_mean_Artery = setcmap(v_mean_rescaled, maskArtery, cmapArtery);
 
 if veinsAnalysis
 
     velocityIm(v_mean, (maskArtery | maskVein), turbo, 'vessels', colorbarOn = true);
 
     velocityIm(v_mean, maskVein, cmapVein, 'veins', colorbarOn = true);
-    velocityColorbar(cmapVein, v_minVeins, v_maxVeins, 'Veins');
+    velocityColorbar(cmapVein, v_min, v_max, 'Veins');
 
     v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_artery_mean.png')))
 
-    v_mean_Vein = setcmap(v_mean, maskVein, cmapVein);
-    v_mean_RGB = v_mean_Artery .* maskArtery + v_mean_Vein .* maskVein + M0_ff_image .* ~(maskArtery | maskVein) - (v_mean_Artery + v_mean_Vein)/2 .* (maskArtery & maskVein);
+    v_mean_Vein = setcmap(v_mean_rescaled, maskVein, cmapVein);
+    v_mean_AV = setcmap(v_mean_rescaled/2, (maskArtery&maskVein), cmapAV);
+    v_mean_RGB = (v_mean_Artery + v_mean_Vein) .* ~maskAV + v_mean_AV + M0_ff_image .* ~(maskArtery | maskVein);
+
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
     parfor ii = 1:numFrames
-        v_frame_Artery = setcmap(v_video_rescale(:, :, ii), maskArtery, cmapArtery);
-        v_frame_Vein = setcmap(v_video_rescale(:, :, ii), maskVein, cmapVein);
-        v_video_RGB(:, :, :, ii) = v_frame_Artery .* maskArtery + v_frame_Vein .* maskVein + M0_ff_video(:, :, ii) .* ~(maskArtery | maskVein) - (v_frame_Artery + v_frame_Vein)/2 .* (maskArtery & maskVein);
+        v_frame_Artery = setcmap(v_rescaled(:, :, ii), maskArtery, cmapArtery);
+        v_frame_Vein = setcmap(v_rescaled(:, :, ii), maskVein, cmapVein);
+        v_mean_AV = setcmap(v_rescaled(:, :, ii) / 2, (maskArtery&maskVein), cmapAV);
+        v_video_RGB(:, :, :, ii) = (v_frame_Artery + v_frame_Vein) .* ~maskAV + v_mean_AV + M0_ff_video(:, :, ii) .* ~(maskArtery | maskVein);
     end
 
 else
@@ -74,8 +69,8 @@ else
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
     parfor ii = 1:numFrames
-        v_frame_Artery = setcmap(v_video_rescale(:, :, ii), maskArtery, cmapArtery);
-        v_video_RGB(:, :, :, ii) = v_frame_Artery .* maskArtery + M0_ff_video(:, :, ii) .* ~maskArtery;
+        v_frame_Artery = setcmap(v_rescaled(:, :, ii), maskArtery, cmapArtery);
+        v_video_RGB(:, :, :, ii) = v_frame_Artery + M0_ff_video(:, :, ii) .* ~maskArtery;
     end
 
 end

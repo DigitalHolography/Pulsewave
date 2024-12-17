@@ -45,7 +45,7 @@ classdef ToolBoxClass < handle
 
     methods
 
-        function obj = ToolBoxClass(path,PW_param_name)
+        function obj = ToolBoxClass(path, PW_param_name)
 
             obj.PW_path = path;
             obj.PW_param_name = PW_param_name;
@@ -104,7 +104,7 @@ classdef ToolBoxClass < handle
             file_path_mat = fullfile(dir_path_mat, [obj.main_foldername, '.mat']);
             %[~,filename_mat,~] = fileparts(file_path_mat);
 
-            if exist(file_path_mat) % .mat with cache from holowaves is present, timeline can be computed
+            if isfile(file_path_mat) % .mat with cache from holowaves is present, timeline can be computed
                 disp('reading cache parameters');
                 load(file_path_mat, 'cache');
                 obj.stride = cache.batch_stride;
@@ -116,7 +116,7 @@ classdef ToolBoxClass < handle
                 obj.maxPCA = cache.time_transform.max_PCA;
                 disp('done.')
 
-            elseif exist(fullfile(path, [obj.main_foldername, '.mat']))
+            elseif isfile(fullfile(path, [obj.main_foldername, '.mat']))
                 disp('reading cache parameters');
                 load(fullfile(path, [obj.main_foldername, '.mat']), 'cache');
                 obj.stride = cache.batch_stride;
@@ -127,7 +127,7 @@ classdef ToolBoxClass < handle
                 obj.minPCA = cache.time_transform.min_PCA;
                 obj.maxPCA = cache.time_transform.max_PCA;
                 disp('done.')
-            elseif exist(fullfile(path, 'Holovibes_rendering_parameters.json'))
+            elseif isfile(fullfile(path, 'Holovibes_rendering_parameters.json'))
                 disp('reading cache parameters from holovibes');
                 json_txt = fileread(fullfile(path, 'Holovibes_rendering_parameters.json'));
                 footer_parsed = jsondecode(json_txt);
@@ -171,6 +171,31 @@ classdef ToolBoxClass < handle
             obj.ARI_val_min = 1;
             obj.ARI_inflexion_point_val = 1;
             obj.ARI_slope_val = 10;
+
+            % Turn On Diary Logging
+            diary off
+            % first turn off diary, so as not to log this script
+            diary_filename = fullfile(obj.PW_path_log, 'CommandWindowLog.txt');
+            % setup temp variable with filename + timestamp, echo off
+            set(0, 'DiaryFile', diary_filename)
+            % set the objectproperty DiaryFile of hObject 0 to the temp variable filename
+            clear diary_filename
+            % clean up temp variable
+            diary on
+            % turn on diary logging
+            fprintf("======================================\n")
+            fprintf("Current Folder Path: %s\n", obj.PW_path)
+            fprintf("Current File: %s\n", obj.PW_folder_name)
+            fprintf("Start Computer Time: %s\n", datetime('now', 'Format', 'yyyy/MM/dd HH:mm:ss'))
+            fprintf("==================================\n")
+
+            fprintf("Loading Input Parameters\n")
+
+            % copying the input parameters to the result folder
+            path_dir_json = fullfile(obj.PW_path, 'pulsewave', 'json');
+            path_file_json_params = fullfile(path_dir_json, obj.PW_param_name);
+            copyfile(path_file_json_params, obj.PW_path_json);
+
 
         end
 

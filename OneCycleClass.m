@@ -50,8 +50,6 @@ classdef OneCycleClass < handle
             % path is either a directory (from HoloDoppler) or a .holo file path (from HoloVibes)
             % rendered data mainly consists of the short time Doppler spectrum Moments videos
 
-            disp(path)
-
             if ~isfolder(path) % if the input path is a .holo file with moments inside
                 [filepath, name, ~] = fileparts(path);
                 if ~ isfolder(fullfile(filepath, name)) % creates a result folder in the location as the file
@@ -156,62 +154,12 @@ classdef OneCycleClass < handle
             totalTime = tic;
 
             k = PW_params.k;
-
-            fprintf("==================================\n")
-            fprintf("File: %s\n", ToolBox.PW_folder_name)
-            fprintf("==================================\n")
-            fprintf("Loading Input Parameters\n")
-
-            % copying the input parameters to the result folder
-            path_dir_json = fullfile(ToolBox.PW_path, 'pulsewave', 'json');
-            path_file_json_params = fullfile(path_dir_json, obj.PW_param_name);
-            copyfile(path_file_json_params, ToolBox.PW_path_json);
+            saveGit(obj.load_logs);
 
             % saving times
             path_file_txt_exe_times = fullfile(ToolBox.PW_path_log, sprintf('%s_execution_times.txt', ToolBox.PW_folder_name));
             fileID = fopen(path_file_txt_exe_times, 'w');
             fprintf(fileID, 'EXECUTION TIMES : \r\n==================\n\r\n');
-            fclose(fileID);
-
-            % SAVING GIT VERSION
-            % In the txt file in the folder : "log"
-
-            name_log = strcat(ToolBox.PW_folder_name, '_log.txt');
-            path_file_log = fullfile(ToolBox.PW_path_log, name_log);
-
-            gitBranchCommand = 'git symbolic-ref --short HEAD';
-            [statusBranch, resultBranch] = system(gitBranchCommand);
-
-            if statusBranch == 0
-                resultBranch = strtrim(resultBranch);
-                MessBranch = 'Current branch : %s \r';
-            else
-
-                vers = readlines('version.txt');
-                MessBranch = ['PulseWave GitHub version ', char(vers)];
-            end
-
-            gitHashCommand = 'git rev-parse HEAD';
-            [statusHash, resultHash] = system(gitHashCommand);
-
-            if statusHash == 0 %hash command was successful
-                resultHash = strtrim(resultHash);
-                MessHash = 'Latest Commit Hash : %s \r';
-            else
-                MessHash = '';
-            end
-
-            fileID = fopen(path_file_log, 'w');
-
-            fprintf(fileID, '==================\rGIT VERSION :\r');
-            fprintf(fileID, MessBranch, resultBranch);
-            fprintf(fileID, MessHash, resultHash);
-            fprintf(fileID, '==================\r\n ');
-
-            fprintf(fileID, obj.load_logs);
-
-            fprintf(fileID, '\r\n=== EXECUTION \r\n\n');
-
             fclose(fileID);
 
             %% Creating Masks
@@ -369,6 +317,7 @@ classdef OneCycleClass < handle
             end
 
             clear ToolBox
+            diary off
             displaySuccessMsg(1);
             %close all
 
