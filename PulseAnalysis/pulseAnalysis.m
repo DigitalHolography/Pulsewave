@@ -51,7 +51,7 @@ end
 f_RMS_background = zeros(numX, numY, numFrames, 'single');
 
 parfor frameIdx = 1:numFrames
-    f_RMS_background(:, :, frameIdx) = single(regionfill(f_RMS_video(:, :, frameIdx), maskVesselDilated));
+    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx),10*PW_params.local_background_width*2^PW_params.k,~maskVesselDilated));
 end
 
 graphSignal('1_Arteries_fRMS', folder, ...
