@@ -1,4 +1,4 @@
-function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video)
+function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, xy_barycenter)
 
 close all
 
@@ -19,6 +19,11 @@ M0_ff_image = rescale(mean(M0_ff_video, 3));
 maskAV = maskArtery & maskVein;
 maskArterySection = maskArtery & maskSection & ~maskAV;
 maskVeinSection = maskVein & maskSection & ~maskAV;
+
+x_center = xy_barycenter(1);
+y_center = xy_barycenter(2);
+r1 = PW_params.velocityBigRadiusRatio * (numY + numX) / 2;
+r2 = PW_params.velocitySmallRadiusRatio * (numY + numX) / 2;
 
 cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
 cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
@@ -43,7 +48,6 @@ velocityColorbar(cmapArtery, v_min, v_max, 'Arteries');
 v_mean_Artery = setcmap(v_mean_rescaled, maskArtery, cmapArtery);
 
 if veinsAnalysis
-
     velocityIm(v_mean, (maskArtery | maskVein), turbo, 'vessels', colorbarOn = true);
 
     velocityIm(v_mean, maskVein, cmapVein, 'veins', colorbarOn = true);
@@ -52,23 +56,26 @@ if veinsAnalysis
     v_mean_Vein = setcmap(v_mean_rescaled, maskVein, cmapVein);
     v_mean_AV = setcmap(v_mean_rescaled, (maskArtery&maskVein), cmapAV);
     v_mean_RGB = (v_mean_Artery + v_mean_Vein) .* ~maskAV + v_mean_AV + M0_ff_image .* ~(maskArtery | maskVein);
-
+    v_mean_RGB = insertShape(v_mean_RGB, 'circle', [x_center, y_center, r1; x_center, y_center, r2], ShapeColor=["w", "w"]);
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
-    parfor ii = 1:numFrames
-        v_frame_Artery = setcmap(v_rescaled(:, :, ii), maskArtery, cmapArtery);
-        v_frame_Vein = setcmap(v_rescaled(:, :, ii), maskVein, cmapVein);
-        v_mean_AV = setcmap(v_rescaled(:, :, ii), (maskArtery&maskVein), cmapAV);
-        v_video_RGB(:, :, :, ii) = (v_frame_Artery + v_frame_Vein) .* ~maskAV + v_mean_AV + M0_ff_video(:, :, ii) .* ~(maskArtery | maskVein);
+    parfor frameIdx = 1:numFrames
+        v_frame_Artery = setcmap(v_rescaled(:, :, frameIdx), maskArtery, cmapArtery);
+        v_frame_Vein = setcmap(v_rescaled(:, :, frameIdx), maskVein, cmapVein);
+        v_mean_AV = setcmap(v_rescaled(:, :, frameIdx), (maskArtery&maskVein), cmapAV);
+        v_video_RGB(:, :, :, frameIdx) = (v_frame_Artery + v_frame_Vein) .* ~maskAV + v_mean_AV + M0_ff_video(:, :, frameIdx) .* ~(maskArtery | maskVein);
+        v_video_RGB(:, :, :, frameIdx) = insertShape(v_video_RGB(:, :, :, frameIdx), 'circle', [x_center, y_center, r1; x_center, y_center, r2], ShapeColor=["w", "w"]);
     end
 
 else
     v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
+    v_mean_RGB = insertShape(v_mean_RGB, 'circle', [x_center, y_center, r1; x_center, y_center, r2], ShapeColor=["w", "w"]);
     imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
 
-    parfor ii = 1:numFrames
-        v_frame_Artery = setcmap(v_rescaled(:, :, ii), maskArtery, cmapArtery);
-        v_video_RGB(:, :, :, ii) = v_frame_Artery + M0_ff_video(:, :, ii) .* ~maskArtery;
+    parfor frameIdx = 1:numFrames
+        v_frame_Artery = setcmap(v_rescaled(:, :, frameIdx), maskArtery, cmapArtery);
+        v_video_RGB(:, :, :, frameIdx) = v_frame_Artery + M0_ff_video(:, :, frameIdx) .* ~maskArtery;
+        v_video_RGB(:, :, :, frameIdx) = insertShape(v_video_RGB(:, :, :, frameIdx), 'circle', [x_center, y_center, r1; x_center, y_center, r2], ShapeColor=["w", "w"]);
     end
 
 end
@@ -87,9 +94,9 @@ fprintf("- Velocity Map Timing : %ds\n", round(toc(tVelocityVideo)))
 
 %% 2) HISTOGRAM
 
-histoVideoArtery = velocityHistogram(v_video, maskArterySection, 'Arteries');
+histoVideoArtery = VelocityHistogram(v_video, maskArterySection, 'Arteries');
 if veinsAnalysis
-    histoVideoVein = velocityHistogram(v_video, maskVeinSection, 'Veins');
+    histoVideoVein = VelocityHistogram(v_video, maskVeinSection, 'Veins');
 end
 
 

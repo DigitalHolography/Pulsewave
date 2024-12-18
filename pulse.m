@@ -574,12 +574,13 @@ classdef pulse < matlab.apps.AppBase
         
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, ~)
+            main_path = fullfile(app.file.directory, 'pulsewave');
             if (app.flag_is_load)
-                if isfile(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name))
-                    disp(['opening : ', fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name)])
-                    winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
+                if isfile(fullfile(main_path,'json',app.file.PW_param_name))
+                    disp(['opening : ', fullfile(main_path,'json',app.file.PW_param_name)])
+                    winopen(fullfile(main_path,'json',app.file.PW_param_name));
                 else
-                    disp(['couldnt open : ',fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name)])
+                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.PW_param_name)])
                 end
             else
                 disp('No input loaded')

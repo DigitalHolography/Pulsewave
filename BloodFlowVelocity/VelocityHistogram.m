@@ -1,4 +1,4 @@
-function histoVideo = velocityHistogram(v_video, mask, name, n)
+function histoVideo = VelocityHistogram(v_video, mask, name, n)
 % VelocityHistogram.m: Creates an Histogram of the velocities from a video
 % and passes the figure as a mat
 %
@@ -48,8 +48,9 @@ xAx = [0 numFrames * ToolBox.stride / (1000 * ToolBox.fs)];
 histo = zeros(n, numFrames);
 D = (v_max - v_min) / (n - 1);
 
-fDistrib = figure(1);
+fDistrib = figure;
 fDistrib.Position(3:4) = [600 275];
+
 indexMin = find(X == v_min);
 indexMax = find(X == v_max);
 imagesc(xAx, yAx, histo(indexMin:indexMax, :))
@@ -85,7 +86,7 @@ if exportVideos
         title(sprintf("Velocity distribution in %s", name))
         set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
         f = getframe(gcf);
-        histoVideo(:, :, :, frameIdx) = imresize(f.cdata, [numX_fig numY_fig]);
+        histoVideo(:, :, :, frameIdx) = f.cdata;
         gifWriter.write(f, frameIdx);
 
     end
@@ -146,7 +147,7 @@ else
     title(sprintf("Velocity distribution in %s", name))
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     f = getframe(gcf);
-    histoVideo = imresize(f.cdata, [numX_fig numY_fig]);
+    histoVideo = f.cdata;
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", ToolBox.main_foldername, name)))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", ToolBox.main_foldername, name)))
 

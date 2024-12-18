@@ -218,7 +218,7 @@ classdef OneCycleClass < handle
                 fprintf("Blood Flow Velocity Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_ff_video)
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_ff_video, obj.xy_barycenter)
 
                 time_velo = toc(bloodFlowVelocityTimer);
                 fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
@@ -299,6 +299,7 @@ classdef OneCycleClass < handle
 
             fprintf("\n----------------------------------\n")
             fprintf("Total Pulsewave timing : %ds\n", round(tTotal))
+            fprintf("End Computer Time: %s\n", datetime('now', 'Format', 'yyyy/MM/dd HH:mm:ss'))
 
             clear ToolBox
             diary off
