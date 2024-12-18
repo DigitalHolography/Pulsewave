@@ -10,8 +10,6 @@ exportVideos = PW_params.exportVideos;
 mkdir(ToolBox.PW_path_png, 'bloodFlowVelocity')
 mkdir(ToolBox.PW_path_eps, 'bloodFlowVelocity')
 
-tic
-
 % TRUE MIN and MAX V but not realistic
 M0_ff_video = rescale(M0_ff_video);
 M0_ff_image = rescale(mean(M0_ff_video, 3));
@@ -89,9 +87,9 @@ fprintf("- Velocity Map Timing : %ds\n", round(toc(tVelocityVideo)))
 
 %% 2) HISTOGRAM
 
-histoVideoArtery = VelocityHistogram(v_video, maskArterySection, 'Arteries');
+histoVideoArtery = velocityHistogram(v_video, maskArterySection, 'Arteries');
 if veinsAnalysis
-    histoVideoVein = VelocityHistogram(v_video, maskVeinSection, 'Veins');
+    histoVideoVein = velocityHistogram(v_video, maskVeinSection, 'Veins');
 end
 
 

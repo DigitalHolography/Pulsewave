@@ -17,11 +17,11 @@ M0_disp_video = zeros(V.Height, V.Width, V.NumFrames);
 for n = 1:V.NumFrames
     M0_disp_video(:, :, n) = rgb2gray(read(V, n));
 end
-obj.M0_disp_video = M0_disp_video;
+obj.M0_ff_video = M0_disp_video;
 
 clear V M0_disp_video
 
-refvideosize = size(obj.M0_disp_video);
+refvideosize = size(obj.M0_ff_video);
 dir_path_raw = fullfile(obj.directory, 'raw');
 ext = '.raw';
 
@@ -39,6 +39,7 @@ try
     M0_data_video = fread(fileID, 'float32');
     fclose(fileID);
     obj.M0_data_video = reshape(M0_data_video, refvideosize);
+    clear M0_data_video
 
     % Import Moment 1
 
@@ -53,6 +54,7 @@ try
     M1_data_video = fread(fileID, 'float32');
     fclose(fileID);
     obj.M1_data_video = reshape(M1_data_video, refvideosize);
+    clear M1_data_video
 
     % Import Moment 2
 
@@ -67,6 +69,7 @@ try
     M2_data_video = fread(fileID, 'float32');
     fclose(fileID);
     obj.M2_data_video = reshape(M2_data_video, refvideosize);
+    clear M2_data_video
 
 catch ME
     disp(['ID: ' ME.identifier])

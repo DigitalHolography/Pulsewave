@@ -7,7 +7,7 @@ function obj = VideoRegistering(obj)
         return % do nothing if not required
     end
 
-    video = obj.M0_disp_video;
+    video = obj.M0_ff_video;
     numX = size(video, 1);
     numY = size(video, 2);
     x = linspace(-numX / 2, numX / 2, numX);
@@ -24,7 +24,7 @@ function obj = VideoRegistering(obj)
     image_ref = mean(video_reg(:, :, PW_params.refAvgStart:PW_params.refAvgEnd), 3); % ref image is from 10 to 20
     [~, shifts] = register_video_from_reference(video_reg, image_ref);
 
-    obj.M0_disp_video = register_video_from_shifts(video, shifts);
+    obj.M0_ff_video = register_video_from_shifts(video, shifts);
 
     obj.M0_data_video = register_video_from_shifts(obj.M0_data_video, shifts);
     obj.M1_data_video = register_video_from_shifts(obj.M1_data_video, shifts);

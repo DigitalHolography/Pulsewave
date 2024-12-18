@@ -3,7 +3,7 @@ function obj = VideoCropping(obj)
 PW_params = Parameters_json(obj.directory, obj.PW_param_name);
 firstFrame = PW_params.videoStartFrameIndex;
 lastFrame = PW_params.videoEndFrameIndex;
-[~, ~, numFrames] = size(obj.M0_disp_video);
+[~, ~, numFrames] = size(obj.M0_ff_video);
 logs = obj.load_logs;
 
 if firstFrame > 0 && firstFrame < numFrames || lastFrame > 1 && lastFrame <= numFrames
@@ -13,7 +13,7 @@ if firstFrame > 0 && firstFrame < numFrames || lastFrame > 1 && lastFrame <= num
     if firstFrame == -1
         firstFrame = 1;
     end
-    obj.M0_disp_video = obj.M0_disp_video(:, :, firstFrame:lastFrame);
+    obj.M0_ff_video = obj.M0_ff_video(:, :, firstFrame:lastFrame);
     obj.M0_data_video = obj.M0_data_video(:, :, firstFrame:lastFrame);
     obj.M1_data_video = obj.M1_data_video(:, :, firstFrame:lastFrame);
     obj.M2_data_video = obj.M2_data_video(:, :, firstFrame:lastFrame);

@@ -1,26 +1,29 @@
-function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis)
-
-% Variable : LocalBKG_artery, Taille : 10631287200 bytes
-% Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
-% Variable : f_RMS_video, Taille : 10631287200 bytes (DEBUT)
-% Variable : maskArtery, Taille : 18849800 bytes (DEBUT)
-% Variable : meanIm, Taille : 18849800 bytes  (DEBUT)
-% Variable : maskBackground, Taille : 2356225 bytes (DEBUT)
-% Variable : maskVein, Taille : 2356225 bytes (DEBUT)
-% Variable : variableInfo, Taille : 12898 bytes
-
-exec_times_id = [];
-exec_times_time = [];
+function [v_RMS_video] = pulseAnalysis(f_RMS_video, maskArtery, maskVein, maskSection)
+% pulseAnalysis.m computes the velocities
+% Inputs:
+%       VIDEOS:
+%   f_RMS_video     Size: numX x numY x numFrames double
+%   M0_disp_video   Size: numX x numY x numFrames double
+%       IMAGES:
+%   f_AVG_image     Size: numX x numY double
+%   maskArtery      Size: numX x numY logical
+%   maskBackground  Size: numX x numY logical
+%   maskSection     Size: numX x numY logical
+%   maskVein        Size: numX x numY logical
+%       TRIVIA:
+%   sysIdxList:     Size: numSystoles
+%   flagExtended    Size: 1
+%
+% Output:
+%   v_RMS_video     Size: numX x numY x numFrames double
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 veinsAnalysis = PW_params.veins_analysis;
-entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
 
 maskArterySection = maskArtery & maskSection;
 maskVeinSection = maskVein & maskSection;
-maskBackgroundSection = maskBackground & maskSection;
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -37,21 +40,25 @@ cVein = [18 23 255] / 255;
 %% 1) Local BKG Artery and Veins %~1min
 
 tic
-exec_times_id = [exec_times_id, "Local BKG Artery and Veins"];
 
 if veinsAnalysis
     maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
     imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
+    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
 
 else
     maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
     imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
+    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
 end
 
 f_RMS_background = zeros(numX, numY, numFrames, 'single');
 
+w =  PW_params.local_background_width;
+k =  PW_params.k;
+
 parfor frameIdx = 1:numFrames
-    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx),10*PW_params.local_background_width*2^PW_params.k,~maskVesselDilated));
+    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, ~maskVesselDilated));
 end
 
 graphSignal('1_Arteries_fRMS', folder, ...
@@ -69,12 +76,10 @@ if veinsAnalysis
 end
 
 fprintf("    1. Local BKG Artery and Veins calculation took %ds\n", round(toc))
-exec_times_time = [exec_times_time, toc];
 
 %% 2) Difference calculation
 
 tic
-exec_times_id = [exec_times_id, "Difference calculation"];
 
 if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
@@ -107,8 +112,6 @@ else
         t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         Title = 'Average estimated velocity in Arteries', xlabel = strXlabel, ylabel = 'mm/s');
 end
-
-exec_times_time = [exec_times_time, toc];
 
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
@@ -158,11 +161,6 @@ fprintf("    2. Difference calculation took %ds\n", round(toc))
 
 clear LocalBackground_in_vessels f_RMS_background
 
-if entirePulseAnalysis
-    [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_disp_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_RMS_video, exec_times_id, exec_times_time, maskBackgroundSection, maskArterySection, maskVeinSection, sysIdxList);
-end
-
-exec_times = [exec_times_id; exec_times_time];
 return;
 
 end

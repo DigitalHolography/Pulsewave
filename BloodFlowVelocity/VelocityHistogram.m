@@ -1,8 +1,20 @@
-function histoVideo = VelocityHistogram(v_video, maskSection, name, n)
+function histoVideo = velocityHistogram(v_video, mask, name, n)
+% VelocityHistogram.m: Creates an Histogram of the velocities from a video
+% and passes the figure as a mat
+%
+% Inputs:
+%   v_video     :   video of the velocities
+%   mask        :   a logical mask to locate the velocities
+%   name        :   'Arteries' or 'Veins' to change the name of the figs
+%               and the color maps
+%   n           :   Resolution of the Histrogram
+%
+% Outputs:
+%   histoVideo  :   Mat of the histogram figure
 
 arguments
     v_video
-    maskSection
+    mask
     name
     n = 256
 end
@@ -15,7 +27,7 @@ exportVideos = PW_params.exportVideos;
 
 [numX, numY, numFrames] = size(v_video);
 
-v_histo = v_video .* maskSection;
+v_histo = v_video .* mask;
 v_min = min(v_histo, [], 'all');
 v_max = max(v_histo, [], 'all');
 
@@ -23,6 +35,8 @@ if strcmp(name, 'Arteries')
     cmap = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
 elseif strcmp(name, 'Veins')
     cmap = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+else
+    cmap = cmapLAB(256, [0 0 0], 0, [0 1 0], 1/3, [1/2 1 1/2], 2/3, [1 1 1], 1);
 end
 
 yAx = [v_min v_max];
@@ -55,7 +69,7 @@ if exportVideos
 
             for yy = 1:numY
 
-                if maskSection(xx, yy) ~= 0
+                if mask(xx, yy) ~= 0
                     i = find(and(X >= v_histo(xx, yy, frameIdx), X < v_histo(xx, yy, frameIdx) + D));
                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
                 end
@@ -113,7 +127,7 @@ else
 
             for yy = 1:numY
 
-                if maskSection(xx, yy) ~= 0
+                if mask(xx, yy) ~= 0
                     i = find( and(X >= v_histo(xx, yy, frameIdx), X < v_histo(xx, yy, frameIdx) + D));
                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
                 end

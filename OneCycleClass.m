@@ -5,7 +5,7 @@ classdef OneCycleClass < handle
         M0_data_video % M0 raw
         M1_data_video % M1 raw
         M2_data_video % M2 raw
-        M0_disp_video % M0 AVI
+        M0_ff_video % M0 AVI
 
         is_preprocessed % tells if the data has been preprocessed
 
@@ -78,7 +78,7 @@ classdef OneCycleClass < handle
                 obj.load_logs = strcat(obj.load_logs, '\r', ['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
-                obj.M0_disp_video = rescale(ff_correction(videoM0, 30)) * 255;
+                obj.M0_ff_video = rescale(ff_correction(videoM0, 30)) * 255;
                 obj.M0_data_video = videoM0;
                 obj.M1_data_video = videoM1;
                 obj.M2_data_video = videoM2;
@@ -151,9 +151,9 @@ classdef OneCycleClass < handle
             setGlobalToolBox(obj.ToolBoxmaster)
             ToolBox = getGlobalToolBox;
             PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+
             totalTime = tic;
 
-            k = PW_params.k;
             saveGit(obj.load_logs);
 
             % saving times
@@ -176,7 +176,7 @@ classdef OneCycleClass < handle
                 fprintf("Mask Creation\n")
                 fprintf("----------------------------------\n")
 
-                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_disp_video, obj.f_AVG_video);
+                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_ff_video, obj.f_AVG_video);
 
                 time_create_masks = toc(createMasksTiming);
                 fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -203,7 +203,7 @@ classdef OneCycleClass < handle
                 fprintf("Find Systole\n")
                 fprintf("----------------------------------\n")
 
-                [obj.sysIdxList, ~] = find_systole_index(obj.M0_disp_video, obj.maskArtery);
+                [obj.sysIdxList, ~] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
 
                 time_sys_idx = toc(findSystoleTimer);
                 fprintf("- FindSystoleIndex took : %ds\n", round(time_sys_idx))
@@ -217,21 +217,15 @@ classdef OneCycleClass < handle
 
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
 
-                [obj.vRMS, exec_times] = pulseAnalysis(obj.f_RMS_video, f_AVG_mean, obj.M0_disp_video, obj.sysIdxList, obj.maskArtery, obj.maskVein, obj.maskBackground, obj.maskSection, obj.flag_ExtendedPulseWave_analysis);
+                [obj.vRMS] = pulseAnalysis(obj.f_RMS_video, obj.maskArtery, obj.maskVein, obj.maskSection);
+
+                if obj.flag_ExtendedPulseWave_analysis
+                extendedPulseAnalysis(obj.M0_ff_video, obj.f_RMS_video, f_AVG_mean, obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.sysIdxList);
+                end
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
                 save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
-
-                %exec time details
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-
-                for i = 1:size(exec_times, 2)
-                    fprintf(fileID, '\t%s : %.0fs \r\n', exec_times(1, i), exec_times(2, i));
-                end
-
-                fclose(fileID);
-                clear exec_times
             end
 
             % pulseVelocityTimer = tic;
@@ -253,7 +247,7 @@ classdef OneCycleClass < handle
                 fprintf("Blood Flow Velocity Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_disp_video)
+                bloodFlowVelocity(obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.M0_ff_video)
 
                 time_velo = toc(bloodFlowVelocityTimer);
                 fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
@@ -267,7 +261,7 @@ classdef OneCycleClass < handle
                 fprintf("Blood Volume Rate Calculation\n")
                 fprintf("----------------------------------\n")
 
-                bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_disp_video, obj.xy_barycenter, obj.sysIdxList, obj.flag_bloodVelocityProfile_analysis);
+                bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_ff_video, obj.xy_barycenter, obj.sysIdxList, obj.flag_bloodVelocityProfile_analysis);
 
                 time_volumeRate = toc(bloodVolumeRateTimer);
                 fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
@@ -292,6 +286,9 @@ classdef OneCycleClass < handle
                 ext = '.raw';
                 disp(['reading : ', fullfile(ToolBox.PW_path, 'raw', [tmpname, ext])]);
                 fileID = fopen(fullfile(obj.directory, 'raw', [tmpname, ext]));
+
+                k = PW_params.k;
+
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
                 [numX, numY, numFrames] = size(obj.f_RMS_video);
@@ -299,6 +296,7 @@ classdef OneCycleClass < handle
                 bin_y = 4;
                 % bin_w = 16;
                 bin_t = 1;
+
                 SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
 
                 tic

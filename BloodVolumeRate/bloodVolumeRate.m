@@ -38,7 +38,7 @@ r1 = (PW_params.velocitySmallRadiusRatio) * L;
 r2 = (PW_params.velocityBigRadiusRatio) * L;
 dr = (PW_params.velocityBigRadiusRatio - PW_params.velocitySmallRadiusRatio) * L / numCircles; %PW_params.radius_gap
 if veins_analysis
-    maskAllSections = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery, maskVein);
+    maskAllSections = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_all_sections', maskArtery, maskVein);
 else
     maskAllSections = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
 end
@@ -56,6 +56,7 @@ parfor circleIdx = 1:numCircles
     else
         createMaskSection(ToolBox, M0_ff_img, rad_in, rad_out, xy_barycenter, sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery);
     end
+    
 end
 
 fprintf("    1. Mask Sectionning for all circles output took %ds\n", round(toc))
