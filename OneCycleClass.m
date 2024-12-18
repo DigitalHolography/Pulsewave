@@ -16,9 +16,7 @@ classdef OneCycleClass < handle
 
         maskArtery
         maskVein
-        maskBackground
         maskSection
-        maskNeighbors
 
         sysIdxList % list of frame indexes counting carciac cycles
         xy_barycenter % x y position of the ONH
@@ -28,7 +26,6 @@ classdef OneCycleClass < handle
         PW_params_names cell  % filenames of all the current input parameters ('InputPulsewaveParams.json' for example by default))
         PW_param_name char % current filename
         filenames char % name id used for storing the measured rendered data
-        load_logs char
 
         flag_Segmentation
         flag_SH_analysis
@@ -68,14 +65,11 @@ classdef OneCycleClass < handle
             % looks for existing parameters and checks compatibility between found PW params and Default PW params of this version of PW.
             obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory);
             obj.PW_param_name = obj.PW_params_names{1}; % default behavior takes the first found parameter file ('InputPulseWaveParameters.json')
-            obj.ToolBoxmaster = ToolBoxClass(obj.directory, obj.PW_param_name);
-            obj.load_logs = '\n=== LOADING : \r\n';
 
             %% Video loading
 
             if ~isfolder(path) % if holo file with moments inside is the input
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
-                obj.load_logs = strcat(obj.load_logs, '\r', ['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
                 obj.M0_ff_video = rescale(ff_correction(videoM0, 30)) * 255;
@@ -154,48 +148,29 @@ classdef OneCycleClass < handle
 
             totalTime = tic;
 
-            saveGit(obj.load_logs);
-
-            % saving times
-            path_file_txt_exe_times = fullfile(ToolBox.PW_path_log, sprintf('%s_execution_times.txt', ToolBox.PW_folder_name));
-            fileID = fopen(path_file_txt_exe_times, 'w');
-            fprintf(fileID, 'EXECUTION TIMES : \r\n==========================================\n\r\n');
-            fclose(fileID);
-
+            saveGit;
+            
             %% Creating Masks
 
             if obj.flag_Segmentation
 
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-                fprintf(fileID, '\r\n');
-                fclose(fileID);
-
-                createMasksTiming = tic;
+                createMasksTimer = tic;
 
                 fprintf("\n----------------------------------\n")
                 fprintf("Mask Creation\n")
                 fprintf("----------------------------------\n")
 
-                [obj.maskArtery, obj.maskVein, ~, obj.maskBackground, ~, ~, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_ff_video, obj.f_AVG_video);
+                f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
+                [obj.maskArtery, obj.maskVein, obj.maskSection, obj.xy_barycenter] = createMasks(obj.M0_ff_video, f_AVG_mean);
 
-                time_create_masks = toc(createMasksTiming);
+                time_create_masks = toc(createMasksTimer);
                 fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
-                save_time(path_file_txt_exe_times, 'CreateMasks', time_create_masks)
-
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-                fprintf(fileID, '\r\n----------\r\n');
-                fclose(fileID);
 
             end
 
             %% PulseWave Analysis
 
             if obj.flag_PulseWave_analysis
-                close all
-
-                fileID = fopen(path_file_txt_exe_times, 'a+');
-                fprintf(fileID, 'PULSEWAVE ANALYSIS : \r\n\n');
-                fclose(fileID);
 
                 findSystoleTimer = tic;
 
@@ -207,7 +182,6 @@ classdef OneCycleClass < handle
 
                 time_sys_idx = toc(findSystoleTimer);
                 fprintf("- FindSystoleIndex took : %ds\n", round(time_sys_idx))
-                save_time(path_file_txt_exe_times, 'Find Systole Index', time_sys_idx)
 
                 pulseAnalysisTimer = tic;
 
@@ -216,7 +190,6 @@ classdef OneCycleClass < handle
                 fprintf("----------------------------------\n")
 
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
-
                 [obj.vRMS] = pulseAnalysis(obj.f_RMS_video, obj.maskArtery, obj.maskVein, obj.maskSection);
 
                 if obj.flag_ExtendedPulseWave_analysis
@@ -225,7 +198,6 @@ classdef OneCycleClass < handle
 
                 time_pulseanalysis = toc(pulseAnalysisTimer);
                 fprintf("- Pulse Analysis took : %ds\n", round(time_pulseanalysis))
-                save_time(path_file_txt_exe_times, 'Pulse Analysis', time_pulseanalysis)
             end
 
             % pulseVelocityTimer = tic;
@@ -238,7 +210,6 @@ classdef OneCycleClass < handle
             %
             % time_pulsevelocity = toc(pulseVelocityTimer);
             % fprintf("- Pulse Velocity Calculations took : %ds\n", round(time_pulsevelocity))
-            % save_time(path_file_txt_exe_times, 'Pulse Velocity', time_pulsevelocity)
 
             if obj.flag_velocity_analysis
                 bloodFlowVelocityTimer = tic;
@@ -251,7 +222,6 @@ classdef OneCycleClass < handle
 
                 time_velo = toc(bloodFlowVelocityTimer);
                 fprintf("- Blood Flow Velocity calculation took : %ds\n", round(time_velo))
-                save_time(path_file_txt_exe_times, 'Blood Flow Velocity', time_velo)
             end
 
             if obj.flag_bloodVolumeRate_analysis
@@ -265,22 +235,16 @@ classdef OneCycleClass < handle
 
                 time_volumeRate = toc(bloodVolumeRateTimer);
                 fprintf("- Blood Volume rate calculation took : %ds\n", round(time_volumeRate))
-                save_time(path_file_txt_exe_times, 'Blood Volume rate', time_volumeRate)
             end
 
-            tTotal = toc(totalTime);
 
-            fprintf("\n----------------------------------\n")
-            fprintf("Total Pulsewave timing : %ds\n", round(tTotal))
-            fileID = fopen(path_file_txt_exe_times, 'a+');
-            fprintf(fileID, '\r\n=== Total : %.0fs \r\n\n----------\r\n', tTotal);
-            fclose(fileID);
-
-            %% Spectrum Analysis
+            %% Spectral Analysis
 
             if obj.flag_SH_analysis && isfile(fullfile(ToolBox.PW_path, 'raw', [strcat(ToolBox.main_foldername, '_SH'), '.raw']))
 
-                %% Import SH
+                % Import SH
+
+                timeSpectralAnalysis = tic;
 
                 tmpname = strcat(ToolBox.main_foldername, '_SH');
                 ext = '.raw';
@@ -299,25 +263,46 @@ classdef OneCycleClass < handle
 
                 SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
 
-                tic
-                spectrum_analysis(obj.maskArtery, obj.maskBackground, SH_cube, obj.M0_data_video);
-                disp('Spectrum analysis :')
-                time = toc;
-                disp(time)
-                save_time(path_file_txt_exe_times, 'spectrum_analysis', time)
+                % Spectrum Analysis
+                spectrumAnalysisTimer = tic;
 
-                tic
-                spectrogram(obj.maskArtery, obj.maskNeighbors, obj.maskSection, SH_cube);
-                disp('Spectrogram timing :')
-                time = toc;
-                disp(time)
-                save_time(path_file_txt_exe_times, 'spectrogram', time)
+                fprintf("\n----------------------------------\n")
+                fprintf("Spectrum analysis\n")
+                fprintf("----------------------------------\n")
+
+                spectrum_analysis(SH_cube, obj.M0_data_video);
+
+                time_spectrumAnalysis = toc(spectrumAnalysisTimer);
+                fprintf("- Spectrum Analysis took : %ds\n", round(time_spectrumAnalysis))
+
+
+                % Spectrogram
+                spectrogramTimer = tic;
+
+                fprintf("\n----------------------------------\n")
+                fprintf("Spectrogram\n")
+                fprintf("----------------------------------\n")
+
+                spectrogram(obj.maskArtery, obj.maskSection, SH_cube);
+
+                time_spectrogram = toc(spectrogramTimer);
+                fprintf("- Sprectrogram took : %ds\n", round(time_spectrogram))
+
+
+                tSpectralAnalysis = toc(timeSpectralAnalysis);
+
+                fprintf("\n----------------------------------\n")
+                fprintf("Spectral Analysis timing : %ds\n", round(tSpectralAnalysis))
             end
+
+            tTotal = toc(totalTime);
+
+            fprintf("\n----------------------------------\n")
+            fprintf("Total Pulsewave timing : %ds\n", round(tTotal))
 
             clear ToolBox
             diary off
             displaySuccessMsg(1);
-            %close all
 
         end
 

@@ -43,13 +43,8 @@ tic
 
 if veinsAnalysis
     maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
-    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
-    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
-
 else
     maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
-    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
-    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
 end
 
 f_RMS_background = zeros(numX, numY, numFrames, 'single');

@@ -175,7 +175,7 @@ classdef ToolBoxClass < handle
             % Turn On Diary Logging
             diary off
             % first turn off diary, so as not to log this script
-            diary_filename = fullfile(obj.PW_path_log, 'CommandWindowLog.txt');
+            diary_filename = fullfile(obj.PW_path_log, sprintf('%s_log.txt', obj.main_foldername));
             % setup temp variable with filename + timestamp, echo off
             set(0, 'DiaryFile', diary_filename)
             % set the objectproperty DiaryFile of hObject 0 to the temp variable filename
@@ -195,7 +195,6 @@ classdef ToolBoxClass < handle
             path_dir_json = fullfile(obj.PW_path, 'pulsewave', 'json');
             path_file_json_params = fullfile(path_dir_json, obj.PW_param_name);
             copyfile(path_file_json_params, obj.PW_path_json);
-
 
         end
 

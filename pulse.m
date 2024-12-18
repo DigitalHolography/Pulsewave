@@ -293,7 +293,6 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("----------------------------------\n")
                 app.file = app.file.preprocessData();
                 app.Lamp.Color = [0, 1, 0];
-                fprintf("- Video PreProcessing took : %ds\n", round(toc))
             catch ME
                 
                 fprintf("==========================================\nERROR\n==========================================\n")

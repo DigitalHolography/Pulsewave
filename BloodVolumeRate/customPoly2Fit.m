@@ -40,7 +40,9 @@ function [p1, p2, p3, rsquared, p1_err, p2_err, p3_err] = customPoly2Fit(x, y)
     variance = ss_res / (n - p_len); % estimated variance of residuals
     
     % Calculate covariance matrix
+    warning('off');
     cov_matrix = variance * inv(X' * X);
+    warning('on');
     
     % Extract standard errors (square root of diagonal elements of covariance matrix)
     p1_err = sqrt(cov_matrix(1,1));
