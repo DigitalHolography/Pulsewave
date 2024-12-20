@@ -101,28 +101,27 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         section_cut(section_cut < 0) = 0;
         
         profile = mean(subImg, 1);
-        central_range = find(profile > 0.1 * max(profile));
+        if mean(profile) > 0
+            central_range = find(profile > 0.1 * max(profile));
+        else % case of fully negative vessel taken in the choroid; this makes the vessel detection independent of sign
+            central_range = find(profile < 0.1 * min(profile));
+        end
         centt = mean(central_range);
         r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
         [p1, p2, p3, rsquare, p1_err, p2_err, p3_err] = customPoly2Fit(r_range', profile(central_range)');
         [r1, r2, r1_err, r2_err] = customPoly2Roots(p1, p2, p3, p1_err, p2_err, p3_err);
         
-        if rsquare < 0.6 % if bad fit : reject the cross section
-            crossSectionWidth(sectionIdx) = 0;
-            stdcrossSectionWidth(sectionIdx) = 0;
+        if rsquare < 0.6 % if bad fit : reject the fit
+            crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
+            stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
         else
             crossSectionWidth(sectionIdx) = abs(r1 - r2) / (PW_params.cropSection_pixelSize / 2 ^ k);
-            stdcrossSectionWidth(sectionIdx) = sqrt(r1_err ^ 2 + r2_err ^ 2) / (PW_params.cropSection_pixelSize / 2 ^ k);
+            stdCrossSectionWidth(sectionIdx) = sqrt(r1_err ^ 2 + r2_err ^ 2) / (PW_params.cropSection_pixelSize / 2 ^ k);
         end
         
-        if isnan(crossSectionWidth(sectionIdx))
-            crossSectionWidth(sectionIdx) = 0;
-            stdcrossSectionWidth(sectionIdx) = 0;
-        end
-        
-        if crossSectionWidth(sectionIdx) > length(profile)
-            crossSectionWidth(sectionIdx) = 0;
-            stdcrossSectionWidth(sectionIdx) = 0;
+        if isnan(crossSectionWidth(sectionIdx)) || crossSectionWidth(sectionIdx) > mean(sum(subImg ~= 0, 2))
+            crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
+            stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
         end
         
         section_cut(section_cut < 0) = 0;

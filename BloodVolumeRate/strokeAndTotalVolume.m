@@ -27,12 +27,12 @@ xline(pulseTime(end), 'k--', 'LineWidth', 2)
 % Remaining Stroke Volume
 hold on
 curve1 = circshift(interp_BvrT, cshiftn);
-curve1 = curve1(1:amax + cshiftn);
+curve1 = curve1(1:min(amax + cshiftn,numInterp));
 curve2 = 0 * ones(size(curve1));
-ft2 = [pulseTime(1:amax + cshiftn), fliplr(pulseTime(1:amax + cshiftn))];
+ft2 = [pulseTime(1:min(amax + cshiftn,numInterp)), fliplr(pulseTime(1:min(amax + cshiftn,numInterp)))];
 inBetween = [curve1, fliplr(curve2)]';
 cCrimson = [222, 49, 99] / 255;
-xline(pulseTime(amax + cshiftn), 'k--', 'LineWidth', 2)
+xline(pulseTime(min(amax + cshiftn,numInterp)), 'k--', 'LineWidth', 2)
 fill(ft2, inBetween, cCrimson, 'EdgeColor', 'none');
 
 % Grey STD and Signal
@@ -65,7 +65,7 @@ ylabel('Blood Volume Rate (µL/min)')
 xlabel('Time (s)')
 ccinterpBvrT = circshift(interp_BvrT, cshiftn);
 dt2 = pulseTime2(2) - pulseTime2(1);
-stroke_volume_value = sum(ccinterpBvrT(1:amax + cshiftn)) * dt2 / 60 * 1000; % in nL
+stroke_volume_value = sum(ccinterpBvrT(1:min(amax + cshiftn,numInterp))) * dt2 / 60 * 1000; % in nL
 total_volume_value = sum(ccinterpBvrT) * dt2 / 60 * 1000;
 title(sprintf("Retinal Stroke Volume : %02.0f nL and Total Volume : %02.0f nL", stroke_volume_value, total_volume_value));
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
