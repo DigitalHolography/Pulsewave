@@ -64,7 +64,7 @@ classdef ToolBoxClass < handle
             %    idx = idx + 1;
             %end
 
-            obj.PW_folder_name = sprintf('%s_PW_%d', PW_folder_name, idx);
+            obj.PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
             obj.PW_path_dir = fullfile(obj.PW_path_main, obj.PW_folder_name);
             obj.PW_path_png = fullfile(obj.PW_path_dir, 'png');
             obj.PW_path_eps = fullfile(obj.PW_path_dir, 'eps');
