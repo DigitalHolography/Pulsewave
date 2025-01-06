@@ -8,7 +8,7 @@ D = (M + N) / 2;
 
 if alpha == 1
     % behaves as if conv_size = alpha*(2*D-1) just faster;
-    M0_data_convoluated = double(mean(obj.M0_data_video, [1, 2]));
+    M0_data_convoluated = double(mean(obj.M0_data_video, [1, 2,3]));
 elseif alpha == 0
     % forces the pixel M0 normalisation;
     M0_data_convoluated = double(obj.M0_data_video);

@@ -37,7 +37,7 @@ for circleIdx = 1:numCircles
 
     if ~isempty(locs{circleIdx})
 
-        for etIdx = 1:length(locs{circleIdx})
+        for etIdx = 1:size(locs{circleIdx}, 1)
             new_x = x_barycenter + ratio_etiquette * (locs{circleIdx}(etIdx, 2) - x_barycenter);
             new_y = y_barycenter + ratio_etiquette * (locs{circleIdx}(etIdx, 1) - y_barycenter);
             text(new_x, new_y, sprintf(string(etiquettes_frame_values(etIdx))), "FontWeight", "bold", "FontSize", 12, "Color", "white", "BackgroundColor", "black");

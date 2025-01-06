@@ -130,9 +130,9 @@ if veins_analysis
     [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r, width_std_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
 end
 
-[area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat] = reshapeSections(numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r);
+[area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat] = reshapeSections(numFrames, numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r);
 if veins_analysis
-    [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat] = reshapeSections(numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r);
+    [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat] = reshapeSections(numFrames, numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r);
 end
 
 plot2txtForAllRadSection(t, vr_avg_A_r, vr_std_A_r, vr_avg_A_mat, vr_std_A_mat, 'A')
@@ -158,9 +158,11 @@ if veins_analysis
     sectionImage(M0_ff_img, mask_V_r, 'Vein')
 end
 
-widthImage(sub_images_A_r, numSections_A, 'artery')
+subImageSize = checkSubImgSize(sub_images_A_r);
+
+widthImage(subImageSize, sub_images_A_r, numSections_A, 'artery')
 if veins_analysis
-    widthImage(sub_images_V_r, numSections_V, 'vein')
+    widthImage(subImageSize, sub_images_V_r, numSections_V, 'vein')
 end
 
 crossSectionWidthImage(M0_ff_img, xy_barycenter, area_A_mat, mask_A_r, locs_A, 'Artery')
