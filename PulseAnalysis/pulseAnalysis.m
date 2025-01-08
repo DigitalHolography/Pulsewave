@@ -43,8 +43,10 @@ tic
 
 if veinsAnalysis
     maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
+    maskNeighbors = maskVesselDilated - (maskArtery | maskVein) ;
 else
     maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
+    maskNeighbors = maskVesselDilated - (maskArtery) ;
 end
 
 f_RMS_background = zeros(numX, numY, numFrames, 'single');
@@ -53,7 +55,7 @@ w =  PW_params.local_background_width;
 k =  PW_params.k;
 
 parfor frameIdx = 1:numFrames
-    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, ~maskVesselDilated));
+    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, maskNeighbors,maskVesselDilated));
 end
 
 graphSignal('1_Arteries_fRMS', folder, ...

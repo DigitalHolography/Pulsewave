@@ -11,6 +11,13 @@ main_folder = ToolBox.main_foldername;
 
 close all
 
+%% 0) Test the input for usual cases of wrong aquisition data
+
+if max(f_AVG_mean, [], 'all') <=0 
+    figure(3); imshow(rescale(f_AVG_mean));
+    error("Measurement error from the Moment 1 input. Check the input or re-do the measurement.")
+end
+
 %% 1) First Masks and Correlation
 
 [numX, numY, numFrames] = size(M0_ff_video);
@@ -35,6 +42,8 @@ maskVesselness = logical(imbinarize(vesselnessM0 .* maskDiaphragm));
 
 imwrite(rescale(vesselnessM0), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'all_1_1_Vesselness.png')))
 imwrite(maskVesselness, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'all_1_2_vesselMask.png')))
+
+
 
 %% 1) 2) Compute the barycenters and the circle mask
 
@@ -351,6 +360,20 @@ imwrite(maskVein, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_fo
 imwrite(maskVessel, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'maskVessel.png')))
 imwrite(maskNeighbors, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'maskNeighbors.png')));
 imwrite(maskBackground, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'maskBackground.png')));
+
+if veinsAnalysis
+    neighborsMaskSeg(:, :, 1) = M0_ff_img .* ~(maskArtery | maskVein | maskNeighbors) + maskArtery;
+    neighborsMaskSeg(:, :, 2) = M0_ff_img .* ~(maskArtery | maskVein | maskNeighbors) + maskNeighbors;
+    neighborsMaskSeg(:, :, 3) = M0_ff_img .* ~(maskArtery | maskVein | maskNeighbors) + maskVein;
+    imwrite(neighborsMaskSeg, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'NeighborsOnVessels.png')));
+else
+        neighborsMaskSeg(:, :, 1) = M0_ff_img .* ~(maskArtery  | maskNeighbors) + maskArtery;
+    neighborsMaskSeg(:, :, 2) = M0_ff_img .* ~(maskArtery  | maskNeighbors) + maskNeighbors;
+    neighborsMaskSeg(:, :, 3) = M0_ff_img .* ~(maskArtery | maskNeighbors);
+    imwrite(neighborsMaskSeg, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'NeighborsOnVessels.png')));
+end
+
+
 
 imwrite(maskCRA, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'maskCRA.png')));
 imwrite(maskCRV, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'maskCRV.png')));

@@ -269,6 +269,7 @@ for sectionIdx = 1:numSections
         %FIXME calcul std avg avec des v = 0
         %avgVelocity(sectionIdx,tt) = sum(tmp(:))/nnz(tmp(:));
         avgVelocity(sectionIdx, tt) = mean(tmp(tmp ~= 0));
+        topVelocity(sectionIdx, tt) = max(avg_profil);
         
         if isnan(avgVelocity(sectionIdx, tt))
             avgVelocity(sectionIdx, tt) = 0;
@@ -282,7 +283,7 @@ for sectionIdx = 1:numSections
             stdVelocity(sectionIdx, tt) = 0;
         end
         
-        avgVolumeRate(sectionIdx, tt) = avgVelocity(sectionIdx, tt) * crossSectionArea(sectionIdx) * 60; % microL/min
+        avgVolumeRate(sectionIdx, tt) = topVelocity(sectionIdx, tt)/2 * crossSectionArea(sectionIdx) * 60; % microL/min
         stdVolumeRate(sectionIdx, tt) = stdVelocity(sectionIdx, tt) * crossSectionArea(sectionIdx) * 60; % microL/min
         
         %     figure(101)
