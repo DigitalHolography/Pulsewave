@@ -20,6 +20,7 @@ arguments
     unit
     NameValueArgs.skip logical = false
     NameValueArgs.Color (1, 3) double = [1 0 0]
+    NameValueArgs.Visible logical = false
 end
 
 ToolBox = getGlobalToolBox;
@@ -30,21 +31,32 @@ y_barycenter = xy_barycenter(2);
 ylimm = [min(-1, min(signal)), max(signal) * 1.3];
 
 if NameValueArgs.skip
-    startingvalue = numFrames - 1;
+    startingvalue = numFrames;
 else
     startingvalue = 1;
 end
+if NameValueArgs.Visible
+    parforArg = 0;
+else
+    parforArg = Inf; % default
+end
 
-for frameIdx = startingvalue:numFrames
-    video_plot = figure(410);
-    video_plot.Position = [200 200 600 600];
-    
-    if ~isempty(etiquettes_locs)
-        etiquettes_frame_values = round(etiquettes_values(:, frameIdx), 1);
-    else
-        etiquettes_frame_values = [];
-    end
-    
+
+
+if ~isempty(etiquettes_locs)
+    etiquettes_frame_values = round(etiquettes_values(:, frameIdx), 1);
+else
+    etiquettes_frame_values = [];
+end
+
+video_plot = figure(410);
+video_plot.Visible = NameValueArgs.Visible;
+video_plot.Position = [200 200 600 600];
+graphMaskTags(video_plot, Videofield_rescaled(:, :, startingvalue), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = NameValueArgs.Color);
+video_plot_frame = getframe(video_plot);
+sz = [size(video_plot_frame.cdata) numFrames];
+video_plot_video = zeros(sz,'single');
+parfor (frameIdx = startingvalue:numFrames ,parforArg)
     graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = NameValueArgs.Color);
     title(sprintf("%s : %02.0f %s", titl, round(signal(frameIdx))), unit);
     set(gca, 'FontSize', 14)
@@ -52,15 +64,19 @@ for frameIdx = startingvalue:numFrames
     video_plot_video(:, :, :, frameIdx) = frame2im(video_plot_frame);
 end
 
-for frameIdx = startingvalue:numFrames
-    signal_plot = figure(530);
-    signal_plot.Position = [200 200 600 300];
-    
-    graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx);
-    
+signal_plot = figure(530);
+signal_plot.Visible = NameValueArgs.Visible;
+signal_plot.Position = [200 200 600 300];
+graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm);
+
+signal_plot_frame = getframe(signal_plot);
+sz = [size(signal_plot_frame.cdata) numFrames];
+signal_plot_video = zeros(sz,'single');
+fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+parfor (frameIdx = startingvalue:numFrames ,parforArg)
+    graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx, fullTime = fullTime) ;
     signal_plot_frame = getframe(signal_plot);
     signal_plot_video(:, :, :, frameIdx) = signal_plot_frame.cdata;
-    
 end
 
 combined_plot_video = cat(1, mat2gray(video_plot_video), mat2gray(signal_plot_video));

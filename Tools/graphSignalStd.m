@@ -12,6 +12,7 @@ arguments
     unit
     NameValueArgs.ylimm double = [min(signal) max(signal)]
     NameValueArgs.cropIndx double = 0
+    NameValueArgs.fullTime
 end
 
 ToolBox = getGlobalToolBox;
@@ -23,8 +24,12 @@ if NameValueArgs.cropIndx > 0
 end
 
 Color_std = [0.7, 0.7, 0.7];
-figure(figId)
-fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+figure(figId);
+if ~isempty(ToolBox)
+    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+else % in a parfor no ToolBox
+    fullTime = NameValueArgs.fullTime;
+end
 axss = [fullTime(1), fullTime(end), NameValueArgs.ylimm];
 
 if length(signal) ~= numFrames % for a variable length of the signal

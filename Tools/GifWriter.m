@@ -41,6 +41,7 @@ classdef GifWriter < handle
                 obj.timePeriodMin = timePeriodMin;
             end
             obj.numFramesFixed = numFramesFixed;
+            
 
             obj.timePeriod = ToolBox.stride / ToolBox.fs / 1000;
             obj.numFrames = gifLength;
@@ -58,7 +59,7 @@ classdef GifWriter < handle
                 image = frame;
             end
 
-            if isempty(obj.images)
+            if isempty(obj.images) % allocate on first frame
                 obj.numX = size(image, 1);
                 obj.numY = size(image, 2);
                 if size(image, 3) == 3
@@ -78,7 +79,7 @@ classdef GifWriter < handle
             % Generate the gif from the current array of frames
             h = waitbar(0, 'Generate GIF file...');
 
-            if obj.timePeriod < obj.timePeriodMin
+            if obj.timePeriod < obj.timePeriodMin % in case you ask too fast gif
                 if  isnan(obj.numFramesFixed)
                     num_T = floor(obj.numFrames * obj.timePeriod / obj.timePeriodMin);
                 else

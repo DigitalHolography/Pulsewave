@@ -8,7 +8,7 @@ D = (M + N) / 2;
 
 if alpha == 1
     % behaves as if conv_size = alpha*(2*D-1) just faster;
-    M0_data_convoluated = double(mean(obj.M0_data_video, [1, 2,3]));
+    M0_data_convoluated = double(mean(obj.M0_data_video, [1, 2]));
 elseif alpha == 0
     % forces the pixel M0 normalisation;
     M0_data_convoluated = double(obj.M0_data_video);
@@ -28,6 +28,10 @@ else
     imwrite(rescale(mean(M0_data_convoluated,3)),fullfile(obj.directory,'pulsewave', sprintf("%s_alpha=%s_%s", obj.filenames, num2str(alpha), 'M0_Convolution_Norm.png')), 'png');
     
     M0_data_convoluated = M0_data_convoluated .* S ./ S2; % normalizing to get the average with alpha = 0;
+end
+
+if PW_params.NormTempMode
+        M0_data_convoluated = mean(M0_data_convoluated, 3);
 end
 
 obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_convoluated);
