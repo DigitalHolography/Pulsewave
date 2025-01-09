@@ -434,7 +434,6 @@ classdef pulse < matlab.apps.AppBase
                 
                 %% selection of the measurement folder with uigetdir to analyze all processed folders
                 selected_dir = uigetdir();
-                [~,folder_name,~] = fileparts(selected_dir);
                 % List of Subfolders within the measurement folder
                 tmp_dir = dir(selected_dir);
                 % remove all files (isdir property is 0)
@@ -444,7 +443,7 @@ classdef pulse < matlab.apps.AppBase
                 subfoldersName = {subfoldersName.name};
                 % remove of other folders (ex: 'config' subfolders)
                 for ii=1:length(subfoldersName)
-                    if contains(subfoldersName{ii},folder_name)
+                    if contains(subfoldersName{ii}, '_HD_')
                         app.drawer_list{end + 1} = fullfile(selected_dir,'\',subfoldersName{ii});
                         txt.String = app.drawer_list;
                         d.Position(4) = 100 + length(app.drawer_list) * 14;

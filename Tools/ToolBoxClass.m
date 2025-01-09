@@ -39,7 +39,8 @@ classdef ToolBoxClass < handle
             %% Creating paths
             idx = 0;
             split_path = strsplit(path, '\');
-            obj.PW_folder_name = split_path{end - 1};
+            obj.main_foldername = split_path{end - 1};
+           
             obj.PW_path_main = fullfile(path, 'pulsewave');
 
             if ~exist(obj.PW_path_main, 'dir')
@@ -63,7 +64,7 @@ classdef ToolBoxClass < handle
             %    idx = idx + 1;
             %end
 
-            obj.PW_folder_name = sprintf('%s_PW_%d', PW_folder_name, idx);
+            obj.PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
             obj.PW_path_dir = fullfile(obj.PW_path_main, obj.PW_folder_name);
             obj.PW_path_png = fullfile(obj.PW_path_dir, 'png');
             obj.PW_path_eps = fullfile(obj.PW_path_dir, 'eps');
@@ -117,10 +118,10 @@ classdef ToolBoxClass < handle
                 disp('done.')
             else
                 disp('WARNING : no rendering parameters file found');
-                obj.stride = 0;
-                obj.fs = 0;
-                obj.f1 = 0;
-                obj.f2 = 0;
+                obj.stride = 500;
+                obj.fs = 34; % default values faked
+                obj.f1 = 6;
+                obj.f2 = 15;
             end
 
             if isfile(fullfile(path, 'log', 'RenderingParameters.json')) % copies a simple log version for readability

@@ -5,12 +5,16 @@ ToolBox = getGlobalToolBox;
 figure("Visible","off");
 
 [interp_BvrT, avgLength, interp_std_BvrT] = interpSignal(mean_BvrT, systolesIndexes, numInterp, mean_std_BvrT);
+
+if isempty(interp_BvrT)
+    return
+end
 dt = (fullTime(2) - fullTime(1));
 pulseTime = dt * (1:numInterp) * avgLength / numInterp;
 
 [~, amin] = min(interp_BvrT);
 [~, amax] = max(interp_BvrT);
-cshiftn = numInterp - amin;
+cshiftn = mod(numInterp - amin + 1, numInterp);
 
 hold off
 

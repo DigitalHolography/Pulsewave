@@ -1,4 +1,4 @@
-function widthImage(sub_images_r, numSections,  name)
+function widthImage(subimage_size, sub_images_r, numSections,  name)
 
 ToolBox = getGlobalToolBox;
 
@@ -6,7 +6,6 @@ numCircles = size(sub_images_r, 2);
 figure("Visible","off")
 numSectionMax = max(numSections);
 % fill with zero images the zeros parts
-subimage_size = size(sub_images_r{1, 1}{1, 1});
 
 sub_images_mat = zeros(subimage_size(1), subimage_size(2), numSectionMax * numCircles);
 
