@@ -165,9 +165,9 @@ if veins_analysis
     widthImage(subImageSize, sub_images_V_r, numSections_V, 'vein')
 end
 
-crossSectionWidthImage(M0_ff_img, xy_barycenter, area_A_mat, mask_A_r, locs_A, 'Artery')
+crossSectionImages(M0_ff_img, xy_barycenter, area_A_mat, vr_avg_A_mat, v_profiles_avg_A_r,  mask_A_r, locs_A, 'Artery')
 if veins_analysis
-    crossSectionWidthImage(M0_ff_img, xy_barycenter, area_V_mat, mask_V_r, locs_V, 'Vein')
+    crossSectionImages(M0_ff_img, xy_barycenter, area_V_mat, vr_avg_V_mat, v_profiles_avg_V_r, mask_V_r, locs_V, 'Vein')
 end
 
 widthHistogram(area_A_mat, width_std_A_mat, 'artery')
@@ -181,6 +181,8 @@ rad = ((PW_params.velocitySmallRadiusRatio * (numX + numY) / 2) + dr / 2:dr:(PW_
 if veins_analysis
     [mean_BvrT_V, mean_std_BvrT_V] = plotRadius(vr_avg_V_mat, vr_std_V_mat, t, rad, index_start, index_end, 'Vein');
 end
+
+
 
 fprintf("    4. Sections Images Generation took %ds\n", round(toc))
 
@@ -203,7 +205,7 @@ tic
 
 graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos, Visible= false);
 if veins_analysis
-    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos, Color=[0 0 1]);
+    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos, Color=[0 0 1], Visible= false);
 end
 
 ArterialResistivityIndex(t, mean_BvrT_A, maskArtery, 'BVR', folder);

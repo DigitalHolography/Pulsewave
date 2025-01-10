@@ -15,7 +15,7 @@ end
 
 ratio_etiquette = 1.2;
 
-figure(figId)
+fig.Position = [200 200 600 600];
 image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape(NameValueArgs.Color, 1, 1, 3) .* mask .* Image; % adding the Red value to the mask pixels
 imagesc(image_RGB);
 axis image

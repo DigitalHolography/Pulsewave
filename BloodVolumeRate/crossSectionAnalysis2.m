@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circle, force_width, flag_show_fig)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circle, force_width, flag_show_fig)
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
@@ -20,6 +20,7 @@ avgVolumeRate = zeros(numSections, numFrames);
 stdVolumeRate = zeros(numSections, numFrames);
 crossSectionArea = zeros(numSections, 1);
 avgVelocity = zeros(numSections, numFrames);
+topVelocity = zeros(numSections, numFrames);
 stdVelocity = zeros(numSections, numFrames);
 crossSectionMask = zeros(numX, numY);
 velocityProfiles = cell([1 numSections]);

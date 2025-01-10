@@ -1,5 +1,6 @@
 function [] = ArterialResistivityIndex(t, v_video, maskArtery, name, folder)
 
+ToolBox = getGlobalToolBox;
 % Color Maps
 cArtery = [255 22 18] / 255;
 
@@ -31,5 +32,10 @@ graphSignal(sprintf('API_%s', name), folder, ...
     t, arterial_signal, ':', cArtery, ...
     Title = sprintf('API = %0.2f', API), Legend = {'Smooth', 'Raw'}, ...
     yLines = [0, vMin, vMean, vMax], yLineLabels = {'', '', '', ''});
+
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'w');
+fprintf(fileID, 'Arterial Resistivity Index (%s) : %f  \r\n', name, ARI);
+fprintf(fileID, 'Arterial Pulsatility Index (%s) : %f  \r\n', name, API);
+fclose(fileID);
 
 end
