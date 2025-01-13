@@ -28,7 +28,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), 0, axP(4)])
+axis([axT(1), axT(2), - 5 , 70])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -51,7 +51,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), axP(3), axP(4)])
+axis([axT(1), axT(2), - 5 , 70])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -92,7 +92,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), axP(3), axP(4) * 1.2])
+axis([axT(1), axT(2), - 5 , 70])
 box on
 
 hold off
