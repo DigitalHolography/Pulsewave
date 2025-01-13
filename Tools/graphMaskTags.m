@@ -10,17 +10,27 @@ arguments
     y_center
     NameValueArgs.Fontsize double = 14
     NameValueArgs.Color (1, 3) double = [1 0 0]
+    NameValueArgs.Title = []
+    NameValueArgs.Visible = false
     
 end
 
 ratio_etiquette = 1.2;
-
+fig = figure(figId);
 fig.Position = [200 200 600 600];
+fig.Visible = NameValueArgs.Visible;
+
+
+
+
 image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape(NameValueArgs.Color, 1, 1, 3) .* mask .* Image; % adding the Red value to the mask pixels
 imagesc(image_RGB);
 axis image
 axis off
-
+if ~isempty(NameValueArgs.Title)
+    title(NameValueArgs.Title);
+    set(gca, 'FontSize', 14);
+end
 if ~isempty(etiquettes_locs)
     
     for etIdx = 1:length(etiquettes_locs)
