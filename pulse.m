@@ -166,6 +166,12 @@ classdef pulse < matlab.apps.AppBase
                 app.Load(selected_dir);
                 
             end
+            try
+            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name);
+            setGlobalToolBox(app.file.ToolBoxmaster);
+            end
+
+
             
             
         end
@@ -194,7 +200,11 @@ classdef pulse < matlab.apps.AppBase
                 app.Load(fullfile(path_holo,selected_holo));
                 
             end
-            
+            try
+            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name);
+            setGlobalToolBox(app.file.ToolBoxmaster);
+            end
+
             app.ErrorLabel.Text = "" ;
             app.Lamp.Color = [0, 1, 0];
         end
