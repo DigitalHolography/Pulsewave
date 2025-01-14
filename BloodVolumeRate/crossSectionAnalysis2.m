@@ -176,7 +176,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             xlabel('position (µm)')
             ylabel('velocity (mm/s)')
             title('Velocity profile and poiseuille fit')
-            legend({'', '', 'meas', '', ['fit R²=', num2str(rsquare)]});
+            legend({'', '', '', 'meas', '', ['fit R²=', num2str(rsquare)]});
             saveas(f, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_poiseuille_' name_section num2str(sectionIdx) '.png'])));
             
         end

@@ -10,14 +10,14 @@ section_width_plot = figure("Visible","off");
 
 mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsImages')
 mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsImages')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsImages', 'widths')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsImages', 'widths')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsImages', 'num')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsImages', 'num')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsImages', 'bvr')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsImages', 'bvr')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsImages', 'vel')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsImages', 'vel')
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'),  'widths')
+mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'widths')
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'), 'num')
+mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'num')
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'), 'bvr')
+mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'bvr')
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'), 'vel')
+mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'vel')
 
 x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
