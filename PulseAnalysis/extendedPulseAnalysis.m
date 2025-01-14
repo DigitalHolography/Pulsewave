@@ -65,47 +65,6 @@ set(colorTitleHandle, 'String', titleString);
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG_colorbar.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG_colorbar.eps')))
 
-%% 3) 2) Doppler RMS frequency heatmap
-
-tic
-
-f_RMS = squeeze(mean(f_RMS_video, 3));
-
-%  Doppler AVG frequency heatmap
-figure("Visible", "off")
-imagesc(f_RMS);
-colormap gray
-title('RMS frequency map RAW');
-fontsize(gca, 12, "points");
-set(gca, 'LineWidth', 2);
-c = colorbar('southoutside');
-c.Label.String = 'RMS Doppler frequency (kHz)';
-c.Label.FontSize = 12;
-axis off
-axis image
-range(1:2) = clim;
-imwrite(rescale(f_RMS), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_RMS.png')), 'png');
-
-clear f_RMS
-
-% Colorbar for AVG image
-colorfig = figure("Visible", "off");
-colorfig.Units = 'normalized';
-colormap(c);
-colormap gray
-f_RMS_colorbar = colorbar('north');
-clim(range)
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-f_RMS_colorbar.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca, 15, "points");
-colorTitleHandle = get(f_RMS_colorbar, 'Title');
-titleString = 'RMS Doppler frequency (kHz)';
-set(colorTitleHandle, 'String', titleString);
-
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_colorbarRMSFrequency.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_colorbarRMSFrequency.eps')))
 
 fprintf("    3. Raw heatmaps generation took %ds\n", round(toc(t3)))
 

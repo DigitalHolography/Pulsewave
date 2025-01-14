@@ -109,9 +109,14 @@ else
         t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         Title = 'Average estimated velocity in Arteries', xlabel = strXlabel, ylabel = 'mm/s');
 end
+fprintf("    2. Difference calculation took %ds\n", round(toc))
+
+%% 6) Plots of f_RMS mean Local Background in vessels and Delta frequency in vessels and their colorbars
+tic
 
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
+
 LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVesselDilated + ones(numX, numY) * mean(f_RMS_background, 'all') .* ~maskVesselDilated;
 imagesc(LocalBackground_in_vessels);
 colormap gray
@@ -123,7 +128,29 @@ c.Label.String = 'RMS Doppler frequency (kHz)';
 c.Label.FontSize = 12;
 axis off
 axis image
+range(1:2) = clim;
+
 imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_LocalBackground_in_vessels.png')))
+
+colorfig = figure("Visible", "off");
+colorfig.Units = 'normalized';
+colormap(c);
+colormap gray
+LocalBackground_colorbar = colorbar('north');
+clim(range)
+set(gca, 'Visible', false)
+set(gca, 'LineWidth', 3);
+LocalBackground_colorbar.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca, 15, "points");
+colorTitleHandle = get(LocalBackground_colorbar, 'Title');
+titleString = 'Local Background RMS frequency (kHz)';
+set(colorTitleHandle, 'String', titleString);
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarLocalBackground_in_vessels.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarLocalBackground_in_vessels.eps')))
+
+
 
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
@@ -134,11 +161,66 @@ title('Delta f in vessels');
 fontsize(gca, 14, "points");
 set(gca, 'LineWidth', 2);
 c = colorbar('southoutside');
-c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.String = 'Delta Doppler RMS frequency (kHz)';
 c.Label.FontSize = 12;
 axis off
 axis image
+range(1:2) = clim;
 imwrite(rescale(in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_Df_in_vessels.png')))
+
+colorfig = figure("Visible", "off");
+colorfig.Units = 'normalized';
+colormap(c);
+colormap gray
+Df_colorbar = colorbar('north');
+clim(range);
+set(gca, 'Visible', false)
+set(gca, 'LineWidth', 3);
+Df_colorbar.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca, 15, "points");
+colorTitleHandle = get(Df_colorbar, 'Title');
+titleString = 'Delta Doppler RMS frequency (kHz)';
+set(colorTitleHandle, 'String', titleString);
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarDf_in_vessels.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarDf_in_vessels.eps')))
+
+
+figure("Visible", "off")
+imagesc(squeeze(mean(f_RMS_video, 3)));
+colormap gray
+title('RMS frequency map RAW');
+fontsize(gca, 12, "points");
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(1:2) = clim;
+imwrite(rescale(squeeze(mean(f_RMS_video, 3))), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_frequency_RMS.png')), 'png');
+
+
+colorfig = figure("Visible", "off");
+colorfig.Units = 'normalized';
+colormap(c);
+colormap gray
+f_RMS_colorbar = colorbar('north');
+clim(range);
+set(gca, 'Visible', false)
+set(gca, 'LineWidth', 3);
+f_RMS_colorbar.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca, 15, "points");
+colorTitleHandle = get(f_RMS_colorbar, 'Title');
+titleString = 'RMS frequency (kHz)';
+set(colorTitleHandle, 'String', titleString);
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorbarRMSFrequency.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorbarRMSFrequency.eps')))
+fprintf("    6. Plotting heatmaps took %ds\n", round(toc))
+
 
 if exportVideos
     f_RMS_video_rescale = rescale(f_RMS_video);
@@ -154,7 +236,7 @@ if exportVideos
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
 
-fprintf("    2. Difference calculation took %ds\n", round(toc))
+
 
 clear LocalBackground_in_vessels f_RMS_background
 
