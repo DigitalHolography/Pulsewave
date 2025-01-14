@@ -117,7 +117,7 @@ tic
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
 
-LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVesselDilated + ones(numX, numY) * mean(f_RMS_background, 'all') .* ~maskVesselDilated;
+LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVesselDilated + ones(numX, numY) * sum(f_RMS_background.*maskVesselDilated, 'all')/nnz(maskVesselDilated) .* ~maskVesselDilated;
 imagesc(LocalBackground_in_vessels);
 colormap gray
 title('Local Background in vessels');
@@ -219,6 +219,7 @@ set(colorTitleHandle, 'String', titleString);
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorbarRMSFrequency.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorbarRMSFrequency.eps')))
+
 fprintf("    6. Plotting heatmaps took %ds\n", round(toc))
 
 
