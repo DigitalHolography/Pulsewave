@@ -33,7 +33,7 @@ graphSignal(sprintf('API_%s', name), folder, ...
     Title = sprintf('API %s = %0.2f', name, API), Legend = {'Smooth', 'Raw'}, ...
     yLines = [0, vMin, vMean, vMax], yLineLabels = {'', '', '', ''});
 
-fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'w');
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'Arterial Resistivity Index (%s) : %f  \r\n', name, ARI);
 fprintf(fileID, 'Arterial Pulsatility Index (%s) : %f  \r\n', name, API);
 fclose(fileID);

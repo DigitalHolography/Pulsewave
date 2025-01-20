@@ -48,7 +48,7 @@ diff_signal = diff(pulse_init);
 %     sys_index_list = sort(sys_index_list, 'ascend');
 
 
-fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'w');
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'Heart beat : %f (bpm) \r\n', 60 / mean(diff(sys_index_list)*ToolBox.stride / ToolBox.fs / 1000));
 fprintf(fileID, 'Systole Indices : %s \r\n', strcat('[',sprintf("%d,",sys_index_list),']'));
 

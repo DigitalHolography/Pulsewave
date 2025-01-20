@@ -74,8 +74,8 @@ classdef OneCycleClass < handle
                 readMomentsFooter(obj.directory);
                 obj.M0_ff_video = pagetranspose(improve_video(ff_correction(videoM0, 35),0.0005, 2, 0));
                 obj.M0_data_video = pagetranspose(videoM0);
-                obj.M1_data_video = pagetranspose(videoM1);
-                obj.M2_data_video = pagetranspose(videoM2);
+                obj.M1_data_video = pagetranspose(videoM1/1e3); % rescale because M1 in Hz in Holovibes and in kHz in Pulsewave
+                obj.M2_data_video = pagetranspose(videoM2/1e6); % rescale because M2 in Hz² in Holovibes and in kHz² in Pulsewave
                 
             else
                 obj = readRaw(obj);
