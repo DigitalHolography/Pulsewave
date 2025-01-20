@@ -57,7 +57,7 @@ for i=1:max_idx
     videoM1(:,:,i) = fftshift(reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]));
     videoM2(:,:,i) = fftshift(reshape(fread(fd,frame_width * frame_height, 'single=>single', endian),[frame_width, frame_height]));
 end
-implay(rescale(videoM0));
-implay(rescale(videoM1));
-implay(rescale(videoM2));
+% implay(rescale(videoM0));
+% implay(rescale(videoM1));
+% implay(rescale(videoM2));
 end

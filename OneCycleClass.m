@@ -72,10 +72,10 @@ classdef OneCycleClass < handle
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
-                obj.M0_ff_video = rescale(ff_correction(videoM0, 30)) * 255;
-                obj.M0_data_video = videoM0;
-                obj.M1_data_video = videoM1;
-                obj.M2_data_video = videoM2;
+                obj.M0_ff_video = improve_video(ff_correction(videoM0, 35),0.0005, 2, 0);
+                obj.M0_data_video = flip(videoM0);
+                obj.M1_data_video = flip(videoM1);
+                obj.M2_data_video = flip(videoM2);
                 
             else
                 obj = readRaw(obj);
