@@ -1,15 +1,15 @@
-function [reg_image,shift] = registerImagesCrossCorrelation(MOVING,FIXED)
+function [reg_image,shift,score] = registerImagesCrossCorrelation(MOVING,FIXED)
 %registerImagesCrossCorrelation  Register images taken as matrices centered 
 % around zero
 % Simple translation only registration (no rotation, scale, shear)
 % Computation intensive
 % MOVING, FIXED : input 2D matrices of same size
 
-MOVING = imgaussfilt(MOVING,1.5); % blurring to avoid sharp mouvements
-FIXED = imgaussfilt(FIXED,1.5); % blurring to avoid sharp mouvements
+%MOVING = imgaussfilt(MOVING,1.5); % blurring to avoid sharp mouvements
+%FIXED = imgaussfilt(FIXED,1.5); % blurring to avoid sharp mouvements
 
 corr = xcorr2(MOVING,FIXED); % calculate the cross correlation matrix
-[~,index] = max(corr,[],'all'); % find the argmax
+[score,index] = max(corr,[],'all'); % find the argmax
 [i,j] = ind2sub(size(corr),index);
 
 shift=[-i;-j];

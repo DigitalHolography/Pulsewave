@@ -1,4 +1,4 @@
-function [frames, shifts] = register_video_from_reference(frames, ref_img)
+function [frames, shifts, scores] = register_video_from_reference(frames, ref_img)
 % registers a video
 % frames: a video 4D-array width x height x 1 x num_frames
 
@@ -34,9 +34,10 @@ afterEach(D,@parforWaitbar);
 %% apply registration
 %mask = apodize_image(size(frames,1),size(frames,2));
 % skipped = 0;
+scores = zeros(1,num_frames);
 parfor i = 1:num_frames
     send(D,i);
-    [frames(:,:,:,i),shifts(:,i)] = registerImagesCrossCorrelation(frames(:,:,:,i), ref_img);
+    [frames(:,:,:,i),shifts(:,i),scores(i)] = registerImagesCrossCorrelation(frames(:,:,:,i), ref_img);
 %     frames(:,:,:,i) = reg.RegisteredImage;
 %     shifts(:,i) = [reg.Transformation.T(3,2); reg.Transformation.T(3,1)];
 %     [warnMsg, warnId] = lastwarn();
