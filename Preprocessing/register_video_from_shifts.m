@@ -5,11 +5,11 @@ function registered = register_video_from_shifts(video, shifts)
 % video: a 4D array representing a video
 % shifts: a 2 x num_frames array containing translations required to 
 %         register the video
-registered = video;
+registered = zeros(size(video),'single');
 
-for c = 1:size(video,3)
-    for i = 1:size(video,4)
-        registered(:,:,c,i) = circshift(video(:,:,c,i), floor(shifts(:,i)));
-    end
+
+for i = 1:size(video,4)
+    registered(:,:,i) = circshift(video(:,:,i), floor(shifts(:,i)));
 end
+
 end

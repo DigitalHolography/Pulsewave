@@ -87,14 +87,7 @@ classdef OneCycleClass < handle
         end
 
         function obj = preprocessData(obj)
-            % register
-            tic
-            fprintf("\n----------------------------------\n")
-            fprintf("Video Registering\n")
-            fprintf("----------------------------------\n")
-            obj = VideoRegistering(obj);
-            fprintf("- Video Registering took : %ds\n", round(toc))
-
+           
             % crop videos
             tic
             fprintf("\n----------------------------------\n")
@@ -118,6 +111,14 @@ classdef OneCycleClass < handle
             fprintf("----------------------------------\n")
             obj = VideoResizing(obj);
             fprintf("- Video Resizing : %ds\n", round(toc))
+
+             % register
+            tic
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Registering\n")
+            fprintf("----------------------------------\n")
+            obj = VideoRegistering(obj);
+            fprintf("- Video Registering took : %ds\n", round(toc))
 
             % interpolate
             tic
