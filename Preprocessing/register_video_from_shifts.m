@@ -8,7 +8,7 @@ function registered = register_video_from_shifts(video, shifts)
 registered = zeros(size(video),'single');
 
 
-for i = 1:size(video,4)
+for i = 1:size(video,3)
     registered(:,:,i) = circshift(video(:,:,i), floor(shifts(:,i)));
 end
 
