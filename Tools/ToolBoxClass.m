@@ -113,8 +113,10 @@ classdef ToolBoxClass < handle
                 footer_parsed = jsondecode(json_txt);
                 obj.stride = footer_parsed.compute_settings.image_rendering.time_transformation_stride;
                 obj.fs = footer_parsed.info.camera_fps/1000; %conversion in kHz
-                obj.f1 = nan;
-                obj.f2 = nan;
+                time_transform_size = footer_parsed.compute_settings.image_rendering.time_transformation_size;
+                obj.f1 = footer_parsed.compute_settings.view.z.start / time_transform_size * obj.fs; % on suppose que les fréquences choisies
+                % sont symmétriques (la plage va jusqu'à end - start)
+                obj.f2 = obj.fs / 2;
                 disp('done.')
             else
                 disp('WARNING : no rendering parameters file found');
