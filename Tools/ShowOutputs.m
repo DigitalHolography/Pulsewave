@@ -23,8 +23,8 @@ for ind =1:length(PW_paths)
     end
     last_PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
     
-    if exist(fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_arteryVeinSegmentation.png']))
-        segmentation_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_arteryVeinSegmentation.png']);
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_Segmentation.png']))
+        segmentation_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_Segmentation.png']);
     end
     if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']))
         bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']);

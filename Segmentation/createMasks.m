@@ -223,6 +223,9 @@ end
 imwrite(rescale(R_ArteryVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'artery_2_2_R_ArteryVessel.png')))
 imwrite(rescale(R_VeinVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'vein_2_2_R_VeinVessel.png')))
 
+imwrite(immultiply(R_ArterialSignal, M0_ff_img), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'artery_Corr.png')));
+imwrite(immultiply(R_VenousSignal, M0_ff_img), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, 'vein_Corr.png')));
+
 if correlation_Vesselness_flag
     imwrite(rescale(R_ChoroidVessel), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'choroid_2_2_R_ChoroidalVessel.png')))
 end

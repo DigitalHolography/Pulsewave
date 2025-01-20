@@ -33,7 +33,7 @@ if ~isempty(NameValueArgs.Title)
 end
 if ~isempty(etiquettes_locs)
     
-    for etIdx = 1:length(etiquettes_values)
+    for etIdx = 1:size(etiquettes_locs,1)
         new_x = x_center + ratio_etiquette * (etiquettes_locs(etIdx, 2) - x_center);
         new_y = y_center + ratio_etiquette * (etiquettes_locs(etIdx, 1) - y_center);
         text(new_x, new_y, sprintf(string(etiquettes_values(etIdx))), "FontWeight", "bold", "FontSize", NameValueArgs.Fontsize, "Color", "white", "BackgroundColor", "black");
