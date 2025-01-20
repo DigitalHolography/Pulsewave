@@ -4,6 +4,7 @@ classdef pulse < matlab.apps.AppBase
     properties (Access = public)
         PulsewaveUIFigure             matlab.ui.Figure
         PreProcessButton              matlab.ui.control.Button
+        PlayInputsButton              matlab.ui.control.Button
         EditParametersButton          matlab.ui.control.Button
         EditMasksButton               matlab.ui.control.Button
         NumberofWorkersSpinner        matlab.ui.control.Spinner
@@ -272,6 +273,25 @@ classdef pulse < matlab.apps.AppBase
                 end
             end
             app.Lamp.Color = [0, 1, 0];
+        end
+
+        function PlayInputsButtonPushed(app, ~)
+            if ~app.flag_is_load
+                disp('no input loaded.')
+                return
+            end
+            try
+                if app.file.is_preprocessed
+                    disp('inputs after preprocess.')
+                else
+                    disp('inputs before preprocess.')
+                end
+                implay(rescale(app.file.M0_data_video));
+                implay(rescale(app.file.M1_data_video));
+                implay(rescale(app.file.M2_data_video));
+            catch
+                disp('Input not well loaded')
+            end
         end
         
         function PreProcessButtonPushed(app, ~)
@@ -831,6 +851,16 @@ classdef pulse < matlab.apps.AppBase
             app.PreProcessButton.Position = [191 322 130 28];
             app.PreProcessButton.Text = 'Pre Process';
             app.PreProcessButton.Enable = 'on';
+
+            % Create PlayInputsButton
+            app.PlayInputsButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.PlayInputsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayInputsButtonPushed, true);
+            app.PlayInputsButton.BackgroundColor = [0.502 0.502 0.502];
+            app.PlayInputsButton.FontSize = 16;
+            app.PlayInputsButton.FontColor = [0.9412 0.9412 0.9412];
+            app.PlayInputsButton.Position = [351 322 130 28];
+            app.PlayInputsButton.Text = 'Play Inputs';
+            app.PlayInputsButton.Enable = 'on';
             
             % Create EditMasksButton
             app.EditMasksButton = uibutton(app.PulsewaveUIFigure, 'push');

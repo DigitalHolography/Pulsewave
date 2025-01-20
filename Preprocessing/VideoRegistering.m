@@ -10,12 +10,10 @@ end
 video = obj.M0_ff_video;
 numX = size(video, 1);
 numY = size(video, 2);
-x = linspace(-numX / 2, numX / 2, numX);
-y = linspace(-numY / 2, numY / 2, numY);
-[X, Y] = meshgrid(y, x);
 
 disc_ratio = 0.7; % parametrize this coef if needed
-disc = X .^ 2 + Y .^ 2 < (disc_ratio * min(numX , numY)  / 2) ^ 2;
+
+disc = diskMask(numX, numY, disc_ratio);
 video_reg = video .* disc - disc .* sum(video .* disc, [1, 2]) / nnz(disc); % minus the mean in the disc of each frame
 video_reg = reshape(video_reg, size(video, 1), size(video, 2), 1, size(video, 3)); % insert a dimension to match reegistration functions
 

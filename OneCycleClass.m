@@ -72,10 +72,10 @@ classdef OneCycleClass < handle
                 disp(['reading moments in : ', strcat(obj.directory, '.holo')]);
                 [videoM0, videoM1, videoM2] = readMoments(strcat(obj.directory, '.holo'));
                 readMomentsFooter(obj.directory);
-                obj.M0_ff_video = improve_video(ff_correction(videoM0, 35),0.0005, 2, 0);
-                obj.M0_data_video = flip(videoM0);
-                obj.M1_data_video = flip(videoM1);
-                obj.M2_data_video = flip(videoM2);
+                obj.M0_ff_video = pagetranspose(improve_video(ff_correction(videoM0, 35),0.0005, 2, 0));
+                obj.M0_data_video = pagetranspose(videoM0);
+                obj.M1_data_video = pagetranspose(videoM1);
+                obj.M2_data_video = pagetranspose(videoM2);
                 
             else
                 obj = readRaw(obj);
@@ -87,6 +87,14 @@ classdef OneCycleClass < handle
         end
 
         function obj = preprocessData(obj)
+
+             % register
+            tic
+            fprintf("\n----------------------------------\n")
+            fprintf("Video Registering\n")
+            fprintf("----------------------------------\n")
+            obj = VideoRegistering(obj);
+            fprintf("- Video Registering took : %ds\n", round(toc))
            
             % crop videos
             tic
@@ -111,14 +119,6 @@ classdef OneCycleClass < handle
             fprintf("----------------------------------\n")
             obj = VideoResizing(obj);
             fprintf("- Video Resizing : %ds\n", round(toc))
-
-             % register
-            tic
-            fprintf("\n----------------------------------\n")
-            fprintf("Video Registering\n")
-            fprintf("----------------------------------\n")
-            obj = VideoRegistering(obj);
-            fprintf("- Video Registering took : %ds\n", round(toc))
 
             % interpolate
             tic
