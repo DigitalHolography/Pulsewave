@@ -62,6 +62,12 @@ classdef GifWriter < handle
             if isempty(obj.images) % allocate on first frame
                 obj.numX = size(image, 1);
                 obj.numY = size(image, 2);
+                if obj.numX > 600
+                    obj.numX = 600;
+                end
+                if obj.numY > 600
+                    obj.numY = 600;
+                end
                 if size(image, 3) == 3
                     obj.isRGB = true;
                     obj.images = zeros(obj.numX, obj.numY, 3, obj.numFrames, 'like', image);
@@ -71,7 +77,7 @@ classdef GifWriter < handle
                 end
             end
 
-            obj.images(:, :, :, frameIdx) = image;
+            obj.images(:, :, :, frameIdx) = imresize(image,[obj.numX,obj.numY]);
 
         end
 

@@ -112,7 +112,7 @@ classdef ToolBoxClass < handle
                 json_txt = fileread(fullfile(path, 'Holovibes_rendering_parameters.json'));
                 footer_parsed = jsondecode(json_txt);
                 obj.stride = footer_parsed.compute_settings.image_rendering.time_transformation_stride;
-                obj.fs = footer_parsed.info.input_fps/1000; %conversion in kHz
+                obj.fs = footer_parsed.info.camera_fps/1000; %conversion in kHz
                 obj.f1 = nan;
                 obj.f2 = nan;
                 disp('done.')
