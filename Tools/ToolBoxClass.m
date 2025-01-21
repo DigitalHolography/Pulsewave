@@ -30,7 +30,7 @@ classdef ToolBoxClass < handle
 
     methods
 
-        function obj = ToolBoxClass(path, PW_param_name)
+        function obj = ToolBoxClass(path, PW_param_name, OverWrite)
 
             obj.PW_path = path;
             obj.PW_param_name = PW_param_name;
@@ -54,7 +54,11 @@ classdef ToolBoxClass < handle
                 if contains(list_dir(i).name, PW_folder_name)
                     match = regexp(list_dir(i).name, '\d+$', 'match');
                     if ~isempty(match) && str2double(match{1}) >= idx
-                        idx = str2double(match{1}) + 1; %suffix
+                        if ~ OverWrite
+                            idx = str2double(match{1}) + 1; %suffix
+                        else
+                            idx = str2double(match{1});
+                        end
                     end
                 end
             end
