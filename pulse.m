@@ -18,6 +18,7 @@ classdef pulse < matlab.apps.AppBase
         bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
         bloodVelocityProfileCheckBox  matlab.ui.control.CheckBox
         ReferenceDirectory            matlab.ui.control.TextArea
+        OverWriteCheckBox             matlab.ui.control.CheckBox
         ErrorLabel                    matlab.ui.control.Label
         Lamp                          matlab.ui.control.Lamp
         ClearButton                   matlab.ui.control.Button
@@ -291,6 +292,18 @@ classdef pulse < matlab.apps.AppBase
                 implay(rescale(app.file.M2_data_video));
             catch
                 disp('Input not well loaded')
+            end
+        end
+
+        function OverWriteCheckBoxChanged(app, ~)
+            if ~app.flag_is_load
+                disp('no input loaded.')
+                return
+            end
+            try
+                app.file.OverWrite = app.OverWriteCheckBox.Value;
+            catch
+                disp('Couldnt force overwrite')
             end
         end
         
@@ -800,6 +813,18 @@ classdef pulse < matlab.apps.AppBase
             app.bloodVelocityProfileCheckBox.Position = [250 96 250 24];
             app.bloodVelocityProfileCheckBox.Value = false;
             app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
+            
+
+            % Create OverWriteCheckBox
+            app.OverWriteCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.OverWriteCheckBox.Text = 'over write';
+            app.OverWriteCheckBox.FontSize = 16;
+            app.OverWriteCheckBox.FontColor = [0.8 0.8 0.8];
+            app.OverWriteCheckBox.Position = [500 24 130 28];
+            app.OverWriteCheckBox.Value = false;
+            app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
+            app.OverWriteCheckBox.Tooltip = 'OverWrite the new results in the last PW_ result folder (to save space)';
+
             
             % Create FolderManagementButton
             app.FolderManagementButton = uibutton(app.PulsewaveUIFigure, 'push');

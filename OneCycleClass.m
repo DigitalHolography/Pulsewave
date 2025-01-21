@@ -36,6 +36,7 @@ classdef OneCycleClass < handle
         flag_bloodVelocityProfile_analysis
 
         ToolBoxmaster ToolBoxClass
+        OverWrite logical
 
     end
 
@@ -142,7 +143,7 @@ classdef OneCycleClass < handle
         function obj = onePulse(obj)
             %  ------- This is the app main routine. --------
 
-            obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name);
+            obj.ToolBoxmaster = ToolBoxClass(obj.directory,obj.PW_param_name,obj.OverWrite);
             setGlobalToolBox(obj.ToolBoxmaster)
             ToolBox = getGlobalToolBox;
             PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
