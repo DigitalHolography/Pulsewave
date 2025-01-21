@@ -26,17 +26,17 @@ for ind =1:length(PW_paths)
     if exist(fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_Segmentation.png']))
         segmentation_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_Segmentation.png']);
     end
-    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']))
-        bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']);
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRate_allrad_Artery_time.png']))
+        bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRate_allrad_Artery_time.png']);
     end
 
 end
 
 figure(435)
-montage(segmentation_paths);
+montage(segmentation_paths, Size = [7 4]);
 exportgraphics(gca,fullfile(output_dir,'segmentations.png'));
 figure(321)
-montage(bvr_paths);
+montage(bvr_paths, Size = [7 4]);
 exportgraphics(gca,fullfile(output_dir,'bloodVolumeRate.png'));
 
 end
