@@ -169,7 +169,7 @@ classdef pulse < matlab.apps.AppBase
                 
             end
             try
-            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name);
+            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name,app.OverWriteCheckBox.Value);
             setGlobalToolBox(app.file.ToolBoxmaster);
             end
 
@@ -255,6 +255,8 @@ classdef pulse < matlab.apps.AppBase
                 app.file.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
                 app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
                 app.file.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
+
+                app.file.OverWrite = app.OverWriteCheckBox.Value;
                 
                 try
                     app.file = app.file.onePulse();
