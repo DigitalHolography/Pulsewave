@@ -30,8 +30,12 @@ else
     M0_data_convoluated = M0_data_convoluated .* S ./ S2; % normalizing to get the average with alpha = 0;
 end
 
+if PW_params.NormTempMode
+        M0_data_convoluated = mean(M0_data_convoluated, 3);
+end
+
 obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_convoluated);
 obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_convoluated;
-obj.M0_disp_video = flat_field_correction(obj.M0_disp_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_disp_video, 1)), PW_params.flatField_border);
+obj.M0_ff_video = flat_field_correction(obj.M0_ff_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_ff_video, 1)), PW_params.flatField_border);
 
 end

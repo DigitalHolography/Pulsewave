@@ -10,7 +10,7 @@ numColors = size(colors, 1);
 figure('Visible','off')
 imagesc(R .* mask)
 title('Correlation with Colorbar');
-colormap(cmapPerception('rocket'))
+colormap(cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1))
 colorbar
 axis off
 axis image

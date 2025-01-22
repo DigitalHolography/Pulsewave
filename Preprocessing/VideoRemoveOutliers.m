@@ -10,24 +10,24 @@ end
 [numX, numY, numFrames] = size(obj.f_RMS_video);
 window_size = ceil(numFrames / 50);
 
-tmp_M0_disp_cleaned = zeros(numX, numY, numFrames);
+tmp_M0_ff_cleaned = zeros(numX, numY, numFrames);
 tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);
 tmp_f_AVG_cleaned = zeros(numX, numY, numFrames);
-tmp_M0_disp = obj.M0_disp_video;
+tmp_M0_ff = obj.M0_ff_video;
 tmp_f_RMS = obj.f_RMS_video;
 tmp_f_AVG = obj.f_AVG_video;
 
 parfor xx = 1:numX
     
     for yy = 1:numY
-        tmp_M0_disp_cleaned(xx, yy, :) = filloutliers(tmp_M0_disp(xx, yy, :), 'linear', 'movmedian', window_size);
+        tmp_M0_ff_cleaned(xx, yy, :) = filloutliers(tmp_M0_ff(xx, yy, :), 'linear', 'movmedian', window_size);
     end
     
 end
 
-obj.M0_disp_video = tmp_M0_disp_cleaned;
+obj.M0_ff_video = tmp_M0_ff_cleaned;
 
-clear tmp_M0_disp_cleaned tmp_M0_disp
+clear tmp_M0_ff_cleaned tmp_M0_ff
 
 parfor xx = 1:numX
     

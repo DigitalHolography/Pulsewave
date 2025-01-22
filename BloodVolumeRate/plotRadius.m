@@ -28,7 +28,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), 0, axP(4)])
+axis([axT(1), axT(2), - 5 , 70])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -51,7 +51,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), axP(3), axP(4)])
+axis([axT(1), axT(2), - 5 , 70])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -92,7 +92,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), axP(3), axP(4) * 1.2])
+axis([axT(1), axT(2), - 5 , 70])
 box on
 
 hold off
@@ -104,5 +104,10 @@ set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_volumeRate_allrad_%s_time.png", ToolBox.main_foldername, name)))
+
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+fprintf(fileID, 'Mean Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_BvrT);
+fprintf(fileID, 'Std Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_std_BvrT);
+fclose(fileID);
 
 end

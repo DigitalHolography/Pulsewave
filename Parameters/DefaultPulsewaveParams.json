@@ -6,6 +6,7 @@
         "Start frame": 1,
         "End frame": -1
     },
+    "Normalize by time average" : 0,
     "Moment Normalize Convolution parameter": 1,
     "Resize video": {
         "Frame width": -1,

@@ -1,5 +1,5 @@
 function obj = VideoInterpolating(obj) %ref = TRUE indicates the object is the reference
-[numX, numY, numFrames] = size(obj.M0_disp_video);
+[numX, numY, numFrames] = size(obj.M0_ff_video);
 PW_params = Parameters_json(obj.directory,obj.PW_param_name);
 kInterp = PW_params.k;
 numX = (numX - 1) * (2 ^ kInterp - 1) + numX;
@@ -10,15 +10,15 @@ if kInterp == 0
 end
 
 % Reference M0
-tmp_M0_disp = zeros(numX, numY, numFrames);
-tmp_Calc_M0_disp = obj.M0_disp_video;
+tmp_M0_ff = zeros(numX, numY, numFrames);
+tmp_Calc_M0_ff = obj.M0_ff_video;
 
 parfor frameIdx = 1:numFrames
-    tmp_M0_disp(:, :, frameIdx) = interp2(tmp_Calc_M0_disp(:, :, frameIdx), kInterp);
+    tmp_M0_ff(:, :, frameIdx) = interp2(tmp_Calc_M0_ff(:, :, frameIdx), kInterp);
 end
 
-obj.M0_disp_video = tmp_M0_disp;
-clear tmp_M0_disp tmp_Calc_M0_disp
+obj.M0_ff_video = tmp_M0_ff;
+clear tmp_M0_ff tmp_Calc_M0_ff
 
 % M1M0
 tmpM1M0 = zeros(numX, numY, numFrames);

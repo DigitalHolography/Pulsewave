@@ -15,7 +15,7 @@ function corrected_image = flat_field_correction(image, gw, borderAmount)
         flag = 1;
     end
 
-    if (borderAmount == 0)
+    if nargin < 3 || (borderAmount == 0)
         a = 1;
         b = size(image, 1);
         c = 1;

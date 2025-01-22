@@ -4,6 +4,7 @@ classdef pulse < matlab.apps.AppBase
     properties (Access = public)
         PulsewaveUIFigure             matlab.ui.Figure
         PreProcessButton              matlab.ui.control.Button
+        PlayInputsButton              matlab.ui.control.Button
         EditParametersButton          matlab.ui.control.Button
         EditMasksButton               matlab.ui.control.Button
         NumberofWorkersSpinner        matlab.ui.control.Spinner
@@ -17,6 +18,7 @@ classdef pulse < matlab.apps.AppBase
         bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
         bloodVelocityProfileCheckBox  matlab.ui.control.CheckBox
         ReferenceDirectory            matlab.ui.control.TextArea
+        OverWriteCheckBox             matlab.ui.control.CheckBox
         ErrorLabel                    matlab.ui.control.Label
         Lamp                          matlab.ui.control.Lamp
         ClearButton                   matlab.ui.control.Button
@@ -36,9 +38,9 @@ classdef pulse < matlab.apps.AppBase
             
             app.Lamp.Color = [1, 0, 0];
             drawnow;
-            holo=true;
-            if isdir(path)
-                holo =false;
+            holo = true;
+            if isfolder(path)
+                holo = false;
                 path = strcat(path, '\');
             end
             
@@ -63,37 +65,37 @@ classdef pulse < matlab.apps.AppBase
                 app.Lamp.Color = [0, 1, 0];
                 app.flag_is_load = true;
                 
-            catch exception
+            catch ME
                 
-                fprintf("==============================\nERROR\n==============================\n")
+                fprintf("==========================================\nERROR\n==========================================\n")
                 fprintf('Error while loading : %s\n', path)
-                fprintf("%s\n",exception.identifier)
-                fprintf("%s\n",exception.message)
+                fprintf("%s\n",ME.identifier)
+                fprintf("%s\n",ME.message)
                 % for i = 1:size(exception.stack,1)
                 %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
                 %     fprintf(stack);
                 % end
                 
-                if exception.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
+                if ME.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
                     
                     fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
                     
                 else
                     
-                    for i = 1:numel(exception.stack)
-                        disp(exception.stack(i))
+                    for i = 1:numel(ME.stack)
+                        disp(ME.stack(i))
                     end
                     
                 end
                 
-                fprintf("==============================\n")
+                fprintf("==========================================\n")
                 
-                
+                diary off
                 app.Lamp.Color = [1, 1/2, 0];
                 
             end
             
-            fprintf("------------------------------\n")
+            fprintf("----------------------------------\n")
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
             
         end
@@ -136,7 +138,7 @@ classdef pulse < matlab.apps.AppBase
         end
         
         % Button pushed function: LoadfolderButton
-        function LoadfolderButtonPushed(app, event)
+        function LoadfolderButtonPushed(app, ~)
             % clearing before loading
             if ~isempty(app.file)
                 last_dir = app.file.directory;
@@ -166,10 +168,16 @@ classdef pulse < matlab.apps.AppBase
                 app.Load(selected_dir);
                 
             end
+            try
+            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name,app.OverWriteCheckBox.Value);
+            setGlobalToolBox(app.file.ToolBoxmaster);
+            end
+
+
             
             
         end
-        function LoadHoloButtonPushed(app, event)
+        function LoadHoloButtonPushed(app, ~)
             % clearing before loading
             
             app.file =  [];
@@ -194,13 +202,17 @@ classdef pulse < matlab.apps.AppBase
                 app.Load(fullfile(path_holo,selected_holo));
                 
             end
-            
+            try
+            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name);
+            setGlobalToolBox(app.file.ToolBoxmaster);
+            end
+
             app.ErrorLabel.Text = "" ;
             app.Lamp.Color = [0, 1, 0];
         end
         
         % Button pushed function: ExecuteButton
-        function ExecuteButtonPushed(app, event)
+        function ExecuteButtonPushed(app, ~)
             if ~app.flag_is_load
                 disp("no input loaded")
                 return
@@ -235,7 +247,7 @@ classdef pulse < matlab.apps.AppBase
                 
                 app.file.PW_param_name = app.file.PW_params_names{i};
                 
-                fprintf("==============================\n")
+                fprintf("==========================================\n")
                 app.file.flag_Segmentation = app.SegmentationCheckBox.Value;
                 app.file.flag_SH_analysis = app.SHanalysisCheckBox.Value;
                 app.file.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
@@ -243,27 +255,61 @@ classdef pulse < matlab.apps.AppBase
                 app.file.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
                 app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
                 app.file.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
+
+                app.file.OverWrite = app.OverWriteCheckBox.Value;
                 
                 try
-                    
                     app.file = app.file.onePulse();
                     
                 catch ME
                     
-                    fprintf("==============================\nERROR\n==============================\n")
+                    diary off
+
+                    fprintf("==========================================\nERROR\n==========================================\n")
                     disp(['Error with file : ', app.file.directory])
                     disp(ME.identifier)
                     disp(ME.message)
-                    for i = 1:size(ME.stack,1)
-                        fprintf('%s : %s, line : %d \n',ME.stack(i).file, ME.stack(i).name, ME.stack(i).line);
+                    for stackIdx = 1:size(ME.stack,1)
+                        fprintf('%s : %s, line : %d \n',ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
                     end
-                    fprintf("==============================\n")
+                    fprintf("==========================================\n")
                 end
             end
             app.Lamp.Color = [0, 1, 0];
         end
+
+        function PlayInputsButtonPushed(app, ~)
+            if ~app.flag_is_load
+                disp('no input loaded.')
+                return
+            end
+            try
+                if app.file.is_preprocessed
+                    disp('inputs after preprocess.')
+                else
+                    disp('inputs before preprocess.')
+                end
+                implay(rescale(app.file.M0_data_video));
+                implay(rescale(app.file.M1_data_video));
+                implay(rescale(app.file.M2_data_video));
+            catch
+                disp('Input not well loaded')
+            end
+        end
+
+        function OverWriteCheckBoxChanged(app, ~)
+            if ~app.flag_is_load
+                disp('no input loaded.')
+                return
+            end
+            try
+                app.file.OverWrite = app.OverWriteCheckBox.Value;
+            catch
+                disp('Couldnt force overwrite')
+            end
+        end
         
-        function PreProcessButtonPushed(app, event)
+        function PreProcessButtonPushed(app, ~)
             if ~app.flag_is_load
                 disp('no input loaded.')
                 return
@@ -292,34 +338,33 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("----------------------------------\n")
                 app.file = app.file.preprocessData();
                 app.Lamp.Color = [0, 1, 0];
-                fprintf("- Video PreProcessing took : %ds\n", round(toc))
-            catch exception
+            catch ME
                 
-                fprintf("==============================\nERROR\n==============================\n")
+                fprintf("==========================================\nERROR\n==========================================\n")
                 if ~isempty(app.file)
                     fprintf('Error while preprocessing : %s\n', app.file.directory)
                 else
                     fprintf('Error while preprocessing : %s\n', 'xx')
                 end
-                fprintf("%s\n",exception.identifier)
-                fprintf("%s\n",exception.message)
+                fprintf("%s\n",ME.identifier)
+                fprintf("%s\n",ME.message)
                 
-                for i = 1:size(exception.stack,1)
-                    fprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
+                for i = 1:size(ME.stack,1)
+                    fprintf('%s : %s, line : %d \n', ME.stack(i).file, ME.stack(i).name, ME.stack(i).line);
                 end
                 
-                fprintf("==============================\n")
+                fprintf("==========================================\n")
                 app.Lamp.Color = [1, 1/2, 0];
                 
             end
             
-            fprintf("------------------------------\n")
+            fprintf("----------------------------------\n")
             fprintf("- Total PreProcess timing took : %ds\n", round(toc(totalPreProcessTime)))
             
         end
         
         % Button pushed function: ClearButton
-        function ClearButtonPushed(app, event)
+        function ClearButtonPushed(app, ~)
             app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
@@ -330,7 +375,7 @@ classdef pulse < matlab.apps.AppBase
         end
         
         % Button pushed function: FolderManagementButton
-        function FolderManagementButtonPushed(app, event)
+        function FolderManagementButtonPushed(app, ~)
             d = dialog('Position', [300, 300, 750, 190 + length(app.drawer_list) * 14],...
                 'Color', [0.2, 0.2, 0.2],...
                 'Name', 'Folder management',...
@@ -434,7 +479,6 @@ classdef pulse < matlab.apps.AppBase
                 
                 %% selection of the measurement folder with uigetdir to analyze all processed folders
                 selected_dir = uigetdir();
-                [~,folder_name,~] = fileparts(selected_dir);
                 % List of Subfolders within the measurement folder
                 tmp_dir = dir(selected_dir);
                 % remove all files (isdir property is 0)
@@ -444,7 +488,7 @@ classdef pulse < matlab.apps.AppBase
                 subfoldersName = {subfoldersName.name};
                 % remove of other folders (ex: 'config' subfolders)
                 for ii=1:length(subfoldersName)
-                    if contains(subfoldersName{ii},folder_name)
+                    if contains(subfoldersName{ii}, '_HD_')
                         app.drawer_list{end + 1} = fullfile(selected_dir,'\',subfoldersName{ii});
                         txt.String = app.drawer_list;
                         d.Position(4) = 100 + length(app.drawer_list) * 14;
@@ -498,7 +542,7 @@ classdef pulse < matlab.apps.AppBase
                 
                 for ind = 1:length(app.drawer_list)
                     pw_path_json = fullfile(app.drawer_list{ind},'pulsewave','json');
-                    if ~isdir(pw_path_json)
+                    if ~isfolder(pw_path_json)
                         mkdir(pw_path_json);
                     end
                     copyfile(fullfile(path_json,selected_json),pw_path_json);
@@ -547,7 +591,7 @@ classdef pulse < matlab.apps.AppBase
         
         
         % Checkbox update function:
-        function updateCheckboxes(app, event)
+        function updateCheckboxes(app, ~)
             %             if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
             %                 app.PulsewaveanalysisCheckBox.Enable = true;
             %                 if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
@@ -573,13 +617,14 @@ classdef pulse < matlab.apps.AppBase
         end
         
         % Button pushed function: EditParametersButton
-        function EditParametersButtonPushed(app, event)
+        function EditParametersButtonPushed(app, ~)
+            main_path = fullfile(app.file.directory, 'pulsewave');
             if (app.flag_is_load)
-                if exist(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name))
-                    disp(['opening : ', fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name)])
-                    winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name));
+                if isfile(fullfile(main_path,'json',app.file.PW_param_name))
+                    disp(['opening : ', fullfile(main_path,'json',app.file.PW_param_name)])
+                    winopen(fullfile(main_path,'json',app.file.PW_param_name));
                 else
-                    disp(['couldnt open : ',fullfile(app.file.ToolBoxmaster.PW_path_main,'json',app.file.PW_param_name)])
+                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.PW_param_name)])
                 end
             else
                 disp('No input loaded')
@@ -587,9 +632,9 @@ classdef pulse < matlab.apps.AppBase
         end
         
         % Button pushed function: EditMasksButton
-        function EditMasksButtonPushed(app, event)
+        function EditMasksButtonPushed(app, ~)
             if (app.flag_is_load)
-                if ~exist(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
+                if ~isfolder(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
                     mkdir(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
                 end
                 try
@@ -771,6 +816,18 @@ classdef pulse < matlab.apps.AppBase
             app.bloodVelocityProfileCheckBox.Value = false;
             app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
             
+
+            % Create OverWriteCheckBox
+            app.OverWriteCheckBox = uicheckbox(app.PulsewaveUIFigure);
+            app.OverWriteCheckBox.Text = 'over write';
+            app.OverWriteCheckBox.FontSize = 16;
+            app.OverWriteCheckBox.FontColor = [0.8 0.8 0.8];
+            app.OverWriteCheckBox.Position = [500 24 130 28];
+            app.OverWriteCheckBox.Value = false;
+            app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
+            app.OverWriteCheckBox.Tooltip = 'OverWrite the new results in the last PW_ result folder (to save space)';
+
+            
             % Create FolderManagementButton
             app.FolderManagementButton = uibutton(app.PulsewaveUIFigure, 'push');
             app.FolderManagementButton.ButtonPushedFcn = createCallbackFcn(app, @FolderManagementButtonPushed, true);
@@ -821,6 +878,16 @@ classdef pulse < matlab.apps.AppBase
             app.PreProcessButton.Position = [191 322 130 28];
             app.PreProcessButton.Text = 'Pre Process';
             app.PreProcessButton.Enable = 'on';
+
+            % Create PlayInputsButton
+            app.PlayInputsButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.PlayInputsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayInputsButtonPushed, true);
+            app.PlayInputsButton.BackgroundColor = [0.502 0.502 0.502];
+            app.PlayInputsButton.FontSize = 16;
+            app.PlayInputsButton.FontColor = [0.9412 0.9412 0.9412];
+            app.PlayInputsButton.Position = [351 322 130 28];
+            app.PlayInputsButton.Text = 'Play Inputs';
+            app.PlayInputsButton.Enable = 'on';
             
             % Create EditMasksButton
             app.EditMasksButton = uibutton(app.PulsewaveUIFigure, 'push');
