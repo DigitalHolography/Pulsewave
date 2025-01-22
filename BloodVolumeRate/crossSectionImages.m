@@ -111,9 +111,9 @@ tablefilename = fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_
 writetable(widthtable,tablefilename);
 if exportVideos
     writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
-    writeGifOnDisc(vesselNumVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
-    writeGifOnDisc(vesselBVRVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
-    writeGifOnDisc(vesselMaxVelocityVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
+    writeGifOnDisc(vesselNumVideo, sprintf('Numerotation%s', name), 0.15, 10);
+    writeGifOnDisc(vesselBVRVideo, sprintf('MeanBVR%s', name), 0.15, 10);
+    writeGifOnDisc(vesselMaxVelocityVideo, sprintf('MaxVelocity%s', name), 0.15, 10);
 end
 
 close(312);
