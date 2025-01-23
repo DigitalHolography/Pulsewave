@@ -30,7 +30,19 @@ for ind =1:length(PW_paths)
     if exist(fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_ARI_velocity.png']))
         ARI_velocity_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_ARI_velocity.png']);
     end
-
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','bloodFlowVelocity',[main_foldername,'_histogramVelocityArteries.png']))
+        histo_art_velocity_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','bloodFlowVelocity',[main_foldername,'_histogramVelocityArteries.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_2_Arteries_velocity.png']))
+        art_velocity_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_2_Arteries_velocity.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_ARI_BVR.png']))
+        ARI_BVR_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_ARI_BVR.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_strokeAndTotalVolume.png']))
+        Stroke_total_volume{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_strokeAndTotalVolume.png']);
+    end
+    
 end
 
 figure(320)
@@ -45,5 +57,17 @@ exportgraphics(gca,fullfile(output_dir,'ARIvelocity.png'));
 figure(323)
 montage(bvr_paths, Size = [1 4]);
 exportgraphics(gca,fullfile(output_dir,'bloodVolumeRate.png'));
+figure(324)
+montage(histo_art_velocity_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'histogramVelocityArteries.png'));
+figure(325)
+montage(art_velocity_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'ArteriesVelocity.png'));
+figure(326)
+montage(ARI_BVR_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'ARIvelocityBVR.png'));
+figure(327)
+montage(Stroke_total_volume, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'_strokeAndTotalVolume.png'));
 
 end
