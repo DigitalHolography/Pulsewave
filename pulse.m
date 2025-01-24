@@ -167,7 +167,7 @@ classdef pulse < matlab.apps.AppBase
 
             end
             try
-                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name,app.OverWriteCheckBox.Value);
+                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name, 1);
                 setGlobalToolBox(app.file.ToolBoxmaster);
             end
 
@@ -198,7 +198,7 @@ classdef pulse < matlab.apps.AppBase
 
             end
             try
-                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name);
+                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name, 1);
                 setGlobalToolBox(app.file.ToolBoxmaster);
             end
 
