@@ -73,44 +73,44 @@ classPanel.Layout.Column = 2;
 % Create numeric edit fields for each parameter
 
 % Vesselness Parameters
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Vesselness Sigma:', 'Position', [10, 320, 120, 20]);
-vesselnessSigmaEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vesselness_sigma, 'Position', [140, 320, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Vesselness Sigma:', 'Position', [10, 600, 120, 20]);
+vesselnessSigmaEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vesselness_sigma, 'Position', [140, 600, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Vesselness Beta:', 'Position', [10, 280, 120, 20]);
-vesselnessBetaEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vesselness_beta, 'Position', [140, 280, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Vesselness Beta:', 'Position', [10, 560, 120, 20]);
+vesselnessBetaEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vesselness_beta, 'Position', [140, 560, 30, 22]);
 
 % Mask Thresholds
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Vascular Threshold:', 'Position', [10, 240, 120, 20]);
-vascularThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vascular_threshold, 'Position', [140, 240, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Vascular Threshold:', 'Position', [10, 520, 120, 20]);
+vascularThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vascular_threshold, 'Position', [140, 520, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Arterial Threshold:', 'Position', [10, 200, 120, 20]);
-arterialThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_arterial_threshold, 'Position', [140, 200, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Arterial Threshold:', 'Position', [10, 440, 120, 20]);
+arterialThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_arterial_threshold, 'Position', [140, 440, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Venous Threshold:', 'Position', [10, 160, 120, 20]);
-venousThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_venous_threshold, 'Position', [140, 160, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Venous Threshold:', 'Position', [10, 360, 120, 20]);
+venousThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_venous_threshold, 'Position', [140, 360, 30, 22]);
 
 % Geometric Parameters
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Diaphragm Radius:', 'Position', [10, 120, 120, 20]);
-diaphragmRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_diaphragmRadius, 'Position', [140, 120, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Diaphragm Radius:', 'Position', [10, 280, 120, 20]);
+diaphragmRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_diaphragmRadius, 'Position', [140, 280, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Coroid Radius:', 'Position', [10, 80, 120, 20]);
-cropCoroidEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_crop_radius, 'Position', [140, 80, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Coroid Radius:', 'Position', [10, 240, 120, 20]);
+cropCoroidEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_crop_radius, 'Position', [140, 240, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Min Area Size:', 'Position', [10, 40, 120, 20]);
-minSizeEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_minSize, 'Position', [140, 40, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Min Area Size:', 'Position', [10, 200, 120, 20]);
+minSizeEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_minSize, 'Position', [140, 200, 30, 22]);
 
 % Image Processing Parameters
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Gaussian Filter Size:', 'Position', [10, -40, 120, 20]);
-gaussianFilterEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.gauss_filt_size_for_barycenter, 'Position', [140, -40, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Gaussian Filter Size:', 'Position', [10, 160, 120, 20]);
+gaussianFilterEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.gauss_filt_size_for_barycenter, 'Position', [140, 160, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Imclose Radius:', 'Position', [10, -80, 120, 20]);
-imcloseRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_imclose_radius, 'Position', [140, -80, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Imclose Radius:', 'Position', [10, 120, 120, 20]);
+imcloseRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_imclose_radius, 'Position', [140, 120, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Min Width:', 'Position', [10, -120, 120, 20]);
-minWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_min_width, 'Position', [140, -120, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Min Width:', 'Position', [10, 80, 120, 20]);
+minWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_min_width, 'Position', [140, 80, 30, 22]);
 
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Imdilate Final:', 'Position', [10, -160, 120, 20]);
-imdilateFinalEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_imdilateFinal, 'Position', [140, -160, 30, 22]);
+uicontrol(paramPanel, 'Style', 'text', 'String', 'Imdilate Final:', 'Position', [10, 40, 120, 20]);
+imdilateFinalEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_imdilateFinal, 'Position', [140, 40, 30, 22]);
 
 % Create a table for the VascularClasses, ArterialClasses, VenousClasses
 % Create table for VascularClasses
