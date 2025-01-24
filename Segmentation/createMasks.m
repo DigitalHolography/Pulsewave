@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskSection, xy_barycenter] = createMasks(M0_ff_video, f_AVG_mean)
+function [maskArtery, maskVein, maskSection, maskNeighbors , xy_barycenter] = createMasks(M0_ff_video, f_AVG_mean)
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);

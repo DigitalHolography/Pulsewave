@@ -17,6 +17,7 @@ classdef OneCycleClass < handle
         maskArtery
         maskVein
         maskSection
+        maskNeighbors
 
         sysIdxList % list of frame indexes counting carciac cycles
         xy_barycenter % x y position of the ONH
@@ -163,7 +164,7 @@ classdef OneCycleClass < handle
                 fprintf("----------------------------------\n")
 
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
-                [obj.maskArtery, obj.maskVein, obj.maskSection, obj.xy_barycenter] = createMasks(obj.M0_ff_video, f_AVG_mean);
+                [obj.maskArtery, obj.maskVein, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = createMasks(obj.M0_ff_video, f_AVG_mean);
 
                 time_create_masks = toc(createMasksTimer);
                 fprintf("- Mask Creation took : %ds\n", round(time_create_masks))
@@ -192,7 +193,7 @@ classdef OneCycleClass < handle
                 fprintf("----------------------------------\n")
 
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
-                [obj.vRMS] = pulseAnalysis(obj.f_RMS_video, obj.maskArtery, obj.maskVein, obj.maskSection);
+                [obj.vRMS] = pulseAnalysis(obj.f_RMS_video, obj.maskArtery, obj.maskVein, obj.maskSection, obj.maskNeighbors);
 
                 if obj.flag_ExtendedPulseWave_analysis
                 extendedPulseAnalysis(obj.M0_ff_video, obj.f_RMS_video, f_AVG_mean, obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.sysIdxList);
