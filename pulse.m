@@ -169,11 +169,11 @@ classdef pulse < matlab.apps.AppBase
                 
             end
             try
-            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name,app.OverWriteCheckBox.Value);
-            setGlobalToolBox(app.file.ToolBoxmaster);
+                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name,1);
+                setGlobalToolBox(app.file.ToolBoxmaster);
             end
-
-
+            
+            
             
             
         end
@@ -203,10 +203,10 @@ classdef pulse < matlab.apps.AppBase
                 
             end
             try
-            app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name);
-            setGlobalToolBox(app.file.ToolBoxmaster);
+                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name,1);
+                setGlobalToolBox(app.file.ToolBoxmaster);
             end
-
+            
             app.ErrorLabel.Text = "" ;
             app.Lamp.Color = [0, 1, 0];
         end
@@ -255,7 +255,7 @@ classdef pulse < matlab.apps.AppBase
                 app.file.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
                 app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
                 app.file.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
-
+                
                 app.file.OverWrite = app.OverWriteCheckBox.Value;
                 
                 try
@@ -264,7 +264,7 @@ classdef pulse < matlab.apps.AppBase
                 catch ME
                     
                     diary off
-
+                    
                     fprintf("==========================================\nERROR\n==========================================\n")
                     disp(['Error with file : ', app.file.directory])
                     disp(ME.identifier)
@@ -277,7 +277,7 @@ classdef pulse < matlab.apps.AppBase
             end
             app.Lamp.Color = [0, 1, 0];
         end
-
+        
         function PlayInputsButtonPushed(app, ~)
             if ~app.flag_is_load
                 disp('no input loaded.')
@@ -296,7 +296,7 @@ classdef pulse < matlab.apps.AppBase
                 disp('Input not well loaded')
             end
         end
-
+        
         function OverWriteCheckBoxChanged(app, ~)
             if ~app.flag_is_load
                 disp('no input loaded.')
@@ -816,7 +816,7 @@ classdef pulse < matlab.apps.AppBase
             app.bloodVelocityProfileCheckBox.Value = false;
             app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
             
-
+            
             % Create OverWriteCheckBox
             app.OverWriteCheckBox = uicheckbox(app.PulsewaveUIFigure);
             app.OverWriteCheckBox.Text = 'over write';
@@ -826,7 +826,7 @@ classdef pulse < matlab.apps.AppBase
             app.OverWriteCheckBox.Value = false;
             app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
             app.OverWriteCheckBox.Tooltip = 'OverWrite the new results in the last PW_ result folder (to save space)';
-
+            
             
             % Create FolderManagementButton
             app.FolderManagementButton = uibutton(app.PulsewaveUIFigure, 'push');
@@ -878,7 +878,7 @@ classdef pulse < matlab.apps.AppBase
             app.PreProcessButton.Position = [191 322 130 28];
             app.PreProcessButton.Text = 'Pre Process';
             app.PreProcessButton.Enable = 'on';
-
+            
             % Create PlayInputsButton
             app.PlayInputsButton = uibutton(app.PulsewaveUIFigure, 'push');
             app.PlayInputsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayInputsButtonPushed, true);
