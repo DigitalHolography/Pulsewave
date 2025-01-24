@@ -124,6 +124,37 @@ imwrite(RGBM0, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", m
 
 %% 2)  Improvements of the first mask
 
+%% 2) 0) Systole/Diastole
+
+[sys_index_list, ~] = find_systole_index(M0_ff_video, firstMaskArteryClean);
+
+numSys = numel(sys_index_list); % number of systoles
+fpCycle = round(numFrames / numSys); % Frames per cycle
+
+sysindexes = [];
+diaindexes = [];
+
+for idx = 1:numSys
+    try
+        sysindexes = [sysindexes, (sys_index_list(idx):sys_index_list(idx) + round(fpCycle * 0.1))];
+    catch
+    end
+    try
+        diaindexes = [diaindexes, (sys_index_list(idx) - round(fpCycle * 0.15) :sys_index_list(idx) - round(fpCycle * 0.05))];
+    catch
+    end
+end
+
+SystoleM0 = mean(M0_ff_video(:, :, sysindexes), 3);
+DiastoleM0 = mean(M0_ff_video(:, :, diaindexes), 3);
+
+RGBDIASYS(:,:,1) = SystoleM0;
+RGBDIASYS(:,:,2) = DiastoleM0;
+RGBDIASYS(:,:,3) = DiastoleM0;
+
+figure, imagesc(RGBDIASYS), axis image
+imwrite(RGBDIASYS, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'all_2_0_RGBDIASYS.png')))
+
 %% 2) 1) Compute a new signal
 
 % compute signal in 3 dimentions for correlation in main arteries
@@ -251,28 +282,22 @@ imwrite(RGBM0, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", m
 % Add targetMaskArtery.png and targetMaskVein.png in a mask folder inside
 % the pulsewave folder to have the specificity and the senisivity of the
 % algorithm used with your parameters.
-try
+if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskArtery.png')) && isfile(fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskVein.png'))
     targetMaskArtery = imread(fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskArtery.png'));
     targetMaskVein = imread(fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskVein.png'));
 
     TPArtery = nnz(targetMaskArtery & maskArteryClean);
     FPArtery = nnz(~targetMaskArtery & maskArteryClean);
     FNArtery = nnz(targetMaskArtery & ~maskArteryClean);
-    TNArtery = nnz(~targetMaskArtery & ~maskArteryClean);
 
     TPVein = nnz(targetMaskVein & maskVeinClean);
     FPVein = nnz(~targetMaskVein & maskVeinClean);
     FNVein = nnz(targetMaskVein & ~maskVeinClean);
-    TNVein = nnz(~targetMaskVein & ~maskVeinClean);
 
     fileID = fopen(fullfile(ToolBox.PW_path_log, sprintf("%s_confusionMatrix.txt", main_folder)), 'w');
-    fprintf(fileID, "    Artery Sensitivity: %0.2f %%\n", 100 * TPArtery / (TPArtery + FNArtery));
-    fprintf(fileID, "    Artery Specificity: %0.2f %%\n", 100 * TNArtery / (TNArtery + FPArtery));
-    fprintf(fileID, "    Vein Sensitivity: %0.2f %%\n", 100 * TPVein / (TPVein + FNVein));
-    fprintf(fileID, "    Vein Specificity: %0.2f %%\n", 100 * TNVein / (TNVein + FPVein));
+    fprintf(fileID, "    Artery Dice Score: %0.2f %%\n", 100 * 2 * TPArtery / (2 * TPArtery + FPArtery + FNArtery));
+    fprintf(fileID, "    Vein Dice Score: %0.2f %%\n", 100 * 2 * TPVein / (2 * TPVein + FPVein + FNVein));
     fclose(fileID);
-catch
-    fprintf("    No target masks to perform sensitivity & specificity evaluation\n")
 end
 
 %% 3) 3) Create Vessel and Background Mask
