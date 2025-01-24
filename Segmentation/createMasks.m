@@ -3,13 +3,13 @@ function [maskArtery, maskVein, maskSection, xy_barycenter] = createMasks(M0_ff_
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
-mkdir(ToolBox.PW_path_png, 'mask')
-mkdir(fullfile(ToolBox.PW_path_png, 'mask'), 'steps')
-mkdir(fullfile(ToolBox.PW_path_eps, 'mask'), 'steps')
+if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
+    mkdir(ToolBox.PW_path_png, 'mask')
+    mkdir(fullfile(ToolBox.PW_path_png, 'mask'), 'steps')
+    mkdir(fullfile(ToolBox.PW_path_eps, 'mask'), 'steps')
+end
 folder_steps = fullfile('mask', 'steps');
 main_folder = ToolBox.main_foldername;
-
-close all
 
 %% 0) Test the input for usual cases of wrong aquisition data
 
@@ -28,7 +28,9 @@ imwrite(rescale(maskDiaphragm), fullfile(ToolBox.PW_path_png, 'mask', 'steps', s
 M0_ff_img = squeeze(mean(M0_ff_video, 3));
 M0_ff_video_centered = M0_ff_video - M0_ff_img;
 imwrite(rescale(M0_ff_img), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'all_1_0_M0.png')))
-writeGifOnDisc(M0_ff_video, "M0")
+if ~isfile(fullfile(ToolBox.PW_path_gif, sprintf("%s_M0.gif", ToolBox.PW_folder_name)))
+    writeGifOnDisc(M0_ff_video, "M0")
+end
 
 %% 1) 1) Compute vesselness response
 vesselnessM0 = vesselness_filter(M0_ff_img, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);

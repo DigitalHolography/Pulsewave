@@ -4,6 +4,7 @@ classdef Parameters_json < handle
     properties
         path
         name
+        params
         registerVideoFlag
         refAvgStart
         refAvgEnd
@@ -122,6 +123,7 @@ classdef Parameters_json < handle
                 jsonData = fileread(jsonPath);
                 parsedData = jsondecode(jsonData);
 
+                obj.params = parsedData;
                 % Recherche de chaque paramètre
                 obj.registerVideoFlag = parsedData.Video.Register;
                 obj.refAvgStart = parsedData.Video.RefStart;
@@ -129,7 +131,7 @@ classdef Parameters_json < handle
 
                 obj.videoStartFrameIndex = parsedData.Video.StartFrame;
                 obj.videoEndFrameIndex = parsedData.Video.EndFrame;
-                
+
                 obj.NormTempMode = parsedData.NormalizeByTimeAverage;
                 obj.alphaConvolveNorm = parsedData.MomentNormalizeConvolutionParameter;
 
@@ -168,7 +170,7 @@ classdef Parameters_json < handle
                 obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
                 obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
-                
+
                 obj.oneCycleNinterp = parsedData.CreationOfOneCycle.InterpolationPoints;
                 obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
                 obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
@@ -231,6 +233,22 @@ classdef Parameters_json < handle
                 error('The json file could not be found.');
             end
 
+        end
+
+        function WriteParametersToJson(obj, outputPath)
+
+            % Convert the structure into a JSON string
+            jsonString = jsonencode(obj.params, "PrettyPrint", true);
+
+            % Write the JSON string to the specified output path
+            fileID = fopen(outputPath, 'w');
+            if fileID == -1
+                error('Could not open the file for writing: %s', outputPath);
+            end
+            fwrite(fileID, jsonString, 'char');
+            fclose(fileID);
+
+            disp('New JSON file created successfully.');
         end
 
     end

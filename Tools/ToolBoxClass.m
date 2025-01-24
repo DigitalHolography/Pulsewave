@@ -34,7 +34,7 @@ classdef ToolBoxClass < handle
 
             obj.PW_path = path;
             obj.PW_param_name = PW_param_name;
-            PW_params = Parameters_json(obj.PW_path,obj.PW_param_name);
+            PW_params = Parameters_json(obj.PW_path, obj.PW_param_name);
 
             %% Creating paths
             idx = 0;
