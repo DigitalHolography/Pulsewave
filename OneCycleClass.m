@@ -183,6 +183,11 @@ classdef OneCycleClass < handle
 
                 [obj.sysIdxList, ~] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
 
+                fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+                fprintf(fileID, 'Heart beat : %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList)*ToolBox.stride / ToolBox.fs / 1000));
+                fprintf(fileID, 'Systole Indices : %s \r\n', strcat('[',sprintf("%d,",obj.sysIdxList),']'));
+                fclose(fileID);
+
                 time_sys_idx = toc(findSystoleTimer);
                 fprintf("- FindSystoleIndex took : %ds\n", round(time_sys_idx))
 

@@ -53,7 +53,7 @@ else
 end
 
 parfor frameIdx = 1:numFrames
-    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 20 * w * 2^k, maskNeighbors, maskVessel));
+    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, maskNeighbors, maskVessel));
 end
 
 graphSignal('1_Arteries_fRMS', folder, ...
