@@ -152,9 +152,9 @@ RGBDIASYS(:,:,1) = SystoleM0;
 RGBDIASYS(:,:,2) = DiastoleM0;
 RGBDIASYS(:,:,3) = DiastoleM0;
 
-figure, imagesc(RGBDIASYS), axis image
+figure(4), imagesc(RGBDIASYS), axis image
 imwrite(RGBDIASYS, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, 'all_2_0_RGBDIASYS.png')))
-
+close(4);
 %% 2) 1) Compute a new signal
 
 % compute signal in 3 dimentions for correlation in main arteries
@@ -261,7 +261,7 @@ skelVein = bwskel(maskVeinClean);
 maskArteryClean = maskArteryClean | imdilate(skelArtery, minWidthSE);
 maskVeinClean = maskVeinClean | imdilate(skelVein, minWidthSE);
 
-clear skelArtery skelVein
+clear skelVein skelArtery
 
 %% 3) 3) Final Dilation
 dilationSE = strel('disk', PW_params.masks_imdilateFinal);
@@ -316,6 +316,14 @@ end
 
 maskVessel = maskArtery | maskVein;
 maskBackground = not(maskVessel);
+
+%% 3) 4) Segmention force width
+
+if PW_params.masks_force_width > 0
+    dilationSE = strel('disk', PW_params.masks_force_width);
+    maskArtery = imdilate(bwskel(maskArtery), dilationSE);
+    maskVein = imdilate(bwskel(maskVein), dilationSE);
+end
 
 %% Create Neighbours Mask
 veinsAnalysis = PW_params.veins_analysis;

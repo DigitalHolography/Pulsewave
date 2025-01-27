@@ -39,7 +39,8 @@
         "Central Retina Vein Artery threshold": 3,
         "Imclose Radius": 5,
         "Minimum Vessel Width": 3,
-        "Final Dilation" : 3
+        "Final Dilation" : 3,
+        "Force Vessel Width" : 0
     },
     "Systole Detection": {
         "Systole threshold ratio of maximum": 0.7
