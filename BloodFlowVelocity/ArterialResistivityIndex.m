@@ -36,10 +36,10 @@ graphSignal(sprintf('API_%s', name), folder, ...
 
 fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
 if strcmp(name,'velocity')
-    fprintf(fileID, 'Mean Velocity : %f (mm/s) \r\n',vMean);
-    fprintf(fileID, 'Std Velocity : %f (mm/s) \r\n',vStd);
-    fprintf(fileID, 'Max Velocity : %f (mm/s) \r\n',vMax);
-    fprintf(fileID, 'Min Velocity : %f (mm/s) \r\n',vMin);
+    fprintf(fileID, 'Mean Velocity artery : %f (mm/s) \r\n',vMean);
+    fprintf(fileID, 'Std Velocity artery : %f (mm/s) \r\n',vStd);
+    fprintf(fileID, 'Max Velocity artery : %f (mm/s) \r\n',vMax);
+    fprintf(fileID, 'Min Velocity artery : %f (mm/s) \r\n',vMin);
 end
 fprintf(fileID, 'Arterial Resistivity Index (%s) : %f  \r\n', name, ARI);
 fprintf(fileID, 'Arterial Pulsatility Index (%s) : %f  \r\n', name, API);
