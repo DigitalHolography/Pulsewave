@@ -80,10 +80,10 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s",
 
 
 fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
-fprintf(fileID, 'MaxSystole Blood Volume Rate Artery %s : %f (µL/min) \r\n',maxsystole_bvr_value);
-fprintf(fileID, 'MinDiastole Blood Volume Rate Artery %s : %f (µL/min) \r\n',mindiastole_bvr_value);
-fprintf(fileID, 'Stroke Volume %s Artery : %f (nL) \r\n',stroke_volume_value);
-fprintf(fileID, 'Total Volume %s Artery : %f (nL) \r\n',total_volume_value);
+fprintf(fileID, 'MaxSystole Blood Volume Rate Artery : %f (µL/min) \r\n',maxsystole_bvr_value);
+fprintf(fileID, 'MinDiastole Blood Volume Rate Artery : %f (µL/min) \r\n',mindiastole_bvr_value);
+fprintf(fileID, 'Stroke Volume Artery : %f (nL) \r\n',stroke_volume_value);
+fprintf(fileID, 'Total Volume Artery : %f (nL) \r\n',total_volume_value);
 fclose(fileID);
 
 end
