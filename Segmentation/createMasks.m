@@ -33,11 +33,7 @@ end
 
 %% 1) 1) Compute vesselness response
 
-vesselnessM0 = vesselness_filter(M0_ff_img, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
-maskVesselness = logical(imbinarize(vesselnessM0 .* maskDiaphragm)); % Trivial Thresholding
-
-saveImage(rescale(vesselnessM0), ToolBox, 'all_1_1_Vesselness.png', isStep = true)
-saveImage(maskVesselness, ToolBox, 'all_1_2_vesselMask.png', isStep = true)
+[M0_ff_img, maskVesselness] = denoise_vessel_image(M0_ff_img, ToolBox);
 
 %% 1) 2) Compute the barycenters and the circle mask
 
@@ -49,7 +45,7 @@ if ~isempty(PW_params.forcebarycenter)
 else
     saveImage(rescale(f_AVG_mean), ToolBox, 'all_1_2_fAVG.png', isStep = true)
     if PW_params.gauss_filt_size_for_barycenter ~= 0
-        averaged_fAVG = imgaussfilt(f_AVG_mean, PW_params.gauss_filt_size_for_barycenter * numX, 'Padding', 0) .* maskDiaphragm;
+        averaged_fAVG = imgaussfilt(f_AVG_mean, PW_params.gauss_filt_size_for_barycenter, 'Padding', 0) .* maskDiaphragm;
     else
         averaged_fAVG = f_AVG_mean;
     end
@@ -128,6 +124,16 @@ saveImage(RGBM0, ToolBox,  'all_1_6_RGB.png', isStep = true)
 %% 2) 1) Compute a new signal
 diasysAnalysis = PW_params.params.CreationOfMasks.DiaSysAnalysis;
 
+results = cell(2, 1);
+
+% Parameters for arteries
+arteryParams.threshold = PW_params.masks_arterial_threshold;
+arteryParams.classes = PW_params.masks_arterial_classes;
+
+% Parameters for veins
+veinParams.threshold = PW_params.masks_venous_threshold;
+veinParams.classes = PW_params.masks_venous_classes;
+
 if diasysAnalysis
     %% 2) 0) Systole/Diastole
 
@@ -155,45 +161,28 @@ if diasysAnalysis
     saveImage(SystoleM0, ToolBox,  'all_2_0_M0_Systole.png', isStep = true)
     saveImage(DiastoleM0, ToolBox,  'all_2_0_M0_Diastole.png', isStep = true)
 
-    diasys = SystoleM0 - DiastoleM0;
-    saveImage(rescale(diasys), ToolBox,  'all_2_0_DIASYSGRAY.png', isStep = true)
+    diasys = rescale(rescale(SystoleM0) - rescale(DiastoleM0));
+    saveImage(diasys, ToolBox,  'all_2_0_DIASYSGRAY.png', isStep = true)
 
     Labdiasys(:, :, 1) = 100 .* rescale(M0_ff_img);
     Labdiasys(:, :, 2) = 256 .* rescale(diasys) - 128;
     Labdiasys(:, :, 3) = 256 .* rescale(diasys) - 128;
     RGBdiasys = lab2rgb(Labdiasys);
-    HSVdiasys = rgb2hsv(RGBdiasys);
     saveImage(RGBdiasys, ToolBox, 'all_2_0_DIASYSRGB.png', isStep = true)
 
-    %% NEW ARTERY MASK
+    for  i = 1:2
+        if i == 1
+            results{i} = processDiaSysSignal(diasys, maskVesselnessClean, firstMaskArteryClean, arteryParams, cmapArtery, 'artery');
+        else
+            results{i} = processDiaSysSignal(-diasys, maskVesselnessClean, firstMaskVeinClean, veinParams, cmapVein, 'vein');
+        end
+    end
 
-    vesselnessM0 = vesselness_filter(diasys, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
-    maskVesselness = logical(imbinarize(vesselnessM0 .* maskDiaphragm));
-    saveImage(maskVesselness, ToolBox, 'artery_2_1_choroid.png', isStep = true)
-
-    maskArtery = maskVesselness & bwareafilt(maskVesselness | maskCircle, 1, 4);
-    saveImage(maskArtery + maskCircle .* 0.5, ToolBox, 'artery_2_1_choroidClean.png', isStep = true)
-
-    %% NEW VEIN MASK
-
-    vesselnessM0 = vesselness_filter(DiastoleM0, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
-    maskVesselness = logical(imbinarize(vesselnessM0 .* maskDiaphragm));
-    saveImage(maskVesselness, ToolBox, 'vein_2_1_choroid.png', isStep = true)
-
-    maskVein = maskVesselness & bwareafilt(maskVesselness | maskCircle, 1, 4);
-    maskVein = maskVein & ~maskArtery;
-    saveImage(maskVein + maskCircle .* 0.5, ToolBox, 'vein_2_1_choroidClean.png', isStep = true)
+    % Assign results to their respective variables
+    maskArtery = results{1};
+    maskVein = results{2};
 
 else
-    results = cell(2, 1);
-
-    % Parameters for arteries
-    arteryParams.threshold = PW_params.masks_arterial_threshold;
-    arteryParams.classes = PW_params.masks_arterial_classes;
-
-    % Parameters for veins
-    veinParams.threshold = PW_params.masks_venous_threshold;
-    veinParams.classes = PW_params.masks_venous_classes;
 
     for  i = 1:2
         if i == 1
