@@ -259,6 +259,14 @@ end
 maskVessel = maskArtery | maskVein;
 maskBackground = not(maskVessel);
 
+%% 3) 4) Segmention force width
+
+if PW_params.masks_force_width > 0
+    dilationSE = strel('disk', PW_params.masks_force_width);
+    maskArtery = imdilate(bwskel(maskArtery), dilationSE);
+    maskVein = imdilate(bwskel(maskVein), dilationSE);
+end
+
 %% Create Neighbours Mask
 
 veinsAnalysis = PW_params.veins_analysis;

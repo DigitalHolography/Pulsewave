@@ -38,6 +38,7 @@ classdef Parameters_json < handle
         masks_imclose_radius
         masks_min_width
         masks_imdilateFinal
+        masks_force_width
         CRACRV_Threshold
         cropSection_scaleFactorWidth
         cropSection_scaleFactorSize
@@ -167,6 +168,7 @@ classdef Parameters_json < handle
                 obj.masks_imclose_radius = parsedData.CreationOfMasks.ImcloseRadius;
                 obj.masks_min_width = parsedData.CreationOfMasks.MinimumVesselWidth;
                 obj.masks_imdilateFinal = parsedData.CreationOfMasks.FinalDilation;
+                obj.masks_force_width = parsedData.CreationOfMasks.ForceVesselWidth;
                 obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
                 obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
