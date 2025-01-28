@@ -181,11 +181,17 @@ classdef OneCycleClass < handle
                 fprintf("Find Systole\n")
                 fprintf("----------------------------------\n")
 
-                [obj.sysIdxList, ~] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
+                [obj.sysIdxList, ~, sysMaxList, sysMinList] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
 
                 fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
                 fprintf(fileID, 'Heart beat : %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList)*ToolBox.stride / ToolBox.fs / 1000));
                 fprintf(fileID, 'Systole Indices : %s \r\n', strcat('[',sprintf("%d,",obj.sysIdxList),']'));
+                fprintf(fileID, 'Number of Cycles : %d \r\n', numel(obj.sysIdxList)-1);
+                fprintf(fileID, 'Max Systole Indices : %s \r\n', strcat('[',sprintf("%d,",sysMaxList),']'));
+                fprintf(fileID, 'Min Systole Indices : %s \r\n', strcat('[',sprintf("%d,",sysMinList),']'));
+
+                fprintf(fileID, 'Time diastolic min to systolic max (ms) : %f \r\n', 1000*mean((sysMaxList(2:end)-sysMinList(1:end-1)) * ToolBox.stride / ToolBox.fs / 1000));
+                fprintf(fileID, 'Time diastolic min to systolic slope max (ms): %f \r\n', 1000*mean((obj.sysIdxList(2:end)-sysMinList) * ToolBox.stride / ToolBox.fs / 1000));
                 fclose(fileID);
 
                 time_sys_idx = toc(findSystoleTimer);

@@ -1,4 +1,4 @@
-function [sys_index_list, fullPulseWave] = find_systole_index(video, maskArtery)
+function [sys_index_list, fullPulseWave, sys_max_list, sys_min_list] = find_systole_index(video, maskArtery)
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
@@ -13,6 +13,25 @@ pulse_init = pulse_init - mean(pulse_init, "all");
 diff_signal = diff(pulse_init);
 [~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * PW_params.systoleThreshold);
 
+i=1;
+while i < (numel(sys_index_list))
+    if sys_index_list(i+1)-sys_index_list(i)<10 % removes the cycles of less than 10 points
+        sys_index_list(i+1) = [];
+    end
+    i = i+1;
+end
+
+for i=1:(numel(sys_index_list)-1)
+    [~,amax] = max(pulse_init(sys_index_list(i):sys_index_list(i+1)));
+    sys_max_list(i) = sys_index_list(i) + amax - 1 ;
+end
+
+for i=1:(numel(sys_index_list)-1)
+    [~,amin] = min(pulse_init(sys_index_list(i):sys_index_list(i+1)));
+    sys_min_list(i) = sys_index_list(i) + amin - 1 ;
+end
+
+    
 %     figure(3)
 %     plot(diff_signal);
 %     title('pulse init derivate');

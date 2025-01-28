@@ -15,6 +15,7 @@ arterial_signal_smooth = smoothdata(arterial_signal, 'rlowess');
 vMin = min(arterial_signal_smooth);
 vMax = max(arterial_signal_smooth);
 vMean = mean(arterial_signal_smooth);
+vStd = std(arterial_signal);
 
 ARI = (vMax - vMin) / vMax;
 API = (vMax - vMin) / vMean;
@@ -34,6 +35,12 @@ graphSignal(sprintf('API_%s', name), folder, ...
     yLines = [0, vMin, vMean, vMax], yLineLabels = {'', '', '', ''});
 
 fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+if strcmp(name,'velocity')
+    fprintf(fileID, 'Mean Velocity : %f (mm/s) \r\n',vMean);
+    fprintf(fileID, 'Std Velocity : %f (mm/s) \r\n',vStd);
+    fprintf(fileID, 'Max Velocity : %f (mm/s) \r\n',vMax);
+    fprintf(fileID, 'Min Velocity : %f (mm/s) \r\n',vMin);
+end
 fprintf(fileID, 'Arterial Resistivity Index (%s) : %f  \r\n', name, ARI);
 fprintf(fileID, 'Arterial Pulsatility Index (%s) : %f  \r\n', name, API);
 fclose(fileID);
