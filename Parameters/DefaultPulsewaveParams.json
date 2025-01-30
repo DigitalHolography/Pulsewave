@@ -6,7 +6,7 @@
         "Start frame": 1,
         "End frame": -1
     },
-    "Normalize by time average" : 0,
+    "Normalize by time average" : 1,
     "Moment Normalize Convolution parameter": 1,
     "Resize video": {
         "Frame width": -1,
@@ -15,8 +15,8 @@
     },
     "Value of the interpolation parameter": 1,
     "Remove Outliers option": 0,
-    "Veins Analysis": 1,
-    "Export Videos": 1,
+    "Veins Analysis": 0,
+    "Export Videos": 0,
     "Flat field correction": {
         "GW ratio": 0.07,
         "Border": 0.15,
@@ -32,7 +32,7 @@
         "Vascular Correlation Map Threshold": -2,
         "Vascular Classes": [-1, 1],
         "Minimum seed area size": 150,
-        "DiaSys Analysis" : 1,
+        "DiaSys Analysis" : 0,
         "Arterial Correlation Map Threshold": -2,
         "Arterial Classes": [0, 1],
         "Venous Correlation Map Threshold": -2,

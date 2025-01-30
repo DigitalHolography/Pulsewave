@@ -10,7 +10,6 @@ function [mask, R_Vessel] = processVascularSignal(M0_ff_video, maskClean, maskVe
     %   cmap                - Colormap for visualization.
     %   prefix              - Prefix for saving files (e.g., 'artery' or 'vein').
     %   folder_steps        - Folder to save intermediate results.
-    %   main_folder         - Main folder name for saving files.
     %   ToolBox             - Toolbox structure containing paths and parameters.
     %
     % Outputs:

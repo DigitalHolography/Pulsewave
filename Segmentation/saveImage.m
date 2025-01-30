@@ -9,6 +9,10 @@ end
 
 main_folder = ToolBox.main_foldername;
 
+if size(I, 3) == 1 && isa(I, 'numeric')
+    I = rescale(I);
+end
+
 if opt.isStep
     folderPath = fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, suffix));
 else

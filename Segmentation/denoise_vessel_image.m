@@ -1,4 +1,4 @@
-function [M0_nlm_img, M0_binary_img] = denoise_vessel_image(M0_ff_img, ToolBox)
+function [M0_nlm_img, M0_binary_img] = denoise_vessel_image(M0_ff_img, diaphragm, name, ToolBox)
     % Input: M0_ff_img - Noisy vessel image (numX x numY)
     % Output: M0_denoised_img - Denoised vessel image
 
@@ -31,14 +31,12 @@ function [M0_nlm_img, M0_binary_img] = denoise_vessel_image(M0_ff_img, ToolBox)
     % Apply Frangi Vesselness Filter
     M0_vesselness_img = vesselness_filter(M0_nlm_img, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
 
-    % Step 4: Postprocessing
-    % Adjust contrast using histogram equalization
-    M0_enhanced_img = adapthisteq(M0_vesselness_img);
-
     % Thresholding to segment vessels (optional)
-    threshold = graythresh(M0_enhanced_img); % Otsu's method
-    M0_binary_img = imbinarize(M0_enhanced_img, threshold);
 
-    saveImage(rescale(M0_nlm_img), ToolBox, 'all_1_1_DenoisedM0.png', isStep = true)
-    saveImage(M0_binary_img, ToolBox, 'all_1_2_vesselMask.png', isStep = true)
+    M0_vesselness_img = M0_vesselness_img .* diaphragm;
+    threshold = graythresh(M0_vesselness_img); % Otsu's method
+    M0_binary_img = imbinarize(M0_vesselness_img, threshold);
+
+    saveImage(rescale(M0_nlm_img), ToolBox, sprintf('%s_M0_desnoised_img.png', name), isStep = true)
+    saveImage(M0_binary_img, ToolBox, sprintf('%s_maskVessel.png', name), isStep = true)
 end
