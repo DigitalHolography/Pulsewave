@@ -1,26 +1,29 @@
-function [v_RMS_video, exec_times] = pulseAnalysis(f_RMS_video, f_AVG_video, M0_disp_video, sysIdxList, maskArtery, maskVein, maskBackground, maskSection, flag_ExtendedPulseWave_analysis)
-
-% Variable : LocalBKG_artery, Taille : 10631287200 bytes
-% Variable : f_AVG_video, Taille : 10631287200 bytes (DEBUT)
-% Variable : f_RMS_video, Taille : 10631287200 bytes (DEBUT)
-% Variable : maskArtery, Taille : 18849800 bytes (DEBUT)
-% Variable : meanIm, Taille : 18849800 bytes  (DEBUT)
-% Variable : maskBackground, Taille : 2356225 bytes (DEBUT)
-% Variable : maskVein, Taille : 2356225 bytes (DEBUT)
-% Variable : variableInfo, Taille : 12898 bytes
-
-exec_times_id = [];
-exec_times_time = [];
+function [v_RMS_video] = pulseAnalysis(f_RMS_video, maskArtery, maskVein, maskSection, maskNeighbors)
+% pulseAnalysis.m computes the velocities
+% Inputs:
+%       VIDEOS:
+%   f_RMS_video     Size: numX x numY x numFrames double
+%   M0_disp_video   Size: numX x numY x numFrames double
+%       IMAGES:
+%   f_AVG_image     Size: numX x numY double
+%   maskArtery      Size: numX x numY logical
+%   maskBackground  Size: numX x numY logical
+%   maskSection     Size: numX x numY logical
+%   maskVein        Size: numX x numY logical
+%       TRIVIA:
+%   sysIdxList:     Size: numSystoles
+%   flagExtended    Size: 1
+%
+% Output:
+%   v_RMS_video     Size: numX x numY x numFrames double
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 veinsAnalysis = PW_params.veins_analysis;
-entirePulseAnalysis = flag_ExtendedPulseWave_analysis;
 exportVideos = PW_params.exportVideos;
 
 maskArterySection = maskArtery & maskSection;
 maskVeinSection = maskVein & maskSection;
-maskBackgroundSection = maskBackground & maskSection;
 
 mkdir(ToolBox.PW_path_png, 'pulseAnalysis')
 mkdir(ToolBox.PW_path_eps, 'pulseAnalysis')
@@ -37,44 +40,48 @@ cVein = [18 23 255] / 255;
 %% 1) Local BKG Artery and Veins %~1min
 
 tic
-exec_times_id = [exec_times_id, "Local BKG Artery and Veins"];
-
-if veinsAnalysis
-    maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
-    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
-
-else
-    maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
-    imwrite(maskVesselDilated, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'maskVesselDilated.png')), 'png');
-end
 
 f_RMS_background = zeros(numX, numY, numFrames, 'single');
 
+w =  PW_params.local_background_width;
+k =  PW_params.k;
+
+if veinsAnalysis
+    maskVessel = maskArtery | maskVein;
+else
+    maskVessel = maskArtery;
+end
+
 parfor frameIdx = 1:numFrames
-    f_RMS_background(:, :, frameIdx) = single(regionfill(f_RMS_video(:, :, frameIdx), maskVesselDilated));
+    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, maskNeighbors, maskVessel));
 end
 
 graphSignal('1_Arteries_fRMS', folder, ...
     t, squeeze(sum(f_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
     t, squeeze(sum(f_RMS_background .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '--', cBlack, ...
     Title = 'Average f_{RMS} in Arteries', xlabel = strXlabel, ylabel = strYlabel, ...
-    Legend = {'Arteries', 'Background'});
+    Legend = {'Arteries', 'Local Background'});
+
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_advanced_outputs', '.txt')), 'a');
+fprintf(fileID, 'Mean fRMS difference artery : %f (kHz) \r\n',mean(squeeze(sum(f_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)))-mean(squeeze(sum(f_RMS_background .* maskArterySection, [1, 2]) / nnz(maskArterySection))));
+fclose(fileID);
 
 if veinsAnalysis
     graphSignal('1_Veins_fRMS', folder, ...
         t, squeeze(sum(f_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '-', cVein, ...
         t, squeeze(sum(f_RMS_background .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '--', cBlack, ...
         Title = 'Average f_{RMS} in Veins', xlabel = strXlabel, ylabel = strYlabel, ...
-        Legend = {'Veins', 'Background'});
+        Legend = {'Veins', 'Local Background'});
+    fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_advanced_outputs', '.txt')), 'a');
+    fprintf(fileID, 'Mean fRMS difference vein : %f (kHz) \r\n',mean(squeeze(sum(f_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)))-mean(squeeze(sum(maskVeinSection .* maskVeinSection, [1, 2]) / nnz(maskVeinSection))));
+    fclose(fileID);
 end
 
 fprintf("    1. Local BKG Artery and Veins calculation took %ds\n", round(toc))
-exec_times_time = [exec_times_time, toc];
 
 %% 2) Difference calculation
 
 tic
-exec_times_id = [exec_times_id, "Difference calculation"];
 
 if PW_params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
 
@@ -102,17 +109,24 @@ if veinsAnalysis
         t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         t, squeeze(sum(v_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '-', cVein, ...
         Title = 'Average estimated velocity in Arteries and Veins', xlabel = strXlabel, ylabel = 'mm/s');
+    
 else
     graphSignal('2_Arteries_velocity', folder, ...
         t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         Title = 'Average estimated velocity in Arteries', xlabel = strXlabel, ylabel = 'mm/s');
-end
 
-exec_times_time = [exec_times_time, toc];
+end
+fprintf("    2. Difference calculation took %ds\n", round(toc))
+
+ArterialResistivityIndex(t, v_RMS_video, maskArtery, 'velocity', folder);
+
+%% 6) Plots of f_RMS mean Local Background in vessels and Delta frequency in vessels and their colorbars
+tic
 
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
-LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVesselDilated + ones(numX, numY) * mean(f_RMS_background, 'all') .* ~maskVesselDilated;
+
+LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVessel + ones(numX, numY) * mean(sum(f_RMS_background.*maskVessel, [1,2])/nnz(maskVessel),3) .* ~maskVessel;
 imagesc(LocalBackground_in_vessels);
 colormap gray
 title('Local Background in vessels');
@@ -123,22 +137,100 @@ c.Label.String = 'RMS Doppler frequency (kHz)';
 c.Label.FontSize = 12;
 axis off
 axis image
+range(1:2) = clim;
+
 imwrite(rescale(LocalBackground_in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_LocalBackground_in_vessels.png')))
+
+colorfig = figure("Visible", "off");
+colorfig.Units = 'normalized';
+colormap(c);
+colormap gray
+LocalBackground_colorbar = colorbar('north');
+clim(range)
+set(gca, 'Visible', false)
+set(gca, 'LineWidth', 3);
+LocalBackground_colorbar.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca, 15, "points");
+colorTitleHandle = get(LocalBackground_colorbar, 'Title');
+titleString = 'Local Background RMS frequency (kHz)';
+set(colorTitleHandle, 'String', titleString);
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarLocalBackground_in_vessels.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarLocalBackground_in_vessels.eps')))
+
+
 
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
-in_vessels = mean(delta_f_RMS, 3) .* maskVesselDilated;
+in_vessels = mean(delta_f_RMS, 3) .* maskVessel;
 imagesc(in_vessels);
 colormap gray
 title('Delta f in vessels');
 fontsize(gca, 14, "points");
 set(gca, 'LineWidth', 2);
 c = colorbar('southoutside');
-c.Label.String = 'RMS Doppler frequency (kHz)';
+c.Label.String = 'Delta Doppler RMS frequency (kHz)';
 c.Label.FontSize = 12;
 axis off
 axis image
+range(1:2) = clim;
 imwrite(rescale(in_vessels), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_Df_in_vessels.png')))
+
+colorfig = figure("Visible", "off");
+colorfig.Units = 'normalized';
+colormap(c);
+colormap gray
+Df_colorbar = colorbar('north');
+clim(range);
+set(gca, 'Visible', false)
+set(gca, 'LineWidth', 3);
+Df_colorbar.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca, 15, "points");
+colorTitleHandle = get(Df_colorbar, 'Title');
+titleString = 'Delta Doppler RMS frequency (kHz)';
+set(colorTitleHandle, 'String', titleString);
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarDf_in_vessels.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorBarDf_in_vessels.eps')))
+
+
+figure("Visible", "off")
+imagesc(squeeze(mean(f_RMS_video, 3)));
+colormap gray
+title('RMS frequency map RAW');
+fontsize(gca, 12, "points");
+set(gca, 'LineWidth', 2);
+c = colorbar('southoutside');
+c.Label.String = 'RMS frequency (kHz)';
+c.Label.FontSize = 12;
+axis off
+axis image
+range(1:2) = clim;
+imwrite(rescale(squeeze(mean(f_RMS_video, 3))), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_frequency_RMS.png')), 'png');
+
+
+colorfig = figure("Visible", "off");
+colorfig.Units = 'normalized';
+colormap(c);
+colormap gray
+f_RMS_colorbar = colorbar('north');
+clim(range);
+set(gca, 'Visible', false)
+set(gca, 'LineWidth', 3);
+f_RMS_colorbar.Position = [0.10 0.3 0.81 0.35];
+colorfig.Position(4) = 0.1000;
+fontsize(gca, 15, "points");
+colorTitleHandle = get(f_RMS_colorbar, 'Title');
+titleString = 'RMS frequency (kHz)';
+set(colorTitleHandle, 'String', titleString);
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorbarRMSFrequency.png')))
+exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '6_ColorbarRMSFrequency.eps')))
+
+fprintf("    6. Plotting heatmaps took %ds\n", round(toc))
+
 
 if exportVideos
     f_RMS_video_rescale = rescale(f_RMS_video);
@@ -154,15 +246,10 @@ if exportVideos
     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
 
-fprintf("    2. Difference calculation took %ds\n", round(toc))
+
 
 clear LocalBackground_in_vessels f_RMS_background
 
-if entirePulseAnalysis
-    [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_disp_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_RMS_video, exec_times_id, exec_times_time, maskBackgroundSection, maskArterySection, maskVeinSection, sysIdxList);
-end
-
-exec_times = [exec_times_id; exec_times_time];
 return;
 
 end

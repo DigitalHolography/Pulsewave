@@ -1,10 +1,5 @@
-function [outputArg1,outputArg2] = ShowOutputs(PW_paths,output_dir)
+function ShowOutputs(PW_paths,output_dir)
 % This function show multiple outputs from the foldermanagement drawerlist
-figure(435)
-title("Segmentation")
-
-figure(321)
-title("Blood Volume Rate")
 
 for ind =1:length(PW_paths)
     split_path = strsplit(PW_paths{ind}, '\');
@@ -23,20 +18,56 @@ for ind =1:length(PW_paths)
     end
     last_PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
     
-    if exist(fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_arteryVeinSegmentation.png']))
-        segmentation_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_arteryVeinSegmentation.png']);
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_Segmentation.png']))
+        segmentation_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','mask',[main_foldername,'_Segmentation.png']);
     end
-    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']))
-        bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRateallradxtime.png']);
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRate_allrad_Artery_time.png']))
+        bvr_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_volumeRate_allrad_Artery_time.png']);
     end
-
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_1_Arteries_fRMS.png']))
+        Arteries_fRMS_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_1_Arteries_fRMS.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_ARI_velocity.png']))
+        ARI_velocity_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_ARI_velocity.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','bloodFlowVelocity',[main_foldername,'_histogramVelocityArteries.png']))
+        histo_art_velocity_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','bloodFlowVelocity',[main_foldername,'_histogramVelocityArteries.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_2_Arteries_velocity.png']))
+        art_velocity_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','pulseAnalysis',[main_foldername,'_2_Arteries_velocity.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_ARI_BVR.png']))
+        ARI_BVR_paths{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_ARI_BVR.png']);
+    end
+    if exist(fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_strokeAndTotalVolume.png']))
+        Stroke_total_volume{ind} = fullfile(pw_path,last_PW_folder_name,'png','volumeRate',[main_foldername,'_strokeAndTotalVolume.png']);
+    end
+    
 end
 
-figure(435)
-montage(segmentation_paths);
+figure(320)
+montage(segmentation_paths, Size = [1 4]);
 exportgraphics(gca,fullfile(output_dir,'segmentations.png'));
 figure(321)
-montage(bvr_paths);
+montage(Arteries_fRMS_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'ArteriesfRMS.png'));
+figure(322)
+montage(ARI_velocity_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'ARIvelocity.png'));
+figure(323)
+montage(bvr_paths, Size = [1 4]);
 exportgraphics(gca,fullfile(output_dir,'bloodVolumeRate.png'));
+figure(324)
+montage(histo_art_velocity_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'histogramVelocityArteries.png'));
+figure(325)
+montage(art_velocity_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'ArteriesVelocity.png'));
+figure(326)
+montage(ARI_BVR_paths, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'ARIvelocityBVR.png'));
+figure(327)
+montage(Stroke_total_volume, Size = [1 4]);
+exportgraphics(gca,fullfile(output_dir,'_strokeAndTotalVolume.png'));
 
 end

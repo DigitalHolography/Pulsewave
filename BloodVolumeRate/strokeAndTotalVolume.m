@@ -5,12 +5,16 @@ ToolBox = getGlobalToolBox;
 figure("Visible","off");
 
 [interp_BvrT, avgLength, interp_std_BvrT] = interpSignal(mean_BvrT, systolesIndexes, numInterp, mean_std_BvrT);
+
+if isempty(interp_BvrT)
+    return
+end
 dt = (fullTime(2) - fullTime(1));
 pulseTime = dt * (1:numInterp) * avgLength / numInterp;
 
-[~, amin] = min(interp_BvrT);
-[~, amax] = max(interp_BvrT);
-cshiftn = numInterp - amin;
+[maxsystole_bvr_value, amin] = min(interp_BvrT);
+[mindiastole_bvr_value, amax] = max(interp_BvrT);
+cshiftn = mod(numInterp - amin + 1, numInterp);
 
 hold off
 
@@ -27,12 +31,12 @@ xline(pulseTime(end), 'k--', 'LineWidth', 2)
 % Remaining Stroke Volume
 hold on
 curve1 = circshift(interp_BvrT, cshiftn);
-curve1 = curve1(1:amax + cshiftn);
+curve1 = curve1(1:min(amax + cshiftn,numInterp));
 curve2 = 0 * ones(size(curve1));
-ft2 = [pulseTime(1:amax + cshiftn), fliplr(pulseTime(1:amax + cshiftn))];
+ft2 = [pulseTime(1:min(amax + cshiftn,numInterp)), fliplr(pulseTime(1:min(amax + cshiftn,numInterp)))];
 inBetween = [curve1, fliplr(curve2)]';
 cCrimson = [222, 49, 99] / 255;
-xline(pulseTime(amax + cshiftn), 'k--', 'LineWidth', 2)
+xline(pulseTime(min(amax + cshiftn,numInterp)), 'k--', 'LineWidth', 2)
 fill(ft2, inBetween, cCrimson, 'EdgeColor', 'none');
 
 % Grey STD and Signal
@@ -57,7 +61,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), axP(3), axP(4)])
+axis([axT(1), axT(2), - 5 , 70])
 xlim([pulseTime(1)-1/2 * pulseTime(end), 3/2 * pulseTime(end)])
 box on
 
@@ -65,7 +69,7 @@ ylabel('Blood Volume Rate (µL/min)')
 xlabel('Time (s)')
 ccinterpBvrT = circshift(interp_BvrT, cshiftn);
 dt2 = pulseTime2(2) - pulseTime2(1);
-stroke_volume_value = sum(ccinterpBvrT(1:amax + cshiftn)) * dt2 / 60 * 1000; % in nL
+stroke_volume_value = sum(ccinterpBvrT(1:min(amax + cshiftn,numInterp))) * dt2 / 60 * 1000; % in nL
 total_volume_value = sum(ccinterpBvrT) * dt2 / 60 * 1000;
 title(sprintf("Retinal Stroke Volume : %02.0f nL and Total Volume : %02.0f nL", stroke_volume_value, total_volume_value));
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
@@ -73,4 +77,13 @@ box on
 set(gca, 'LineWidth', 2)
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
+
+
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+fprintf(fileID, 'MaxSystole Blood Volume Rate Artery : %f (µL/min) \r\n',maxsystole_bvr_value);
+fprintf(fileID, 'MinDiastole Blood Volume Rate Artery : %f (µL/min) \r\n',mindiastole_bvr_value);
+fprintf(fileID, 'Stroke Volume Artery : %f (nL) \r\n',stroke_volume_value);
+fprintf(fileID, 'Total Volume Artery : %f (nL) \r\n',total_volume_value);
+fclose(fileID);
+
 end

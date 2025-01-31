@@ -89,7 +89,7 @@ function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r
         valArtery = valA .* (~maskSection & maskArtery) + valSectionA .* (maskSection & maskArtery);
         
         VesselImageRGB = hsv2rgb(hueArtery, satArtery, valArtery) + maskSectionRGB .* ~maskArtery + (M0_ff_img_RGB .* ~maskArtery);
-        if ~exist(fullfile(ToolBox.PW_path_png, 'mask'))
+        if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
             mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
         end
         imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
@@ -105,7 +105,7 @@ function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r
         valVessel = valA .* (~maskSection & maskArtery) + valV .* (~maskSection & maskVein) + valSectionA .* (maskSection & maskArtery) + valSectionV .* (maskSection & maskVein);
         
         VesselImageRGB = hsv2rgb(hueVessel, satVessel, valVessel) + maskSectionRGB .* ~maskVessel + (M0_ff_img_RGB .* ~maskVessel);
-        if ~exist(fullfile(ToolBox.PW_path_png, 'mask'))
+        if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
             mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
         end
         imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');

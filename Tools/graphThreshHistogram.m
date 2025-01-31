@@ -9,12 +9,12 @@ numColors = size(colors, 1);
 
 figure('Visible','off')
 imagesc(R .* mask)
-title('Correlation with Colorbar');
-colormap(cmapPerception('rocket'))
+title('Map with Colorbar');
+colormap(cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1))
 colorbar
 axis off
 axis image
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_CorrMapColorbar.png', name))))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_MapColorbar.png', name))))
 
 
 if size(colors, 1) ~= numLevel + 1

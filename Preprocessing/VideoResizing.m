@@ -6,7 +6,7 @@ out_height = PW_params.frameHeight;
 out_width = PW_params.frameWidth;
 out_numFrames = PW_params.videoLength;
 
-[numX, numY, numFrames] = size(obj.M0_disp_video);
+[numX, numY, numFrames] = size(obj.M0_ff_video);
 
 isHeightResized = out_height > 0;
 isWidthResized = out_width > 0;
@@ -37,9 +37,9 @@ end
 [Xq, Yq, Zq] = meshgrid(linspace(1, numY, out_width), linspace(1, numX, out_height), linspace(1, numFrames, out_numFrames));
 % tmp_ref = zeros(numX, numY, numFrames);
 
-tmp_calc = obj.M0_disp_video;
+tmp_calc = obj.M0_ff_video;
 tmp = interp3(tmp_calc, Xq, Yq, Zq);
-obj.M0_disp_video = single(tmp);
+obj.M0_ff_video = single(tmp);
 
 tmp_calc = obj.f_AVG_video;
 tmp = interp3(tmp_calc, Xq, Yq, Zq);

@@ -1,5 +1,4 @@
-function [exec_times_id, exec_times_time] = extendedPulseAnalysis(M0_ff_video, f_RMS_video, f_AVG_video, delta_f_RMS, v_video, ...
-    exec_times_id, exec_times_time, maskBackground, maskArtery, maskVein, sysIdxList)
+function extendedPulseAnalysis(M0_ff_video, f_RMS_video, f_AVG_mean, v_RMS, maskArtery, maskVein, maskSection, sysIdxList)
 
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
@@ -7,15 +6,19 @@ numFramesInterp = PW_params.oneCycleNinterp;
 
 tic
 
-[numX, numY, numFrames] = size(f_RMS_video);
+[~, ~, numFrames] = size(f_RMS_video);
 strXlabel = 'Time(s)'; %createXlabelTime(1);
 strYlabel = 'frequency (kHz)';
 t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
-f_AVG_mean = mean(f_AVG_video, 3); 
 
 veinsAnalysis = PW_params.veins_analysis;
 exportVideos = PW_params.exportVideos;
 folder = 'pulseAnalysis';
+
+maskArtery = maskArtery & maskSection;
+maskVein = maskVein & maskSection;
+maskVessel = maskArtery | maskVein;
+maskBackground = ~maskVessel & maskSection;
 
 cBlack = [0 0 0];
 cArtery = [255 22 18] / 255;
@@ -62,55 +65,8 @@ set(colorTitleHandle, 'String', titleString);
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG_colorbar.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG_colorbar.eps')))
 
-exec_times_id = [exec_times_id, "Doppler AVG frequency heatmap"];
-exec_times_time = [exec_times_time, toc];
-
-%% 3) 2) Doppler RMS frequency heatmap
-
-tic
-
-f_RMS = squeeze(mean(f_RMS_video, 3));
-
-%  Doppler AVG frequency heatmap
-figure("Visible", "off")
-imagesc(f_RMS);
-colormap gray
-title('RMS frequency map RAW');
-fontsize(gca, 12, "points");
-set(gca, 'LineWidth', 2);
-c = colorbar('southoutside');
-c.Label.String = 'RMS Doppler frequency (kHz)';
-c.Label.FontSize = 12;
-axis off
-axis image
-range(1:2) = clim;
-imwrite(rescale(f_RMS), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_RMS.png')), 'png');
-
-clear f_RMS
-
-% Colorbar for AVG image
-colorfig = figure("Visible", "off");
-colorfig.Units = 'normalized';
-colormap(c);
-colormap gray
-f_RMS_colorbar = colorbar('north');
-clim(range)
-set(gca, 'Visible', false)
-set(gca, 'LineWidth', 3);
-f_RMS_colorbar.Position = [0.10 0.3 0.81 0.35];
-colorfig.Position(4) = 0.1000;
-fontsize(gca, 15, "points");
-colorTitleHandle = get(f_RMS_colorbar, 'Title');
-titleString = 'RMS Doppler frequency (kHz)';
-set(colorTitleHandle, 'String', titleString);
-
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_colorbarRMSFrequency.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_colorbarRMSFrequency.eps')))
 
 fprintf("    3. Raw heatmaps generation took %ds\n", round(toc(t3)))
-
-exec_times_id = [exec_times_id, "Doppler RMS frequency heatmap"];
-exec_times_time = [exec_times_time, toc];
 
 %% 4 ) Calculate raw signals of arteries, background and veins
 
@@ -143,9 +99,6 @@ else
 end
 
 fprintf("    4. Calculation of raw signals of arteries, background and veins took %ds\n", round(toc))
-
-exec_times_id = [exec_times_id, "Calculate raw signals"];
-exec_times_time = [exec_times_time, toc];
 
 %% 5) Smoothing signals
 
@@ -201,9 +154,6 @@ graphSignal('5_filteredPulseVsResidual', folder, ...
 
 fprintf("    5. Smoothing signals took %ds\n", round(toc))
 
-exec_times_id = [exec_times_id, "Smoothing signals"];
-exec_times_time = [exec_times_time, toc];
-
 %% 6) Calculation of pulse signal derivative and finding/smoothing pulses
 
 tic
@@ -215,9 +165,6 @@ if veinsAnalysis
     fullVenousPulseDerivative = gradient(venous_signal);
     fullVenousPulseSmoothDerivative = gradient(delta_f_venous_smooth);
 end
-
-exec_times_id = [exec_times_id, "Calculate pulse derivative"];
-exec_times_time = [exec_times_time, toc];
 
 % now cleanup dataCube to create_one_cycle()
 % strategy : use average pulse profiles to detect and
@@ -276,6 +223,8 @@ fprintf("    Average Pulse\n")
 clear f_RMS_video f_RMS_video
 
 fprintf("    Average Pulse minus Background\n")
+delta_f_RMS = v_RMS / ToolBox.ScalingFactorVelocityInPlane;
+
 [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_ff_video, maskArtery, sysIdxList, numFramesInterp);
 
 clear delta_f_RMS
@@ -346,10 +295,7 @@ axis tight;
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
 exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
 
-ArterialResistivityIndex(t, v_video, maskArtery, 'v', folder)
 
-exec_times_id = [exec_times_id, "Average pulse for In-plane arteries"];
-exec_times_time = [exec_times_time, toc];
 
 %% Arterial pulse wave analysis
 
@@ -386,9 +332,6 @@ if ~isnan(onePulseVideoM0)
 
     clear onePulseVideo
     clear onePulseVideominusBKG
-
-    exec_times_id = [exec_times_id, "Arterial Pulsewave analysis"];
-    exec_times_time = [exec_times_time, toc];
 
     %% PLOT
 
