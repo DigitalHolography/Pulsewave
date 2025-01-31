@@ -20,8 +20,7 @@ end
 %% 1) First Masks and Correlation
 
 [numX, numY, numFrames] = size(M0_ff_video);
-maskDiaphragm = diskMask(numX, numY, PW_params.masks_diaphragmRadius);
-saveImage(maskDiaphragm, ToolBox, 'all_1_0_maskDiaphragm.png', isStep = true)
+
 
 M0_ff_img = squeeze(mean(M0_ff_video, 3));
 M0_ff_video_centered = M0_ff_video - M0_ff_img;
@@ -29,6 +28,9 @@ saveImage(M0_ff_img, ToolBox, 'all_1_0_M0.png', isStep = true)
 if ~isfile(fullfile(ToolBox.PW_path_gif, sprintf("%s_M0.gif", ToolBox.PW_folder_name)))
     writeGifOnDisc(M0_ff_video, "M0")
 end
+
+maskDiaphragm = diskMask(numX, numY, PW_params.masks_diaphragmRadius);
+saveImage(rescale(M0_ff_img) + maskDiaphragm .* 0.5, ToolBox, 'all_1_0_maskDiaphragm.png', isStep = true)
 
 %% 1) 1) Compute vesselness response
 
@@ -173,13 +175,14 @@ if diasysAnalysis
 
     diasysArtery = M0_Systole_img - M0_Diastole_img;
     diasysVein = M0_ff_img - diasysArtery;
+    DIASYS = diasysArtery - diasysVein;
     saveImage(diasysArtery, ToolBox,  'all_2_0_DIASYS_Artery.png', isStep = true)
     saveImage(diasysVein, ToolBox,  'all_2_0_DIASYS_Vein.png', isStep = true)
-    saveImage(diasysArtery - diasysVein, ToolBox,  'all_2_0_DIASYSGRAY.png', isStep = true)
+    saveImage(DIASYS, ToolBox,  'all_2_0_DIASYSGRAY.png', isStep = true)
 
     Labdiasys(:, :, 1) = 100 .* rescale(M0_ff_img);
-    Labdiasys(:, :, 2) = 256 .* rescale(diasysArtery - diasysVein) - 128;
-    Labdiasys(:, :, 3) = 256 .* rescale(diasysArtery - diasysVein) - 128;
+    Labdiasys(:, :, 2) = 256 .* rescale(DIASYS) - 128;
+    Labdiasys(:, :, 3) = 256 .* rescale(DIASYS) - 128;
     RGBdiasys = lab2rgb(Labdiasys);
     saveImage(RGBdiasys, ToolBox, 'all_2_0_DIASYSRGB.png', isStep = true)
 

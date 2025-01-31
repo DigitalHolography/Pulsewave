@@ -190,7 +190,7 @@ uiwait(d);
 
         % Display the image with the masks on the axes in the dialog
         imshow(RGBM0, 'Parent', ax);
-        imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_vessel_1_5_Histo.png", ToolBox.main_foldername))), 'Parent', ax0);
+        imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_all_1_5_Histo.png", ToolBox.main_foldername))), 'Parent', ax0);
         if isfile(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_artery_2_3_Histo.png", ToolBox.main_foldername)))
             imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_artery_2_3_Histo.png", ToolBox.main_foldername))), 'Parent', ax1);
         end

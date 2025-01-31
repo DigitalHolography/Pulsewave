@@ -35,7 +35,7 @@ end
 % Step 0: Remove disconnected objects using area filtering
 initialMask = single(mask);
 mask = mask & bwareafilt(mask | circle, 1, 4);
-imwrite(initialMask + single(circle) .* 0.5, colormap, fullfile(outputDir, sprintf("%s_%s_1_AreaFiltered.png", main_folder, name)))
+imwrite(initialMask + single(circle) .* 0.5, fullfile(outputDir, sprintf("%s_%s_1_AreaFiltered.png", main_folder, name)))
 
 % Step 1: Remove small objects using area opening
 mask = bwareaopen(mask, PW_params.masks_minSize, 4);

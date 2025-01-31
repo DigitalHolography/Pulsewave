@@ -1,6 +1,14 @@
-function [M0_nlm_img, M0_binary_img] = denoise_vessel_image(M0_ff_img, diaphragm, name, ToolBox)
+function [M0_nlm_img, M0_binary_img] = denoise_vessel_image(M0_ff_img, diaphragm, name, ToolBox, options)
     % Input: M0_ff_img - Noisy vessel image (numX x numY)
     % Output: M0_denoised_img - Denoised vessel image
+
+    arguments
+        M0_ff_img 
+        diaphragm 
+        name 
+        ToolBox 
+        options.BlackWhite = false
+    end
 
     PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
 
@@ -29,14 +37,13 @@ function [M0_nlm_img, M0_binary_img] = denoise_vessel_image(M0_ff_img, diaphragm
 
     % Step 3: Vessel Enhancement
     % Apply Frangi Vesselness Filter
-    M0_vesselness_img = vesselness_filter(M0_nlm_img, PW_params.masks_vesselness_sigma, PW_params.masks_vesselness_beta);
+    M0_vesselness_img = FrangiFilter2D(M0_nlm_img, "BlackWhite", options.BlackWhite);
 
     % Thresholding to segment vessels (optional)
-
-    M0_vesselness_img = M0_vesselness_img .* diaphragm;
-    threshold = graythresh(M0_vesselness_img); % Otsu's method
-    M0_binary_img = imbinarize(M0_vesselness_img, threshold);
+    M0_binary_img = imbinarize(M0_vesselness_img, "adaptive");
+    M0_binary_img = logical(M0_binary_img .* diaphragm);
 
     saveImage(rescale(M0_nlm_img), ToolBox, sprintf('%s_M0_desnoised_img.png', name), isStep = true)
+    saveImage(M0_vesselness_img, ToolBox, sprintf('%s_vesselness_img.png', name), isStep = true)
     saveImage(M0_binary_img, ToolBox, sprintf('%s_maskVessel.png', name), isStep = true)
 end
