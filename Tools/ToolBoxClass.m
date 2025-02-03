@@ -177,5 +177,9 @@ classdef ToolBoxClass < handle
             copyfile(path_file_json_params, obj.PW_path_json);
         end
 
+        function Params = getParams(obj)
+            Params = Parameters_json(obj.PW_path,obj.PW_param_name);
+        end
+
     end
 end

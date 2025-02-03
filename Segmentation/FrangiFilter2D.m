@@ -35,8 +35,8 @@ function [outIm,whatScale,Direction] = FrangiFilter2D(I, options)
 
 arguments
 I 
-options.FrangiScaleRange = [1 10]
-options.FrangiScaleRatio = 2
+options.FrangiScaleRange = [1 5]
+options.FrangiScaleRatio = 1
 options.FrangiBetaOne = 0.5
 options.FrangiBetaTwo = 15
 options.verbose = false
