@@ -333,8 +333,8 @@ if ~isempty(PW_params.forcebarycenter)
 end
 
 xy_barycenter = [x_CRA, y_CRA];
-maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery);
-createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein);
+maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery,thin=10);
+createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein,thin=10);
 
 %% Create Segmentation Map
 
