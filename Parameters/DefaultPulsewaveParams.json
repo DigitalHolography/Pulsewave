@@ -6,7 +6,7 @@
         "Start frame": 1,
         "End frame": -1
     },
-    "Normalize by time average" : 1,
+    "Normalize by time average": 1,
     "Moment Normalize Convolution parameter": 1,
     "Resize video": {
         "Frame width": -1,
@@ -14,9 +14,9 @@
         "Video length": -1
     },
     "Value of the interpolation parameter": 1,
-    "Remove Outliers option": 0,
+    "Remove Outliers option": 1,
     "Veins Analysis": 0,
-    "Export Videos": 0,
+    "Export Videos": 1,
     "Flat field correction": {
         "GW ratio": 0.07,
         "Border": 0.15,
@@ -30,18 +30,27 @@
         "Gaussian Filter Size For Barycenter": 1.5,
         "Crop coroid radius": 0.3,
         "Vascular Correlation Map Threshold": -2,
-        "Vascular Classes": [-1, 1],
+        "Vascular Classes": [
+            -1,
+            1
+        ],
         "Minimum seed area size": 150,
-        "DiaSys Analysis" : 0,
+        "DiaSys Analysis": 0,
         "Arterial Correlation Map Threshold": -2,
-        "Arterial Classes": [0, 1],
+        "Arterial Classes": [
+            0,
+            1
+        ],
         "Venous Correlation Map Threshold": -2,
-        "Venous Classes": [0, -1],
+        "Venous Classes": [
+            0,
+            -1
+        ],
         "Central Retina Vein Artery threshold": 3,
         "Imclose Radius": 5,
         "Minimum Vessel Width": 3,
-        "Final Dilation" : 3,
-        "Force Vessel Width" : 0
+        "Final Dilation": 3,
+        "Force Vessel Width": 0
     },
     "Systole Detection": {
         "Systole threshold ratio of maximum": 0.7

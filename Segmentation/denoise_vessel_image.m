@@ -37,11 +37,10 @@ function [M0_binary_img] = denoise_vessel_image(M0_ff_img, diaphragm, name, Tool
 
     % Step 3: Vessel Enhancement
     % Apply Frangi Vesselness Filter
-    M0_vesselness_img = FrangiFilter2D(M0_norm_img, "BlackWhite", options.BlackWhite);
+    M0_vesselness_img = FrangiFilter2D(M0_norm_img, "BlackWhite", options.BlackWhite) .* diaphragm;
 
     % Thresholding to segment vessels (optional)
     M0_binary_img = imbinarize(M0_vesselness_img, "adaptive");
-    M0_binary_img = logical(M0_binary_img .* diaphragm);
 
     saveImage(M0_vesselness_img, ToolBox, sprintf('%s_vesselness_img.png', name), isStep = true)
     saveImage(M0_binary_img, ToolBox, sprintf('%s_maskVessel.png', name), isStep = true)

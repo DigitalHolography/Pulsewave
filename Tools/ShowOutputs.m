@@ -47,7 +47,7 @@ for ind =1:N
     
 end
 
-[l, L] = bestMontageLayout(n);
+[l, L] = bestMontageLayout(N);
 
 figure(320)
 montage(segmentation_paths, Size = [l L]);
