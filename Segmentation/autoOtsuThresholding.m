@@ -22,16 +22,16 @@ for i = 1:numClasses
             color(i, :) = cChoroid;
     end
 end
-
+image = rescale(image);
 level = multithresh(image(mask), numClasses - 1);
 graphThreshHistogram(image, level, mask, color, name)
 level = [-1 level];
 quantizedImage = imquantize(image - 2 * ~mask, level);
 imwrite(rescale(quantizedImage), fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s_Quantize.png", ToolBox.main_foldername, name)))
 
-maskArtery = zeros(size(image));
-maskVein = zeros(size(image));
-maskChoroid = zeros(size(image));
+maskArtery = zeros(size(image), 'logical');
+maskVein = zeros(size(image), 'logical');
+maskChoroid = zeros(size(image), 'logical');
 
 for i = 1:numClasses
 
@@ -44,5 +44,6 @@ for i = 1:numClasses
     end
 
 end
-
+maskArtery = logical(maskArtery);
+maskVein = logical(maskVein);
 end

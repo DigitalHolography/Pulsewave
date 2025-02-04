@@ -19,6 +19,7 @@ subVideo_cell = cell([1 numSections]);
 avgVolumeRate = zeros(numSections, numFrames);
 stdVolumeRate = zeros(numSections, numFrames);
 crossSectionArea = zeros(numSections, 1);
+stdCrossSectionArea = zeros(numSections, 1);
 avgVelocity = zeros(numSections, numFrames);
 topVelocity = zeros(numSections, numFrames);
 stdVelocity = zeros(numSections, numFrames);
@@ -72,7 +73,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         % if flag_show_fig
         %     figure(2200)
         %     imagesc(projx)
-        % 
+        %
         %     figure(2201)
         %     imagesc(projy)
         % end
@@ -148,7 +149,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
             
             % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
-                        
+            
             f = figure('Visible', 'off');
             r_ = ((1:length(profile)) - centt) * (PW_params.cropSection_pixelSize / 2 ^ k) * 1000;
             stdprofile = std(subImg, [], 1);
@@ -237,6 +238,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
     end
     
     crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) * (PW_params.cropSection_pixelSize / 2 ^ k) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+    stdCrossSectionArea(sectionIdx) = pi * (1/2 * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
 end
 
 %% Blood Volume Rate computation
@@ -274,10 +276,15 @@ for sectionIdx = 1:numSections
         if isnan(avgVelocity(sectionIdx, tt))
             avgVelocity(sectionIdx, tt) = 0;
         end
+        if isnan(topVelocity(sectionIdx, tt))
+            topVelocity(sectionIdx, tt) = 0;
+        end
         
         %stdVelocity(sectionIdx,tt) = std(tmp(tmp~=0));
         stdProfils(:, tt) = std(subFrame, [], 1);
-        stdVelocity(sectionIdx, tt) = mean(std(subFrame, [], 1)); % mean of std along first dimension (columns)
+        
+        
+        stdVelocity(sectionIdx, tt) = std(max(subFrame,[],2)); % mean of std along first dimension (columns)
         
         if isnan(stdVelocity(sectionIdx, tt))
             stdVelocity(sectionIdx, tt) = 0;
@@ -303,7 +310,7 @@ for sectionIdx = 1:numSections
     stdVelocityProfiles{sectionIdx} = stdProfils;
     
     avgVolumeRate(sectionIdx, :) = filloutliers(avgVolumeRate(sectionIdx, :), 'linear');
-    stdVolumeRate(sectionIdx, :) = filloutliers(stdVolumeRate(sectionIdx, :), 'linear');
+    stdVolumeRate(sectionIdx, tt) = sqrt(stdVelocity(sectionIdx, tt) ^ 2 * stdCrossSectionArea(sectionIdx) ^ 2 + stdVelocity(sectionIdx, tt) ^ 2 * crossSectionArea(sectionIdx) ^ 2 + stdCrossSectionArea(sectionIdx) ^ 2 * avgVelocity(sectionIdx, tt) ^ 2) * 60; % microL/min
     
 end % sectionIdx
 

@@ -1,4 +1,4 @@
-function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein)
+function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein,option)
 
     arguments
         ToolBox
@@ -9,6 +9,7 @@ function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r
         figname
         maskArtery
         maskVein = []
+        option.thin = 0
     end
     
     [numX, numY] = size(maskArtery);
@@ -69,11 +70,20 @@ function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r
     %
     % % cercle_mask1 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*1.1;
     % % cercle_mask2 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*0.9;
-    
-    cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1;
-    cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
-    
-    maskSection = xor(cercle_mask1, cercle_mask2);
+
+    if option.thin>0
+        cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 ;
+        cercle_mask11 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 - option.thin ;
+        maskSection1 = xor(cercle_mask1, cercle_mask11);
+        cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
+        cercle_mask21 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2 - option.thin;
+        maskSection2 = xor(cercle_mask2, cercle_mask21);
+        maskSection = xor(maskSection1, maskSection2);
+    else
+        cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 ;
+        cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
+        maskSection = xor(cercle_mask1, cercle_mask2);
+    end
     
     %% Create Colormap Artery/Vein
     M0_ff_img = mat2gray(M0_ff_img);

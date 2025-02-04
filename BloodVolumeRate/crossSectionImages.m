@@ -91,8 +91,14 @@ end
 figure(312)
 parfor circleIdx = 1:numCircles
     vel = velocity{circleIdx}';
-    sz = size(vel{1});
-    vel = reshape(cell2mat(vel),[],sz(1),sz(2));
+    if not(isempty(vel))
+        sz = size(vel{1});
+        vel = reshape(cell2mat(vel),[],sz(1),sz(2));
+    else
+        sz = [1 1] ;
+        vel = zeros([],sz(1),sz(2));
+    end
+    
     etiquettes_frame_values = round(mean(max(vel,[],2),3),1); 
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = col, Title = sprintf("Max Velocity in %s (mm/s)", titleFig));
     vesselMaxVelocityVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(312)));
@@ -111,9 +117,9 @@ tablefilename = fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_
 writetable(widthtable,tablefilename);
 if exportVideos
     writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
-    writeGifOnDisc(vesselNumVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
-    writeGifOnDisc(vesselBVRVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
-    writeGifOnDisc(vesselMaxVelocityVideo, sprintf('sectionsWidth%s', name), 0.15, 10);
+    writeGifOnDisc(vesselNumVideo, sprintf('Numerotation%s', name), 0.15, 10);
+    writeGifOnDisc(vesselBVRVideo, sprintf('MeanBVR%s', name), 0.15, 10);
+    writeGifOnDisc(vesselMaxVelocityVideo, sprintf('MaxVelocity%s', name), 0.15, 10);
 end
 
 close(312);

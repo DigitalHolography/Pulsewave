@@ -12,8 +12,8 @@ end
 dt = (fullTime(2) - fullTime(1));
 pulseTime = dt * (1:numInterp) * avgLength / numInterp;
 
-[~, amin] = min(interp_BvrT);
-[~, amax] = max(interp_BvrT);
+[mindiastole_bvr_value, amin] = min(interp_BvrT);
+[maxsystole_bvr_value, amax] = max(interp_BvrT);
 cshiftn = mod(numInterp - amin + 1, numInterp);
 
 hold off
@@ -77,4 +77,13 @@ box on
 set(gca, 'LineWidth', 2)
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
+
+
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+fprintf(fileID, 'MaxSystole Blood Volume Rate Artery : %f (µL/min) \r\n',maxsystole_bvr_value);
+fprintf(fileID, 'MinDiastole Blood Volume Rate Artery : %f (µL/min) \r\n',mindiastole_bvr_value);
+fprintf(fileID, 'Stroke Volume Artery : %f (nL) \r\n',stroke_volume_value);
+fprintf(fileID, 'Total Volume Artery : %f (nL) \r\n',total_volume_value);
+fclose(fileID);
+
 end

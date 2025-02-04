@@ -1,4 +1,4 @@
-function [v_RMS_video] = pulseAnalysis(f_RMS_video, maskArtery, maskVein, maskSection)
+function [v_RMS_video] = pulseAnalysis(f_RMS_video, maskArtery, maskVein, maskSection, maskNeighbors)
 % pulseAnalysis.m computes the velocities
 % Inputs:
 %       VIDEOS:
@@ -41,21 +41,19 @@ cVein = [18 23 255] / 255;
 
 tic
 
-if veinsAnalysis
-    maskVesselDilated = imdilate(maskArtery | maskVein, strel('disk', PW_params.local_background_width));
-    maskNeighbors = maskVesselDilated - (maskArtery | maskVein) ;
-else
-    maskVesselDilated = imdilate(maskArtery, strel('disk', PW_params.local_background_width));
-    maskNeighbors = maskVesselDilated - (maskArtery) ;
-end
-
 f_RMS_background = zeros(numX, numY, numFrames, 'single');
 
 w =  PW_params.local_background_width;
 k =  PW_params.k;
 
+if veinsAnalysis
+    maskVessel = maskArtery | maskVein;
+else
+    maskVessel = maskArtery;
+end
+
 parfor frameIdx = 1:numFrames
-    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, maskNeighbors,maskVesselDilated));
+    f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, maskNeighbors, maskVessel));
 end
 
 graphSignal('1_Arteries_fRMS', folder, ...
@@ -64,12 +62,19 @@ graphSignal('1_Arteries_fRMS', folder, ...
     Title = 'Average f_{RMS} in Arteries', xlabel = strXlabel, ylabel = strYlabel, ...
     Legend = {'Arteries', 'Local Background'});
 
+fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_advanced_outputs', '.txt')), 'a');
+fprintf(fileID, 'Mean fRMS difference artery : %f (kHz) \r\n',mean(squeeze(sum(f_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)))-mean(squeeze(sum(f_RMS_background .* maskArterySection, [1, 2]) / nnz(maskArterySection))));
+fclose(fileID);
+
 if veinsAnalysis
     graphSignal('1_Veins_fRMS', folder, ...
         t, squeeze(sum(f_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '-', cVein, ...
         t, squeeze(sum(f_RMS_background .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '--', cBlack, ...
         Title = 'Average f_{RMS} in Veins', xlabel = strXlabel, ylabel = strYlabel, ...
         Legend = {'Veins', 'Local Background'});
+    fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_advanced_outputs', '.txt')), 'a');
+    fprintf(fileID, 'Mean fRMS difference vein : %f (kHz) \r\n',mean(squeeze(sum(f_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)))-mean(squeeze(sum(maskVeinSection .* maskVeinSection, [1, 2]) / nnz(maskVeinSection))));
+    fclose(fileID);
 end
 
 fprintf("    1. Local BKG Artery and Veins calculation took %ds\n", round(toc))
@@ -104,10 +109,12 @@ if veinsAnalysis
         t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         t, squeeze(sum(v_RMS_video .* maskVeinSection, [1, 2]) / nnz(maskVeinSection)), '-', cVein, ...
         Title = 'Average estimated velocity in Arteries and Veins', xlabel = strXlabel, ylabel = 'mm/s');
+    
 else
     graphSignal('2_Arteries_velocity', folder, ...
         t, squeeze(sum(v_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
         Title = 'Average estimated velocity in Arteries', xlabel = strXlabel, ylabel = 'mm/s');
+
 end
 fprintf("    2. Difference calculation took %ds\n", round(toc))
 
@@ -119,7 +126,7 @@ tic
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
 
-LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVesselDilated + ones(numX, numY) * mean(sum(f_RMS_background.*maskVesselDilated, [1,2])/nnz(maskVesselDilated),3) .* ~maskVesselDilated;
+LocalBackground_in_vessels = mean(f_RMS_background, 3) .* maskVessel + ones(numX, numY) * mean(sum(f_RMS_background.*maskVessel, [1,2])/nnz(maskVessel),3) .* ~maskVessel;
 imagesc(LocalBackground_in_vessels);
 colormap gray
 title('Local Background in vessels');
@@ -156,7 +163,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%
 
 f18 = figure("Visible", "off");
 f18.Position = [1100 485 350 420];
-in_vessels = mean(delta_f_RMS, 3) .* maskVesselDilated;
+in_vessels = mean(delta_f_RMS, 3) .* maskVessel;
 imagesc(in_vessels);
 colormap gray
 title('Delta f in vessels');

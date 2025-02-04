@@ -1,0 +1,16 @@
+function [mask1, mask2] = processDiaSysSignal(diasys, maskClean, params, cmap, suffix)
+
+if params.threshold >= -1 && params.threshold <= 1
+    % Manual threshold
+    mask1 = diasys >= params.threshold;
+    mask2 = diasys <= params.threshold;
+    graphThreshHistogram(diasys, params.threshold, maskClean, cmap, [suffix '_2_3']);
+else
+    % Automatic Otsu thresholding
+    [mask1, mask2] = autoOtsuThresholding(diasys, maskClean, params.classes, [suffix '_2_3']);
+end
+
+mask1 = logical(mask1);
+mask2 = logical(mask2);
+
+end

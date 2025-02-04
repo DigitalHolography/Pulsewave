@@ -5,7 +5,7 @@ ToolBox = getGlobalToolBox;
 numCircles = size(vr_avg_r, 1);
 Color_std = [0.7 0.7 0.7];
 
-BvrR = sum(vr_avg_r, 2);
+BvrR = sum(vr_avg_r, 2); % sum of sections for each circle
 std_BvrR = sqrt(sum(vr_std_r .^ 2, 2)); % sqrt of the sum of variances
 
 figure("Visible","off");
@@ -64,10 +64,11 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_vari
 
 figure("Visible","off");
 
-mean_BvrT = squeeze(mean(BvrR, 1))';
-mean_BvrT_value = mean(mean_BvrT(index_start:index_end));
+mean_BvrT = squeeze(mean(BvrR, 1))'; % mean of all circle's sum of all sections
+mean_BvrT_value = mean(mean_BvrT(index_start:index_end)); % average in time of this signal
 max_BvrT_value = max(mean_BvrT(index_start:index_end));
 mean_std_BvrT = squeeze(rms(std_BvrR, 1))';
+mean_std_BvrT_value = rms(mean_BvrT(index_start:index_end));
 
 hold off
 curve1 = mean_BvrT + 0.5 * mean_std_BvrT;
@@ -106,8 +107,8 @@ set(gca, 'Linewidth', 2)
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_volumeRate_allrad_%s_time.png", ToolBox.main_foldername, name)))
 
 fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
-fprintf(fileID, 'Mean Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_BvrT);
-fprintf(fileID, 'Std Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_std_BvrT);
+fprintf(fileID, 'Mean Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_BvrT_value);
+fprintf(fileID, 'Std Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_std_BvrT_value);
 fclose(fileID);
 
 end
