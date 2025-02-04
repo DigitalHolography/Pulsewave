@@ -42,7 +42,6 @@ classdef GifWriter < handle
             end
             obj.numFramesFixed = numFramesFixed;
             
-            
             obj.timePeriod = ToolBox.stride / ToolBox.fs / 1000;
             obj.numFrames = gifLength;
             obj.t = tic;
