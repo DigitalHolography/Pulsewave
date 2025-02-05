@@ -91,12 +91,6 @@ end
 
 if exportVideos
     writeGifOnDisc(v_video_RGB, "flowMap");
-
-    % avi
-    parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')));
-
-    % mp4
-    parfeval(backgroundPool, @writeVideoOnDisc, 0, v_video_RGB, fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'flowVideo')), 'MPEG-4');
 end
 
 fprintf("- Velocity Map Timing : %ds\n", round(toc(tVelocityVideo)))

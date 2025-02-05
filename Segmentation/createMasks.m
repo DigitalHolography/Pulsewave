@@ -25,7 +25,7 @@ M0_ff_img = squeeze(mean(M0_ff_video, 3));
 M0_ff_video_centered = M0_ff_video - M0_ff_img;
 saveImage(M0_ff_img, ToolBox, 'all_10_M0.png', isStep = true)
 if ~isfile(fullfile(ToolBox.PW_path_gif, sprintf("%s_M0.gif", ToolBox.PW_folder_name)))
-    writeGifOnDisc(M0_ff_video, "M0")
+    writeGifOnDisc(rescale(M0_ff_video), "M0")
 end
 
 maskDiaphragm = diskMask(numX, numY, PW_params.masks_diaphragmRadius);
