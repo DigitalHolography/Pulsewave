@@ -25,7 +25,7 @@ M0_ff_img = squeeze(mean(M0_ff_video, 3));
 M0_ff_video_centered = M0_ff_video - M0_ff_img;
 saveImage(M0_ff_img, ToolBox, 'all_10_M0.png', isStep = true)
 if ~isfile(fullfile(ToolBox.PW_path_gif, sprintf("%s_M0.gif", ToolBox.PW_folder_name)))
-    writeGifOnDisc(M0_ff_video, "M0")
+    writeGifOnDisc(rescale(M0_ff_video), "M0")
 end
 
 maskDiaphragm = diskMask(numX, numY, PW_params.masks_diaphragmRadius);
@@ -332,12 +332,11 @@ r2 = PW_params.velocityBigRadiusRatio * L;
 if ~isempty(PW_params.forcebarycenter)
     y_CRA = PW_params.forcebarycenter(1);
     x_CRA = PW_params.forcebarycenter(2);
-    maskCircle = diskMask(numX, numY, PW_params.masks_crop_radius, "options", [x_CRA, y_CRA]);
 end
 
 xy_barycenter = [x_CRA, y_CRA];
-maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery);
-createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein);
+maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery,thin=10);
+createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein,thin=10);
 
 %% Create Segmentation Map
 
@@ -354,9 +353,6 @@ else
 end
 
 %% new masks
-
-labeled = bwlabel(and(maskArtery, not(maskCircle)));
-saveImage(labeled, ToolBox, 'maskLabeled.png')
 saveImage(bwskel(maskArtery), ToolBox, 'skeletonArtery.png')
 saveImage(bwskel(maskVein), ToolBox, 'skeletonVein.png')
 

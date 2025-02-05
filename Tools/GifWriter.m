@@ -4,7 +4,9 @@ classdef GifWriter < handle
     
     properties
         name
-        filename
+        filename_gif
+        filename_avi
+        filename_mp4
         images
         timePeriod
         timePeriodMin
@@ -33,7 +35,9 @@ classdef GifWriter < handle
             ToolBox = getGlobalToolBox;
             PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
             obj.name = name;
-            obj.filename = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, name));
+            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, name));
+            obj.filename_avi = fullfile(ToolBox.PW_path_avi, sprintf("%s_%s.avi", ToolBox.PW_folder_name, name));
+            obj.filename_mp4 = fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s.mp4", ToolBox.PW_folder_name, name));
             
             if isnan(timePeriodMin)
                 obj.timePeriodMin = PW_params.timePeriodMin;
@@ -41,7 +45,6 @@ classdef GifWriter < handle
                 obj.timePeriodMin = timePeriodMin;
             end
             obj.numFramesFixed = numFramesFixed;
-            
             
             obj.timePeriod = ToolBox.stride / ToolBox.fs / 1000;
             obj.numFrames = gifLength;
@@ -107,41 +110,55 @@ classdef GifWriter < handle
                     else
                         [A, map] = gray2ind(images_interp(:, :, :, tt), 256);
                     end
-                    
+
                     if tt == 1
-                        imwrite(A, map, obj.filename, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriodMin);
+                        imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriodMin);
                     else
-                        imwrite(A, map, obj.filename, "gif", "WriteMode", "append", "DelayTime", obj.timePeriodMin);
+                        imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.timePeriodMin);
                     end
-                    
+
                 end
-                
+
+
+                % avi
+                parfeval(backgroundPool, @writeVideoOnDisc, 0, images_interp, obj.filename_avi);
+                % mp4
+                parfeval(backgroundPool, @writeVideoOnDisc, 0, images_interp, obj.filename_mp4, 'MPEG-4');
+
             else
-                
-                for tt = 1:obj.numFrames
+                num_T = obj.numFrames;
+
+                for tt = 1:num_T
                     if obj.isRGB
                         [A, map] = rgb2ind(obj.images(:, :, :, tt), 256);
                     else
                         [A, map] = gray2ind(obj.images(:, :, :, tt), 256);
                     end
-                    
-                    waitbar((tt - 1) / obj.numFrames, h);
+
+                    waitbar((tt - 1) / num_T, h);
                     
                     if tt == 1
-                        imwrite(A, map, obj.filename, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriod);
+                        imwrite(A, map, obj.filename_gif, "gif", "LoopCount", Inf, "DelayTime", obj.timePeriod);
                     else
-                        imwrite(A, map, obj.filename, "gif", "WriteMode", "append", "DelayTime", obj.timePeriod);
+                        imwrite(A, map, obj.filename_gif, "gif", "WriteMode", "append", "DelayTime", obj.timePeriod);
                     end
-                    
+
                 end
-                
+
+
+            % avi
+            parfeval(backgroundPool, @writeVideoOnDisc, 0, obj.images, obj.filename_avi);
+            % mp4
+            parfeval(backgroundPool, @writeVideoOnDisc, 0, obj.images, obj.filename_mp4, 'MPEG-4');
+
             end
-            
+
             close(h)
-            
+
             fprintf("    - %s.gif took %ds\n",obj.name, round(toc(obj.t)));
+
         end
-        
+
     end
-    
+
 end

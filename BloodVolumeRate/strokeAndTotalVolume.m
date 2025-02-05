@@ -12,8 +12,8 @@ end
 dt = (fullTime(2) - fullTime(1));
 pulseTime = dt * (1:numInterp) * avgLength / numInterp;
 
-[maxsystole_bvr_value, amin] = min(interp_BvrT);
-[mindiastole_bvr_value, amax] = max(interp_BvrT);
+[mindiastole_bvr_value, amin] = min(interp_BvrT);
+[maxsystole_bvr_value, amax] = max(interp_BvrT);
 cshiftn = mod(numInterp - amin + 1, numInterp);
 
 hold off

@@ -96,31 +96,6 @@ if exportVideos
 
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", ToolBox.main_foldername, name)))
     exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", ToolBox.main_foldername, name)))
-
-    % AVI
-
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_histogramVelocity%s.mp4", ToolBox.main_foldername, name)));
-
-    tmp = mat2gray(histoVideo);
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, tmp(:, :, :, frameIdx));
-    end
-
-    close(w);
-
-    % MP4
-
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_histogramVelocity%s.mp4", ToolBox.main_foldername, name)), 'MPEG-4');
-    tmp = mat2gray(histoVideo);
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, tmp(:, :, :, frameIdx));
-    end
-
-    close(w);
 else
     for frameIdx = 1:numFrames
 
