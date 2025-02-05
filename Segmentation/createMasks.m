@@ -205,8 +205,6 @@ if diasysAnalysis
         end
     end
 
-%     maskArtery = clearMasks(maskArtery, maskCircle, 'artery_22', cmapArtery, ToolBox);
-%     maskVein = clearMasks(maskVein, maskCircle, 'vein_22', cmapVein, ToolBox);
 else
 
     for  i = 1:2
@@ -232,10 +230,10 @@ results = cell(2, 1);
 parfor i = 1:2
     if i == 1
         % Process artery mask
-        results{i} = clearMasks(maskArtery, maskCircle, 'artery_30', cmapArtery, ToolBox);
+        results{i} = clearMasks(maskArtery, 'artery_30', cmapArtery, ToolBox);
     else
         % Process vein mask
-        results{i} = clearMasks(maskVein,  maskCircle, 'vein_30', cmapVein, ToolBox);
+        results{i} = clearMasks(maskVein, 'vein_30', cmapVein, ToolBox);
     end
 end
 

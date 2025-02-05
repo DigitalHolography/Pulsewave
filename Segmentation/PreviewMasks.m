@@ -80,13 +80,6 @@ openFolderButton.Layout.Column = 3;
 
 % Create numeric edit fields for each parameter
 
-% Vesselness Parameters
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Vesselness Sigma:', 'Position', [10, 600, 120, 20]);
-vesselnessSigmaEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vesselness_sigma, 'Position', [140, 600, 30, 22]);
-
-uicontrol(paramPanel, 'Style', 'text', 'String', 'Vesselness Beta:', 'Position', [10, 560, 120, 20]);
-vesselnessBetaEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vesselness_beta, 'Position', [140, 560, 30, 22]);
-
 % Mask Thresholds
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Vascular Threshold:', 'Position', [10, 520, 120, 20]);
 vascularThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.masks_vascular_threshold, 'Position', [140, 520, 30, 22]);
@@ -204,8 +197,6 @@ uiwait(d);
 
         % Extract parameter values from the UI components
         PW_params.params.CreationOfMasks.DiaphragmRadius = diaphragmRadiusEdit.Value;
-        PW_params.params.CreationOfMasks.VesselnesParameterSigma = vesselnessSigmaEdit.Value;
-        PW_params.params.CreationOfMasks.VesselnesParameterBeta = vesselnessBetaEdit.Value;
         PW_params.params.CreationOfMasks.GaussianFilterSizeForBarycenter = gaussianFilterEdit.Value;
         PW_params.params.CreationOfMasks.CropCoroidRadius = cropCoroidEdit.Value;
         PW_params.params.CreationOfMasks.VascularCorrelationMapThreshold = vascularThresholdEdit.Value;

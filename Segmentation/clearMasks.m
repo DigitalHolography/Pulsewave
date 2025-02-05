@@ -1,4 +1,4 @@
-function [mask] = clearMasks(mask, circle, name, colormap, ToolBox)
+function [mask] = clearMasks(mask, name, colormap, ToolBox)
 % clearMasks - Processes a binary mask to remove small objects, close gaps, and dilate.
 %
 % Inputs:
