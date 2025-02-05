@@ -4,10 +4,10 @@ if params.threshold >= -1 && params.threshold <= 1
     % Manual threshold
     mask1 = diasys >= params.threshold;
     mask2 = diasys <= params.threshold;
-    graphThreshHistogram(diasys, params.threshold, maskClean, cmap, [suffix '_2_3']);
+    graphThreshHistogram(diasys, params.threshold, maskClean, cmap, suffix);
 else
     % Automatic Otsu thresholding
-    [mask1, mask2] = autoOtsuThresholding(diasys, maskClean, params.classes, [suffix '_2_3']);
+    [mask1, mask2] = autoOtsuThresholding(diasys, maskClean, params.classes, suffix);
 end
 
 mask1 = logical(mask1);

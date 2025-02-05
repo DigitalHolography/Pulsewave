@@ -1,116 +1,124 @@
 {
     "Video": {
-        "Register": 0,
-        "RefStart": 10,
-        "RefEnd": 20,
-        "Start frame": 1,
-        "End frame": -1
+      "Register": 0,
+      "RefStart": 10,
+      "RefEnd": 20,
+      "StartFrame": 1,
+      "EndFrame": -1
     },
-    "Normalize by time average" : 1,
-    "Moment Normalize Convolution parameter": 1,
-    "Resize video": {
-        "Frame width": -1,
-        "Frame height": -1,
-        "Video length": -1
+    "NormalizeByTimeAverage": 1,
+    "MomentNormalizeConvolutionParameter": 1,
+    "ResizeVideo": {
+      "FrameWidth": -1,
+      "FrameHeight": -1,
+      "VideoLength": -1
     },
-    "Value of the interpolation parameter": 1,
-    "Remove Outliers option": 0,
-    "Veins Analysis": 0,
-    "Export Videos": 0,
-    "Flat field correction": {
-        "GW ratio": 0.07,
-        "Border": 0.15,
-        "Border dMAP": 0.33,
-        "Border PulseAnalysis": 0
+    "ValueOfTheInterpolationParameter": 1,
+    "RemoveOutliersOption": 1,
+    "VeinsAnalysis": 0,
+    "ExportVideos": 1,
+    "FlatFieldCorrection": {
+      "GWRatio": 0.07,
+      "Border": 0.15,
+      "BorderDMAP": 0.33,
+      "BorderPulseAnalysis": 0
     },
-    "Creation of masks": {
-        "Diaphragm radius": 0.9,
-        "Vesselnes parameter sigma": 2,
-        "Vesselnes parameter beta": 0.8,
-        "Gaussian Filter Size For Barycenter": 1.5,
-        "Crop coroid radius": 0.3,
-        "Vascular Correlation Map Threshold": -2,
-        "Vascular Classes": [-1, 1],
-        "Minimum seed area size": 150,
-        "DiaSys Analysis" : 0,
-        "Arterial Correlation Map Threshold": -2,
-        "Arterial Classes": [0, 1],
-        "Venous Correlation Map Threshold": -2,
-        "Venous Classes": [0, -1],
-        "Central Retina Vein Artery threshold": 3,
-        "Imclose Radius": 5,
-        "Minimum Vessel Width": 3,
-        "Final Dilation" : 3,
-        "Force Vessel Width" : 0
+    "CreationOfMasks": {
+      "DiaphragmRadius": 0.9,
+      "GaussianFilterSizeForBarycenter": 1.5,
+      "CropCoroidRadius": 0.1,
+      "VascularCorrelationMapThreshold": -2,
+      "VascularClasses": [
+        -1,
+        0,
+        1
+      ],
+      "MinimumSeedAreaSize": 150,
+      "DiaSysAnalysis": 1,
+      "ArterialCorrelationMapThreshold": -2,
+      "ArterialClasses": [
+        0,
+        1
+      ],
+      "VenousCorrelationMapThreshold": -2,
+      "VenousClasses": [
+        0,
+        -1
+      ],
+      "CentralRetinaVeinArteryThreshold": 3,
+      "ImcloseRadius": 1,
+      "MinimumVesselWidth": 3,
+      "FinalDilation": 3,
+      "ForceVesselWidth": 0
     },
-    "Systole Detection": {
-        "Systole threshold ratio of maximum": 0.7
+    "SystoleDetection": {
+      "SystoleThresholdRatioOfMaximum": 0.7
     },
-    "Creation of one cycle": {
-        "Interpolation points": 256,
-        "Out of noise threshold": 85,
-        "Data reliability index threshold": 50
+    "CreationOfOneCycle": {
+      "InterpolationPoints": 256,
+      "OutOfNoiseThreshold": 85,
+      "DataReliabilityIndexThreshold": 50
     },
     "Velocity": {
-        "Diff First Calculations Flag": 0,
-        "Local background width": 2
+      "DiffFirstCalculationsFlag": 0,
+      "LocalBackgroundWidth": 2
     },
-    "Size of field": {
-        "Small radius ratio": 0.15,
-        "Big radius ratio": 0.35
+    "SizeOfField": {
+      "SmallRadiusRatio": 0.15,
+      "BigRadiusRatio": 0.35
     },
-    "Blood Volume Rate": {
-        "Number Of Circles": 10,
-        "Radius ratio": 0.18,
-        "Radius gap": 0.01,
-        "Scale factor width": 3,
-        "Scale factor size": 0.004,
-        "Mask slice threshold": 0.01,
-        "Pixel size": 0.0191,
-        "Slice half thickness": 10
+    "BloodVolumeRate": {
+      "NumberOfCircles": 10,
+      "RadiusRatio": 0.18,
+      "RadiusGap": 0.01,
+      "ScaleFactorWidth": 3,
+      "ScaleFactorSize": 0.004,
+      "MaskSliceThreshold": 0.01,
+      "PixelSize": 0.0191,
+      "SliceHalfThickness": 10
     },
-    "Pulse analysis": {
-        "Radius pupil": 2,
-        "Distance iris retina": 20,
-        "Theta": 0.05,
-        "Optical index": 1.35,
-        "Lambda": 852e-9,
-        "Phi": 0.25,
-        "Data reliatibility factor": 0.5,
-        "Peak height threshold": 0.7,
-        "Out of noise threshold": 4,
-        "Blur scale factor": 100,
-        "Frame percentage before minimum of diastole": 0.1,
-        "Frame percentage around peak systole": 0.1,
-        "Exponentiel": 2.718282
+    "PulseAnalysis": {
+      "RadiusPupil": 2,
+      "DistanceIrisRetina": 20,
+      "Theta": 0.05,
+      "OpticalIndex": 1.35,
+      "Lambda": 8.52E-7,
+      "Phi": 0.25,
+      "DataReliatibilityFactor": 0.5,
+      "PeakHeightThreshold": 0.7,
+      "OutOfNoiseThreshold": 4,
+      "BlurScaleFactor": 100,
+      "FramePercentageBeforeMinimumOfDiastole": 0.1,
+      "FramePercentageAroundPeakSystole": 0.1,
+      "Exponentiel": 2.718282
     },
-    "Vessels video": {
-        "Radius ratio factor": 0.27,
-        "Gaussian filter padding": 0,
-        "Gaussian filter factor": 0.25
+    "VesselsVideo": {
+      "RadiusRatioFactor": 0.27,
+      "GaussianFilterPadding": 0,
+      "GaussianFilterFactor": 0.25
     },
     "Viscosity": {
-        "Number of interpolation": 100,
-        "Interpolation parameter": 2,
-        "Interpolation size factor": 4,
-        "Image projection threshold": 0.1,
-        "Viscosity function factor": 0.7,
-        "Fit function parameter matrix": 0,
-        "Viscosity list parameter a": 1.459,
-        "Viscosity list parameter b": 0.017
+      "NumberOfInterpolation": 100,
+      "InterpolationParameter": 2,
+      "InterpolationSizeFactor": 4,
+      "ImageProjectionThreshold": 0.1,
+      "ViscosityFunctionFactor": 0.7,
+      "FitFunctionParameterMatrix": 0,
+      "ViscosityListParameterA": 1.459,
+      "ViscosityListParameterB": 0.017
     },
-    "Elastic waves": {
-        "Number of dominant frequency": 2,
-        "Pixel size": 0.003909,
-        "Gaussian filter padding": 0,
-        "Butterworth filter order": 10,
-        "Butterworth filter thickness band": 3
+    "ElasticWaves": {
+      "NumberOfDominantFrequency": 2,
+      "PixelSize": 0.003909,
+      "GaussianFilterPadding": 0,
+      "ButterworthFilterOrder": 10,
+      "ButterworthFilterThicknessBand": 3
     },
     "Other": {
-        "Number of sides": 120,
-        "All Circles": 0,
-        "Force Width In Pixels": [],
-        "Force Barycenter": [],
-        "Minimum Gif Period": 0.04
+      "NumberOfSides": 120,
+      "AllCircles": 0,
+      "ForceWidthInPixels": [],
+      "ForceBarycenter": [],
+      "MinimumGifPeriod": 0.04
     }
-}
+  }

@@ -214,8 +214,7 @@ classdef pulse < matlab.apps.AppBase
             end
 
             if ~app.file.is_preprocessed
-                disp("input not preprocessed")
-                return
+                app.PreProcessButtonPushed();
             end
 
             warning('off');

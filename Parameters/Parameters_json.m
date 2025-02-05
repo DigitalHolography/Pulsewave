@@ -24,8 +24,6 @@ classdef Parameters_json < handle
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
         local_background_width
-        masks_vesselness_sigma
-        masks_vesselness_beta
         masks_crop_radius
         masks_vascular_threshold
         masks_vascular_classes
@@ -153,8 +151,6 @@ classdef Parameters_json < handle
                 obj.flatField_borderDMap = parsedData.FlatFieldCorrection.BorderDMAP;
                 obj.flatField_borderPulseAnal = parsedData.FlatFieldCorrection.BorderPulseAnalysis;
 
-                obj.masks_vesselness_sigma = parsedData.CreationOfMasks.VesselnesParameterSigma;
-                obj.masks_vesselness_beta = parsedData.CreationOfMasks.VesselnesParameterBeta;
                 obj.gauss_filt_size_for_barycenter = parsedData.CreationOfMasks.GaussianFilterSizeForBarycenter;
                 obj.masks_crop_radius = parsedData.CreationOfMasks.CropCoroidRadius;
                 obj.masks_vascular_threshold = parsedData.CreationOfMasks.VascularCorrelationMapThreshold;
