@@ -332,7 +332,6 @@ r2 = PW_params.velocityBigRadiusRatio * L;
 if ~isempty(PW_params.forcebarycenter)
     y_CRA = PW_params.forcebarycenter(1);
     x_CRA = PW_params.forcebarycenter(2);
-    maskCircle = diskMask(numX, numY, PW_params.masks_crop_radius, "options", [x_CRA, y_CRA]);
 end
 
 xy_barycenter = [x_CRA, y_CRA];
@@ -354,9 +353,6 @@ else
 end
 
 %% new masks
-
-labeled = bwlabel(and(maskArtery, not(maskCircle)));
-saveImage(labeled, ToolBox, 'maskLabeled.png')
 saveImage(bwskel(maskArtery), ToolBox, 'skeletonArtery.png')
 saveImage(bwskel(maskVein), ToolBox, 'skeletonVein.png')
 

@@ -120,18 +120,33 @@ classdef pulse < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            if exist("version.txt",'file')
+            if exist("version.txt", 'file')
                 v = readlines('version.txt');
                 fprintf("==========================================\n " + ...
                     "Welcome to Pulsewave %s\n" + ...
                     "------------------------------------------\n" + ...
                     "Developed by the DigitalHolographyFoundation\n" + ...
-                    "==========================================\n",v(1));
+                    "==========================================\n", v(1));
             end
-            addpath("BloodFlowVelocity\","BloodFlowVelocity\Elastography\","BloodVolumeRate\","BloodVolumeRate\Rheology\","Loading\","Parameters\","Preprocessing\","PulseAnalysis\","Scripts\","Segmentation\","SHAnalysis\","Tools\")
-            app.PulsewaveUIFigure.Name = ['Pulsewave ',char(v(1))];
+
+            % Add necessary paths
+            addpath("BloodFlowVelocity\", "BloodFlowVelocity\Elastography\", "BloodVolumeRate\", ...
+                "BloodVolumeRate\Rheology\", "Loading\", "Parameters\", "Preprocessing\", ...
+                "PulseAnalysis\", "Scripts\", "Segmentation\", "SHAnalysis\", "Tools\");
+
+            % Set the UI title
+            app.PulsewaveUIFigure.Name = ['Pulsewave ', char(v(1))];
+
+            % Auto-detect the maximum available workers and update the spinner
+            maxWorkers = parcluster('local').NumWorkers;
+            app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
+            app.NumberofWorkersSpinner.Value = min(10, maxWorkers); % Default to 10 or max available
+
+            % Initialize checkboxes and flags
             app.updateCheckboxes();
             app.flag_is_load = false;
+
+            % Display splash screen
             displaySplashScreen();
         end
 
