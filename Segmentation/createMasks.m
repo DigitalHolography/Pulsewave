@@ -31,11 +31,11 @@ end
 maskDiaphragm = diskMask(numX, numY, PW_params.masks_diaphragmRadius);
 saveImage(rescale(M0_ff_img) + maskDiaphragm .* 0.5, ToolBox, 'all_11_maskDiaphragm.png', isStep = true)
 
-%% 1) 1) Compute vesselness response
+% 1) 1) Compute vesselness response
 
-[maskVesselness] = denoise_vessel_image(M0_ff_img, maskDiaphragm, 'all_12', ToolBox);
+[maskVesselness] = compute_vesselness(M0_ff_img, maskDiaphragm, 'all_12', ToolBox);
 
-%% 1) 2) Compute the barycenters and the circle mask
+% 1) 2) Compute the barycenters and the circle mask
 
 if ~isempty(PW_params.forcebarycenter)
     y_CRA = PW_params.forcebarycenter(1);
@@ -59,7 +59,7 @@ maskCircle = maskCircle | diskMask(numX, numY, PW_params.masks_crop_radius, 'cen
 maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness|maskCircle, 1, 8);
 saveImage(maskVesselnessClean, ToolBox,  'all_14_connected_mask.png', isStep = true)
 
-%%  1) 3) Compute first correlation
+%  1) 3) Compute first correlation
 
 cVascular = [0 0 0];
 % compute signal in 3 dimentions for correlation in all vessels
@@ -77,7 +77,7 @@ vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
 R_VascularSignal = mean(M0_ff_video_centered .* vascularSignal_centered, 3) ./ (std((M0_ff_video_centered), [], 3) * std(vascularSignal_centered, [], 3));
 saveImage(R_VascularSignal, ToolBox, 'all_15_Correlation.png', isStep = true)
 
-%% 1) 4) Segment Vessels
+% 1) 4) Segment Vessels
 
 cArtery = [255 22 18] / 255;
 cVein = [18 23 255] / 255;
@@ -105,7 +105,6 @@ saveImage(firstMaskArtery, ToolBox, 'artery_17_FirstMask.png', isStep = true, cm
 saveImage(firstMaskVein, ToolBox, 'vein_17_FirstMask.png', isStep = true, cmap = cmapVein)
 
 % Remove small blobs
-% minSize = PW_params.masks_minSize * (numX * numY);
 firstMaskArteryClean = bwareaopen(firstMaskArtery, PW_params.masks_minSize);
 firstMaskVeinClean = bwareaopen(firstMaskVein, PW_params.masks_minSize);
 
@@ -119,10 +118,7 @@ saveImage(RGBM0, ToolBox,  'all_19_RGB.png', isStep = true)
 
 %% 2)  Improvements of the first mask
 
-%% 2) 1) Compute a new signal
 diasysAnalysis = PW_params.params.CreationOfMasks.DiaSysAnalysis;
-
-results = cell(2, 1);
 
 % Parameters for arteries
 arteryParams.threshold = PW_params.masks_arterial_threshold;
@@ -132,49 +128,26 @@ arteryParams.classes = PW_params.masks_arterial_classes;
 veinParams.threshold = PW_params.masks_venous_threshold;
 veinParams.classes = PW_params.masks_venous_classes;
 
-if diasysAnalysis
-    %% 2) 0) Systole/Diastole
+results = cell(2, 1);
 
-    [sys_index_list, ~] = find_systole_index(M0_ff_video, firstMaskArteryClean);
+if diasysAnalysis % Systole/Diastole Analysis
 
-    numSys = numel(sys_index_list); % number of systoles
-    fpCycle = round(numFrames / numSys); % Frames per cycle
+    % 2) 0) Computation of the M0 in Diastole and in Systole
 
-    sysindexes = [];
-    diaindexes = [];
+    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_ff_video, firstMaskArteryClean);
 
-    for idx = 1:numSys
-        try
-            % Calculate sysindexes and ensure the values stay within the valid range
-            start_idx = sys_index_list(idx);
-            end_idx = sys_index_list(idx) + round(fpCycle * 0.1);
-            sysindexes = [sysindexes, start_idx:min(end_idx, size(M0_ff_video, 3))];
-        catch
-            % Handle error if necessary
-        end
+    % 2) 1) New Vesselness Mask
 
-        try
-            % Calculate diaindexes and ensure the values stay within the valid range
-            start_idx = sys_index_list(idx) - round(fpCycle * 0.15);
-            end_idx = sys_index_list(idx) - round(fpCycle * 0.05);
-            diaindexes = [diaindexes, max(start_idx, 1):min(end_idx, size(M0_ff_video, 3))];
-        catch
-            % Handle error if necessary
-        end
-    end
-
-    % Ensure sysindexes and diaindexes are within the bounds of the video size
-    sysindexes = sysindexes(sysindexes >= 1 & sysindexes <= size(M0_ff_video, 3));
-    diaindexes = diaindexes(diaindexes >= 1 & diaindexes <= size(M0_ff_video, 3));
-
-    % Compute the mean images
-    M0_Systole_img = mean(M0_ff_video(:, :, sysindexes), 3);
-    M0_Diastole_img = mean(M0_ff_video(:, :, diaindexes), 3);
-
-    Systole_Vesselness = denoise_vessel_image(M0_Systole_img, maskDiaphragm, 'artery_20', ToolBox);
-    Diastole_Vesselness = denoise_vessel_image(M0_Diastole_img, maskDiaphragm, 'artery_20', ToolBox);
+    Systole_Vesselness = compute_vesselness(M0_Systole_img, maskDiaphragm, 'artery_20', ToolBox);
+    Diastole_Vesselness = compute_vesselness(M0_Diastole_img, maskDiaphragm, 'artery_20', ToolBox);
     saveImage(rescale(M0_Systole_img), ToolBox,  'artery_20_systole_img.png', isStep = true)
     saveImage(rescale(M0_Diastole_img), ToolBox,  'vein_20_diastole_img.png', isStep = true)
+
+    maskVesselness = Systole_Vesselness | Diastole_Vesselness;
+    maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness|maskCircle, 1, 8);
+    saveImage(maskVesselnessClean, ToolBox,  'all_20_new_vesselMask.png', isStep = true)
+
+    % 2) 2) Diastole-Systole Image
 
     diasysArtery = M0_Systole_img - M0_Diastole_img;
     diasysVein = M0_ff_img - diasysArtery;
@@ -192,10 +165,9 @@ if diasysAnalysis
     Labdiasys(:, :, 3) = b;
     RGBdiasys = lab2rgb(Labdiasys);
     saveImage(RGBdiasys, ToolBox, 'vessel_40_diasys_rgb.png', isStep = true)
+    saveImage(RGBdiasys, ToolBox, 'DiaSysRGB.png')
 
-    maskVesselness = Systole_Vesselness | Diastole_Vesselness;
-    maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness|maskCircle, 1, 8);
-    saveImage(maskVesselnessClean, ToolBox,  'all_20_new_vesselMask.png', isStep = true)
+    % 2) 3) Diastole-Systole based Segmentation
 
     for  i = 1:2
         if i == 1
@@ -205,7 +177,9 @@ if diasysAnalysis
         end
     end
 
-else
+else % Second Correlation Analysis
+
+    % 2) 4) Artery-Vein correlation based Segmentation
 
     for  i = 1:2
         if i == 1
@@ -217,14 +191,14 @@ else
         end
     end
 
-    % Assign results to their respective variables
     maskArtery = results{1};
     maskVein = results{2};
+
 end
 
-%% Clearing 3)
-%% 3) 1) Morphological Operations
-% Preallocate a cell array to store the results
+%% 3) Mask Clearing
+
+% 3) 0) Morphological Operations
 results = cell(2, 1);
 
 parfor i = 1:2
@@ -237,52 +211,62 @@ parfor i = 1:2
     end
 end
 
-% Assign results to their respective variables
-maskArteryClean = results{1};
-maskVeinClean = results{2};
+maskArteryCleared = results{1};
+maskVeinCleared = results{2};
 
-maskArteryClean = maskArteryClean & bwareafilt(maskArteryClean|maskCircle, 1, 8);
-maskVeinClean = maskVeinClean & bwareafilt(maskVeinClean|maskCircle, 1, 8);
+% 3) 1) Final Blob removal
 
-%% RGB
+maskArteryNoBlob = maskArteryCleared & bwareafilt(maskArteryCleared|maskCircle, 1, 8);
+maskVeinNoBlob = maskVeinCleared & bwareafilt(maskVeinCleared|maskCircle, 1, 8);
+saveImage(RGBdiasys, ToolBox, 'vessel_40_diasys_rgb.png', isStep = true)
+saveImage(RGBdiasys, ToolBox, 'vessel_40_diasys_rgb.png', isStep = true)
 
-RGBM0(:, :, 1) = rescale(M0_ff_img) + maskArteryClean;
-RGBM0(:, :, 2) = rescale(M0_ff_img);
-RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVeinClean;
-
-saveImage(RGBM0, ToolBox, 'vessel_40_RGB.png', isStep = true)
-
-%% Segmentation Scores Calculation
-
-segmentationScores(maskArtery, maskVein);
-
-%% 3) 3) Create Vessel and Background Mask
-
-%% Force Create Masks
+% 3) 2) Force Create Masks in case they exist
 
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png'))
     maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
 else
-    maskArtery = maskArteryClean;
+    maskArtery = maskArteryNoBlob;
 end
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
     maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
 else
-    maskVein = maskVeinClean;
+    maskVein = maskVeinNoBlob;
 end
 
-maskVessel = maskArtery | maskVein;
-maskBackground = not(maskVessel);
-
-%% 3) 4) Segmention force width
+% 3) 3) Segmention force width
 
 if PW_params.masks_force_width > 0
     dilationSE = strel('disk', PW_params.masks_force_width);
+    maskArteryNoBlob = imdilate(bwskel(maskArteryNoBlob), dilationSE);
+    maskVeinNoBlob = imdilate(bwskel(maskVeinNoBlob), dilationSE);
+
     maskArtery = imdilate(bwskel(maskArtery), dilationSE);
     maskVein = imdilate(bwskel(maskVein), dilationSE);
 end
 
-%% Create Neighbours Mask
+% 3) 4) Segmentation Scores Calculation
+
+segmentationScores(maskArteryNoBlob, maskVeinNoBlob);
+
+% 3) 5) Create Vessel and Background Mask
+
+maskVessel = maskArtery | maskVein;
+maskBackground = not(maskVessel);
+
+%% 4) FINAL FIGURES
+
+% 4) 1) RGB Figures
+saveImage(maskArtery, ToolBox,'artery_40_Final.png', isStep = true, cmap = cmapArtery)
+saveImage(maskVein, ToolBox, 'vein_40_Final.png', isStep = true, cmap = cmapVein)
+
+RGBM0(:, :, 1) = rescale(M0_ff_img) + maskArtery;
+RGBM0(:, :, 2) = rescale(M0_ff_img);
+RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVein;
+
+saveImage(RGBM0, ToolBox, 'vessel_40_RGB.png', isStep = true)
+
+% 4) 2) Neighbours Mask
 
 veinsAnalysis = PW_params.veins_analysis;
 if veinsAnalysis
@@ -291,7 +275,7 @@ else
     maskNeighbors = imdilate(maskArtery, strel('disk', PW_params.local_background_width)) - maskArtery;
 end
 
-%% Create CRA and CRV Mask
+% 4) 3) CRA and CRV Masks
 
 f_AVG_std = std2(f_AVG_mean);
 maskCRA = f_AVG_mean > (PW_params.CRACRV_Threshold * f_AVG_std);
@@ -300,30 +284,17 @@ maskCRV = f_AVG_mean < (-PW_params.CRACRV_Threshold * f_AVG_std);
 saveImage(maskCRA, ToolBox, 'maskCRA.png')
 saveImage(maskCRV, ToolBox, 'maskCRV.png')
 
-%% Save Images
-
-saveImage(maskArtery, ToolBox,'artery_40_Final.png', isStep = true, cmap = cmapArtery)
-saveImage(maskVein, ToolBox, 'vein_40_Final.png', isStep = true, cmap = cmapVein)
+% 4) 4) Save all images
 
 saveImage(maskArtery, ToolBox, 'maskArtery.png')
 saveImage(maskVein, ToolBox, 'maskVein.png')
 saveImage(maskVessel, ToolBox, 'maskVessel.png')
 saveImage(maskNeighbors, ToolBox, 'maskNeighbors.png')
 saveImage(maskBackground, ToolBox, 'maskBackground.png')
+saveImage(bwskel(maskArtery), ToolBox, 'skeletonArtery.png')
+saveImage(bwskel(maskVein), ToolBox, 'skeletonVein.png')
 
-if veinsAnalysis
-    neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskArtery;
-    neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskNeighbors;
-    neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskVein;
-    saveImage(neighborsMaskSeg, ToolBox, 'NeighborsOnVessels.png')
-else
-    neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery  | maskNeighbors) + maskArtery;
-    neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery  | maskNeighbors) + maskNeighbors;
-    neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskNeighbors);
-    saveImage(neighborsMaskSeg, ToolBox, 'NeighborsOnVessels.png')
-end
-
-%% Mask Section & Force Barycenter
+% 4) 5) Mask Section & Force Barycenter
 
 L = (numY + numX) / 2;
 r1 = PW_params.velocitySmallRadiusRatio * L;
@@ -338,7 +309,7 @@ xy_barycenter = [x_CRA, y_CRA];
 maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery,thin=10);
 createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein,thin=10);
 
-%% Create Segmentation Map
+% 4) 6) Create Segmentation Map
 
 if veinsAnalysis
     segmentationMap(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery | maskVein) + maskArtery;
@@ -352,8 +323,16 @@ else
     saveImage(segmentationMapArtery, ToolBox, 'Segmentation.png')
 end
 
-%% new masks
-saveImage(bwskel(maskArtery), ToolBox, 'skeletonArtery.png')
-saveImage(bwskel(maskVein), ToolBox, 'skeletonVein.png')
+if veinsAnalysis
+    neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskArtery;
+    neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskNeighbors;
+    neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskVein;
+    saveImage(neighborsMaskSeg, ToolBox, 'NeighborsOnVessels.png')
+else
+    neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery  | maskNeighbors) + maskArtery;
+    neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery  | maskNeighbors) + maskNeighbors;
+    neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskNeighbors);
+    saveImage(neighborsMaskSeg, ToolBox, 'NeighborsOnVessels.png')
+end
 
 end

@@ -274,14 +274,17 @@ classdef pulse < matlab.apps.AppBase
 
                     diary off
 
-                    fprintf("==========================================\nERROR\n==========================================\n")
-                    disp(['Error with file : ', app.file.directory])
-                    disp(ME.identifier)
-                    disp(ME.message)
-                    for stackIdx = 1:size(ME.stack,1)
-                        fprintf('%s : %s, line : %d \n',ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
+                    fprintf(2,"==========================================\n");
+                    fprintf(2,"ERROR\n");
+                    fprintf(2,"==========================================\n");
+
+                    fprintf(2, 'Error with file : %s\n%s\n%s', app.file.directory, ME.identifier, ME.message);
+
+                    for stackIdx = 1:size(ME.stack, 1)
+                        fprintf(2,"%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
                     end
-                    fprintf("==========================================\n")
+
+                    fprintf(2,"==========================================\n");
                 end
             end
             app.Lamp.Color = [0, 1, 0];
