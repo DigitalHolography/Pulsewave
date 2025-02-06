@@ -188,17 +188,17 @@ fprintf("    4. Sections Images Generation took %ds\n", round(toc))
 
 %% 5. Blood Flow Profiles
 tic
-
-if flagBloodVelocityProfile
-    mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
-
-    interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, rad, 50)
-    if veins_analysis
-        interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, rad, 50)
-    end
-
-    fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
-end
+% 
+% if flagBloodVelocityProfile
+%     mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
+% 
+%     interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, rad, 50)
+%     if veins_analysis
+%         interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, rad, 50)
+%     end
+% 
+%     fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
+% end
 
 %% 6. Arterial Indicators
 tic

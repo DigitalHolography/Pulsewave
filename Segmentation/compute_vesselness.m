@@ -1,4 +1,4 @@
-function [M0_binary_img] = denoise_vessel_image(M0_ff_img, diaphragm, name, ToolBox, options)
+function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, ToolBox, options)
     % Input: M0_ff_img - Noisy vessel image (numX x numY)
     % Output: M0_denoised_img - Denoised vessel image
 
