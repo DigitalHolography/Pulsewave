@@ -7,8 +7,7 @@ if ~app.flag_is_load
     end
 end
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+PW_params = Parameters_json(app.file.directory, app.file.PW_param_name);
 
 % Create a uifigure for mask preview with dark gray background
 d = uifigure('Position', [300, 300, 1000, 750],...
@@ -131,7 +130,7 @@ vascularClassesTable = uieditfield(paramPanel, 'Value', vascularClasses(1:end-1)
 
 % Create table for ArterialClasses
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Arterial Classes:', 'Position', [10, 360, 120, 20]);
-arterialClassesTable = uieditfield(paramPanel, 'Value', arterialClasses(1:end-1), 'Position', [140, 400, 60, 22]);
+arterialClassesTable = uieditfield(paramPanel, 'Value', arterialClasses(1:end-1), 'Position', [140, 360, 60, 22]);
 
 % Create table for VenousClasses
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Venous Classes:', 'Position', [10, 280, 120, 20]);
@@ -170,10 +169,13 @@ uiwait(d);
 
 % Nested function for mask creation
     function createMask(~, ~)
+
         % Ensure necessary steps are done before proceeding
         if ~app.file.is_preprocessed
             app.PreProcessButtonPushed();
         end
+
+        ToolBox = ToolBoxClass(app.file.directory, app.file.PW_param_name, true);
 
         % Update parameters and get the image and masks
         M0_ff_img = squeeze(mean(app.file.M0_ff_video, 3)); % Mean of the M0_ff_video
@@ -220,11 +222,18 @@ uiwait(d);
         PW_params.params.Mask.ArterialClasses = str2double(split(arterialClassesTable.Value, ','));
         PW_params.params.Mask.VenousClasses = str2double(split(venousClassesTable.Value, ','));
 
-        PW_params.WriteParametersToJson(fullfile(ToolBox.PW_path_main, 'json', 'InputPulsewaveParams.json'));
+        PW_params.WriteParametersToJson(fullfile(app.file.directory, 'pulsewave', 'json', app.file.PW_param_name));
     end
 
 
     function openFolder(~, ~)
+
+        ToolBox = getGlobalToolBox;
+        if isempty(ToolBox)
+            fprintf(2, "You must create the masks first\n")
+            return
+        end
+
         % Specify the folder to open
         folderPath = fullfile(ToolBox.PW_path_png, 'mask', 'steps');
 

@@ -4,6 +4,7 @@ classdef ToolBoxClass < handle
     properties
         % Paths
         PW_path char
+        PW_name char
         PW_path_main char
         PW_path_dir char
         PW_path_png char
@@ -42,7 +43,7 @@ classdef ToolBoxClass < handle
             obj.loadParameters(path);
 
             % Calculate Scaling Factors for velocity
-            obj.calculateScalingFactors(path);
+            obj.calculateScalingFactors;
 
             % Set up logging (diary)
             obj.setupLogging();
@@ -50,12 +51,19 @@ classdef ToolBoxClass < handle
             % Copy input parameters to result folder
             obj.copyInputParameters();
 
+            obj.setGlobalToolBox;
+
         end
 
-        function mainFolder = extractFolderName(obj, path)
+        function mainFolder = extractFolderName(~, path)
             % Helper function to extract the folder name
             split_path = strsplit(path, filesep);
             mainFolder = split_path{end - 1};
+        end
+
+        function setGlobalToolBox(obj)
+            global ToolBoxGlobal
+            ToolBoxGlobal = obj;
         end
 
         function initializePaths(obj, OverWrite)
@@ -63,13 +71,14 @@ classdef ToolBoxClass < handle
 
             % Define main and subdirectories for storing data
             obj.PW_path_main = fullfile(obj.PW_path, 'pulsewave');
-            PW_folder_name = strcat(obj.main_foldername, '_PW');
-            
+            foldername_PW = strcat(obj.main_foldername, '_PW');
+
             % Create or identify a unique folder for the current run
-            idx = obj.getUniqueFolderIndex(PW_folder_name, OverWrite);
+            idx = obj.getUniqueFolderIndex(foldername_PW, OverWrite);
 
             % Set the folder name and paths for various data types
-            obj.PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
+            obj.PW_name = foldername_PW;
+            obj.PW_folder_name = sprintf('%s_%d', foldername_PW, idx);
             obj.PW_path_dir = fullfile(obj.PW_path_main, obj.PW_folder_name);
             obj.PW_path_png = fullfile(obj.PW_path_dir, 'png');
             obj.PW_path_eps = fullfile(obj.PW_path_dir, 'eps');
@@ -107,8 +116,8 @@ classdef ToolBoxClass < handle
             % Helper function to create necessary directories if they don't exist
 
             dirs = {obj.PW_path_dir, obj.PW_path_png, obj.PW_path_eps, obj.PW_path_gif, ...
-                    obj.PW_path_txt, obj.PW_path_avi, obj.PW_path_mp4, obj.PW_path_json, ...
-                    obj.PW_path_log};
+                obj.PW_path_txt, obj.PW_path_avi, obj.PW_path_mp4, obj.PW_path_json, ...
+                obj.PW_path_log};
 
             for i = 1:length(dirs)
                 if ~isfolder(dirs{i})
@@ -122,22 +131,18 @@ classdef ToolBoxClass < handle
 
             % Try loading parameters from existing .mat or .json files
             if isfile(fullfile(path, 'mat', [obj.main_foldername, '.mat']))
-                disp('Reading cache parameters from .mat');
                 load(fullfile(path, 'mat', [obj.main_foldername, '.mat']), 'cache');
                 obj.stride = cache.batch_stride;
                 obj.fs = cache.Fs / 1000;  % Convert Hz to kHz
                 obj.f1 = cache.time_transform.f1;
                 obj.f2 = cache.time_transform.f2;
-                disp('Done.');
             elseif isfile(fullfile(path, 'Holovibes_rendering_parameters.json'))
-                disp('Reading cache parameters from Holovibes');
                 json_txt = fileread(fullfile(path, 'Holovibes_rendering_parameters.json'));
                 footer_parsed = jsondecode(json_txt);
                 obj.stride = footer_parsed.compute_settings.image_rendering.time_transformation_stride;
                 obj.fs = footer_parsed.info.camera_fps / 1000;  % Convert FPS to kHz
                 obj.f1 = footer_parsed.compute_settings.view.z.start / footer_parsed.compute_settings.image_rendering.time_transformation_size * obj.fs;
                 obj.f2 = obj.fs / 2;
-                disp('Done.');
             else
                 % Default values if no parameters are found
                 disp('WARNING: No rendering parameters file found. Using default values.');
@@ -148,7 +153,7 @@ classdef ToolBoxClass < handle
             end
         end
 
-        function calculateScalingFactors(obj, path)
+        function calculateScalingFactors(obj)
             % Calculate scaling factors based on pulsewave parameters
 
             PW_params = Parameters_json(obj.PW_path, obj.PW_param_name);

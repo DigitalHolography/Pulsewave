@@ -1,4 +1,4 @@
-function [maskArtery, maskVein, maskSection, maskNeighbors , xy_barycenter] = createMasks(M0_ff_video, f_AVG_mean)
+function [maskArtery, maskVein, maskSection, maskNeighbors, xy_barycenter] = createMasks(M0_ff_video, f_AVG_mean)
 
 ToolBox = getGlobalToolBox;
 PW_params = ToolBox.getParams;
@@ -39,7 +39,6 @@ minPixelSize = PW_params.params.Mask.MinPixelSize;
 CRACRV_Threshold = PW_params.params.Mask.CRACRVThreshold;
 forceVesselWidth = PW_params.params.Mask.ForceVesselWidth;
 
-veinsAnalysis = PW_params.veins_analysis;
 bgWidth = PW_params.params.Velocity.LocalBackgroundWidth;
 L = (numY + numX) / 2;
 r1 = PW_params.params.SizeOfField.SmallRadiusRatio * L;
@@ -268,14 +267,16 @@ RGBM0(:, :, 2) = rescale(M0_ff_img);
 RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVein;
 
 saveImage(RGBM0, ToolBox, 'vessel_40_RGB.png', isStep = true)
+saveImage(RGBM0, ToolBox, 'RGB_img.png')
 
 % 4) 2) Neighbours Mask
 
-if veinsAnalysis
-    maskNeighbors = imdilate(maskArtery | maskVein, strel('disk', bgWidth)) - (maskArtery | maskVein);
-else
-    maskNeighbors = imdilate(maskArtery, strel('disk', bgWidth)) - maskArtery;
-end
+maskNeighbors = imdilate(maskArtery | maskVein, strel('disk', bgWidth)) - (maskArtery | maskVein);
+
+neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) + maskArtery;
+neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) + maskNeighbors;
+neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) + maskVein;
+saveImage(neighborsMaskSeg, ToolBox, 'neighbors_img.png')
 
 % 4) 3) CRA and CRV Masks
 
@@ -301,31 +302,5 @@ saveImage(bwskel(maskVein), ToolBox, 'skeletonVein.png')
 xy_barycenter = [x_CRA, y_CRA];
 maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery,thin=10);
 createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein,thin=10);
-
-% 4) 6) Create Segmentation Map
-
-if veinsAnalysis
-    segmentationMap(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery | maskVein) + maskArtery;
-    segmentationMap(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery | maskVein);
-    segmentationMap(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskVein) + maskVein;
-    saveImage(segmentationMap, ToolBox, 'Segmentation.png')
-else
-    segmentationMapArtery(:, :, 1) = rescale(M0_ff_img) .* ~maskArtery + maskArtery;
-    segmentationMapArtery(:, :, 2) = rescale(M0_ff_img) .* ~maskArtery;
-    segmentationMapArtery(:, :, 3) = rescale(M0_ff_img) .* ~maskArtery;
-    saveImage(segmentationMapArtery, ToolBox, 'Segmentation.png')
-end
-
-if veinsAnalysis
-    neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskArtery;
-    neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskNeighbors;
-    neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors) + maskVein;
-    saveImage(neighborsMaskSeg, ToolBox, 'NeighborsOnVessels.png')
-else
-    neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) .* ~(maskArtery  | maskNeighbors) + maskArtery;
-    neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) .* ~(maskArtery  | maskNeighbors) + maskNeighbors;
-    neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) .* ~(maskArtery | maskNeighbors);
-    saveImage(neighborsMaskSeg, ToolBox, 'NeighborsOnVessels.png')
-end
 
 end
