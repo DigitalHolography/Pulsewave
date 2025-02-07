@@ -36,9 +36,7 @@ classdef pulse < matlab.apps.AppBase
 
             app.Lamp.Color = [1, 0, 0];
             drawnow;
-            holo = true;
             if isfolder(path)
-                holo = false;
                 path = strcat(path, '\');
             end
 
@@ -65,10 +63,10 @@ classdef pulse < matlab.apps.AppBase
 
             catch ME
 
-                fprintf("==========================================\nERROR\n==========================================\n")
-                fprintf('Error while loading : %s\n', path)
-                fprintf("%s\n",ME.identifier)
-                fprintf("%s\n",ME.message)
+                fprintf(2, "==========================================\nERROR\n==========================================\n")
+                fprintf(2, 'Error while loading : %s\n', path)
+                fprintf(2, "%s\n",ME.identifier)
+                fprintf(2, "%s\n",ME.message)
                 % for i = 1:size(exception.stack,1)
                 %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
                 %     fprintf(stack);
@@ -76,17 +74,17 @@ classdef pulse < matlab.apps.AppBase
 
                 if ME.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
 
-                    fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
+                    fprintf(2, "No Raw File was found, please check 'save raw files' in HoloDoppler\n")
 
                 else
 
                     for i = 1:numel(ME.stack)
-                        disp(ME.stack(i))
+                        fprintf(2, "%s", ME.stack(i))
                     end
 
                 end
 
-                fprintf("==========================================\n")
+                fprintf(2, "==========================================\n")
 
                 diary off
                 app.Lamp.Color = [1, 1/2, 0];
@@ -140,7 +138,7 @@ classdef pulse < matlab.apps.AppBase
             % Auto-detect the maximum available workers and update the spinner
             maxWorkers = parcluster('local').NumWorkers;
             app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
-            app.NumberofWorkersSpinner.Value = min(10, maxWorkers); % Default to 10 or max available
+            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
 
             % Initialize checkboxes and flags
             app.updateCheckboxes();
@@ -182,8 +180,9 @@ classdef pulse < matlab.apps.AppBase
 
             end
             try
-                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name, 1);
+                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory, app.file.PW_param_name, 1);
                 setGlobalToolBox(app.file.ToolBoxmaster);
+            catch
             end
 
         end
@@ -215,6 +214,7 @@ classdef pulse < matlab.apps.AppBase
             try
                 app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name, 1);
                 setGlobalToolBox(app.file.ToolBoxmaster);
+            catch
             end
 
             app.ErrorLabel.Text = "" ;
@@ -606,28 +606,28 @@ classdef pulse < matlab.apps.AppBase
 
         % Checkbox update function:
         function updateCheckboxes(app, ~)
-            %             if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
-            %                 app.PulsewaveanalysisCheckBox.Enable = true;
-            %                 if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
-            %
-            %                     app.ExtendedPulsewaveCheckBox.Enable = true;
-            %                     app.velocityCheckBox.Enable = true;
-            %                     app.bloodVolumeRateCheckBox.Enable = true;
-            %                     app.bloodVelocityProfileCheckBox.Enable = true;
-            %                 else
-            %                     app.ExtendedPulsewaveCheckBox.Enable = false;
-            %                     app.velocityCheckBox.Enable = false;
-            %                     app.bloodVolumeRateCheckBox.Enable = false;
-            %                     app.bloodVelocityProfileCheckBox.Enable = false;
-            %                 end
-            %
-            %             else
-            %                 app.PulsewaveanalysisCheckBox.Enable = false;
-            %                 app.ExtendedPulsewaveCheckBox.Enable = false;
-            %                 app.velocityCheckBox.Enable = false;
-            %                 app.bloodVolumeRateCheckBox.Enable = false;
-            %                 app.bloodVelocityProfileCheckBox.Enable = false;
-            %             end
+            % if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
+            %     app.PulsewaveanalysisCheckBox.Enable = true;
+            %     if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
+            % 
+            %         app.ExtendedPulsewaveCheckBox.Enable = true;
+            %         app.velocityCheckBox.Enable = true;
+            %         app.bloodVolumeRateCheckBox.Enable = true;
+            %         app.bloodVelocityProfileCheckBox.Enable = true;
+            %     else
+            %         app.ExtendedPulsewaveCheckBox.Enable = false;
+            %         app.velocityCheckBox.Enable = false;
+            %         app.bloodVolumeRateCheckBox.Enable = false;
+            %         app.bloodVelocityProfileCheckBox.Enable = false;
+            %     end
+            % 
+            % else
+            %     app.PulsewaveanalysisCheckBox.Enable = false;
+            %     app.ExtendedPulsewaveCheckBox.Enable = false;
+            %     app.velocityCheckBox.Enable = false;
+            %     app.bloodVolumeRateCheckBox.Enable = false;
+            %     app.bloodVelocityProfileCheckBox.Enable = false;
+            % end
         end
 
         % Button pushed function: EditParametersButton
