@@ -124,6 +124,10 @@ tic
 
 mkdir(ToolBox.PW_path_png, 'crossSection')
 mkdir(ToolBox.PW_path_png, 'projection')
+if  flagBloodVelocityProfile
+    mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'rheology')
+    mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'rheology')
+end
 
 [vr_avg_A_r, vr_std_A_r, area_A_r, mask_A_r, v_profiles_avg_A_r, v_profiles_std_A_r, sub_images_A_r, width_std_A_r] = crossSectionAnalysisAllRad(numSections_A, locs_A, widths_A, maskArtery, v_RMS, 'artery', flagBloodVelocityProfile, force_width);
 if veins_analysis
@@ -188,17 +192,17 @@ fprintf("    4. Sections Images Generation took %ds\n", round(toc))
 
 %% 5. Blood Flow Profiles
 tic
-% 
-% if flagBloodVelocityProfile
-%     mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
-% 
-%     interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, rad, 50)
-%     if veins_analysis
-%         interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, rad, 50)
-%     end
-% 
-%     fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
-% end
+
+if flagBloodVelocityProfile
+    mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
+
+    interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, rad, 50)
+    if veins_analysis
+        interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, rad, 50)
+    end
+
+    fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
+end
 
 %% 6. Arterial Indicators
 tic

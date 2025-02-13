@@ -144,7 +144,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             axis off;
             hold off;
             set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
-            f = getframe(gca); %# Capture the current window
+            f = getframe(gca); % Capture the current window
             
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
             
@@ -201,7 +201,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             y = [round(size(subImg, 1) / 2) round(size(subImg, 1) / 2)];
             line(x, y, 'Color', 'red', 'LineWidth', 3)
             axis off;
-            f = getframe(gca); %# Capture the current
+            f = getframe(gca); % Capture the current
             
             %bords blancs
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername, insert, ['_' name_section num2str(sectionIdx) '.png'])));
@@ -316,9 +316,9 @@ end % sectionIdx
 
 % propagation des incertitudes -> devrait être la somme également
 
-if isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
+if ~isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
     
-    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel);
+    bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, circle, ToolBox);
     % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
     
 end
