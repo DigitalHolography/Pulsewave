@@ -1,4 +1,4 @@
-function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, ToolBox, options)
+function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, TB, opt)
     % Input: M0_ff_img - Noisy vessel image (numX x numY)
     % Output: M0_denoised_img - Denoised vessel image
 
@@ -6,8 +6,8 @@ function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, ToolBo
         M0_ff_img 
         diaphragm 
         name 
-        ToolBox 
-        options.BlackWhite = false
+        TB 
+        opt.BlackWhite = false
     end
 
 
@@ -35,13 +35,18 @@ function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, ToolBo
 %                            'SearchWindowSize', search_window, ...
 %                            'ComparisonWindowSize', patch_size);
 
+    PW_params = TB.getParams();
+
     % Step 3: Vessel Enhancement
     % Apply Frangi Vesselness Filter
-    M0_vesselness_img = FrangiFilter2D(M0_norm_img, "BlackWhite", options.BlackWhite) .* diaphragm;
+    M0_vesselness_img = FrangiFilter2D(M0_norm_img, ...
+        "FrangiScaleRange", PW_params.params.Mask.VesselnessSigmaRange, ...
+        "FrangiScaleRatio", PW_params.params.Mask.VesselnessSigmaStep, ...
+        "BlackWhite", opt.BlackWhite) .* diaphragm;
 
     % Thresholding to segment vessels (optional)
     M0_binary_img = imbinarize(M0_vesselness_img, "adaptive");
 
-    saveImage(M0_vesselness_img, ToolBox, sprintf('%s_vesselness_img.png', name), isStep = true)
-    saveImage(M0_binary_img, ToolBox, sprintf('%s_maskVessel.png', name), isStep = true)
+    saveImage(M0_vesselness_img, TB, sprintf('%s_vesselness_img.png', name), isStep = true)
+    saveImage(M0_binary_img, TB, sprintf('%s_maskVessel.png', name), isStep = true)
 end
