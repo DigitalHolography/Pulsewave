@@ -1,4 +1,4 @@
-function [vr_avg_r, vr_std_r, area_r, mask_r, v_profiles_avg_r, v_profiles_std_r, sub_images_r, width_std_r] = crossSectionAnalysisAllRad(numSections, locs, widths, mask, v_RMS, name, flagBloodVelocityProfile, force_width)
+function [vr_avg_r, vr_std_r, area_r, mask_r, v_profiles_avg_r, v_profiles_std_r, sub_images_r, width_avg_r, width_std_r] = crossSectionAnalysisAllRad(numSections, locs, widths, mask, v_RMS, name, flagBloodVelocityProfile, force_width)
 
 % Parameters 
 ToolBox = getGlobalToolBox;
@@ -16,11 +16,12 @@ mask_r = zeros(numX, numY, numCircles);
 v_profiles_avg_r = cell(1, numCircles);
 v_profiles_std_r = cell(1, numCircles);
 sub_images_r = cell(1, numCircles);
+width_avg_r = cell(1, numCircles);
 width_std_r = cell(1, numCircles);
 
 % Cross-Section Analysis of the arteries
 parfor circleIdx = 1:numCircles
-    [vr_avg, vr_std, area, ~, ~, maskCross, v_profiles_avg, v_profiles_std, subImg_cell, ~, width_std] = crossSectionAnalysis2(ToolBox, locs{circleIdx}, widths{circleIdx}, mask, v_RMS, flowRate_sliceHalfThickness, name, flagBloodVelocityProfile, circleIdx, force_width, 1);
+    [vr_avg, vr_std, area, ~, ~, maskCross, v_profiles_avg, v_profiles_std, subImg_cell, width_avg, width_std] = crossSectionAnalysis2(ToolBox, locs{circleIdx}, widths{circleIdx}, mask, v_RMS, flowRate_sliceHalfThickness, name, flagBloodVelocityProfile, circleIdx, force_width, 1);
 
     if length(vr_avg) < 1
         continue
@@ -32,6 +33,7 @@ parfor circleIdx = 1:numCircles
     v_profiles_avg_r{circleIdx} = v_profiles_avg;
     v_profiles_std_r{circleIdx} = v_profiles_std;
     sub_images_r{circleIdx} = subImg_cell;
+    width_avg_r{circleIdx} = width_avg;
     width_std_r{circleIdx} = width_std;
 
 end
