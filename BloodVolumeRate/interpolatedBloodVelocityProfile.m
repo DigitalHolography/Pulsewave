@@ -111,7 +111,7 @@ if PW_params.exportVideos
 
     set(gca, 'Linewidth', 2)
 
-    parfor circleIdx = 1:numCircles
+    for circleIdx = 1:numCircles
         video = zeros(420, 560, 3, numFrames, 'single'); % Preallocate video array
         title(['Interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
         for frameIdx = 1:numFrames
