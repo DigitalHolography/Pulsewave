@@ -109,6 +109,9 @@ vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
 R_VascularSignal = mean(M0_ff_video_centered .* vascularSignal_centered, 3) ./ (std((M0_ff_video_centered), [], 3) * std(vascularSignal_centered, [], 3));
 saveImage(R_VascularSignal, ToolBox, 'all_15_Correlation.png', isStep = true)
 
+RGBdiasys = labDuoImage(M0_ff_img, R_VascularSignal);
+saveImage(RGBdiasys, ToolBox, 'all_15_Correlation_rgb.png', isStep = true)
+
 % 1) 4) Segment Vessels
 
 cArtery = [255 22 18] / 255;
@@ -173,14 +176,7 @@ saveImage(diasys, ToolBox,  'all_20_diasys_img.png', isStep = true)
 saveImage(diasysArtery, ToolBox,  'artery_20_diasys_img.png', isStep = true)
 saveImage(diasysVein, ToolBox,  'vein_20_diasys_img.png', isStep = true)
 
-L = 100 .* rescale(M0_ff_img);
-a = 256 .* rescale(diasys) - 128;
-b = 256 .* rescale(diasys) - 128;
-
-Labdiasys(:, :, 1) = L;
-Labdiasys(:, :, 2) = a;
-Labdiasys(:, :, 3) = b;
-RGBdiasys = lab2rgb(Labdiasys);
+RGBdiasys = labDuoImage(M0_ff_img, diasysArtery);
 saveImage(RGBdiasys, ToolBox, 'vessel_40_diasys_rgb.png', isStep = true)
 saveImage(RGBdiasys, ToolBox, 'DiaSysRGB.png')
 
