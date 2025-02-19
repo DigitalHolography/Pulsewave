@@ -121,7 +121,16 @@ classdef ToolBoxClass < handle
             % Load or fall back to default parameters from cache or config files
 
             % Try loading parameters from existing .mat or .json files
-            if isfile(fullfile(path, 'mat', [obj.main_foldername, '.mat']))
+            if ~isempty(dir(fullfile(path, ['*', 'RenderingParameters', '*'])))  % since HD 2.0
+                disp('Reading cache parameters from .json');
+                fpath = fullfile(path, dir(fullfile(path, ['*', 'RenderingParameters', '*'])).name);
+                decoded_data = jsondecode(fileread(fpath));
+                obj.stride = decoded_data.batch_stride;
+                obj.fs = decoded_data.fs;  % Convert kHz to kHz
+                obj.f1 = decoded_data.time_range(1);
+                obj.f2 = decoded_data.time_range(2);
+                disp('Done.');
+            elseif isfile(fullfile(path, 'mat', [obj.main_foldername, '.mat']))
                 disp('Reading cache parameters from .mat');
                 load(fullfile(path, 'mat', [obj.main_foldername, '.mat']), 'cache');
                 obj.stride = cache.batch_stride;
