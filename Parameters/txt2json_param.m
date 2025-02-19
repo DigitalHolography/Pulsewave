@@ -20,12 +20,12 @@ function [json_data] = txt2json_param(fileContent)
     parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold = extractValue(fileContent, 'Data reliability index treshold :');
     parsedData.CreationOfOneCycle.LocalBackgroundWidth = extractValue(fileContent, 'Local background width :');
 
-    parsedData.CreationOfMasks.VesselnesParameterSigma = extractValue(fileContent, 'Vesselnes parameter sigma :');
-    parsedData.CreationOfMasks.VesselnesParameterBeta = extractValue(fileContent, 'Vesselnes parameter beta :');
-    parsedData.CreationOfMasks.VesselnessBinarizationThreshold = extractValue(fileContent, 'Vesselness Binarization treshold :');
-    parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForVessels = extractValue(fileContent, 'MagicWand Number of segmented area detected for vessels :');
-    parsedData.CreationOfMasks.MagicWandNumberOfSegmentedAreaDetectedForArtery = extractValue(fileContent, 'MagicWand Number of segmented area detected for artery :');
-    parsedData.CreationOfMasks.ArteryCorrelationThreshold = extractValue(fileContent, 'Artery correlation threshold :');
+    parsedData.Mask.VesselnesParameterSigma = extractValue(fileContent, 'Vesselnes parameter sigma :');
+    parsedData.Mask.VesselnesParameterBeta = extractValue(fileContent, 'Vesselnes parameter beta :');
+    parsedData.Mask.VesselnessBinarizationThreshold = extractValue(fileContent, 'Vesselness Binarization treshold :');
+    parsedData.Mask.MagicWandNumberOfSegmentedAreaDetectedForVessels = extractValue(fileContent, 'MagicWand Number of segmented area detected for vessels :');
+    parsedData.Mask.MagicWandNumberOfSegmentedAreaDetectedForArtery = extractValue(fileContent, 'MagicWand Number of segmented area detected for artery :');
+    parsedData.Mask.ArteryCorrelationThreshold = extractValue(fileContent, 'Artery correlation threshold :');
 
     parsedData.CentralRetinaMask.CentralRetinaArteryThreshold = extractValue(fileContent, 'Central retina artery treshold :');
     parsedData.CentralRetinaMask.CentralRetinaVeinThreshold = extractValue(fileContent, 'Central retina vein treshold :');

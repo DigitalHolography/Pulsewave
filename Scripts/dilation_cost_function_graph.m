@@ -24,7 +24,7 @@ for ind = 1:length(paths)
         jsonData = char(jsonData);
         decodedData = jsondecode(jsonData);
         
-        decodedData.CreationOfMasks.ForceVesselWidth = j;
+        decodedData.Mask.ForceVesselWidth = j;
         
         jsonStr = jsonencode(decodedData,"PrettyPrint",true);
         fileID = fopen(fullfile(pw_path,'json',sprintf('InputPulsewaveParams_%d.json',j)), 'w');

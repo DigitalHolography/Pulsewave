@@ -238,15 +238,7 @@ if exportVideos
 
     writeGifOnDisc(f_RMS_background_rescale, "f_RMS_bkg")
     writeGifOnDisc(f_RMS_video_rescale, "f_RMS")
-
-    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.avi')));
-    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_background), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'LocalBackground_vessels.mp4')), 'MPEG-4');
-
-    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.avi')));
-    parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(f_RMS_video), fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s", ToolBox.main_foldername, 'f_AVG_vessels.mp4')), 'MPEG-4');
 end
-
-
 
 clear LocalBackground_in_vessels f_RMS_background
 

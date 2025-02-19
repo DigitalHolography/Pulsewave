@@ -19,7 +19,6 @@ targetMaskArteryPath = fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskArtery.
 targetMaskVeinPath = fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskVein.png');
 
 if ~isfile(targetMaskArteryPath) || ~isfile(targetMaskVeinPath)
-    disp('One or both target masks do not exist in the expected directory.');
     return
 end
 

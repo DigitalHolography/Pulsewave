@@ -1,7 +1,9 @@
 function ShowOutputs(PW_paths,output_dir)
 % This function show multiple outputs from the foldermanagement drawerlist
 
-for ind =1:length(PW_paths)
+N = length(PW_paths);
+
+for ind =1:N
     split_path = strsplit(PW_paths{ind}, '\');
     main_foldername = split_path{end};
     PW_folder_name = strcat(main_foldername, '_PW');
@@ -45,29 +47,31 @@ for ind =1:length(PW_paths)
     
 end
 
+[l, L] = bestMontageLayout(N);
+
 figure(320)
-montage(segmentation_paths, Size = [1 4]);
+montage(segmentation_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'segmentations.png'));
 figure(321)
-montage(Arteries_fRMS_paths, Size = [1 4]);
+montage(Arteries_fRMS_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'ArteriesfRMS.png'));
 figure(322)
-montage(ARI_velocity_paths, Size = [1 4]);
+montage(ARI_velocity_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'ARIvelocity.png'));
 figure(323)
-montage(bvr_paths, Size = [1 4]);
+montage(bvr_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'bloodVolumeRate.png'));
 figure(324)
-montage(histo_art_velocity_paths, Size = [1 4]);
+montage(histo_art_velocity_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'histogramVelocityArteries.png'));
 figure(325)
-montage(art_velocity_paths, Size = [1 4]);
+montage(art_velocity_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'ArteriesVelocity.png'));
 figure(326)
-montage(ARI_BVR_paths, Size = [1 4]);
+montage(ARI_BVR_paths, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'ARIvelocityBVR.png'));
 figure(327)
-montage(Stroke_total_volume, Size = [1 4]);
+montage(Stroke_total_volume, Size = [l L]);
 exportgraphics(gca,fullfile(output_dir,'_strokeAndTotalVolume.png'));
 
 end
