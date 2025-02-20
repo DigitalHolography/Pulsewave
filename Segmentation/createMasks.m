@@ -65,7 +65,11 @@ saveImage(rescale(M0_ff_img) + maskDiaphragm .* 0.5, ToolBox, 'all_11_maskDiaphr
 
 % 1) 1) Compute vesselness response
 
-[maskVesselness] = compute_vesselness(M0_ff_img, maskDiaphragm, 'all_12', ToolBox);
+[maskVesselnessFrangi] = frangiVesselness(M0_ff_img, maskDiaphragm, 'all_12', ToolBox);
+[maskVesselnessGabor] = gaborVesselness(M0_ff_img, 'all_13', ToolBox);
+
+maskVesselness = maskVesselnessFrangi | maskVesselnessGabor & maskDiaphragm;
+maskVesselness2 = maskVesselnessFrangi & maskVesselnessGabor & maskDiaphragm;
 
 % 1) 2) Compute the barycenters and the circle mask
 
@@ -158,12 +162,14 @@ saveImage(RGBM0, ToolBox,  'all_19_RGB.png', isStep = true)
 
 % 2) 1) New Vesselness Mask
 
-Systole_Vesselness = compute_vesselness(M0_Systole_img, maskDiaphragm, 'artery_20', ToolBox);
-Diastole_Vesselness = compute_vesselness(M0_Diastole_img, maskDiaphragm, 'artery_20', ToolBox);
+Systole_Frangi = frangiVesselness(M0_Systole_img, maskDiaphragm, 'artery_20', ToolBox);
+Diastole_Frangi = frangiVesselness(M0_Diastole_img, maskDiaphragm, 'vein_20', ToolBox);
+Systole_Gabor = gaborVesselness(M0_Systole_img,'artery_20', ToolBox);
+Diastole_Gabor = gaborVesselness(M0_Diastole_img, 'vein_20', ToolBox);
 saveImage(rescale(M0_Systole_img), ToolBox,  'artery_20_systole_img.png', isStep = true)
 saveImage(rescale(M0_Diastole_img), ToolBox,  'vein_20_diastole_img.png', isStep = true)
 
-maskVesselness = Systole_Vesselness | Diastole_Vesselness;
+maskVesselness = Systole_Frangi | Diastole_Frangi | Systole_Gabor | Diastole_Gabor;
 maskVesselnessClean = maskVesselness & bwareafilt(maskVesselness|maskCircle, 1, 8);
 saveImage(maskVesselnessClean, ToolBox,  'all_20_new_vesselMask.png', isStep = true)
 
@@ -172,9 +178,9 @@ saveImage(maskVesselnessClean, ToolBox,  'all_20_new_vesselMask.png', isStep = t
 diasysArtery = M0_Systole_img - M0_Diastole_img;
 diasysVein = M0_ff_img - diasysArtery;
 diasys = diasysArtery - diasysVein;
-saveImage(diasys, ToolBox,  'all_20_diasys_img.png', isStep = true)
-saveImage(diasysArtery, ToolBox,  'artery_20_diasys_img.png', isStep = true)
-saveImage(diasysVein, ToolBox,  'vein_20_diasys_img.png', isStep = true)
+saveImage(diasys, ToolBox,  'all_21_diasys_img.png', isStep = true)
+saveImage(diasysArtery, ToolBox,  'artery_21_diasys_img.png', isStep = true)
+saveImage(diasysVein, ToolBox,  'vein_21_diasys_img.png', isStep = true)
 
 RGBdiasys = labDuoImage(M0_ff_img, diasysArtery);
 saveImage(RGBdiasys, ToolBox, 'vessel_40_diasys_rgb.png', isStep = true)
@@ -299,4 +305,5 @@ xy_barycenter = [x_CRA, y_CRA];
 maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery,thin=10);
 createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein,thin=10);
 
+close all
 end
