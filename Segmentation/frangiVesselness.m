@@ -1,4 +1,4 @@
-function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, TB, opt)
+function [M0_binary_img] = frangiVesselness(M0_ff_img, diaphragm, name, TB, opt)
     % Input: M0_ff_img - Noisy vessel image (numX x numY)
     % Output: M0_denoised_img - Denoised vessel image
 
@@ -9,7 +9,6 @@ function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, TB, op
         TB 
         opt.BlackWhite = false
     end
-
 
     % Step 1: Preprocessing
     % Convert to grayscale if the image is RGB
@@ -47,6 +46,6 @@ function [M0_binary_img] = compute_vesselness(M0_ff_img, diaphragm, name, TB, op
     % Thresholding to segment vessels (optional)
     M0_binary_img = imbinarize(M0_vesselness_img, "adaptive");
 
-    saveImage(M0_vesselness_img, TB, sprintf('%s_vesselness_img.png', name), isStep = true)
-    saveImage(M0_binary_img, TB, sprintf('%s_maskVessel.png', name), isStep = true)
+    saveImage(M0_vesselness_img, TB, sprintf('%s_frangi_img.png', name), isStep = true)
+    saveImage(M0_binary_img, TB, sprintf('%s_frangi_mask.png', name), isStep = true)
 end

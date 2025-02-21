@@ -111,7 +111,7 @@ if PW_params.exportVideos
 
     set(gca, 'Linewidth', 2)
 
-    for circleIdx = 1:numCircles
+    parfor circleIdx = 1:numCircles
         video = zeros(420, 560, 3, numFrames, 'single'); % Preallocate video array
         title(['Interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
         for frameIdx = 1:numFrames
@@ -174,7 +174,7 @@ if PW_params.exportVideos
         end
 
         % Write only once per circle
-        writeGifOnDisc(video, sprintf("circle_%d_%s_interpolatedBloodVelocityProfile", circleIdx, name));
+        writeGifOnDisc(video, sprintf("circle_%d_%s_interpolatedBloodVelocityProfile", circleIdx, name), "ToolBox", ToolBox);
     end
 end
 end

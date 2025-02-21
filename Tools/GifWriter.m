@@ -20,7 +20,7 @@ classdef GifWriter < handle
     
     methods
         
-        function obj = GifWriter(name, gifLength, timePeriodMin, numFramesFixed)
+        function obj = GifWriter(name, gifLength, timePeriodMin, numFramesFixed, opt)
             %GifWriter Construct an instance of this class
             %   filename: where want your Gif to be built
             %   time_period_min: minimal time between each frame of your GIF
@@ -30,10 +30,16 @@ classdef GifWriter < handle
                 gifLength
                 timePeriodMin = NaN
                 numFramesFixed = NaN
+                opt.ToolBox = [];
             end
             
-            ToolBox = getGlobalToolBox;
-            PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+            if isempty(opt.ToolBox)
+                ToolBox = getGlobalToolBox;
+            else
+                ToolBox = opt.ToolBox;
+            end
+            
+            PW_params = ToolBox.getParams;
             obj.name = name;
             obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, name));
             obj.filename_avi = fullfile(ToolBox.PW_path_avi, sprintf("%s_%s.avi", ToolBox.PW_folder_name, name));
