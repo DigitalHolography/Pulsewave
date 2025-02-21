@@ -34,6 +34,27 @@ graphSignal(sprintf('API_%s', name), folder, ...
     Title = sprintf('API %s = %0.2f', name, API), Legend = {'Smooth', 'Raw'}, ...
     yLines = [0, vMin, vMean, vMax], yLineLabels = {'', '', '', ''});
 
+% save image
+
+if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
+    
+    v_smooth = smoothdata(imgaussfilt3(v_video, 10),3,'rlowess');
+    imgMin = min(v_smooth,[],3);
+    imgMax = max(v_smooth,[],3);
+    imgMean = mean(v_smooth,3);
+
+    imgARI = (imgMax - imgMin) ./ imgMax .* maskArtery;
+    [cmapARI] = cmapLAB(256, [1 1 1],0,[1 0 0],1);
+    imgAPI = (imgMax - imgMin) ./ imgMean .* maskArtery;
+    [cmapAPI] = cmapLAB(256, [1 1 1],0,[1 0 0],1);
+    fig = figure(211354); imagesc(imgARI),axis off,colormap(cmapARI); axis image; colorbar,clim([0 1]); title('ARI'), saveas(fig,fullfile(folder, strcat(ToolBox.main_foldername, '_', 'ARI','_',name)),'png');
+    f = figure(211354+1); imagesc(imgAPI),axis off,colormap(cmapAPI),colorbar,clim([0 3]);axis image, title('API'), saveas(f,fullfile(folder, strcat(ToolBox.main_foldername, '_', 'API','_',name)),'png');
+    close(34),close(35);
+
+
+else
+
+% save txt 
 fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
 if strcmp(name,'velocity')
     fprintf(fileID, 'Mean Velocity artery : %f (mm/s) \r\n',vMean);

@@ -179,7 +179,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             title('Velocity profile and poiseuille fit')
             legend({'', '', '', 'meas', '', ['fit R²=', num2str(rsquare)]});
             saveas(f, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_poiseuille_' name_section num2str(sectionIdx) '.png'])));
-            
+            close(f);
         end
         
         % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
@@ -205,6 +205,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             
             %bords blancs
             imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername, insert, ['_' name_section num2str(sectionIdx) '.png'])));
+            close(gcf);
         end
         
         maskSlice_subImg = false(size(subImg, 1), size(subImg, 2));
