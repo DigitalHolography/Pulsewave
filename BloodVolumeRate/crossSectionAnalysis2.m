@@ -319,7 +319,7 @@ end % sectionIdx
 if ~isempty(circle) && flagBloodVelocityProfile % only for the main circle (not all circles)
     
 %     bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel, circle, ToolBox);
-    % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+%     viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
     
 end
 

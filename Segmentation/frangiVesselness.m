@@ -1,10 +1,9 @@
-function [M0_binary_img] = frangiVesselness(M0_ff_img, diaphragm, name, TB, opt)
+function [M0_binary_img] = frangiVesselness(M0_ff_img, name, TB, opt)
     % Input: M0_ff_img - Noisy vessel image (numX x numY)
     % Output: M0_denoised_img - Denoised vessel image
 
     arguments
-        M0_ff_img 
-        diaphragm 
+        M0_ff_img
         name 
         TB 
         opt.BlackWhite = false
@@ -41,7 +40,7 @@ function [M0_binary_img] = frangiVesselness(M0_ff_img, diaphragm, name, TB, opt)
     M0_vesselness_img = FrangiFilter2D(M0_norm_img, ...
         "FrangiScaleRange", PW_params.params.Mask.VesselnessSigmaRange, ...
         "FrangiScaleRatio", PW_params.params.Mask.VesselnessSigmaStep, ...
-        "BlackWhite", opt.BlackWhite) .* diaphragm;
+        "BlackWhite", opt.BlackWhite);
 
     % Thresholding to segment vessels (optional)
     M0_binary_img = imbinarize(M0_vesselness_img, "adaptive");

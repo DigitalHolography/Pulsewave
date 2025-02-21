@@ -32,6 +32,7 @@
       "Crop Choroid Radius": 0.1,
       "Vascular Threshold": -2,
       "Vascular Classes": [-1, 0, 1],
+      "Improve Mask": 1,
       "DiaSys Analysis": 1,
       "Arterial Threshold": -2,
       "Arterial Classes": [0, 1],
