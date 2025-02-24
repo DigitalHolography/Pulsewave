@@ -36,9 +36,7 @@ classdef pulse < matlab.apps.AppBase
 
             app.Lamp.Color = [1, 0, 0];
             drawnow;
-            holo = true;
             if isfolder(path)
-                holo = false;
                 path = strcat(path, '\');
             end
 
@@ -65,10 +63,10 @@ classdef pulse < matlab.apps.AppBase
 
             catch ME
 
-                fprintf("==========================================\nERROR\n==========================================\n")
-                fprintf('Error while loading : %s\n', path)
-                fprintf("%s\n",ME.identifier)
-                fprintf("%s\n",ME.message)
+                fprintf(2, "==========================================\nERROR\n==========================================\n")
+                fprintf(2, 'Error while loading : %s\n', path)
+                fprintf(2, "%s\n",ME.identifier)
+                fprintf(2, "%s\n",ME.message)
                 % for i = 1:size(exception.stack,1)
                 %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
                 %     fprintf(stack);
@@ -76,17 +74,17 @@ classdef pulse < matlab.apps.AppBase
 
                 if ME.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
 
-                    fprintf("No Raw File was found, please check 'save raw files' in HoloDoppler\n")
+                    fprintf(2, "No Raw File was found, please check 'save raw files' in HoloDoppler\n")
 
                 else
 
                     for i = 1:numel(ME.stack)
-                        disp(ME.stack(i))
+                        fprintf(2, "%s", ME.stack(i))
                     end
 
                 end
 
-                fprintf("==========================================\n")
+                fprintf(2, "==========================================\n")
 
                 diary off
                 app.Lamp.Color = [1, 1/2, 0];
@@ -140,7 +138,7 @@ classdef pulse < matlab.apps.AppBase
             % Auto-detect the maximum available workers and update the spinner
             maxWorkers = parcluster('local').NumWorkers;
             app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
-            app.NumberofWorkersSpinner.Value = min(10, maxWorkers); % Default to 10 or max available
+            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
 
             % Initialize checkboxes and flags
             app.updateCheckboxes();
@@ -179,11 +177,6 @@ classdef pulse < matlab.apps.AppBase
                 delete(f); %delete the dummy figure
                 app.flag_is_load = true;
                 app.Load(selected_dir);
-
-            end
-            try
-                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name, 1);
-                setGlobalToolBox(app.file.ToolBoxmaster);
             end
 
         end
@@ -212,10 +205,6 @@ classdef pulse < matlab.apps.AppBase
                 app.Load(fullfile(path_holo,selected_holo));
 
             end
-            try
-                app.file.ToolBoxmaster = ToolBoxClass(app.file.directory,app.file.PW_param_name, 1);
-                setGlobalToolBox(app.file.ToolBoxmaster);
-            end
 
             app.ErrorLabel.Text = "" ;
             app.Lamp.Color = [0, 1, 0];
@@ -224,7 +213,7 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: ExecuteButton
         function ExecuteButtonPushed(app, ~)
             if ~app.flag_is_load
-                disp("no input loaded")
+                fprintf(2, "no input loaded\n")
                 return
             end
 
@@ -292,7 +281,7 @@ classdef pulse < matlab.apps.AppBase
 
         function PlayInputsButtonPushed(app, ~)
             if ~app.flag_is_load
-                disp('no input loaded.')
+                fprintf(2, "no input loaded\n")
                 return
             end
             try
@@ -311,7 +300,7 @@ classdef pulse < matlab.apps.AppBase
 
         function OverWriteCheckBoxChanged(app, ~)
             if ~app.flag_is_load
-                disp('no input loaded.')
+                fprintf(2, "no input loaded\n")
                 return
             end
             try
@@ -323,7 +312,7 @@ classdef pulse < matlab.apps.AppBase
 
         function PreProcessButtonPushed(app, ~)
             if ~app.flag_is_load
-                disp('no input loaded.')
+                fprintf(2, "no input loaded\n")
                 return
             end
             if app.file.is_preprocessed
@@ -500,7 +489,7 @@ classdef pulse < matlab.apps.AppBase
                 subfoldersName = {subfoldersName.name};
                 % remove of other folders (ex: 'config' subfolders)
                 for ii=1:length(subfoldersName)
-                    if contains(subfoldersName{ii}, '_HD_')
+                    if contains(subfoldersName{ii}, '_HD_') || contains(subfoldersName{ii}, '_HW_')
                         app.drawer_list{end + 1} = fullfile(selected_dir,'\',subfoldersName{ii});
                         txt.String = app.drawer_list;
                         d.Position(4) = 100 + length(app.drawer_list) * 14;
@@ -606,34 +595,34 @@ classdef pulse < matlab.apps.AppBase
 
         % Checkbox update function:
         function updateCheckboxes(app, ~)
-            %             if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
-            %                 app.PulsewaveanalysisCheckBox.Enable = true;
-            %                 if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
+            % if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
+            %     app.PulsewaveanalysisCheckBox.Enable = true;
+            %     if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
             %
-            %                     app.ExtendedPulsewaveCheckBox.Enable = true;
-            %                     app.velocityCheckBox.Enable = true;
-            %                     app.bloodVolumeRateCheckBox.Enable = true;
-            %                     app.bloodVelocityProfileCheckBox.Enable = true;
-            %                 else
-            %                     app.ExtendedPulsewaveCheckBox.Enable = false;
-            %                     app.velocityCheckBox.Enable = false;
-            %                     app.bloodVolumeRateCheckBox.Enable = false;
-            %                     app.bloodVelocityProfileCheckBox.Enable = false;
-            %                 end
+            %         app.ExtendedPulsewaveCheckBox.Enable = true;
+            %         app.velocityCheckBox.Enable = true;
+            %         app.bloodVolumeRateCheckBox.Enable = true;
+            %         app.bloodVelocityProfileCheckBox.Enable = true;
+            %     else
+            %         app.ExtendedPulsewaveCheckBox.Enable = false;
+            %         app.velocityCheckBox.Enable = false;
+            %         app.bloodVolumeRateCheckBox.Enable = false;
+            %         app.bloodVelocityProfileCheckBox.Enable = false;
+            %     end
             %
-            %             else
-            %                 app.PulsewaveanalysisCheckBox.Enable = false;
-            %                 app.ExtendedPulsewaveCheckBox.Enable = false;
-            %                 app.velocityCheckBox.Enable = false;
-            %                 app.bloodVolumeRateCheckBox.Enable = false;
-            %                 app.bloodVelocityProfileCheckBox.Enable = false;
-            %             end
+            % else
+            %     app.PulsewaveanalysisCheckBox.Enable = false;
+            %     app.ExtendedPulsewaveCheckBox.Enable = false;
+            %     app.velocityCheckBox.Enable = false;
+            %     app.bloodVolumeRateCheckBox.Enable = false;
+            %     app.bloodVelocityProfileCheckBox.Enable = false;
+            % end
         end
 
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, ~)
-            main_path = fullfile(app.file.directory, 'pulsewave');
             if (app.flag_is_load)
+                main_path = fullfile(app.file.directory, 'pulsewave');
                 if isfile(fullfile(main_path,'json',app.file.PW_param_name))
                     disp(['opening : ', fullfile(main_path,'json',app.file.PW_param_name)])
                     winopen(fullfile(main_path,'json',app.file.PW_param_name));
@@ -641,47 +630,47 @@ classdef pulse < matlab.apps.AppBase
                     disp(['couldn''t open : ',fullfile(main_path,'json',app.file.PW_param_name)])
                 end
             else
-                disp('No input loaded')
+                fprintf(2, "no input loaded\n")
             end
         end
 
         % Button pushed function: EditMasksButton
         function EditMasksButtonPushed(app, ~)
+            ToolBox = getGlobalToolBox;
+
             if (app.flag_is_load)
-                if ~isfolder(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
-                    mkdir(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'))
+                if ~isfolder(fullfile(ToolBox.PW_path_main,'mask'))
+                    mkdir(fullfile(ToolBox.PW_path_main,'mask'))
                 end
                 try
-                    winopen(fullfile(app.file.ToolBoxmaster.PW_path_main,'mask'));
+                    winopen(fullfile(ToolBox.PW_path_main,'mask'));
                 catch
                     disp("opening failed.")
                 end
                 try
-                    PW_folder_name = strcat(app.file.ToolBoxmaster.main_foldername, '_PW');
-                    list_dir = dir(app.file.ToolBoxmaster.PW_path_main);
+                    list_dir = dir(ToolBox.PW_path_main);
                     idx=0;
                     for i=1:length(list_dir)
-                        if contains(list_dir(i).name, PW_folder_name)
+                        if contains(list_dir(i).name, ToolBox.PW_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
                             if ~isempty(match) && str2double(match{1}) >= idx
                                 idx = str2double(match{1}) ; %suffix
                             end
                         end
                     end
-                    PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
-                    PW_path_dir = fullfile(app.file.ToolBoxmaster.PW_path_main, PW_folder_name);
+                    PW_path_dir = fullfile(ToolBox.PW_path_main, ToolBox.PW_folder_name);
 
                     disp(['Copying from : ',fullfile(PW_path_dir,'png','mask')])
-                    copyfile(fullfile(PW_path_dir,'png','mask',sprintf("%s_maskArtery.png",app.file.ToolBoxmaster.main_foldername)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','MaskArtery.png'));
-                    copyfile(fullfile(PW_path_dir,'png','mask',sprintf("%s_maskVein.png",app.file.ToolBoxmaster.main_foldername)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','MaskVein.png'));
+                    copyfile(fullfile(PW_path_dir,'png', 'mask', sprintf("%s_maskArtery.png", ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main, 'mask', 'MaskArtery.png'));
+                    copyfile(fullfile(PW_path_dir,'png', 'mask', sprintf("%s_maskVein.png", ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main, 'mask', 'MaskVein.png'));
                 catch
                     disp("last auto mask copying failed.")
                 end
                 try
 
-                    copyfile(fullfile(app.file.ToolBoxmaster.PW_path,'png',sprintf("%s_M0.png",app.file.ToolBoxmaster.main_foldername)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','M0.png'));
-                    PW_folder_name = strcat(app.file.ToolBoxmaster.main_foldername, '_PW');
-                    list_dir = dir(app.file.ToolBoxmaster.PW_path_main);
+                    copyfile(fullfile(ToolBox.PW_path,'png',sprintf("%s_M0.png",ToolBox.main_foldername)),fullfile(ToolBox.PW_path_main,'mask','M0.png'));
+                    PW_folder_name = strcat(ToolBox.main_foldername, '_PW');
+                    list_dir = dir(ToolBox.PW_path_main);
                     idx=0;
                     for i=1:length(list_dir)
                         if contains(list_dir(i).name, PW_folder_name)
@@ -692,13 +681,14 @@ classdef pulse < matlab.apps.AppBase
                         end
                     end
                     PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
-                    copyfile(fullfile(PW_path_dir,'gif',sprintf("%s_M0.gif",PW_folder_name)),fullfile(app.file.ToolBoxmaster.PW_path_main,'mask','M0.gif'));
+                    copyfile(fullfile(PW_path_dir,'gif',sprintf("%s_M0.gif",PW_folder_name)),fullfile(ToolBox.PW_path_main,'mask','M0.gif'));
                 catch
 
                     disp("last M0 png and gif copying failed")
                 end
             else
-                disp('No input loaded')
+
+                fprintf(2, "no input loaded\n")
 
             end
         end

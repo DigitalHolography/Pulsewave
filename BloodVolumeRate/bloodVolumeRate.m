@@ -124,10 +124,14 @@ tic
 
 mkdir(ToolBox.PW_path_png, 'crossSection')
 mkdir(ToolBox.PW_path_png, 'projection')
+if  flagBloodVelocityProfile
+    mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'rheology')
+    mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'rheology')
+end
 
-[vr_avg_A_r, vr_std_A_r, area_A_r, mask_A_r, v_profiles_avg_A_r, v_profiles_std_A_r, sub_images_A_r, width_std_A_r] = crossSectionAnalysisAllRad(numSections_A, locs_A, widths_A, maskArtery, v_RMS, 'artery', flagBloodVelocityProfile, force_width);
+[vr_avg_A_r, vr_std_A_r, area_A_r, mask_A_r, v_profiles_avg_A_r, v_profiles_std_A_r, sub_images_A_r, width_avg_A_r, width_std_A_r, vtop_avg_A_r, vtop_std_A_r] = crossSectionAnalysisAllRad(numSections_A, locs_A, widths_A, maskArtery, v_RMS, 'artery', flagBloodVelocityProfile, force_width);
 if veins_analysis
-    [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r, width_std_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
+    [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r, width_avg_V_r, width_std_V_r, vtop_avg_V_r, vtop_std_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
 end
 
 [area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat] = reshapeSections(numFrames, numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r);
@@ -138,6 +142,11 @@ end
 plot2csvForAllRadSection(t, vr_avg_A_r, vr_std_A_r, vr_avg_A_mat, vr_std_A_mat, 'A')
 if veins_analysis
     plot2csvForAllRadSection(t, vr_avg_V_r, vr_std_V_r, vr_avg_V_mat, vr_std_V_mat, 'V')
+end
+
+topvel2csv(t, vtop_avg_A_r, vtop_std_A_r, 'A');
+if veins_analysis
+    topvel2csv(t, vtop_avg_V_r, vtop_std_V_r, 'V');
 end
 
 fprintf("    3. Cross-sections analysis for all circles output took %ds\n", round(toc))
@@ -170,9 +179,9 @@ if veins_analysis
     crossSectionImages(M0_ff_img, xy_barycenter, area_V_mat, vr_avg_V_mat, v_profiles_avg_V_r, mask_V_r, locs_V, 'Vein')
 end
 
-widthHistogram(area_A_mat, width_std_A_mat, 'artery')
+widthHistogram(width_avg_A_r, width_std_A_r,area_A_mat, 'artery');
 if veins_analysis
-    widthHistogram(area_V_mat, width_std_V_mat, 'vein')
+    widthHistogram(width_avg_V_r, width_std_V_r,area_V_mat, 'artery');
 end
 
 rad = ((PW_params.velocitySmallRadiusRatio * (numX + numY) / 2) + dr / 2:dr:(PW_params.velocityBigRadiusRatio * (numX + numY) / 2) - dr / 2);
@@ -182,23 +191,20 @@ if veins_analysis
     [mean_BvrT_V, mean_std_BvrT_V] = plotRadius(vr_avg_V_mat, vr_std_V_mat, t, rad, index_start, index_end, 'Vein');
 end
 
-
-
 fprintf("    4. Sections Images Generation took %ds\n", round(toc))
 
 %% 5. Blood Flow Profiles
 tic
-% 
-% if flagBloodVelocityProfile
-%     mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
-% 
-%     interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, rad, 50)
-%     if veins_analysis
-%         interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, rad, 50)
-%     end
-% 
-%     fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
-% end
+
+if flagBloodVelocityProfile
+    mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
+    interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, 'Artery', rad, 50)
+    if veins_analysis
+        interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, 'Vein', rad, 50)
+    end
+
+    fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
+end
 
 %% 6. Arterial Indicators
 tic

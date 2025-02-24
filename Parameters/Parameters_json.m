@@ -19,24 +19,10 @@ classdef Parameters_json < handle
         removeOutliers
         radius_ratio
         radius_gap
-        gauss_filt_size_for_barycenter
         oneCycleNinterp
         oneCycle_outNoiseThreshold
         oneCycle_dataReliabilityThreshold
         local_background_width
-        masks_crop_radius
-        masks_vascular_threshold
-        masks_vascular_classes
-        masks_arterial_threshold
-        masks_arterial_classes
-        masks_venous_threshold
-        masks_venous_classes
-        masks_minSize
-        masks_diaphragmRadius
-        masks_imclose_radius
-        masks_min_width
-        masks_imdilateFinal
-        masks_force_width
         CRACRV_Threshold
         cropSection_scaleFactorWidth
         cropSection_scaleFactorSize
@@ -98,7 +84,6 @@ classdef Parameters_json < handle
         AllCirclesFlag
         nbCircles
         forcewidth
-        forcebarycenter
         timePeriodMin
     end
 
@@ -150,22 +135,6 @@ classdef Parameters_json < handle
                 obj.flatField_border = parsedData.FlatFieldCorrection.Border;
                 obj.flatField_borderDMap = parsedData.FlatFieldCorrection.BorderDMAP;
                 obj.flatField_borderPulseAnal = parsedData.FlatFieldCorrection.BorderPulseAnalysis;
-
-                obj.gauss_filt_size_for_barycenter = parsedData.CreationOfMasks.GaussianFilterSizeForBarycenter;
-                obj.masks_crop_radius = parsedData.CreationOfMasks.CropCoroidRadius;
-                obj.masks_vascular_threshold = parsedData.CreationOfMasks.VascularCorrelationMapThreshold;
-                obj.masks_vascular_classes = parsedData.CreationOfMasks.VascularClasses;
-                obj.masks_arterial_threshold = parsedData.CreationOfMasks.ArterialCorrelationMapThreshold;
-                obj.masks_arterial_classes = parsedData.CreationOfMasks.ArterialClasses;
-                obj.masks_venous_threshold = parsedData.CreationOfMasks.VenousCorrelationMapThreshold;
-                obj.masks_venous_classes = parsedData.CreationOfMasks.VenousClasses;
-                obj.masks_minSize = parsedData.CreationOfMasks.MinimumSeedAreaSize;
-                obj.masks_diaphragmRadius = parsedData.CreationOfMasks.DiaphragmRadius;
-                obj.masks_imclose_radius = parsedData.CreationOfMasks.ImcloseRadius;
-                obj.masks_min_width = parsedData.CreationOfMasks.MinimumVesselWidth;
-                obj.masks_imdilateFinal = parsedData.CreationOfMasks.FinalDilation;
-                obj.masks_force_width = parsedData.CreationOfMasks.ForceVesselWidth;
-                obj.CRACRV_Threshold = parsedData.CreationOfMasks.CentralRetinaVeinArteryThreshold;
 
                 obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
 
@@ -224,7 +193,6 @@ classdef Parameters_json < handle
                 obj.nbSides = parsedData.Other.NumberOfSides;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
                 obj.forcewidth = parsedData.Other.ForceWidthInPixels;
-                obj.forcebarycenter = parsedData.Other.ForceBarycenter;
                 obj.timePeriodMin = parsedData.Other.MinimumGifPeriod;
 
             else

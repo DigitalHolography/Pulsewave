@@ -14,7 +14,7 @@
       "VideoLength": -1
     },
     "ValueOfTheInterpolationParameter": 1,
-    "RemoveOutliersOption": 1,
+    "RemoveOutliersOption": 0,
     "VeinsAnalysis": 0,
     "ExportVideos": 1,
     "FlatFieldCorrection": {
@@ -23,33 +23,27 @@
       "BorderDMAP": 0.33,
       "BorderPulseAnalysis": 0
     },
-    "CreationOfMasks": {
-      "DiaphragmRadius": 0.9,
-      "GaussianFilterSizeForBarycenter": 1.5,
-      "CropCoroidRadius": 0.1,
-      "VascularCorrelationMapThreshold": -2,
-      "VascularClasses": [
-        -1,
-        0,
-        1
-      ],
-      "MinimumSeedAreaSize": 150,
-      "DiaSysAnalysis": 1,
-      "ArterialCorrelationMapThreshold": -2,
-      "ArterialClasses": [
-        0,
-        1
-      ],
-      "VenousCorrelationMapThreshold": -2,
-      "VenousClasses": [
-        0,
-        -1
-      ],
-      "CentralRetinaVeinArteryThreshold": 3,
-      "ImcloseRadius": 1,
-      "MinimumVesselWidth": 3,
-      "FinalDilation": 3,
-      "ForceVesselWidth": 0
+    "Mask": {
+      "Vesselness Sigma Range": [1, 10],
+      "Vesselness Sigma Step": 1,
+      "Diaphragm Radius": 0.9,
+      "Force Barycenter": [],
+      "Blur": 1.5,
+      "Crop Choroid Radius": 0.1,
+      "Vascular Threshold": -2,
+      "Vascular Classes": [-1, 0, 1],
+      "Improve Mask": 1,
+      "DiaSys Analysis": 1,
+      "Arterial Threshold": -2,
+      "Arterial Classes": [0, 1],
+      "Venous Threshold": -2,
+      "Venous Classes": [0, -1],
+      "Min Pixel Size": 150,
+      "CRA CRV Threshold": 3,
+      "Imclose Radius": 1,
+      "Minimum Vessel Width": 3,
+      "Final Dilation": 3,
+      "Force VesselWidth": 0
     },
     "SystoleDetection": {
       "SystoleThresholdRatioOfMaximum": 0.7
@@ -118,7 +112,6 @@
       "NumberOfSides": 120,
       "AllCircles": 0,
       "ForceWidthInPixels": [],
-      "ForceBarycenter": [],
       "MinimumGifPeriod": 0.04
     }
   }

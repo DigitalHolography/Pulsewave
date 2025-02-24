@@ -1,10 +1,9 @@
-function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, circle_num)
+function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, circle_num, ToolBox)
 
-ToolBox = getGlobalToolBox;
 nb_section = size(SubImage_cell, 2);
 numFrames = size(SubVideo_cell{1}, 3);
 n_interp = 100;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 %interpolation parameter
 k = 2;
 
@@ -13,10 +12,10 @@ velocity_profiles_std = zeros(n_interp, numFrames, nb_section);
 
 for ii = 1:nb_section
 
-    if nargin > 4
-        subImg = SubImage_cell{circle_num, ii};
-        subVideo = SubVideo_cell{circle_num, ii};
-        nameFig = sprintf("%s_%s", type_of_vessel, circle_num);
+    if nargin >= 4
+        subImg = SubImage_cell{1, ii};
+        subVideo = SubVideo_cell{1, ii};
+        nameFig = sprintf("%s_%d_%d", type_of_vessel, circle_num, ii);
     else
         subImg = SubImage_cell{ii};
         subVideo = SubVideo_cell{ii};
@@ -211,8 +210,8 @@ for ii = 1:nb_section
     ylim([0.9 * mimin 1.1 * mamax]);
     ylabel('velocity (mm/s)', 'FontSize', 14);
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.png', nameFig))))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.eps', nameFig))))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.png', nameFig))))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.eps', nameFig))))
 
     fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
@@ -226,14 +225,13 @@ for ii = 1:nb_section
         title("Viscosity in veins")
     end
 
-    ylim([-150 150])
     xlabel('Time (s)', 'FontSize', 14);
     ylabel('Viscosity (cP)', 'FontSize', 14);
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
 
 
 end
