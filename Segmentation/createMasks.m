@@ -223,10 +223,16 @@ maskVein = removeDisconnected(maskVein, maskCircle, 'vein_31_VesselMask', ToolBo
 
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png'))
     maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
+    if size(maskArtery, 1) ~= maskCircle
+        maskArtery = imresize(maskArtery, [numX, numY], "nearest");
+    end
 end
 
 if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
-    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
+    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0; 
+    if size(maskVein, 1) ~= maskCircle
+        maskVein = imresize(maskVein, [numX, numY], "nearest");
+    end
 end
 
 % 3) 3) Segmentation Scores Calculation

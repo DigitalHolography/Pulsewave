@@ -8,7 +8,7 @@ if ~PW_params.removeOutliers
 end
 
 [numX, numY, numFrames] = size(obj.f_RMS_video);
-window_size = ceil(numFrames / 50);
+window_size = 3;
 
 tmp_M0_ff_cleaned = zeros(numX, numY, numFrames);
 tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);
