@@ -185,12 +185,18 @@ uiwait(d);
         [maskArtery, maskVein] = createMasks(app.file.M0_ff_video, f_AVG_mean);
 
         % Prepare RGB image to display
-        RGBM0(:, :, 1) = rescale(M0_ff_img) + maskArtery; % Red channel for artery mask
-        RGBM0(:, :, 2) = rescale(M0_ff_img);              % Green channel for base image
-        RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVein;   % Blue channel for vein mask
+        cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+        cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+        cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
+
+        M0_Artery = setcmap(M0_ff_img, maskArtery, cmapArtery);
+        M0_Vein = setcmap(M0_ff_img, maskVein, cmapVein);
+        M0_AV = setcmap(M0_ff_img, maskArtery & maskVein, cmapAV);
+
+        M0_RGB = (M0_Artery + M0_Vein) .* ~(maskArtery & maskVein) + M0_AV + rescale(M0_ff_img) .* ~(maskArtery | maskVein);
 
         % Display the image with the masks on the axes in the dialog
-        imshow(RGBM0, 'Parent', ax);
+        imshow(M0_RGB, 'Parent', ax);
         imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_all_16_Histo.png", ToolBox.main_foldername))), 'Parent', ax0);
         if isfile(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_artery_23_Histo.png", ToolBox.main_foldername)))
             imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_artery_23_Histo.png", ToolBox.main_foldername))), 'Parent', ax1);

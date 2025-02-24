@@ -285,6 +285,19 @@ RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVein;
 saveImage(RGBM0, ToolBox, 'vessel_40_RGB.png', isStep = true)
 saveImage(RGBM0, ToolBox, 'RGB_img.png')
 
+% 4) 1)
+cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
+
+M0_Artery = setcmap(M0_ff_img, maskArtery, cmapArtery);
+M0_Vein = setcmap(M0_ff_img, maskVein, cmapVein);
+M0_AV = setcmap(M0_ff_img, maskArtery & maskVein, cmapAV);
+
+M0_RGB = (M0_Artery + M0_Vein) .* ~(maskArtery & maskVein) + M0_AV + rescale(M0_ff_img) .* ~(maskArtery | maskVein);
+saveImage(M0_RGB, ToolBox, 'M0_RGB_img.png')
+
+
 % 4) 2) Neighbours Mask
 
 maskNeighbors = imdilate(maskArtery | maskVein, strel('disk', bgWidth)) - (maskArtery | maskVein);

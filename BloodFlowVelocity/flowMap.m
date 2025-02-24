@@ -47,6 +47,8 @@ velocityColorbar(cmapArtery, v_min, v_max, 'Arteries');
 
 v_mean_Artery = setcmap(v_mean_rescaled, maskArtery, cmapArtery);
 
+v_video_RGB = zeros(numX, numY, 3, numFrames);
+
 if veinsAnalysis
     velocityIm(v_mean, (maskArtery | maskVein), turbo, 'vessels', colorbarOn = true);
 
