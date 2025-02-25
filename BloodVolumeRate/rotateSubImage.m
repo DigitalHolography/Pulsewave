@@ -37,7 +37,9 @@ stats = regionprops(bw, 'Centroid', 'Orientation');
 
 % Check if any regions were detected
 if isempty(stats)
-    error('No regions detected. Adjust thresholding or preprocessing.');
+    rotatedImg = subImg;
+    orientation = 0;
+    return
 end
 
 % Get the center of the image
