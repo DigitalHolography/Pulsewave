@@ -23,7 +23,7 @@ width_std_r = cell(1, numCircles);
 
 % Cross-Section Analysis of the arteries
 parfor circleIdx = 1:numCircles
-    [vr_avg, vr_std, area, top_velocity, std_velocity, maskCross, v_profiles_avg, v_profiles_std, subImg_cell, width_avg, width_std] = crossSectionAnalysis2(ToolBox, locs{circleIdx}, widths{circleIdx}, mask, v_RMS, flowRate_sliceHalfThickness, name, flagBloodVelocityProfile, circleIdx, force_width, 1);
+    [vr_avg, vr_std, area, top_velocity, std_velocity, maskCross, v_profiles_avg, v_profiles_std, subImg_cell, width_avg, width_std] = crossSectionAnalysis2(ToolBox, locs{circleIdx}, widths{circleIdx}, mask, v_RMS, flowRate_sliceHalfThickness, name, flagBloodVelocityProfile, circleIdx, force_width);
 
     if length(vr_avg) < 1
         continue
@@ -40,7 +40,6 @@ parfor circleIdx = 1:numCircles
     width_avg_r{circleIdx} = width_avg;
     width_std_r{circleIdx} = width_std;
     
-
 end
 
 for circleIdx = 1:numCircles

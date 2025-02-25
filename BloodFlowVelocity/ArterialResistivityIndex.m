@@ -65,7 +65,7 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
     nonzeroMean = imgMean > 0; % Create a mask for non-zero mean values
     imgAPI = zeros(size(imgMean)); % Initialize API image
     imgAPI(nonzeroMean & maskArtery) = dV(nonzeroMean & maskArtery) ./ imgMean(nonzeroMean & maskArtery); % Compute API only where valid
-    imgAPI(imgAPI > 10) = 10;
+    imgAPI(imgAPI > 3) = 3;
     imgAPI(imgAPI < 0) = 0;
 
     % Generate colormap
@@ -85,7 +85,7 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
     % Display and save the API image
     f = figure(211354 + 1);
     imagesc(RGBAPI), axis off, axis image;
-    colorbar, colormap(cmapARI), clim([0 10]);
+    colorbar, colormap(cmapARI), clim([0 3]);
     title(sprintf('API %s = %0.2f', name, API));
     saveas(f, fullfile(ToolBox.PW_path_png, folder, strcat(ToolBox.main_foldername, '_', 'API', '_', name)), 'png');
 
