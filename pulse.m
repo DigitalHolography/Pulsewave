@@ -708,7 +708,7 @@ classdef pulse < matlab.apps.AppBase
                 end
 
                 try
-                    openmaskinpaintnet(fullfile(ToolBox.PW_path,'png',sprintf("%s_M0.png",ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main,'mask','DiaSysRGB.png'));
+                    openmaskinpaintnet(fullfile(ToolBox.PW_path_main,'mask','M0.png'), fullfile(ToolBox.PW_path_main,'mask','DiaSysRGB.png'));
                 catch
                     disp("pain.net macro failed")
                 end
