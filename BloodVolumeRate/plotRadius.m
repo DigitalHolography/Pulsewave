@@ -28,7 +28,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), - 5 , 70])
+axis([axT(1), axT(2), 0 , 1.07 * axP(4)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -51,7 +51,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), - 5 , 70])
+axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -62,7 +62,7 @@ set(gca, 'Linewidth', 2)
 
 exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_varianceVolumeRate_%s_time.png", ToolBox.main_foldername, name)))
 
-figure("Visible","off");
+figure("Visible", "off");
 
 mean_BvrT = squeeze(mean(BvrR, 1))'; % mean of all circle's sum of all sections
 mean_BvrT_value = mean(mean_BvrT(index_start:index_end)); % average in time of this signal
@@ -74,10 +74,10 @@ hold off
 curve1 = mean_BvrT + 0.5 * mean_std_BvrT;
 curve2 = mean_BvrT - 0.5 * mean_std_BvrT;
 ft2 = [fullTime, fliplr(fullTime)];
-inBetween = [curve1, fliplr(curve2)]';
+inBetween = [curve1, fliplr(curve2)];
 
-fill(ft2, inBetween, Color_std);
 hold on;
+fill(ft2, inBetween, Color_std);
 yline(0, 'k-', 'LineWidth', 2)
 plot(fullTime, curve1, "Color", Color_std, 'LineWidth', 2);
 plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
@@ -87,14 +87,15 @@ yline(mean_BvrT_value, '--k', 'LineWidth', 2)
 plot(fullTime(index_start), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10);
 plot(fullTime(index_end), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10);
 plot(fullTime(index_start:index_end), repmat(1.07 * max_BvrT_value, index_end - index_start + 1), '-k');
-legend({'', '', '', '', '', sprintf('mean = %0.2f µL/min', mean_BvrT_value), '', ''});
 
 axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), - 5 , 70])
+axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
 box on
+
+legend({'', '', '', '', '', sprintf('mean = %0.2f µL/min', mean_BvrT_value), '', ''}, 'Location', 'northeast');
 
 hold off
 

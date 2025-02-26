@@ -26,6 +26,6 @@ end
 
 figure("Visible","off")
 imshow(imgRGB)
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s.png", ToolBox.main_foldername, sprintf('4_%s_sections%s', name))))
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s.png", ToolBox.main_foldername, sprintf('%s_sections%s', name))))
 
 end

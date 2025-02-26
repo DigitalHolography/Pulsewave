@@ -196,53 +196,59 @@ if PW_params.params.Mask.ImproveMask
 
     end
 
-%% 3) Mask Clearing
+    %% 3) Mask Clearing
 
-% 3) 0) Morphological Operations
-results = cell(2, 1);
+    % 3) 0) Morphological Operations
+    results = cell(2, 1);
 
-parfor i = 1:2
-    if i == 1
-        % Process artery mask
-        results{i} = clearMasks(maskArtery, 'artery_30', cmapArtery, ToolBox);
-    else
-        % Process vein mask
-        results{i} = clearMasks(maskVein, 'vein_30', cmapVein, ToolBox);
+    parfor i = 1:2
+        if i == 1
+            % Process artery mask
+            results{i} = clearMasks(maskArtery, 'artery_30', cmapArtery, ToolBox);
+        else
+            % Process vein mask
+            results{i} = clearMasks(maskVein, 'vein_30', cmapVein, ToolBox);
+        end
     end
-end
 
-maskArtery = results{1};
-maskVein = results{2};
+    maskArtery = results{1};
+    maskVein = results{2};
 
-% 3) 1) Final Blob removal
+    % 3) 1) Final Blob removal
 
-maskArtery = removeDisconnected(maskArtery, maskCircle, 'artery_31_VesselMask', ToolBox);
-maskVein = removeDisconnected(maskVein, maskCircle, 'vein_31_VesselMask', ToolBox);
+    maskArtery = removeDisconnected(maskArtery, maskCircle, 'artery_31_VesselMask', ToolBox);
+    maskVein = removeDisconnected(maskVein, maskCircle, 'vein_31_VesselMask', ToolBox);
 
-% 3) 2) Force Create Masks in case they exist
+    % 3) 2) Force Create Masks in case they exist
 
-if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png'))
-    maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
-end
+    if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png'))
+        maskArtery = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
+        if size(maskArtery, 1) ~= maskCircle
+            maskArtery = imresize(maskArtery, [numX, numY], "nearest");
+        end
+    end
 
-if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
-    maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
-end
+    if isfile(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png'))
+        maskVein = mat2gray(mean(imread(fullfile(ToolBox.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
+        if size(maskVein, 1) ~= maskCircle
+            maskVein = imresize(maskVein, [numX, numY], "nearest");
+        end
+    end
 
-% 3) 3) Segmentation Scores Calculation
+    % 3) 3) Segmentation Scores Calculation
 
-segmentationScores(maskArtery, maskVein);
+    segmentationScores(maskArtery, maskVein);
 
-% 3) 4) Segmention force width
+    % 3) 4) Segmention force width
 
-if forceVesselWidth > 0
-    dilationSE = strel('disk', forceVesselWidth);
-    maskArtery = imdilate(bwskel(maskArtery), dilationSE);
-    maskVein = imdilate(bwskel(maskVein), dilationSE);
+    if forceVesselWidth > 0
+        dilationSE = strel('disk', forceVesselWidth);
+        maskArtery = imdilate(bwskel(maskArtery), dilationSE);
+        maskVein = imdilate(bwskel(maskVein), dilationSE);
 
-    maskArtery = imdilate(bwskel(maskArtery), dilationSE);
-    maskVein = imdilate(bwskel(maskVein), dilationSE);
-end
+        maskArtery = imdilate(bwskel(maskArtery), dilationSE);
+        maskVein = imdilate(bwskel(maskVein), dilationSE);
+    end
 
 else
 
@@ -329,8 +335,8 @@ saveImage(bwskel(maskVein), ToolBox, 'skeletonVein.png')
 % 4) 5) Mask Section & Force Barycenter
 
 xy_barycenter = [x_CRA, y_CRA];
-maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery,thin=10);
-createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein,thin=10);
+maskSection = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery, thin=10);
+createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein, thin=10);
 
 close all
 end

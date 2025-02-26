@@ -42,7 +42,7 @@ for circleIdx = 1:numCircles
     crossSectionWidthArtery = 2 * sqrt(squeeze(area(circleIdx, :)) / pi) * 1000;
     etiquettes_frame_values = append(string(round(crossSectionWidthArtery, 0)), "µm");
 
-    image_RGB = repmat(M0_ff_img - M0_ff_img .* squeeze(mask_r(:, :, circleIdx)), 1, 1, 3) + reshape(color, 1, 1, 3) .* squeeze(mask_r(:, :, circleIdx)) .* M0_ff_img; % adding the Red value to the mask pixels
+    image_RGB = repmat(M0_ff_img - M0_ff_img .* mask_r(:, :, circleIdx), 1, 1, 3) + reshape(color, 1, 1, 3) .* mask_r(:, :, circleIdx) .* M0_ff_img; % adding the Red value to the mask pixels
     imagesc(image_RGB);
     axis image
     axis off

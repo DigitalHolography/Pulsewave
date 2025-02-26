@@ -134,9 +134,9 @@ if veins_analysis
     [vr_avg_V_r, vr_std_V_r, area_V_r, mask_V_r, v_profiles_avg_V_r, v_profiles_std_V_r, sub_images_V_r, width_avg_V_r, width_std_V_r, vtop_avg_V_r, vtop_std_V_r] = crossSectionAnalysisAllRad(numSections_V, locs_V, widths_V, maskVein, v_RMS, 'vein', flagBloodVelocityProfile, force_width);
 end
 
-[area_A_mat, width_std_A_mat, vr_avg_A_mat, vr_std_A_mat] = reshapeSections(numFrames, numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r);
+[area_A_mat, ~, vr_avg_A_mat, vr_std_A_mat] = reshapeSections(numFrames, numSections_A, area_A_r, width_std_A_r, vr_avg_A_r, vr_std_A_r);
 if veins_analysis
-    [area_V_mat, width_std_V_mat, vr_avg_V_mat, vr_std_V_mat] = reshapeSections(numFrames, numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r);
+    [area_V_mat, ~, vr_avg_V_mat, vr_std_V_mat] = reshapeSections(numFrames, numSections_V, area_V_r, width_std_V_r, vr_avg_V_r, vr_std_V_r);
 end
 
 plot2csvForAllRadSection(t, vr_avg_A_r, vr_std_A_r, vr_avg_A_mat, vr_std_A_mat, 'A')

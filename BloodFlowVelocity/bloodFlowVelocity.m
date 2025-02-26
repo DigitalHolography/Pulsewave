@@ -1,7 +1,6 @@
 function [] = bloodFlowVelocity(v_video, maskArtery, maskVein, maskSection, M0_ff_video, xy_barycenter)
 
 close all
-profile on
 ToolBox = getGlobalToolBox;
 PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
 veinsAnalysis = PW_params.veins_analysis;
@@ -77,5 +76,5 @@ else
 end
 
 close all
-profile viewer
+
 end
