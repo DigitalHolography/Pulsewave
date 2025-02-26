@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circleIdx, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circleIdx, force_width)
 % Perform cross-section analysis on blood vessels.
 %
 % Inputs:
@@ -48,7 +48,7 @@ crossSectionWidth = zeros(numSections, 1);
 stdCrossSectionWidth = zeros(numSections, 1);
 mask_sections = zeros(numX, numY, numSections);
 tilt_angle_list = zeros(1, length(locs));
-
+rejected_MasksRGB = zeros(numX, numY, 3);
 
 v_RMS_mean_masked = squeeze(mean(v_RMS, 3)) .* mask;
 
@@ -102,12 +102,18 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
             stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
         end
-
+        
         mask_sections(:, :, sectionIdx) = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, PW_params);
 
         % Create Figures
         poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, circleName, name_section, ToolBox)
         saveCrossSectionFigure(subImg, crossSectionWidth(sectionIdx), ToolBox, circleName, name_section)
+
+        if rsquare < 0.6
+            rejected_MasksRGB(:, :, 1) = rejected_MasksRGB(:, :, 1) + mask_sections(:, :, sectionIdx);
+        else
+            rejected_MasksRGB(:, :, 2) = rejected_MasksRGB(:, :, 2) + mask_sections(:, :, sectionIdx);
+        end
         
     end
 

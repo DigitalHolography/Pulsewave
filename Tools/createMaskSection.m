@@ -1,124 +1,149 @@
-function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, figname, maskArtery, maskVein,option)
+function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, img, r1, r2, xy_barycenter, figname, maskArtery, maskVein,option)
 
-    arguments
-        ToolBox
-        M0_ff_img
-        r1
-        r2
-        xy_barycenter
-        figname
-        maskArtery
-        maskVein = []
-        option.thin = 0
-    end
-    
-    [numX, numY] = size(maskArtery);
-    [x, y] = meshgrid(1:numY, 1:numX);
-    
-    xx = xy_barycenter(1);
-    yy = xy_barycenter(2);
-    
-    % skel = bwskel(logical(maskArtery), "MinBranchLength", 100); % create skeleton
-    %
-    % bp = imdilate(bwmorph(skel,'branchpoints'),strel('square',3));
-    % ep =  bwmorph(skel,'endpoints');
-    %
-    % skel_branches = skel - (bp & skel) - ep;
-    %
-    % skel_branches = bwareaopen(skel_branches,100);
-    %
-    % cercle_mask = sqrt((x - xx).^2 + (y - yy).^2) <= numY/10;
-    %
-    % skel_dilate = imdilate(skel_branches, strel('disk',2));
-    %
-    % maskdisk = skel_dilate | cercle_mask;
-    % maskdisk = bwareafilt(maskdisk, 1);
-    %
-    % prim_branches = maskdisk&skel_branches;
-    %
-    %
-    % CC = bwconncomp(prim_branches);
-    % k = CC.NumObjects;
-    %
-    % end_points_rad = zeros(k,2);
-    %
-    % mask_copy = prim_branches;
-    %
-    % for i = 1:k
-    %     zone_k = bwareafilt(mask_copy, 1);
-    %     mask_copy(zone_k==1) = 0;
-    %
-    %     ep =  bwmorph(zone_k,'endpoints');
-    %     [row,col]=find(ep);
-    %
-    %     if size(row,1) ~=2
-    %         end_points_rad(i,1) = 0;
-    %         end_points_rad(i,2) = Inf;
-    %     else
-    %         rad1 =  sqrt((col(1) - xx).^2 + (row(1) - yy).^2);
-    %         rad2 =  sqrt((col(2) - xx).^2 + (row(2) - yy).^2);
-    %
-    %         end_points_rad(i,1) = min(rad1, rad2);
-    %         end_points_rad(i,2) = max(rad1, rad2);
-    %     end
-    % end
-    %
-    % radius1 = max(end_points_rad(:,1));
-    % radius2 = min(end_points_rad(:,2));
-    %
-    % radius = (radius2+ radius1)/2;
-    %
-    % % cercle_mask1 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*1.1;
-    % % cercle_mask2 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*0.9;
+arguments
+    ToolBox
+    img
+    r1
+    r2
+    xy_barycenter
+    figname
+    maskArtery
+    maskVein = []
+    option.thin = 0
+end
 
-    if option.thin>0
-        cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 ;
-        cercle_mask11 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 - option.thin ;
-        maskSection1 = xor(cercle_mask1, cercle_mask11);
-        cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
-        cercle_mask21 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2 - option.thin;
-        maskSection2 = xor(cercle_mask2, cercle_mask21);
-        maskSection = xor(maskSection1, maskSection2);
-    else
-        cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 ;
-        cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
-        maskSection = xor(cercle_mask1, cercle_mask2);
+[numX, numY] = size(maskArtery);
+[x, y] = meshgrid(1:numY, 1:numX);
+
+xx = xy_barycenter(1);
+yy = xy_barycenter(2);
+
+% skel = bwskel(logical(maskArtery), "MinBranchLength", 100); % create skeleton
+%
+% bp = imdilate(bwmorph(skel,'branchpoints'),strel('square',3));
+% ep =  bwmorph(skel,'endpoints');
+%
+% skel_branches = skel - (bp & skel) - ep;
+%
+% skel_branches = bwareaopen(skel_branches,100);
+%
+% cercle_mask = sqrt((x - xx).^2 + (y - yy).^2) <= numY/10;
+%
+% skel_dilate = imdilate(skel_branches, strel('disk',2));
+%
+% maskdisk = skel_dilate | cercle_mask;
+% maskdisk = bwareafilt(maskdisk, 1);
+%
+% prim_branches = maskdisk&skel_branches;
+%
+%
+% CC = bwconncomp(prim_branches);
+% k = CC.NumObjects;
+%
+% end_points_rad = zeros(k,2);
+%
+% mask_copy = prim_branches;
+%
+% for i = 1:k
+%     zone_k = bwareafilt(mask_copy, 1);
+%     mask_copy(zone_k==1) = 0;
+%
+%     ep =  bwmorph(zone_k,'endpoints');
+%     [row,col]=find(ep);
+%
+%     if size(row,1) ~=2
+%         end_points_rad(i,1) = 0;
+%         end_points_rad(i,2) = Inf;
+%     else
+%         rad1 =  sqrt((col(1) - xx).^2 + (row(1) - yy).^2);
+%         rad2 =  sqrt((col(2) - xx).^2 + (row(2) - yy).^2);
+%
+%         end_points_rad(i,1) = min(rad1, rad2);
+%         end_points_rad(i,2) = max(rad1, rad2);
+%     end
+% end
+%
+% radius1 = max(end_points_rad(:,1));
+% radius2 = min(end_points_rad(:,2));
+%
+% radius = (radius2+ radius1)/2;
+%
+% % cercle_mask1 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*1.1;
+% % cercle_mask2 = sqrt((x - xx).^2 + (y - yy).^2) <= radius*0.9;
+
+if option.thin>0
+    cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 ;
+    cercle_mask11 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 - option.thin ;
+    maskSection1 = xor(cercle_mask1, cercle_mask11);
+    cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
+    cercle_mask21 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2 - option.thin;
+    maskSection2 = xor(cercle_mask2, cercle_mask21);
+    maskSection = xor(maskSection1, maskSection2);
+else
+    cercle_mask1 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r1 ;
+    cercle_mask2 = sqrt((x - xx) .^ 2 + (y - yy) .^ 2) <= r2;
+    maskSection = xor(cercle_mask1, cercle_mask2);
+end
+
+%% Create Colormap Artery/Vein
+img = mat2gray(img);
+img_RGB = cat(3, img, img, img);
+maskSectionRGB = cat(3, maskSection, maskSection, maskSection);
+
+maskArterySection = maskArtery & maskSection;
+
+cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+cmapArtery_Section = cmapLAB(256, [1 1 1], 0, [1 1 0], 1/3, [1 0 0], 2/3, [0 0 0], 1);
+
+M0_Artery = setcmap(img, maskArtery, cmapArtery);
+M0_Artery_Section = setcmap(img, maskArterySection, cmapArtery_Section);
+
+if isempty(maskVein)
+
+    VesselImageRGB = ...
+        M0_Artery .* ~maskSection + ...
+        M0_Artery_Section + ...
+        maskSectionRGB .* ~maskArtery + ...
+        img_RGB .* ~maskArtery .* ~maskSection;
+
+    if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
+        mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
     end
-    
-    %% Create Colormap Artery/Vein
-    M0_ff_img = mat2gray(M0_ff_img);
-    M0_ff_img_RGB = cat(3, M0_ff_img, M0_ff_img, M0_ff_img);
-    maskSectionRGB = cat(3, maskSection, maskSection, maskSection);
-    
-    if size(maskVein, 1) == 0
-        [hueA, satA, valA] = createHSVmap(M0_ff_img, ~maskSection & maskArtery, 0, 0);
-        [hueSectionA, satSectionA, valSectionA] = createHSVmap(M0_ff_img, maskSection & maskArtery, 0.15, 0.15);
-        
-        hueArtery = hueA .* (~maskSection & maskArtery) + hueSectionA .* (maskSection & maskArtery);
-        satArtery = satA .* (~maskSection & maskArtery) + satSectionA .* (maskSection & maskArtery);
-        valArtery = valA .* (~maskSection & maskArtery) + valSectionA .* (maskSection & maskArtery);
-        
-        VesselImageRGB = hsv2rgb(hueArtery, satArtery, valArtery) + maskSectionRGB .* ~maskArtery + (M0_ff_img_RGB .* ~maskArtery);
-        if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
-            mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
-        end
-        imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
-    else
-        maskVessel = maskArtery | maskVein;
-        [hueA, satA, valA] = createHSVmap(M0_ff_img, ~maskSection & maskArtery, 0, 0);
-        [hueV, satV, valV] = createHSVmap(M0_ff_img, ~maskSection & maskVein, 0.7, 0.7);
-        [hueSectionA, satSectionA, valSectionA] = createHSVmap(M0_ff_img, maskSection & maskArtery, 0.15, 0.15);
-        [hueSectionV, satSectionV, valSectionV] = createHSVmap(M0_ff_img, maskSection & maskVein, 0.5, 0.5);
-        
-        hueVessel = hueA .* (~maskSection & maskArtery) + hueV .* (~maskSection & maskVein) + hueSectionA .* (maskSection & maskArtery) + hueSectionV .* (maskSection & maskVein);
-        satVessel = satA .* (~maskSection & maskArtery) + satV .* (~maskSection & maskVein) + satSectionA .* (maskSection & maskArtery) + satSectionV .* (maskSection & maskVein);
-        valVessel = valA .* (~maskSection & maskArtery) + valV .* (~maskSection & maskVein) + valSectionA .* (maskSection & maskArtery) + valSectionV .* (maskSection & maskVein);
-        
-        VesselImageRGB = hsv2rgb(hueVessel, satVessel, valVessel) + maskSectionRGB .* ~maskVessel + (M0_ff_img_RGB .* ~maskVessel);
-        if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
-            mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
-        end
-        imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
+
+    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
+
+else
+
+    maskVein_Section = maskVein & maskSection;
+    maskAV = maskArtery & maskVein;
+    maskAV_Section = maskAV & maskSection;
+
+    cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+    cmapVein_Section = cmapLAB(256, [1 1 1], 0, [0 1 1], 1/3, [0 0 1], 2/3, [0 0 0], 1);
+    cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
+    cmapAV_Section = cmapLAB(256, [0 0 0], 0, [0 1 0], 1/3, [1 1 1], 1);
+
+    M0_Vein = setcmap(img, maskVein, cmapVein);
+    M0_Vein_Section = setcmap(img, maskVein_Section, cmapVein_Section);
+    M0_AV = setcmap(img, maskAV, cmapAV);
+    M0_AV_Section = setcmap(img, maskAV_Section, cmapAV_Section);
+
+    maskVessel = maskArtery | maskVein;
+
+    VesselImageRGB = ...
+        M0_Artery .* ~maskAV .* ~maskSection + ...
+        M0_Artery_Section .* ~maskAV_Section + ...
+        M0_Vein .* ~maskAV .* ~maskSection + ...
+        M0_Vein_Section .* ~maskAV_Section + ...
+        M0_AV .* ~maskSection + ...
+        M0_AV_Section + ...
+        maskSectionRGB .* ~maskVessel + ...
+        img_RGB .* ~maskArtery .* ~maskVein .* ~maskSection;
+
+    if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
+        mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
     end
-    
-    end
+    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
+end
+
+end

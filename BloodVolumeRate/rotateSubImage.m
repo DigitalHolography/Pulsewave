@@ -1,6 +1,6 @@
 function [rotatedImg, orientation] = rotateSubImage(subImg)
 % Rotate the sub-image to align the blood vessel vertically.
-% The orientation is taken from the centroid closest to the center of the image.
+% The orientation is determined by maximizing the number of zero pixels in the horizontal projection.
 %
 % Input:
 %   subImg - 2D array, the sub-image containing the blood vessel.
@@ -9,57 +9,34 @@ function [rotatedImg, orientation] = rotateSubImage(subImg)
 %   rotatedImg - 2D array, the rotated image.
 %   orientation - Scalar, the orientation angle used for rotation.
 
-%% UNCOMMENT IN CASE
-% angles = linspace(0, 180, 181);
-% projx = zeros(size(subImg, 1), length(angles));
-% projy = zeros(size(subImg, 2), length(angles));
-%
-% for theta = 1:length(angles)
-%     tmpImg = imrotate(subImg, angles(theta), 'bilinear', 'crop');
-%     projx(:, theta) = squeeze(sum(tmpImg, 1));
-%     projy(:, theta) = squeeze(sum(tmpImg, 2));
-% end
-%
-% projx_bin = (projx == 0);
-% list_x = squeeze(sum(projx_bin, 1));
-% [~, idc] = max(list_x);
-% tilt_angle = idc(1);
-% rotatedImg = imrotate(subImg, tilt_angle, 'bilinear', 'crop');
-% Convert the image to double for processing
-subImg = im2double(subImg);
+% Define a range of angles to test (0 to 180 degrees in 1-degree increments)
+angles = linspace(0, 180, 181);
 
-% Threshold the image to isolate the blood vessel
-bw = imbinarize(subImg); % Binarize the image
-bw = bwareaopen(bw, 50); % Remove small objects (noise)
+% Initialize arrays to store horizontal and vertical projections for each angle
+projx = zeros(size(subImg, 1), length(angles)); % Horizontal projections
 
-% Compute region properties (centroid and orientation)
-stats = regionprops(bw, 'Centroid', 'Orientation');
-
-% Check if any regions were detected
-if isempty(stats)
-    rotatedImg = subImg;
-    orientation = 0;
-    return
+% Loop over each angle and compute projections
+for theta = 1:length(angles)
+    % Rotate the image by the current angle
+    tmpImg = imrotate(subImg, angles(theta), 'bilinear', 'crop');
+    
+    % Compute the projection
+    projx(:, theta) = squeeze(sum(tmpImg, 1));
 end
 
-% Get the center of the image
-[rows, cols] = size(subImg);
-imageCenter = [cols / 2, rows / 2];
+% Create a binary mask where pixels with zero values in the horizontal projection are set to 1
+projx_bin = (projx == 0);
 
-% Calculate the distance of each centroid to the image center
-centroids = cat(1, stats.Centroid); % Concatenate centroids into a matrix
-distances = sqrt((centroids(:, 1) - imageCenter(1)).^2 + ...
-    (centroids(:, 2) - imageCenter(2)).^2);
+% Sum the binary mask along the rows to count the number of zero pixels for each angle
+list_x = squeeze(sum(projx_bin, 1));
 
-% Find the index of the centroid closest to the center
-[~, closestIdx] = min(distances);
+% Find the angle with the maximum number of zero pixels in the horizontal projection
+[~, idc] = max(list_x);
 
-% Get the orientation of the closest centroid
-orientation = stats(closestIdx).Orientation;
+% Get the corresponding orientation angle
+orientation = idc(1);
 
-% Adjust orientation to make the blood vessel vertical
-orientation = orientation + 90; % Add 90 degrees to align vertically
+% Rotate the original image by the determined orientation angle
+rotatedImg = imrotate(subImg, orientation, 'bilinear', 'crop');
 
-% Rotate the image to make the blood vessel vertical
-rotatedImg = imrotate(subImg, -orientation, 'bilinear', 'crop');
 end
