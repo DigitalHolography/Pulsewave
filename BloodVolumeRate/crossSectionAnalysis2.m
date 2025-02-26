@@ -103,13 +103,14 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
         end
         
+        crossSectionMask = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, PW_params);
         mask_sections(:, :, sectionIdx) = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, PW_params);
 
         % Create Figures
         poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, circleName, name_section, ToolBox)
         saveCrossSectionFigure(subImg, crossSectionWidth(sectionIdx), ToolBox, circleName, name_section)
 
-        if rsquare < 0.6
+        if rsquare < 0.6 || isnan(crossSectionWidth(sectionIdx)) || crossSectionWidth(sectionIdx) > mean(sum(subImg ~= 0, 2))
             rejected_MasksRGB(:, :, 1) = rejected_MasksRGB(:, :, 1) + mask_sections(:, :, sectionIdx);
         else
             rejected_MasksRGB(:, :, 2) = rejected_MasksRGB(:, :, 2) + mask_sections(:, :, sectionIdx);

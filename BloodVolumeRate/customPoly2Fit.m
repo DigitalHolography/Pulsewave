@@ -13,46 +13,46 @@ function [p1, p2, p3, rsquared, p1_err, p2_err, p3_err] = customPoly2Fit(x, y)
 x = x(:);
 y = y(:);
 
-% Center and scale x
+% Center and scale x to improve conditioning
 x_mean = mean(x);
 x_std = std(x);
 x_scaled = (x - x_mean) / x_std;
 
-% Set up the design matrix for a 2nd order polynomial fit
-X = [x_scaled.^2, x_scaled, ones(size(x_scaled))];
+% Construct the design matrix
+X = [x_scaled.^2, x_scaled, ones(length(x_scaled), 1)];
 
-% Solve for the coefficients using the normal equation
+% Solve for the coefficients using normal equations
 p = (X' * X) \ (X' * y);
 
-% Transform coefficients back to the original scale
-p1 = p(1) / (x_std^2); % Coefficient for x^2
-p2 = p(2) / x_std - 2 * p1 * x_mean; % Coefficient for x
-p3 = p(3) - p2 * x_mean + p1 * x_mean^2; % Constant term
+% Transform coefficients back to original scale
+p1 = p(1) / (x_std^2);  % Rescale p1
+p2 = p(2) / x_std;      % Rescale p2
+p3 = p(3) - (p1 * x_mean^2 + p2 * x_mean); % Adjust p3
 
-% Calculate fitted y values
+% Compute fitted values
 y_fit = p1 * x.^2 + p2 * x + p3;
 
-% Calculate R-squared value
-ss_res = sum((y - y_fit).^2); % sum of squares of residuals
-ss_tot = sum((y - mean(y)).^2); % total sum of squares
-rsquared = 1 - (ss_res / ss_tot); % coefficient of determination
+% Compute R-squared value
+ss_res = sum((y - y_fit).^2);  % Sum of squares of residuals
+ss_tot = sum((y - mean(y)).^2); % Total sum of squares
+rsquared = 1 - (ss_res / ss_tot); % Coefficient of determination
 
-n = length(y); % number of data points
-p_len = length(p); % number of parameters (3 for quadratic fit)
+% Compute standard errors of the coefficients
+n = length(y);
+p_len = length(p);
 
-if n == p_len % The polynomial fit is perfect
-    p1_err = 0;
-    p2_err = 0;
-    p3_err = 0;
-else
-    % Estimate the variance of residuals
-    variance = ss_res / (n - p_len); % estimated variance of residuals
-
-    % Calculate covariance matrix
+if n > p_len  % Avoid division by zero in perfect fits
+    variance = ss_res / (n - p_len); % Estimated variance of residuals
     cov_matrix = variance .* inv(X' * X);
-
-    % Extract standard errors (square root of diagonal elements of covariance matrix)
+    
+    % Extract standard errors
     p1_err = sqrt(cov_matrix(1,1)) / (x_std^2);
     p2_err = sqrt(cov_matrix(2,2)) / x_std;
     p3_err = sqrt(cov_matrix(3,3));
+else
+    p1_err = 0;
+    p2_err = 0;
+    p3_err = 0;
+end
+
 end
