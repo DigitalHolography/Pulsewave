@@ -638,6 +638,10 @@ classdef pulse < matlab.apps.AppBase
         function EditMasksButtonPushed(app, ~)
             ToolBox = getGlobalToolBox;
 
+            if isempty(ToolBox)
+                ToolBox = ToolBoxClass(app.file.directory, app.file.PW_param_name, 1);
+            end
+
             if (app.flag_is_load)
                 if ~isfolder(fullfile(ToolBox.PW_path_main,'mask'))
                     mkdir(fullfile(ToolBox.PW_path_main,'mask'))
@@ -686,6 +690,29 @@ classdef pulse < matlab.apps.AppBase
 
                     disp("last M0 png and gif copying failed")
                 end
+
+                try
+                    v = VideoReader(fullfile(ToolBox.PW_path,'avi',sprintf("%s_M0.avi",ToolBox.main_foldername)));
+                    M0_video = read(v); clear v;
+                    M0_video = rescale(single(squeeze(mean(M0_video,3))));
+                    sz = size(M0_video);
+                    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video,  diskMask(sz(1),sz(2),0.9));
+                    diasysArtery = M0_Systole_img - M0_Diastole_img;
+                    RGBdiasys = labDuoImage(mean(M0_video,3), diasysArtery);
+                    imwrite(RGBdiasys, fullfile(ToolBox.PW_path_main,'mask','DiaSysRGB.png'), 'png');
+                catch
+
+                    disp("Diasys png failed")
+                    
+                    
+                end
+
+                try
+                    openmaskinpaintnet(fullfile(ToolBox.PW_path,'png',sprintf("%s_M0.png",ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main,'mask','DiaSysRGB.png'));
+                catch
+                    disp("pain.net macro failed")
+                end
+                   
             else
 
                 fprintf(2, "no input loaded\n")

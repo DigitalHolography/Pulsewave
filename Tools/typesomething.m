@@ -2,6 +2,7 @@ function typesomething(str,robot)
 %typesomething
 % function to type a string with a matlab robot
 % made for azerty keyboards
+% all charaecters are included for path : / \ (not so obvious)
 
 if nargin<2
    
@@ -20,13 +21,7 @@ for i = 1:length(str)
         continue; % Skip non recognised characters
     end
 
-    if keyCode == ':' % special case
-        pause(0.01);robot.keyPress(17);pause(0.01);robot.keyPress(96); robot.keyRelease(96);pause(0.01);robot.keyPress(101);robot.keyRelease(101);pause(0.01);robot.keyPress(104);
-        robot.keyRelease(104);pause(0.01);robot.keyRelease(17);
-        continue
-    end
-
-    HoldShift = ischar(charValue) && (isstrprop(charValue, 'upper') || isstrprop(charValue, 'digit'));
+    HoldShift = ischar(charValue) && (isstrprop(charValue, 'upper') || isstrprop(charValue, 'digit')|| charValue=='.');
     if HoldShift
         robot.keyPress(java.awt.event.KeyEvent.VK_SHIFT); % Press Shift
     end
@@ -122,9 +117,13 @@ function keyCode = getKeyCode(character)
 
         case '/', keyCode = 111;
 
-        %case ':', keyCode = 111;
+        case ':', keyCode = java.awt.event.KeyEvent.VK_COLON;
             
         case '_', keyCode = java.awt.event.KeyEvent.VK_8;
+
+        case '.', keyCode = java.awt.event.KeyEvent.VK_SEMICOLON;
+
+        case ']', keyCode = java.awt.event.KeyEvent.VK_SEMICOLON;
         
         otherwise, keyCode = [];  % Skip characters that don't have keycodes
     end
