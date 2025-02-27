@@ -122,12 +122,8 @@ fprintf("    2. Initialisation of the sections for all circles output took %ds\n
 
 tic
 
-mkdir(ToolBox.PW_path_png, 'crossSection')
-mkdir(ToolBox.PW_path_png, 'projection')
-if  flagBloodVelocityProfile
-    mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'rheology')
-    mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'rheology')
-end
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'crossSection')
+mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'projection')
 
 [vr_avg_A_r, vr_std_A_r, area_A_r, mask_A_r, v_profiles_avg_A_r, v_profiles_std_A_r, sub_images_A_r, width_avg_A_r, width_std_A_r, vtop_avg_A_r, vtop_std_A_r] = crossSectionAnalysisAllRad(numSections_A, locs_A, widths_A, maskArtery, v_RMS, 'artery', flagBloodVelocityProfile, force_width);
 if veins_analysis
@@ -209,9 +205,9 @@ end
 %% 6. Arterial Indicators
 tic
 
-graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in arteries Full Field', 'µL/min', skip = ~PW_params.exportVideos, Visible= false);
+graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)), [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'arterial blood volume rate', 'µL/min', skip = ~PW_params.exportVideos, Color='Artery', Visible= false);
 if veins_analysis
-    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)) & maskAllSections, [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'Total Blood Volume Rate in veins Full Field', 'µL/min', skip = ~PW_params.exportVideos, Color=[0 0 1], Visible= false);
+    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)), [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'venous blood volume rate', 'µL/min', skip = ~PW_params.exportVideos, Color='Vein', Visible= false);
 end
 
 ArterialResistivityIndex(t, mean_BvrT_A, maskArtery, 'BVR', folder);

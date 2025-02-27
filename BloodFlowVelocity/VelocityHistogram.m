@@ -83,7 +83,7 @@ if exportVideos
         set(gca, 'YDir', 'normal')
         ylabel('Velocity (mm.s^{-1})')
         xlabel('Time (s)')
-        title(sprintf("Velocity distribution in %s", name))
+        title(sprintf("velocity distribution in %s", name))
         set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
         f = getframe(gcf);
         histoVideo(:, :, :, frameIdx) = f.cdata;
@@ -119,7 +119,7 @@ else
     set(gca, 'YDir', 'normal')
     ylabel('Velocity (mm.s^{-1})')
     xlabel('Time (s)')
-    title(sprintf("Velocity distribution in %s", name))
+    title(sprintf("velocity distribution in %s", name))
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     f = getframe(gcf);
     histoVideo = f.cdata;

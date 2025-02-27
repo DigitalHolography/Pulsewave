@@ -19,7 +19,7 @@ PW_params = ToolBox.getParams;
 k = PW_params.k;
 
 % Calculate x-axis values (position in µm)
-r_ = ((1:length(profile)) - centt) * (PW_params.cropSection_pixelSize / 2^k) * 1000;
+r_ = ((1:length(profile)) - centt) * (PW_params.cropSection_pixelSize / 2 ^ k) * 1000;
 
 % Calculate standard deviation and confidence interval
 stdprofile = std(subImg, [], 1);
@@ -46,7 +46,7 @@ yline(0, '--k', 'LineWidth', 1);
 
 % Plot Poiseuille fit
 x_fit = linspace(min(r_), max(r_), 100) / 1000; % Interpolate for smooth fit
-y_fit = p1 * x_fit.^2 + p2 * x_fit + p3;
+y_fit = p1 * x_fit .^ 2 + p2 * x_fit + p3;
 plot(x_fit * 1000, y_fit, 'k', 'LineWidth', 1.5);
 
 % Plot vessel boundaries
@@ -55,25 +55,25 @@ plot(r2 * 1000, -2, 'k|', 'MarkerSize', 10, 'LineWidth', 1.5);
 plot(linspace(r1 * 1000, r2 * 1000, 10), repmat(-2, 10), '-k', 'LineWidth', 1.5);
 
 % Adjust axes
-axis tight;
-ax = axis;
-ax(3) = -5; % Set lower y-axis limit
-axis(ax);
+axis padded
+axP = axis;
+axis tight
+axT = axis;
+axis([axT(1), axT(2), - 5, axP(4) * 1.07])
 box on
 set(gca, 'LineWidth', 2)
+set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 
 % Add labels and title
+fontsize(gca, 12, "points");
 xlabel('Position (µm)');
 ylabel('Velocity (mm/s)');
-title('Velocity Profile and Poiseuille Fit');
-
-% Add legend
-legend('', '', '', 'Measured Data', '', sprintf('fit R² = %d', rsquare), ...
-    'Location', 'northeast');
+title('velocity profile and laminar flow model fit');
 
 % Save figure
-saveas(f, fullfile(ToolBox.PW_path_png, 'projection', ...
-    sprintf('%s_%s_proj_poiseuille_%s.png', ToolBox.main_foldername, insert, name_section)));
+
+exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'projection', ...
+    sprintf('%s_%s_proj_poiseuille_%s.png', ToolBox.main_foldername, insert, name_section)))
 
 % Close figure
 close(f);

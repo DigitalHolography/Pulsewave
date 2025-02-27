@@ -72,13 +72,13 @@ classdef GifWriter < handle
             if isempty(obj.images) % allocate on first frame
                 obj.numX = size(image, 1);
                 obj.numY = size(image, 2);
-                
-                if obj.numY > 1000
-                    obj.numY = 1000;
-                    obj.numX = round(size(image, 1) * 1000 / size(image, 2));
-                    
-                end
-                
+%                 
+%                 if obj.numY > 1000
+%                     obj.numY = 1000;
+%                     obj.numX = round(size(image, 1) * 1000 / size(image, 2));
+%                     
+%                 end
+%                 
                 if size(image, 3) == 3
                     obj.isRGB = true;
                     obj.images = zeros(obj.numX, obj.numY, 3, obj.numFrames, 'like', image);

@@ -9,7 +9,7 @@ arguments
     x_center
     y_center
     NameValueArgs.Fontsize double = 14
-    NameValueArgs.Color (1, 3) double = [1 0 0]
+    NameValueArgs.Color = 'none'
     NameValueArgs.Title = []
     NameValueArgs.Visible = false
 
@@ -18,9 +18,18 @@ end
 ratio_etiquette = 1.2;
 fig = figure(figId);
 fig.Position = [200 200 600 600];
-fig.Visible = NameValueArgs.Visible;
+% fig.Visible = NameValueArgs.Visible;
 
-image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape(NameValueArgs.Color, 1, 1, 3) .* mask .* Image; % adding the Red value to the mask pixels
+if strcmp(NameValueArgs.Color, 'Artery') == 1
+    cmap = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+elseif strcmp(NameValueArgs.Color, 'Vein') == 1
+    cmap = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+else
+    cmap = cmapLAB(256, [0 0 0], 0, [1 1 1], 1);
+end
+
+image_RGB = setcmap(Image, mask, cmap) + Image .* ~mask;
+% image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape(NameValueArgs.Color, 1, 1, 3) .* mask .* Image; % adding the Red value to the mask pixels
 imagesc(image_RGB);
 axis image
 axis off

@@ -16,7 +16,7 @@ for circleIdx = 1:numCircles
         hold on
     end
 
-    title(['Measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
+    title(['measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_circle_%d_%s_bloodVelocityProfiles.png", ToolBox.main_foldername, circleIdx, name)))
 
@@ -87,7 +87,7 @@ for circleIdx = 1:numCircles
     axis(aa);
     hold off
 
-    title(['Interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
+    title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
     exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_circle_%d_%s_interpolatedBloodVelocityProfile.png", ToolBox.main_foldername, circleIdx, name)))
 
@@ -115,7 +115,7 @@ if PW_params.exportVideos
 
     parfor circleIdx = 1:numCircles
         video = zeros(420, 560, 3, numFrames, 'single'); % Preallocate video array
-        title(['Interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
+        title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
 
         for frameIdx = 1:numFrames
             % Precompute profiles

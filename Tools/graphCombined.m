@@ -19,7 +19,7 @@ arguments
     titl
     unit
     NameValueArgs.skip logical = false
-    NameValueArgs.Color (1, 3) double = [1 0 0]
+    NameValueArgs.Color = 'none'
     NameValueArgs.Visible logical = false
 end
 
@@ -41,24 +41,22 @@ else
     parforArg = Inf; % default
 end
 
-
-
 if ~isempty(etiquettes_locs)
     etiquettes_frame_values = round(etiquettes_values(:, frameIdx), 1);
 else
     etiquettes_frame_values = [];
 end
-
+name =  NameValueArgs.Color;
 video_plot = figure(410);
 video_plot.Visible = NameValueArgs.Visible;
 video_plot.Position = [200 200 600 600];
-graphMaskTags(video_plot, Videofield_rescaled(:, :, startingvalue), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = NameValueArgs.Color);
+graphMaskTags(video_plot, Videofield_rescaled(:, :, startingvalue), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name);
 video_plot_frame = getframe(video_plot);
 sz = [size(video_plot_frame.cdata) numFrames];
 video_plot_video = zeros(sz,'single');
 parfor (frameIdx = startingvalue:numFrames ,parforArg)
-    graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = NameValueArgs.Color);
-    title(sprintf("%s : %02.0f %s", titl, round(signal(frameIdx))), unit);
+    graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name);
+%     title(sprintf("%s : %02.0f %s", titl, round(signal(frameIdx))), unit);
     set(gca, 'FontSize', 14)
     video_plot_frame = getframe(video_plot);
     video_plot_video(:, :, :, frameIdx) = frame2im(video_plot_frame);
