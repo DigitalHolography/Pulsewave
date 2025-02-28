@@ -23,7 +23,6 @@ else
     
     S = sum(obj.M0_data_video, [1, 2]);
     S2 = sum(M0_data_convoluated, [1, 2]);
-
     
     imwrite(rescale(mean(M0_data_convoluated,3)),fullfile(obj.directory,'pulsewave', sprintf("%s_alpha=%s_%s", obj.filenames, num2str(alpha), 'M0_Convolution_Norm.png')), 'png');
     
@@ -36,6 +35,14 @@ end
 
 obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_convoluated);
 obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_convoluated;
-obj.M0_ff_video = flat_field_correction(obj.M0_ff_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_ff_video, 1)), PW_params.flatField_border);
+
+% Compute the radial average
+[radialAverage, binCenters] = computeRadialAverage(obj.M0_data_video);
+
+% Perform the Gaussian fit
+fitParams = fitGaussian(binCenters, radialAverage);
+
+% Apply flat-field correction using the fitted Gaussian parameters
+obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, PW_params.flatField_border) ./ M0_data_convoluated;
 
 end
