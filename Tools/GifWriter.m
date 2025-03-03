@@ -89,7 +89,9 @@ classdef GifWriter < handle
                 
             end
             
-            obj.images(:, :, :, frameIdx) = imresize(image, [obj.numX, obj.numY], 'nearest');
+            obj.images(:, :, :, frameIdx) = imresize(image, [obj.numX, obj.numY], 'bicubic', 'Antialiasing', true);
+            obj.images(obj.images < 0) = 0; 
+            obj.images(obj.images > 256) = 256; 
             
         end
         

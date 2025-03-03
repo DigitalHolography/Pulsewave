@@ -86,7 +86,7 @@ end
 
 figure(74);
 imagesc(L)
-title('Selected sections along the artery')
+title('selected sections along the artery')
 
 figure(75);
 imagesc(U_x)

@@ -21,9 +21,13 @@ function [mask, R_Vessel] = processVascularSignal(M0_ff_video, maskClean, maskVe
     vascularSignal = vascularSignal ./ nnz(maskClean);
     vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
 
+    % Step 2: Compute the centered M0
+
+    M0_ff_video_centered = M0_ff_video .* maskDiaphragm - (sum(M0_ff_video .* maskDiaphragm, [1 2]) ./ nnz(maskDiaphragm));
+
     % Step 2: Compute the correlation map
-    R_Vessel = mean((M0_ff_video .* vascularSignal_centered), 3) ./ ...
-               (std(M0_ff_video, [], 3) .* std(vascularSignal_centered, [], 3));
+    R_Vessel = mean((M0_ff_video_centered .* vascularSignal_centered), 3) ./ ...
+               (std(M0_ff_video_centered, [], 3) .* std(vascularSignal_centered, [], 3));
 
     % Save the correlation map
     saveImage(rescale(R_Vessel), ToolBox, sprintf("%s_2_1_CorrelMatrix.png", prefix), isStep = true);

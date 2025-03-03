@@ -53,14 +53,15 @@ end
 
 %% 1) First Masks and Correlation
 
+maskDiaphragm = diskMask(numX, numY, diaphragmRadius);
+
 M0_ff_img = squeeze(mean(M0_ff_video, 3));
-M0_ff_video_centered = M0_ff_video - M0_ff_img;
+M0_ff_video_centered = M0_ff_video .* maskDiaphragm - (sum(M0_ff_video .* maskDiaphragm, [1 2]) ./ nnz(maskDiaphragm));
 saveImage(M0_ff_img, ToolBox, 'all_10_M0.png', isStep = true)
 if ~isfile(fullfile(ToolBox.PW_path_gif, sprintf("%s_M0.gif", ToolBox.PW_folder_name)))
     writeGifOnDisc(rescale(M0_ff_video), "M0")
 end
 
-maskDiaphragm = diskMask(numX, numY, diaphragmRadius);
 saveImage(rescale(M0_ff_img) + maskDiaphragm .* 0.5, ToolBox, 'all_11_maskDiaphragm.png', isStep = true)
 
 % 1) 1) Compute vesselness response
@@ -111,8 +112,8 @@ vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
 R_VascularSignal = mean(M0_ff_video_centered .* vascularSignal_centered, 3) ./ (std((M0_ff_video_centered), [], 3) * std(vascularSignal_centered, [], 3));
 saveImage(R_VascularSignal, ToolBox, 'all_15_Correlation.png', isStep = true)
 
-RGBdiasys = labDuoImage(M0_ff_img, R_VascularSignal);
-saveImage(RGBdiasys, ToolBox, 'all_15_Correlation_rgb.png', isStep = true)
+RGBcorr = labDuoImage(M0_ff_img, R_VascularSignal);
+saveImage(RGBcorr, ToolBox, 'all_15_Correlation_rgb.png', isStep = true)
 
 % 1) 4) Segment Vessels
 
@@ -174,11 +175,13 @@ if PW_params.params.Mask.ImproveMask
     % 2) 2) Diastole-Systole Image
 
     diasysArtery = M0_Systole_img - M0_Diastole_img;
-    diasysVein = M0_ff_img - diasysArtery;
+    mDiasys = sum(diasysArtery .* maskDiaphragm, [1 2]) ./ nnz(maskDiaphragm);
+    diasysVein = mDiasys - diasysArtery;
     saveImage(diasysArtery, ToolBox,  'artery_21_diasys_img.png', isStep = true)
     saveImage(diasysVein, ToolBox,  'vein_21_diasys_img.png', isStep = true)
 
-    RGBdiasys = labDuoImage(M0_ff_img, diasysArtery);
+
+    RGBdiasys = labDuoImage(M0_ff_img, (diasysArtery - mDiasys));
     saveImage(RGBdiasys, ToolBox, 'vessel_40_diasys_rgb.png', isStep = true)
     saveImage(RGBdiasys, ToolBox, 'DiaSysRGB.png')
 
@@ -281,17 +284,6 @@ maskBackground = not(maskVessel);
 %% 4) FINAL FIGURES
 
 % 4) 1) RGB Figures
-saveImage(maskArtery, ToolBox,'artery_40_Final.png', isStep = true, cmap = cmapArtery)
-saveImage(maskVein, ToolBox, 'vein_40_Final.png', isStep = true, cmap = cmapVein)
-
-RGBM0(:, :, 1) = rescale(M0_ff_img) + maskArtery;
-RGBM0(:, :, 2) = rescale(M0_ff_img);
-RGBM0(:, :, 3) = rescale(M0_ff_img) + maskVein;
-
-saveImage(RGBM0, ToolBox, 'vessel_40_RGB.png', isStep = true)
-saveImage(RGBM0, ToolBox, 'RGB_img.png')
-
-% 4) 1)
 cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
 cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
 cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
@@ -301,16 +293,21 @@ M0_Vein = setcmap(M0_ff_img, maskVein, cmapVein);
 M0_AV = setcmap(M0_ff_img, maskArtery & maskVein, cmapAV);
 
 M0_RGB = (M0_Artery + M0_Vein) .* ~(maskArtery & maskVein) + M0_AV + rescale(M0_ff_img) .* ~(maskArtery | maskVein);
-saveImage(M0_RGB, ToolBox, 'M0_RGB_img.png')
+saveImage(M0_RGB, ToolBox, 'vessel_40_RGB.png', isStep = true)
+saveImage(M0_RGB, ToolBox, 'RGB_img.png')
 
 
 % 4) 2) Neighbours Mask
 
 maskNeighbors = imdilate(maskArtery | maskVein, strel('disk', bgWidth)) - (maskArtery | maskVein);
 
-neighborsMaskSeg(:, :, 1) = rescale(M0_ff_img) + maskArtery;
-neighborsMaskSeg(:, :, 2) = rescale(M0_ff_img) + maskNeighbors;
-neighborsMaskSeg(:, :, 3) = rescale(M0_ff_img) + maskVein;
+cmapNeighbors = cmapLAB(256, [0 1 0], 0, [1 1 1], 1);
+
+M0_Neighbors = setcmap(M0_ff_img, maskNeighbors, cmapNeighbors);
+
+neighborsMaskSeg = (M0_Artery + M0_Vein) .* ~(maskArtery & maskVein) + ...
+    M0_AV + M0_Neighbors  + ...
+    rescale(M0_ff_img) .* ~(maskArtery | maskVein | maskNeighbors);
 saveImage(neighborsMaskSeg, ToolBox, 'neighbors_img.png')
 
 % 4) 3) CRA and CRV Masks

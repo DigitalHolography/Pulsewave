@@ -36,9 +36,6 @@ mask_sections = zeros(numX, numY, numSections);
 
 % %% VARIABLES FOR VELOCITY PROFILE VIDEO
 
-mkdir(ToolBox.PW_path_png, 'crossSection')
-mkdir(ToolBox.PW_path_png, 'projection')
-
 tilt_angle_list = zeros(1, length(locs));
 
 v_RMS_mean_masked = squeeze(mean(v_RMS, 3)) .* mask;
@@ -122,7 +119,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
             f = getframe(gca); %# Capture the current window
             
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'volumeRate', 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
         end
         
         % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
@@ -160,7 +157,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             f = getframe(gca); %# Capture the current
             
             %bords blancs
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'crossSection', strcat(ToolBox.main_foldername, insert, ['_' name_section num2str(sectionIdx) '.png'])));
+            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'volumeRate', 'crossSection', strcat(ToolBox.main_foldername, insert, ['_' name_section num2str(sectionIdx) '.png'])));
         end
         
         maskSlice_subImg = false(size(subImg, 1), size(subImg, 2));

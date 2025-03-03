@@ -9,7 +9,7 @@ arguments
     x_center
     y_center
     NameValueArgs.Fontsize double = 14
-    NameValueArgs.Color (1, 3) double = [1 0 0]
+    NameValueArgs.Color = 'none'
     NameValueArgs.Title = []
     NameValueArgs.Visible = false
 
@@ -18,24 +18,47 @@ end
 ratio_etiquette = 1.2;
 fig = figure(figId);
 fig.Position = [200 200 600 600];
-fig.Visible = NameValueArgs.Visible;
+% fig.Visible = NameValueArgs.Visible;
 
-image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape(NameValueArgs.Color, 1, 1, 3) .* mask .* Image; % adding the Red value to the mask pixels
+if strcmp(NameValueArgs.Color, 'Artery') == 1
+    cmap = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+elseif strcmp(NameValueArgs.Color, 'Vein') == 1
+    cmap = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+else
+    cmap = cmapLAB(256, [0 0 0], 0, [1 1 1], 1);
+end
+
+image_RGB = setcmap(Image, mask, cmap) + Image .* ~mask;
+% image_RGB = repmat(Image - Image .* mask, 1, 1, 3) + reshape(NameValueArgs.Color, 1, 1, 3) .* mask .* Image; % adding the Red value to the mask pixels
 imagesc(image_RGB);
 axis image
 axis off
+
 if ~isempty(NameValueArgs.Title)
     title(NameValueArgs.Title);
     set(gca, 'FontSize', 14);
 end
-if ~isempty(etiquettes_locs) & ~isempty(etiquettes_values)
 
-    for etIdx = 1:size(etiquettes_locs,1)
+% Get the image dimensions
+[imgHeight, imgWidth, ~] = size(Image);
+
+if ~isempty(etiquettes_locs) && ~isempty(etiquettes_values)
+    for etIdx = 1:size(etiquettes_locs, 1)
+        % Calculate the new position for the text
         new_x = x_center + ratio_etiquette * (etiquettes_locs(etIdx, 2) - x_center);
         new_y = y_center + ratio_etiquette * (etiquettes_locs(etIdx, 1) - y_center);
-        text(new_x, new_y, sprintf(string(etiquettes_values(etIdx))), "FontWeight", "bold", "FontSize", NameValueArgs.Fontsize, "Color", "white", "BackgroundColor", "black");
-    end
 
+        % Ensure the text is within the image bounds
+        new_x = max(1, min(new_x, imgWidth));  % Clamp x to image width
+        new_y = max(1, min(new_y, imgHeight)); % Clamp y to image height
+
+        % Add the text
+        text(new_x, new_y, sprintf(string(etiquettes_values(etIdx))), ...
+            "FontWeight", "bold", ...
+            "FontSize", NameValueArgs.Fontsize, ...
+            "Color", "white", ...
+            "BackgroundColor", "black");
+    end
 end
 
 end
