@@ -270,7 +270,7 @@ classdef OneCycleClass < handle
                 [numX, numY, numFrames] = size(obj.f_RMS_video);
                 bin_x = 4;
                 bin_y = 4;
-                % bin_w = 16;
+                bin_w = 16;
                 bin_t = 1;
                 
                 SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
@@ -282,7 +282,7 @@ classdef OneCycleClass < handle
                 fprintf("Spectrum analysis\n")
                 fprintf("----------------------------------\n")
                 
-                spectrum_analysis(SH_cube, obj.M0_data_video);
+                %spectrum_analysis(SH_cube, obj.M0_data_video);
                 
                 time_spectrumAnalysis = toc(spectrumAnalysisTimer);
                 fprintf("- Spectrum Analysis took : %ds\n", round(time_spectrumAnalysis))

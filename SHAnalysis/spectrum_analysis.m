@@ -8,8 +8,8 @@ f3 = ToolBox.f2;
 cubeFrameLength = size(SH_cube, 4);
 batch_size = size(SH_cube, 3);
 % gw = 3;
-SH_ColorVideoRGB = zeros(size(data_M0, 1), size(data_M0, 2), 3, size(SH_cube, 4));
-ImRef = mean(data_M0, 3);
+SH_ColorVideoRGB = zeros(size(SH_cube, 1), size(SH_cube, 2), 3, size(SH_cube, 4));
+ImRef = imresize(mean(data_M0, 3),[size(SH_cube, 1), size(SH_cube, 2)]);
 
 %%
 
@@ -29,7 +29,7 @@ DCR_imgs = decorrstretch(multiband_img, 'tol', [0.002 0.999]);
 %imgAVG = imfuse(multiband_img(:,:,2), multiband_img(:,:,1), 'ColorChannels', 'red-cyan');
 %imgAVG = imfuse(DCR_imgs(:,:,2), DCR_imgs(:,:,1), 'ColorChannels', 'red-cyan');
 
-imgAVG = zeros(size(MeanImLow, 1), size(MeanImLow, 1), 3);
+imgAVG = zeros(size(MeanImLow, 1), size(MeanImLow, 2), 3);
 imgAVG(:, :, 1) = DCR_imgs(:, :, 2);
 imgAVG(:, :, 2) = DCR_imgs(:, :, 1);
 imgAVG(:, :, 3) = DCR_imgs(:, :, 1);
@@ -43,7 +43,7 @@ figure(15)
 imagesc(imgAVG)
 
 ImHSV = rgb2hsv(imgAVG);
-ImHSVscaled = imresize(ImHSV, [size(data_M0, 1) size(data_M0, 1)], "nearest");
+ImHSVscaled = imresize(ImHSV, [size(SH_cube, 1) size(SH_cube, 2)], "nearest");
 figure(16)
 imshow(hsv2rgb(ImHSVscaled))
 
@@ -80,7 +80,7 @@ for ii = 1:cubeFrameLength
     img = imadjust(img, low_high, low_high, gamma_composite);
     img = imsharpen(img, 'Radius', 10, 'Amount', 0.6);
     ImHSV = rgb2hsv(img);
-    ImHSVscaled = imresize(ImHSV, [size(data_M0, 1) size(data_M0, 1)], "nearest");
+    ImHSVscaled = imresize(ImHSV, [size(SH_cube, 1) size(SH_cube, 2)], "nearest");
     ImHSVscaled(:, :, 3) = mat2gray(ImRef);
     ImHSVscaled = hsv2rgb(ImHSVscaled);
 
@@ -100,8 +100,10 @@ end
 %% save video
 
 writeVideoOnDisc(SH_ColorVideoRGB, fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')));
-writeGifOnDisc(SH_ColorVideoRGB, fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')), 0.1);
+writeGifOnDisc(SH_ColorVideoRGB, (strcat('ColorVideo.gif')), 0.1);
 
 imwrite(ImHSVscaled, fullfile(ToolBox.PW_path_png, [ToolBox.main_foldername, '_ColorDoppler.png']), 'png');
 
+
+close([15, 16 17])
 end
