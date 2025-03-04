@@ -1,9 +1,10 @@
-function [RGB] = labDuoImage(image_1, image_2, h)
+function [RGB] = labDuoImage(image_1, image_2, h, opt)
 
 arguments
     image_1, 
     image_2, 
     h = 45
+    opt.renormalise = true;
 end
 
 h = mod(h, 360);

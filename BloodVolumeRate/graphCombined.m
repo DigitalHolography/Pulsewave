@@ -25,7 +25,7 @@ end
 
 ToolBox = getGlobalToolBox;
 Videofield_rescaled = rescale(Videofield);
-[numX, numY, numFrames] = size(Videofield_rescaled);
+[~, ~, numFrames] = size(Videofield_rescaled);
 x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
 ylimm = [min(-1, min(signal)), max(signal) * 1.3];
@@ -42,7 +42,7 @@ else
 end
 
 if ~isempty(etiquettes_locs)
-    etiquettes_frame_values = round(etiquettes_values(:, frameIdx), 1);
+    etiquettes_frame_values = round(etiquettes_values(:, 1), 1);
 else
     etiquettes_frame_values = [];
 end
@@ -51,14 +51,14 @@ video_plot = figure(410);
 video_plot.Visible = NameValueArgs.Visible;
 video_plot.Position = [200 200 600 600];
 graphMaskTags(video_plot, Videofield_rescaled(:, :, startingvalue), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name);
-video_plot_frame = getframe(video_plot);
-sz = [size(video_plot_frame.cdata) numFrames];
-video_plot_video = zeros(sz,'single');
+video_plot_frame = getframe(gca);
+sz_video = [size(video_plot_frame.cdata) numFrames];
+video_plot_video = zeros(sz_video,'single');
 parfor (frameIdx = startingvalue:numFrames ,parforArg)
     graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name);
 %     title(sprintf("%s : %02.0f %s", titl, round(signal(frameIdx))), unit);
     set(gca, 'FontSize', 14)
-    video_plot_frame = getframe(video_plot);
+    video_plot_frame = getframe(gca);
     video_plot_video(:, :, :, frameIdx) = frame2im(video_plot_frame);
 end
 
@@ -68,8 +68,8 @@ signal_plot.Position = [200 200 600 300];
 graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm);
 
 signal_plot_frame = getframe(signal_plot);
-sz = [size(signal_plot_frame.cdata) numFrames];
-signal_plot_video = zeros(sz,'single');
+sz_plot = [size(signal_plot_frame.cdata) numFrames];
+signal_plot_video = zeros(sz_plot,'single');
 fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 parfor (frameIdx = startingvalue:numFrames ,parforArg)
     graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx, fullTime = fullTime) ;
@@ -77,13 +77,21 @@ parfor (frameIdx = startingvalue:numFrames ,parforArg)
     signal_plot_video(:, :, :, frameIdx) = signal_plot_frame.cdata;
 end
 
-combined_plot_video = cat(1, mat2gray(video_plot_video), mat2gray(signal_plot_video));
+% Interpolation for the combined gif
+
+video_interp = imresize(mat2gray(video_plot_video), [sz_plot(2), sz_plot(2)]);
+video_interp(video_interp < 0) = 0;
+video_interp(video_interp > 256) = 256;
+
+combined_plot_video = cat(1, video_interp, mat2gray(signal_plot_video));
+
+imwrite(mat2gray(signal_plot_video(:, :, :, end)), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_plot.png", ToolBox.PW_folder_name, titl)));
+imwrite(combined_plot_video(:, :, :, end), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, titl)));
 
 if ~NameValueArgs.skip
+    writeGifOnDisc(mat2gray(signal_plot_video), sprintf("%s_plot", titl), 0.04);
     writeGifOnDisc(combined_plot_video, sprintf("%s_combined", titl), 0.04);
 %     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(combined_plot_video), fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, sprintf('%s_combined.avi', titl))));
-else
-    imwrite(combined_plot_video(:, :, :, end), fullfile(ToolBox.PW_path_gif, sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, titl)));
 end
 
 close(410, 530)

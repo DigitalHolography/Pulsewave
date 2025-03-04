@@ -300,7 +300,7 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%
 % sys_index_list_one_cycle = find_systole_index(onePulseVideo2)
 
 [~, idx_sys] = max(avgArterialPulseHz);
-
+return
 if ~isnan(onePulseVideoM0)
     %% diastolic Doppler frequency heatmap : 10% of frames before minimum of diastole
 

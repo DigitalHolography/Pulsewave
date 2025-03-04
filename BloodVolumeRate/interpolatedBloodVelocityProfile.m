@@ -18,7 +18,7 @@ for circleIdx = 1:numCircles
 
     title(['measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_circle_%d_%s_bloodVelocityProfiles.png", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", ToolBox.main_foldername, name, circleIdx)))
 
     % interpolatedBloodVelocityProfile Figure
 
@@ -80,16 +80,16 @@ for circleIdx = 1:numCircles
     poiseuille_fit(poiseuille_fit < 0) = 0;
     plot(poiseuille_fit, '-r', 'LineWidth', 2);
 
-    axis tight;
-    aa = axis;
-    aa(3) = -10;
-    aa(4) = 30;
-    axis(aa);
+    axis padded
+    axP = axis;
+    axis tight
+    axT = axis;
+    axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
     hold off
 
     title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_circle_%d_%s_interpolatedBloodVelocityProfile.png", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_interp_profile_%s%d.png", ToolBox.main_foldername, name, circleIdx)))
 
 end
 
@@ -181,7 +181,7 @@ if PW_params.exportVideos
         end
 
         % Write only once per circle
-        writeGifOnDisc(video, sprintf("circle_%d_%s_interpolatedBloodVelocityProfile", circleIdx, name), "ToolBox", ToolBox);
+        writeGifOnDisc(video, sprintf("interp_profile_%s%d", name, circleIdx), "ToolBox", ToolBox);
     end
 
 end

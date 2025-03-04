@@ -194,9 +194,9 @@ tic
 
 if flagBloodVelocityProfile
     mkdir(fullfile(ToolBox.PW_path_png, folder, 'velocityProfiles'));
-    interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, 'Artery', rad, 50)
+    interpolatedBloodVelocityProfile(v_profiles_avg_A_r, v_profiles_std_A_r, numSections_A, 'A', rad, 50)
     if veins_analysis
-        interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, 'Vein', rad, 50)
+        interpolatedBloodVelocityProfile(v_profiles_avg_V_r, v_profiles_std_V_r, numSections_V, 'V', rad, 50)
     end
 
     fprintf("    5. Profiles Images Generation took %ds\n", round(toc))
@@ -205,9 +205,9 @@ end
 %% 6. Arterial Indicators
 tic
 
-graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)), [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'arterial blood volume rate', 'µL/min', skip = ~PW_params.exportVideos, Color='Artery', Visible= false);
+graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', PW_params.local_background_width)), [], [], mean_BvrT_A, mean_std_BvrT_A, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'arterial bvr', 'µL/min', skip = ~PW_params.exportVideos, Color='Artery', Visible= false);
 if veins_analysis
-    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)), [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'venous blood volume rate', 'µL/min', skip = ~PW_params.exportVideos, Color='Vein', Visible= false);
+    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', PW_params.local_background_width)), [], [], mean_BvrT_V, mean_std_BvrT_V, xy_barycenter, 'Blood Volume Rate (µL/min)', 'Time (s)', 'venous bvr', 'µL/min', skip = ~PW_params.exportVideos, Color='Vein', Visible= false);
 end
 
 ArterialResistivityIndex(t, mean_BvrT_A, maskArtery, 'BVR', folder);
