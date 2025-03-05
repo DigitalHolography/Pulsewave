@@ -84,7 +84,8 @@
       "BlurScaleFactor": 100,
       "FramePercentageBeforeMinimumOfDiastole": 0.1,
       "FramePercentageAroundPeakSystole": 0.1,
-      "Exponentiel": 2.718282
+      "Exponentiel": 2.718282,
+      "ExtendedFlag": false
     },
     "VesselsVideo": {
       "RadiusRatioFactor": 0.27,

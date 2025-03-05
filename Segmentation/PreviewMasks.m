@@ -170,12 +170,12 @@ uiwait(d);
 % Nested function for mask creation
     function createMask(~, ~)
 
+        ToolBox = ToolBoxClass(app.file.directory, app.file.PW_param_name, true);
+
         % Ensure necessary steps are done before proceeding
         if ~app.file.is_preprocessed
-            app.PreProcessButtonPushed();
+            app.file.preprocessData();
         end
-
-        ToolBox = ToolBoxClass(app.file.directory, app.file.PW_param_name, true);
 
         % Update parameters and get the image and masks
         M0_ff_img = squeeze(mean(app.file.M0_ff_video, 3)); % Mean of the M0_ff_video

@@ -1,99 +1,130 @@
-function graphCombined(Videofield, mask, etiquettes_locs, etiquettes_values, signal, stdsignal, xy_barycenter, ylabl, xlabl, titl, unit, NameValueArgs)
-% Combines a video and a signal to an animated gif combined on top of each
-% other frame by frame
-% Videofield : Video to be displayed on top grayscale
-% mask : mask in red over it
-% etiquettes_locs, localization of etiquettes (tags) patch (nbetiquettes 2)
-% (leave empty if no etiquettes required)
-% etiquettes_values, values inside etiquettes (tags) (nbetiquettes numFrames)
-arguments
-    Videofield
-    mask
-    etiquettes_locs
-    etiquettes_values
-    signal
-    stdsignal
-    xy_barycenter
-    ylabl
-    xlabl
-    titl
-    unit
-    NameValueArgs.skip logical = false
-    NameValueArgs.Color = 'none'
-    NameValueArgs.Visible logical = false
-end
+function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirname, opt)
+    % Combines a video and a signal into an animated GIF, overlaying them frame by frame.
+    %
+    % Inputs:
+    %   Videofield: Video to be displayed (grayscale).
+    %   mask: Mask to overlay in red.
+    %   signal: Signal data to plot.
+    %   stdsignal: Standard deviation of the signal.
+    %   xy_barycenter: Barycenter coordinates [x, y].
+    %   dirname: Directory name for saving outputs.
+    %   opt: Optional parameters (see below).
+    %
+    % Optional Parameters (opt):
+    %   etiquettes_locs: Locations of tags (empty if not needed).
+    %   etiquettes_values: Values for tags (empty if not needed).
+    %   ylabl: Y-axis label.
+    %   xlabl: X-axis label.
+    %   fig_title: Figure title.
+    %   unit: Unit for the signal.
+    %   skip: Skip frames (logical, default false).
+    %   Color: Color for mask overlay.
+    %   Visible: Visibility of figures (logical, default false).
 
-ToolBox = getGlobalToolBox;
-Videofield_rescaled = rescale(Videofield);
-[~, ~, numFrames] = size(Videofield_rescaled);
-x_barycenter = xy_barycenter(1);
-y_barycenter = xy_barycenter(2);
-ylimm = [min(-1, min(signal)), max(signal) * 1.3];
+    arguments
+        Videofield
+        mask
+        signal
+        stdsignal
+        xy_barycenter
+        dirname
+        opt.etiquettes_locs = []
+        opt.etiquettes_values = []
+        opt.ylabl = ''
+        opt.xlabl = ''
+        opt.fig_title = ''
+        opt.unit = ''
+        opt.skip logical = false
+        opt.Color = 'none'
+        opt.Visible logical = false
+    end
 
-if NameValueArgs.skip
-    startingvalue = numFrames;
-else
-    startingvalue = 1;
-end
-if NameValueArgs.Visible
-    parforArg = 0;
-else
-    parforArg = Inf; % default
-end
+    % Get global toolbox settings
+    ToolBox = getGlobalToolBox;
 
-if ~isempty(etiquettes_locs)
-    etiquettes_frame_values = round(etiquettes_values(:, 1), 1);
-else
-    etiquettes_frame_values = [];
-end
-name =  NameValueArgs.Color;
-video_plot = figure(410);
-video_plot.Visible = NameValueArgs.Visible;
-video_plot.Position = [200 200 600 600];
-graphMaskTags(video_plot, Videofield_rescaled(:, :, startingvalue), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name);
-video_plot_frame = getframe(gca);
-sz_video = [size(video_plot_frame.cdata) numFrames];
-video_plot_video = zeros(sz_video,'single');
-parfor (frameIdx = startingvalue:numFrames ,parforArg)
-    graphMaskTags(video_plot, Videofield_rescaled(:, :, frameIdx), mask, etiquettes_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name);
-%     title(sprintf("%s : %02.0f %s", titl, round(signal(frameIdx))), unit);
-    set(gca, 'FontSize', 14)
-    video_plot_frame = getframe(gca);
-    video_plot_video(:, :, :, frameIdx) = frame2im(video_plot_frame);
-end
+    % Rescale video and get dimensions
+    Videofield_rescaled = rescale(Videofield);
+    [~, ~, numFrames] = size(Videofield_rescaled);
+    x_barycenter = xy_barycenter(1);
+    y_barycenter = xy_barycenter(2);
 
-signal_plot = figure(530);
-signal_plot.Visible = NameValueArgs.Visible;
-signal_plot.Position = [200 200 600 300];
-graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm);
+    % Set y-axis limits for the signal plot
+    ylimm = [min(-1, min(signal)), max(signal) * 1.3];
 
-signal_plot_frame = getframe(signal_plot);
-sz_plot = [size(signal_plot_frame.cdata) numFrames];
-signal_plot_video = zeros(sz_plot,'single');
-fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
-parfor (frameIdx = startingvalue:numFrames ,parforArg)
-    graphSignalStd(signal_plot, signal, stdsignal, numFrames, ylabl, xlabl, sprintf('Average %s', titl), unit, ylimm = ylimm, cropIndx = frameIdx, fullTime = fullTime) ;
-    signal_plot_frame = getframe(signal_plot);
-    signal_plot_video(:, :, :, frameIdx) = signal_plot_frame.cdata;
-end
+    % Determine starting frame based on skip option
+    if opt.skip
+        startingFrame = numFrames;
+    else 
+        startingFrame = 1;
+    end
 
-% Interpolation for the combined gif
+    % Set parfor argument based on visibility
+    parforArg = Inf; % Default (no parallelization if visible)
+    if opt.Visible
+        parforArg = 0;
+    end
 
-video_interp = imresize(mat2gray(video_plot_video), [sz_plot(2), sz_plot(2)]);
-video_interp(video_interp < 0) = 0;
-video_interp(video_interp > 256) = 256;
+    % Precompute etiquettes frame values if provided
+    if ~isempty(opt.etiquettes_locs)
+        etiquettes_frame_values = round(opt.etiquettes_values(:, 1), 1);
+    else
+        etiquettes_frame_values = [];
+    end
 
-combined_plot_video = cat(1, video_interp, mat2gray(signal_plot_video));
+    % Initialize video plot
+    etiquette_locs = opt.etiquettes_locs;
+    color = opt.Color;
 
-imwrite(mat2gray(signal_plot_video(:, :, :, end)), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_plot.png", ToolBox.PW_folder_name, titl)));
-imwrite(combined_plot_video(:, :, :, end), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, titl)));
+    videoPlot = figure(410);
+    videoPlot.Visible = opt.Visible;
+    graphMaskTags(videoPlot, Videofield_rescaled(:, :, end), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color);
+        
+    videoPlot.Position = [200 200 600 600];
 
-if ~NameValueArgs.skip
-    writeGifOnDisc(mat2gray(signal_plot_video), sprintf("%s_plot", titl), 0.04);
-    writeGifOnDisc(combined_plot_video, sprintf("%s_combined", titl), 0.04);
-%     parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(combined_plot_video), fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, sprintf('%s_combined.avi', titl))));
-end
+    % Preallocate video data array
+    videoPlotFrames = zeros([size(getframe(gca).cdata), numFrames], 'single');
 
-close(410, 530)
+    % Generate video frames
+    parfor (frameIdx = startingFrame:numFrames, parforArg)
+        graphMaskTags(videoPlot, Videofield_rescaled(:, :, frameIdx), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color);
+        set(gca, 'FontSize', 14);
+        videoPlotFrames(:, :, :, frameIdx) = frame2im(getframe(gca));
+    end
 
+    % Initialize signal plot
+    signalPlot = figure(530);
+    signalPlot.Visible = opt.Visible;
+    signalPlot.Position = [200 200 600 300];
+
+    % Preallocate signal plot data array
+    signalPlotFrames = zeros([size(getframe(signalPlot).cdata), numFrames], 'single');
+
+    % Generate signal plot frames
+    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+    unit = opt.unit;
+    fig_title = opt.fig_title;
+    x_label = opt.xlabl;
+    y_label = opt.ylabl;
+    parfor (frameIdx = startingFrame:numFrames, parforArg)
+        graphSignalStd(signalPlot, signal, stdsignal, numFrames, y_label, x_label, sprintf('Average %s', fig_title), unit, ylimm = ylimm, cropIndx = frameIdx, fullTime = fullTime);
+        signalPlotFrames(:, :, :, frameIdx) = frame2im(getframe(signalPlot));
+    end
+
+    % Combine video and signal frames
+    videoInterp = imresize(mat2gray(videoPlotFrames), [size(signalPlotFrames, 2), size(signalPlotFrames, 2)]);
+    videoInterp = max(0, min(videoInterp, 1)); % Ensure values are within [0, 1]
+    combinedFrames = cat(1, videoInterp, mat2gray(signalPlotFrames));
+
+    % Save final frames as PNGs
+    imwrite(mat2gray(signalPlotFrames(:, :, :, end)), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_plot.png", ToolBox.PW_folder_name, dirname)));
+    imwrite(combinedFrames(:, :, :, end), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, dirname)));
+
+    % Save as GIF if not skipping frames
+    if ~opt.skip
+        writeGifOnDisc(mat2gray(signalPlotFrames), sprintf("%s_plot", dirname), 0.04);
+        writeGifOnDisc(combinedFrames, sprintf("%s_combined", dirname), 0.04);
+    end
+
+    % Close figures
+    close(videoPlot, signalPlot);
 end

@@ -1,4 +1,4 @@
-function graphSignalStd(figId, signal, stdsignal, numFrames, ylabl, xlabl, titl, unit, NameValueArgs)
+function graphSignalStd(figId, signal, stdsignal, numFrames, ylabl, xlabl, fig_title, unit, NameValueArgs)
 % Plots on an existing graph the signal and its std
 
 arguments
@@ -8,7 +8,7 @@ arguments
     numFrames
     ylabl
     xlabl
-    titl
+    fig_title
     unit
     NameValueArgs.ylimm double = [min(signal) max(signal)]
     NameValueArgs.cropIndx double = 0
@@ -51,7 +51,7 @@ hold off;
 
 ylabel(ylabl)
 xlabel(xlabl)
-title(sprintf("%s : %02.0f %s", titl, round(mean_signal)), unit)
+title(sprintf("%s : %02.0f %s", fig_title, round(mean_signal), unit))
 
 axis tight;
 

@@ -1,23 +1,23 @@
 function crossSectionImages(M0_ff_img, xy_barycenter, area, bvr, velocity, mask_r, locs, name)
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+PW_params = Parameters_json(TB.PW_path, TB.PW_param_name);
 numCircles = size(area, 1);
 numVesselMax = size(area, 2);
 exportVideos = PW_params.exportVideos;
 
 section_width_plot = figure("Visible","off");
 
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate'), 'sectionsImages')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate'), 'sectionsImages')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'),  'widths')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'widths')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'), 'num')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'num')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'), 'bvr')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'bvr')
-mkdir(fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages'), 'vel')
-mkdir(fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages'), 'vel')
+mkdir(fullfile(TB.PW_path_png, 'volumeRate'), 'sectionsImages')
+mkdir(fullfile(TB.PW_path_eps, 'volumeRate'), 'sectionsImages')
+mkdir(fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages'),  'widths')
+mkdir(fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages'), 'widths')
+mkdir(fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages'), 'num')
+mkdir(fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages'), 'num')
+mkdir(fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages'), 'bvr')
+mkdir(fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages'), 'bvr')
+mkdir(fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages'), 'vel')
+mkdir(fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages'), 'vel')
 
 x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
@@ -61,8 +61,8 @@ for circleIdx = 1:numCircles
     set(gca, 'FontSize', 14)
     vesselWidthsVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages', 'widths', sprintf("%s_circle_%d_crossSectionWidth%sImage.png", ToolBox.main_foldername, circleIdx, name)))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages', 'widths', sprintf("%s_circle_%d_crossSectionWidth%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages', 'widths', sprintf("%s_circle_%d_crossSectionWidth%sImage.png", TB.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages', 'widths', sprintf("%s_circle_%d_crossSectionWidth%sImage.eps", TB.main_foldername, circleIdx, name)))
 end
 NumVessel = (1:numVesselMax);
 figure(312)
@@ -72,8 +72,8 @@ parfor circleIdx = 1:numCircles
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name, Title = sprintf("Numerotation in %s", titleFig));
     vesselNumVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages', 'num', sprintf("%s_circle_%d_Numerotation%sImage.png", ToolBox.main_foldername, circleIdx, name)))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages', 'num', sprintf("%s_circle_%d_Numerotation%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages', 'num', sprintf("%s_circle_%d_Numerotation%sImage.png", TB.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages', 'num', sprintf("%s_circle_%d_Numerotation%sImage.eps", TB.main_foldername, circleIdx, name)))
 end
 figure(312)
 parfor circleIdx = 1:numCircles
@@ -81,8 +81,8 @@ parfor circleIdx = 1:numCircles
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name, Title = sprintf("Mean Blood Volume Rate in %s (µL/min)", titleFig));
     vesselBVRVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages', 'bvr', sprintf("%s_circle_%d_MeanBVR%sImage.png", ToolBox.main_foldername, circleIdx, name)))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages', 'bvr', sprintf("%s_circle_%d_MeanBVR%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages', 'bvr', sprintf("%s_circle_%d_MeanBVR%sImage.png", TB.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages', 'bvr', sprintf("%s_circle_%d_MeanBVR%sImage.eps", TB.main_foldername, circleIdx, name)))
 end
 figure(312)
 parfor circleIdx = 1:numCircles
@@ -99,8 +99,8 @@ parfor circleIdx = 1:numCircles
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name, Title = sprintf("Max Velocity in %s (mm/s)", titleFig));
     vesselMaxVelocityVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'sectionsImages', 'vel', sprintf("%s_circle_%d_MaxVelocity%sImage.png", ToolBox.main_foldername, circleIdx, name)))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'volumeRate', 'sectionsImages', 'vel', sprintf("%s_circle_%d_MaxVelocity%sImage.eps", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_png, 'volumeRate', 'sectionsImages', 'vel', sprintf("%s_circle_%d_MaxVelocity%sImage.png", TB.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.PW_path_eps, 'volumeRate', 'sectionsImages', 'vel', sprintf("%s_circle_%d_MaxVelocity%sImage.eps", TB.main_foldername, circleIdx, name)))
 end
 
 widthtable = table;
@@ -109,7 +109,7 @@ for circleIdx = 1:numCircles
     crossSectionWidthArtery = 2 * sqrt(squeeze(area(circleIdx, :)) / pi) * 1000;
     widthtable.(sprintf("circle %d",circleIdx)) = crossSectionWidthArtery;
 end
-tablefilename = fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'Vessels_Widths_Table', '.txt'));
+tablefilename = fullfile(TB.PW_path_txt, strcat(TB.main_foldername, '_', 'Vessels_Widths_Table', '.txt'));
 writetable(widthtable,tablefilename);
 if exportVideos
     writeGifOnDisc(vesselWidthsVideo, sprintf('sectionsWidth%s', name), 0.15, 10);

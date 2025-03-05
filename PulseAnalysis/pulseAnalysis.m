@@ -12,7 +12,6 @@ function [v_RMS_video] = pulseAnalysis(f_RMS_video, maskArtery, maskVein, maskSe
 %   maskVein        Size: numX x numY logical
 %       TRIVIA:
 %   sysIdxList:     Size: numSystoles
-%   flagExtended    Size: 1
 %
 % Output:
 %   v_RMS_video     Size: numX x numY x numFrames double

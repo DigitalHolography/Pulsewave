@@ -84,9 +84,9 @@ plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
 plot(fullTime, mean_BvrT, '-k', 'LineWidth', 2);
 yline(mean_BvrT_value, '--k', 'LineWidth', 2)
 
-plot(fullTime(index_start), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10);
-plot(fullTime(index_end), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10);
-plot(fullTime(index_start:index_end), repmat(1.07 * max_BvrT_value, index_end - index_start + 1), '-k');
+plot(fullTime(index_start), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10, 'LineWidth', 2);
+plot(fullTime(index_end), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10, 'LineWidth', 2);
+plot(fullTime(index_start:index_end), repmat(1.07 * max_BvrT_value, index_end - index_start + 1), '-k', 'LineWidth', 2);
 
 axis padded
 axP = axis;
@@ -99,7 +99,7 @@ hold off
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('time (s)')
-title(sprintf("Total blood volume rate (Avg. %d µL/min)", mean_BvrT_value))
+title(sprintf("Total blood volume rate (Avg. %0.2f µL/min)", mean_BvrT_value))
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 

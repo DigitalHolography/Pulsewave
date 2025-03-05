@@ -14,7 +14,7 @@ function [fitParams, fittedCurve] = fitGaussian(binCenters, radialAverage)
 
     % Initial guess for the Gaussian parameters [A, mu, sigma, C]
     [~, maxIdx] = max(radialAverage);
-    initialGuess = [max(radialAverage), binCenters(maxIdx), range(binCenters) * 0.1, min(radialAverage)];
+    initialGuess = [max(radialAverage), binCenters(maxIdx), (max(binCenters) - min(binCenters)) * 0.1, min(radialAverage)];
 
     % Define bounds for [A, mu, sigma, C]
     lb = [0, min(binCenters), 0, -Inf]; % Lower bounds

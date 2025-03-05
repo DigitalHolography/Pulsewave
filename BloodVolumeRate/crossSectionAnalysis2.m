@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, flagBloodVelocityProfile, circleIdx, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, circleIdx, force_width)
 % Perform cross-section analysis on blood vessels.
 %
 % Inputs:
@@ -9,7 +9,6 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVeloci
 %   v_RMS                   - 3D array, velocity data over time.
 %   slice_half_thickness    - Scalar, half-thickness of the slice.
 %   type_of_vessel          - String, type of vessel ('artery' or 'vein').
-%   flagBloodVelocityProfile- Logical, flag to compute velocity profiles.
 %   circleIdx               - Scalar, index of the circle (optional).
 %   force_width             - Scalar, force a specific width (optional).
 %
@@ -198,14 +197,6 @@ for sectionIdx = 1:numSections
     stdVolumeRate(sectionIdx, tt) = sqrt(stdVelocity(sectionIdx, tt) ^ 2 * stdCrossSectionArea(sectionIdx) ^ 2 + stdVelocity(sectionIdx, tt) ^ 2 * crossSectionArea(sectionIdx) ^ 2 + stdCrossSectionArea(sectionIdx) ^ 2 * avgVelocity(sectionIdx, tt) ^ 2) * 60; % microL/min
 
 end % sectionIdx
-
-% propagation des incertitudes -> devrait être la somme également
-
-if ~isempty(circleIdx) && flagBloodVelocityProfile % only for the main circle (not all circles)
-
-    %     bloodSectionProfile(subImg_cell, type_of_vessel, circle, ToolBox);
-
-end
 
 close all
 end
