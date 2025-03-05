@@ -34,22 +34,22 @@ for ind = 1:length(paths)
     if isfolder(path)
         path = strcat(path, '\');
     end
-    OcClass = OneCycleClass(path);
+    ExecClass = ExecutionClass(path);
     
-    OcClass = OcClass.registerVideo();
-    OcClass = OcClass.cropAllVideo();
-    OcClass = OcClass.MomentNormalize();
-    OcClass = OcClass.VideoResize();
-    OcClass = OcClass.Interpolate();
+    ExecClass = ExecClass.registerVideo();
+    ExecClass = ExecClass.cropAllVideo();
+    ExecClass = ExecClass.MomentNormalize();
+    ExecClass = ExecClass.VideoResize();
+    ExecClass = ExecClass.Interpolate();
 
-    OcClass.flag_SH_analysis = 0;
-    OcClass.flag_PulseWave_analysis = 1;
-    OcClass.flag_velocity_analysis = 1;
-    OcClass.flag_ExtendedPulseWave_analysis = 0;
-    OcClass.flag_bloodVolumeRate_analysis = 1;
-    OcClass.flag_bloodVelocityProfile_analysis = 0;
+    ExecClass.flag_SH_analysis = 0;
+    ExecClass.flag_PulseWave_analysis = 1;
+    ExecClass.flag_velocity_analysis = 1;
+    ExecClass.flag_ExtendedPulseWave_analysis = 0;
+    ExecClass.flag_bloodVolumeRate_analysis = 1;
+    ExecClass.flag_bloodVelocityProfile_analysis = 0;
 
-    OcClass.onePulse(255);
+    ExecClass.analyzeData(255);
 end
 
 %% Show

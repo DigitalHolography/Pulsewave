@@ -41,21 +41,21 @@ for ind = 1:length(paths)
     if isfolder(path)
         path = strcat(path, '\');
     end
-    OcClass = OneCycleClass(path);
+    ExecClass = ExecutionClass(path);
     
-    OcClass = OcClass.preprocessData();
+    ExecClass = ExecClass.preprocessData();
     
-    OcClass.flag_SH_analysis = 0;
-    OcClass.flag_Segmentation = 1;
-    OcClass.flag_PulseWave_analysis = 1;
-    OcClass.flag_velocity_analysis = 0;
-    OcClass.flag_ExtendedPulseWave_analysis = 0;
-    OcClass.flag_bloodVolumeRate_analysis = 0;
-    OcClass.flag_bloodVelocityProfile_analysis = 0;
+    ExecClass.flag_SH_analysis = 0;
+    ExecClass.flag_Segmentation = 1;
+    ExecClass.flag_PulseWave_analysis = 1;
+    ExecClass.flag_velocity_analysis = 0;
+    ExecClass.flag_ExtendedPulseWave_analysis = 0;
+    ExecClass.flag_bloodVolumeRate_analysis = 0;
+    ExecClass.flag_bloodVelocityProfile_analysis = 0;
 
-    for i = 1:length(OcClass.PW_params_names)
-        OcClass.PW_param_name = OcClass.PW_params_names{i};
-        OcClass.onePulse();
+    for i = 1:length(ExecClass.PW_params_names)
+        ExecClass.PW_param_name = ExecClass.PW_params_names{i};
+        ExecClass.analyzeData();
     end
 end
 

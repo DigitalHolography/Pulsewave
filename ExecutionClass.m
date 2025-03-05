@@ -1,4 +1,4 @@
-classdef OneCycleClass < handle
+classdef ExecutionClass < handle
     properties
         M0_data_video % M0 raw
         M1_data_video % M1 raw
@@ -36,8 +36,8 @@ classdef OneCycleClass < handle
     end
 
      methods
-        function obj = OneCycleClass(path)
-            % Constructor for OneCycleClass.
+        function obj = ExecutionClass(path)
+            % Constructor for ExecutionClass.
             % Input: path - directory or .holo file path.
 
             if ~isfolder(path) % If the input path is a .holo file
@@ -121,7 +121,7 @@ classdef OneCycleClass < handle
         end
 
 
-        function obj = onePulse(obj)
+        function obj = analyzeData(obj)
             % Main routine for PulseWave analysis.
 
             % Initialize ToolBox and parameters
@@ -223,21 +223,21 @@ classdef OneCycleClass < handle
                 bin_x = 4; bin_y = 4; bin_t = 1;
                 SH_cube = reshape(videoSH, ceil(numX / (bin_x)), ceil(numY / (bin_y)), [], ceil(numFrames / bin_t));
 
-                % Spectrum Analysis
+                %% Spectrum Analysis
                 fprintf("\n----------------------------------\nSpectrum Analysis\n----------------------------------\n");
                 spectrumAnalysisTimer = tic;
                 
-                fprintf("\n----------------------------------\nSpectrum analysis\n----------------------------------\n")
                 spectrum_analysis(SH_cube, obj.M0_data_video);
                 
                 time_spectrumAnalysis = toc(spectrumAnalysisTimer);
                 fprintf("- Spectrum Analysis took : %ds\n", round(time_spectrumAnalysis))
                 
-                
-                % Spectrogram
+                %% Spectrogram
                 fprintf("\n----------------------------------\nSpectrogram\n----------------------------------\n");
                 spectrogramTimer = tic;
+                
                 spectrum_video(SH_cube, obj.maskArtery, obj.maskNeighbors);
+
                 fprintf("- Spectrogram took: %ds\n", round(toc(spectrogramTimer)));
 
                 fprintf("\n----------------------------------\nSpectral Analysis timing: %ds\n", round(toc(timeSpectralAnalysis)));
