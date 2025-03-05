@@ -40,13 +40,28 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     end
 
     % Get global toolbox settings
-    ToolBox = getGlobalToolBox;
+    TB = getGlobalToolBox;
+    PW_params = TB.getParams;
+    
 
     % Rescale video and get dimensions
     Videofield_rescaled = rescale(Videofield);
-    [~, ~, numFrames] = size(Videofield_rescaled);
+
+    % Precompute constants
+    [numX, numY, numFrames] = size(Videofield_rescaled);
     x_barycenter = xy_barycenter(1);
     y_barycenter = xy_barycenter(2);
+    L = (numY + numX) / 2;
+    r1 = PW_params.velocityBigRadiusRatio * L;
+    r2 = PW_params.velocitySmallRadiusRatio * L;
+
+    % Precompute R and circles
+    [X, Y] = meshgrid(1:numX, 1:numY);
+    R = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2);
+    width = ceil(L / 500);
+    circle1 = (R > round(r1) - width) & (R < round(r1) + width);
+    circle2 = (R > round(r2) - width) & (R < round(r2) + width);
+    maskCircles = circle1 | circle2;
 
     % Set y-axis limits for the signal plot
     ylimm = [min(-1, min(signal)), max(signal) * 1.3];
@@ -77,7 +92,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
 
     videoPlot = figure(410);
     videoPlot.Visible = opt.Visible;
-    graphMaskTags(videoPlot, Videofield_rescaled(:, :, end), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color);
+    graphMaskTags(videoPlot, Videofield_rescaled(:, :, end), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color, circles = maskCircles);
         
     videoPlot.Position = [200 200 600 600];
 
@@ -86,7 +101,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
 
     % Generate video frames
     parfor (frameIdx = startingFrame:numFrames, parforArg)
-        graphMaskTags(videoPlot, Videofield_rescaled(:, :, frameIdx), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color);
+        graphMaskTags(videoPlot, Videofield_rescaled(:, :, frameIdx), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color, circles = maskCircles);
         set(gca, 'FontSize', 14);
         videoPlotFrames(:, :, :, frameIdx) = frame2im(getframe(gca));
     end
@@ -100,7 +115,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     signalPlotFrames = zeros([size(getframe(signalPlot).cdata), numFrames], 'single');
 
     % Generate signal plot frames
-    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+    fullTime = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
     unit = opt.unit;
     fig_title = opt.fig_title;
     x_label = opt.xlabl;
@@ -116,8 +131,8 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     combinedFrames = cat(1, videoInterp, mat2gray(signalPlotFrames));
 
     % Save final frames as PNGs
-    imwrite(mat2gray(signalPlotFrames(:, :, :, end)), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_plot.png", ToolBox.PW_folder_name, dirname)));
-    imwrite(combinedFrames(:, :, :, end), fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s_combined.png", ToolBox.PW_folder_name, dirname)));
+    imwrite(mat2gray(signalPlotFrames(:, :, :, end)), fullfile(TB.PW_path_png, 'volumeRate', sprintf("%s_%s_plot.png", TB.PW_folder_name, dirname)));
+    imwrite(combinedFrames(:, :, :, end), fullfile(TB.PW_path_png, 'volumeRate', sprintf("%s_%s_combined.png", TB.PW_folder_name, dirname)));
 
     % Save as GIF if not skipping frames
     if ~opt.skip

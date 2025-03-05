@@ -69,7 +69,15 @@
       "ScaleFactorSize": 0.004,
       "MaskSliceThreshold": 0.01,
       "PixelSize": 0.0191,
-      "SliceHalfThickness": 10
+      "SliceHalfThickness": 10,
+      "sectionImage" : false,
+      "widthImage" : false,
+      "crossSectionImages" : true,
+      "widthHistogram" : false,
+      "plotRadius" : true,
+      "BloodFlowProfiles" : false,
+      "ARIBVR" : false,
+      "strokeAndTotalVolume" : true
     },
     "PulseAnalysis": {
       "RadiusPupil": 2,
