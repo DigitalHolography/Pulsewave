@@ -131,10 +131,6 @@ classdef pulse < matlab.apps.AppBase
             % Set the UI title
             app.PulsewaveUIFigure.Name = ['Pulsewave ', char(v(1))];
 
-            % Auto-detect the maximum available workers and update the spinner
-            maxWorkers = parcluster('local').NumWorkers;
-            app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
-            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
 
             % Initialize checkboxes and flags
             app.flag_is_load = false;
@@ -681,7 +677,7 @@ classdef pulse < matlab.apps.AppBase
 
             % Create a grid layout to manage resizing
             grid = uigridlayout(app.PulsewaveUIFigure);
-            grid.RowHeight = {'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
+            grid.RowHeight = {'fit', '1x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
             grid.ColumnWidth = {'1x', '1x', '1x', '1x'};
             grid.BackgroundColor = [0.149, 0.149, 0.149];
 
@@ -728,7 +724,7 @@ classdef pulse < matlab.apps.AppBase
             dirgrid = uigridlayout(grid);
             dirgrid.Layout.Row = 2;
             dirgrid.Layout.Column = [1, 4];
-            dirgrid.RowHeight = {'fit'};
+            dirgrid.RowHeight = {'1x'};
             dirgrid.ColumnWidth = {'1x', 20};
             dirgrid.BackgroundColor = [0.149, 0.149, 0.149];
 
@@ -845,11 +841,12 @@ classdef pulse < matlab.apps.AppBase
             app.NumberofWorkersSpinnerLabel.Text = 'Number of Workers';
 
             app.NumberofWorkersSpinner = uispinner(grid);
-            app.NumberofWorkersSpinner.Limits = [-1 32];
             app.NumberofWorkersSpinner.FontSize = 16;
             app.NumberofWorkersSpinner.Layout.Row = 9;
             app.NumberofWorkersSpinner.Layout.Column = 4;
-            app.NumberofWorkersSpinner.Value = 8;
+            maxWorkers = parcluster('local').NumWorkers;
+            app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
+            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
 
             % Bottom Right: Overwrite Checkbox
             app.OverWriteCheckBox = uicheckbox(grid);
