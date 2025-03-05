@@ -219,21 +219,25 @@ classdef OneCycleClass < handle
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
 
-                [numX, numY, numFrames] = size(obj.f_RMS_video);
-                k = PW_params.k;
+                [numX, numY, numFrames] = size(obj.M0_data_video);
                 bin_x = 4; bin_y = 4; bin_t = 1;
-                SH_cube = reshape(videoSH, ceil(numX / (2 ^ k * bin_x)), ceil(numY / (2 ^ k * bin_y)), [], ceil(numFrames / bin_t));
+                SH_cube = reshape(videoSH, ceil(numX / (bin_x)), ceil(numY / (bin_y)), [], ceil(numFrames / bin_t));
 
                 % Spectrum Analysis
                 fprintf("\n----------------------------------\nSpectrum Analysis\n----------------------------------\n");
                 spectrumAnalysisTimer = tic;
-                % spectrum_analysis(SH_cube, obj.M0_data_video); % Uncomment if needed
-                fprintf("- Spectrum Analysis took: %ds\n", round(toc(spectrumAnalysisTimer)));
-
+                
+                fprintf("\n----------------------------------\nSpectrum analysis\n----------------------------------\n")
+                spectrum_analysis(SH_cube, obj.M0_data_video);
+                
+                time_spectrumAnalysis = toc(spectrumAnalysisTimer);
+                fprintf("- Spectrum Analysis took : %ds\n", round(time_spectrumAnalysis))
+                
+                
                 % Spectrogram
                 fprintf("\n----------------------------------\nSpectrogram\n----------------------------------\n");
                 spectrogramTimer = tic;
-                spectrogram(obj.maskArtery, obj.maskSection, SH_cube);
+                spectrum_video(SH_cube, obj.maskArtery, obj.maskNeighbors);
                 fprintf("- Spectrogram took: %ds\n", round(toc(spectrogramTimer)));
 
                 fprintf("\n----------------------------------\nSpectral Analysis timing: %ds\n", round(toc(timeSpectralAnalysis)));
