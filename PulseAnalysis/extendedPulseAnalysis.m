@@ -1,18 +1,18 @@
 function extendedPulseAnalysis(M0_ff_video, f_RMS_video, f_AVG_mean, v_RMS, maskArtery, maskVein, maskSection, sysIdxList)
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
-numFramesInterp = PW_params.oneCycleNinterp;
+TB = getGlobalToolBox;
+params = TB.getParams;
+numFramesInterp = params.oneCycleNinterp;
 
 tic
 
 [~, ~, numFrames] = size(f_RMS_video);
 strXlabel = 'Time(s)'; %createXlabelTime(1);
 strYlabel = 'frequency (kHz)';
-t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+t = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
 
-veinsAnalysis = PW_params.veins_analysis;
-exportVideos = PW_params.exportVideos;
+veinsAnalysis = params.veins_analysis;
+exportVideos = params.exportVideos;
 folder = 'pulseAnalysis';
 
 maskArtery = maskArtery & maskSection;
@@ -42,7 +42,7 @@ c.Label.FontSize = 12;
 axis off
 axis image
 range(1:2) = clim;
-imwrite(rescale(f_AVG_mean), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG.png')), 'png');
+imwrite(rescale(f_AVG_mean), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_frequency_AVG.png')), 'png');
 
 clear f_AVG_mean
 
@@ -62,8 +62,8 @@ colorTitleHandle = get(f_AVG_colorbar, 'Title');
 titleString = 'AVG Doppler frequency (kHz)';
 set(colorTitleHandle, 'String', titleString);
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG_colorbar.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '3_frequency_AVG_colorbar.eps')))
+exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_frequency_AVG_colorbar.png')))
+exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_frequency_AVG_colorbar.eps')))
 
 
 fprintf("    3. Raw heatmaps generation took %ds\n", round(toc(t3)))
@@ -131,14 +131,14 @@ if veinsAnalysis
 end
 
 noise = sqrt(abs(delta_f_arterial_signal .^ 2 - delta_f_arterial_smooth .^ 2));
-idxOutNoise = find(noise > PW_params.pulseAnal_outNoiseThreshold * std(noise));
+idxOutNoise = find(noise > params.pulseAnal_outNoiseThreshold * std(noise));
 
 dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(delta_f_arterial_smooth))));
 disp(['        data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
 
 if veinsAnalysis
     noise = sqrt(abs(delta_f_venous_signal .^ 2 - delta_f_venous_smooth .^ 2));
-    idxOutNoise = find(noise > PW_params.pulseAnal_outNoiseThreshold * std(noise));
+    idxOutNoise = find(noise > params.pulseAnal_outNoiseThreshold * std(noise));
 
     dataReliabilityIndex2 = ceil(100 * (1 - (length(idxOutNoise) / length(delta_f_arterial_smooth))));
     disp(['        data reliability index 2 : ' num2str(dataReliabilityIndex2) ' %']);
@@ -223,14 +223,14 @@ fprintf("    Average Pulse\n")
 clear f_RMS_video f_RMS_video
 
 fprintf("    Average Pulse minus Background\n")
-delta_f_RMS = v_RMS / ToolBox.ScalingFactorVelocityInPlane;
+delta_f_RMS = v_RMS / TB.ScalingFactorVelocityInPlane;
 
 [onePulseVideominusBKG, selectedPulseIdx, cycles_signal, ~] = createOneCycle(delta_f_RMS, M0_ff_video, maskArtery, sysIdxList, numFramesInterp);
 
 clear delta_f_RMS
 
 avgArterialPulseHz = squeeze(sum(onePulseVideominusBKG .* maskArtery, [1 2])) / nnz(maskArtery);
-avgArterialPulseVelocityInPlane = avgArterialPulseHz * ToolBox.ScalingFactorVelocityInPlane;
+avgArterialPulseVelocityInPlane = avgArterialPulseHz * TB.ScalingFactorVelocityInPlane;
 
 if exportVideos
     writeGifOnDisc(mat2gray(onePulseVideo), "one_cycle");
@@ -239,8 +239,8 @@ end
 
 %FIXME: M1/M0 and M2/M0 are subject to aliases at 67 kHz
 
-blur_time_sys = ceil(numFramesInterp / PW_params.pulseAnal_blurScaleFactor);
-blur_time_dia = ceil(numFramesInterp / PW_params.pulseAnal_blurScaleFactor);
+blur_time_sys = ceil(numFramesInterp / params.pulseAnal_blurScaleFactor);
+blur_time_dia = ceil(numFramesInterp / params.pulseAnal_blurScaleFactor);
 
 average_cycle_length = 0;
 nb_of_averaged_cycles = 0;
@@ -259,7 +259,7 @@ end
 % save average arterial pulse wave velocity to txt file
 tmp = [interp_t(1:length(avgArterialPulseHz))', avgArterialPulseVelocityInPlane];
 %size(tmp)
-fileID = fopen(fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, 'avgPulse.txt')), 'w');
+fileID = fopen(fullfile(TB.path_txt, sprintf("%s_%s", TB.main_foldername, 'avgPulse.txt')), 'w');
 fprintf(fileID, '%f %f \r\n', tmp');
 fclose(fileID);
 
@@ -286,8 +286,8 @@ pbaspect([1.618 1 1]);
 set(gca, 'LineWidth', 2);
 axis tight;
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
+exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.png')))
+exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '7_RMS_Doppler_frequency_for_different_cycles.eps')))
 
 
 
@@ -300,16 +300,16 @@ exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%
 % sys_index_list_one_cycle = find_systole_index(onePulseVideo2)
 
 [~, idx_sys] = max(avgArterialPulseHz);
-
+return
 if ~isnan(onePulseVideoM0)
     %% diastolic Doppler frequency heatmap : 10% of frames before minimum of diastole
 
     heatmap_dia_raw = squeeze(mean(onePulseVideominusBKG(:, :, floor(0.9 * numFramesInterp):numFramesInterp), 3));
     % onePulseVideo2 : no background correction
     % heatmap_dia = squeeze(mean(onePulseVideo2(:,:,floor(0.9*Ninterp):Ninterp),3));
-    % heatmap_dia = flat_field_correction(heatmap_dia, ceil(PW_params.flatField_gwRatio*size(heatmap_dia,1)), PW_params.flatField_borderDMap);
-    heatmap_dia = flat_field_correction(heatmap_dia_raw, ceil(PW_params.flatField_gwRatio * size(heatmap_dia_raw, 1)), PW_params.flatField_border);
-    % heatmap_dia = imflatfield(heatmap_dia,PW_params.flatField_gwRatio*size(heatmap_dia,1)/2);
+    % heatmap_dia = flat_field_correction(heatmap_dia, ceil(params.flatField_gwRatio*size(heatmap_dia,1)), params.flatField_borderDMap);
+    heatmap_dia = flat_field_correction(heatmap_dia_raw, ceil(params.flatField_gwRatio * size(heatmap_dia_raw, 1)), params.flatField_border);
+    % heatmap_dia = imflatfield(heatmap_dia,params.flatField_gwRatio*size(heatmap_dia,1)/2);
 
     clear heatmap_sys_raw
 
@@ -320,9 +320,9 @@ if ~isnan(onePulseVideoM0)
     heatmap_sys_raw = squeeze(mean(onePulseVideominusBKG(:, :, a:b), 3));
     % onePulseVideo2 : no background correction
     % heatmap_sys = squeeze(mean(onePulseVideo2(:,:,a:b),3));
-    % heatmap_sys = flat_field_correction(heatmap_sys, ceil(PW_params.flatField_gwRatio*size(heatmap_sys,1)), PW_params.flatField_borderDMap);
-    heatmap_sys = flat_field_correction(heatmap_sys_raw, ceil(PW_params.flatField_gwRatio * size(heatmap_sys_raw, 1)), PW_params.flatField_border);
-    % heatmap_sys = imflatfield(heatmap_sys,PW_params.flatField_gwRatio*size(heatmap_sys,1)/2);
+    % heatmap_sys = flat_field_correction(heatmap_sys, ceil(params.flatField_gwRatio*size(heatmap_sys,1)), params.flatField_borderDMap);
+    heatmap_sys = flat_field_correction(heatmap_sys_raw, ceil(params.flatField_gwRatio * size(heatmap_sys_raw, 1)), params.flatField_border);
+    % heatmap_sys = imflatfield(heatmap_sys,params.flatField_gwRatio*size(heatmap_sys,1)/2);
 
     clear onePulseVideo
     clear onePulseVideominusBKG
@@ -343,8 +343,8 @@ if ~isnan(onePulseVideoM0)
     axis image
     range(1:2) = clim;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFig.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFig.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'diastoleHeatMapFig.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'diastoleHeatMapFig.eps')))
 
     clear heatmap_dia_raw
 
@@ -363,8 +363,8 @@ if ~isnan(onePulseVideoM0)
     f80.Position = [1100 500 380 420];
     range(1:2) = clim;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFlatfieldFig.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMapFlatfieldFig.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'diastoleHeatMapFlatfieldFig.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'diastoleHeatMapFlatfieldFig.eps')))
 
     % systolic Doppler frequency heatmap
     f89 = figure("Visible", "off");
@@ -383,8 +383,8 @@ if ~isnan(onePulseVideoM0)
     % same color axis for systolic and diastolic Doppler heatmaps
     clim([min(range), max(range)]);
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFig.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFig.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'systoleHeatMapFig.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'systoleHeatMapFig.eps')))
 
     % figure("Visible", "off")
     % clim([min(range),max(range)]);
@@ -406,13 +406,13 @@ if ~isnan(onePulseVideoM0)
     % same color axis for systolic and diastolic Doppler heatmaps
     clim([min(range), max(range)]);
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFlatfieldFig.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMapFlatfieldFig.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'systoleHeatMapFlatfieldFig.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'systoleHeatMapFlatfieldFig.eps')))
 
     %% SAVING IMAGES
 
-    imwrite(rescale(heatmap_sys), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'systoleHeatMap.png')), 'png');
-    imwrite(rescale(heatmap_dia), fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'diastoleHeatMap.png')), 'png');
+    imwrite(rescale(heatmap_sys), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'systoleHeatMap.png')), 'png');
+    imwrite(rescale(heatmap_dia), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'diastoleHeatMap.png')), 'png');
 
     %%
     % FIXME : replace sys + dia blur by homogenous blur ?
@@ -420,7 +420,7 @@ if ~isnan(onePulseVideoM0)
     diff_pulse_sys = diff(pulse_arteries_blurred_sys);
     pulse_arteries_blurred_dia = movavgvar(avgArterialPulseHz(idx_sys:end), blur_time_dia);
     % diff_pulse_dia = diff(pulse_arteries_blurred_dia);
-    diff_avgPulse = diff(movavgvar(avgArterialPulseHz, blur_time_sys)) * ToolBox.ScalingFactorVelocityInPlane * numFramesInterp / interp_t(end);
+    diff_avgPulse = diff(movavgvar(avgArterialPulseHz, blur_time_sys)) * TB.ScalingFactorVelocityInPlane * numFramesInterp / interp_t(end);
     delta = max(pulse_arteries_blurred_dia(:)) - min(pulse_arteries_blurred_dia(:));
     thr = max(pulse_arteries_blurred_dia(:)) - delta ./ exp(1);
     idx_list_threshold_dia = find(pulse_arteries_blurred_dia(:) < thr);
@@ -444,7 +444,7 @@ if ~isnan(onePulseVideoM0)
     %[min_diff_pulse, idx_T_diff_min] = min(diff_pulse_dia);%faire ca mieux
 
     % txt file output with measured pulse wave parameters
-    fileID = fopen(fullfile(ToolBox.PW_path_txt, sprintf("%s_%s", ToolBox.main_foldername, '_pulseWaveParameters.txt')), 'w');
+    fileID = fopen(fullfile(TB.path_txt, sprintf("%s_%s", TB.main_foldername, '_EyeFlowParameters.txt')), 'w');
     fprintf(fileID, [ ...
         'Value of pulse derivative at the maximum systolic increase :\n%d\n' ...
         'Maximal acceleration (m/s^(-2)) :\n%d\n' ...
@@ -481,8 +481,8 @@ if ~isnan(onePulseVideoM0)
     set(gca, 'LineWidth', 2);
     axis tight;
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWave.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'avgPulse.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'avgPulse.eps')))
 
     plot2txt(interp_t(1:length(avgArterialPulseHz)), avgArterialPulseVelocityInPlane, 'AvgArterialPulseVelocityInPlane')
 
@@ -515,8 +515,8 @@ if ~isnan(onePulseVideoM0)
     m = h.YData;
     plot2txt(l, m, 'ArterialDopplerSignal')
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'all_cycles.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'all_cycles.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'all_cycles.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'all_cycles.eps')))
 
     clear cycles_signal
 
@@ -541,8 +541,8 @@ if ~isnan(onePulseVideoM0)
     set(gca, 'LineWidth', 2);
     title('average background-corrected RMS frequency in retinal arteries');
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveLabeled.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'avgPulseLabeled.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'avgPulseLabeled.eps')))
 
     plot2txt(interp_t, avgArterialPulseHz, 'AvgArterialPulseHz')
 
@@ -565,10 +565,10 @@ if ~isnan(onePulseVideoM0)
     title('Derivative of average arterial pulse wave');
     axis tight
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.png')))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'pulseAnalysis', sprintf("%s_%s", ToolBox.main_foldername, 'avgPulseWaveDerivative.eps')))
+    exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'avgPulseDerivative.png')))
+    exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, 'avgPulseDerivative.eps')))
 
-    plot2txt(interp_t(1:end - 1), diff_avgPulse, 'AverageArterialPulseWaveDerivative')
+    plot2txt(interp_t(1:end - 1), diff_avgPulse, 'AverageArterialPulseDerivative')
 end
 
 clear idx_sys

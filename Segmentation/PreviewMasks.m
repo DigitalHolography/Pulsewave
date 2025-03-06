@@ -7,7 +7,7 @@ if ~app.flag_is_load
     end
 end
 
-PW_params = Parameters_json(app.file.directory, app.file.PW_param_name);
+params = Parameters_json(app.file.directory, app.file.param_name);
 
 % Create a uifigure for mask preview with dark gray background
 d = uifigure('Position', [300, 300, 1000, 750],...
@@ -81,48 +81,48 @@ openFolderButton.Layout.Column = 3;
 
 % Mask Thresholds
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Vascular Threshold:', 'Position', [10, 520, 120, 20]);
-vascularThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.VascularThreshold, 'Position', [140, 520, 30, 22]);
+vascularThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.VascularThreshold, 'Position', [140, 520, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Arterial Threshold:', 'Position', [10, 400, 120, 20]);
-arterialThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.ArterialThreshold, 'Position', [140, 400, 30, 22]);
+arterialThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.ArterialThreshold, 'Position', [140, 400, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Venous Threshold:', 'Position', [10, 320, 120, 20]);
-venousThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.VenousThreshold, 'Position', [140, 320, 30, 22]);
+venousThresholdEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.VenousThreshold, 'Position', [140, 320, 30, 22]);
 
 diasysCheckbox = uicheckbox(paramPanel, 'Text', 'Diastole-Systole Analysis', 'Position', [10, 440, 170, 20], ...
-    'FontColor', [0.9 0.9 0.9], 'Value', PW_params.params.Mask.DiaSysAnalysis);
+    'FontColor', [0.9 0.9 0.9], 'Value', params.json.Mask.DiaSysAnalysis);
 
 % Geometric Parameters
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Diaphragm Radius:', 'Position', [10, 600, 120, 20]);
-diaphragmRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.DiaphragmRadius, 'Position', [140, 600, 30, 22]);
+diaphragmRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.DiaphragmRadius, 'Position', [140, 600, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Coroid Radius:', 'Position', [10, 560, 120, 20]);
-cropCoroidEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.CropChoroidRadius, 'Position', [140, 560, 30, 22]);
+cropCoroidEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.CropChoroidRadius, 'Position', [140, 560, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Min Area Size:', 'Position', [10, 200, 120, 20]);
-minSizeEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.MinPixelSize, 'Position', [140, 200, 30, 22]);
+minSizeEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.MinPixelSize, 'Position', [140, 200, 30, 22]);
 
 % Image Processing Parameters
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Gaussian Filter Size:', 'Position', [10, 240, 120, 20]);
-gaussianFilterEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.Blur, 'Position', [140, 240, 30, 22]);
+gaussianFilterEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.Blur, 'Position', [140, 240, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Imclose Radius:', 'Position', [10, 160, 120, 20]);
-imcloseRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.ImcloseRadius, 'Position', [140, 160, 30, 22]);
+imcloseRadiusEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.ImcloseRadius, 'Position', [140, 160, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Min Width:', 'Position', [10, 120, 120, 20]);
-minWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.MinimumVesselWidth, 'Position', [140, 120, 30, 22]);
+minWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.MinimumVesselWidth, 'Position', [140, 120, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Imdilate Final:', 'Position', [10, 80, 120, 20]);
-imdilateFinalEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.FinalDilation, 'Position', [140, 80, 30, 22]);
+imdilateFinalEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.FinalDilation, 'Position', [140, 80, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Force Width:', 'Position', [10, 40, 120, 20]);
-forceWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', PW_params.params.Mask.ForceVesselWidth, 'Position', [140, 40, 30, 22]);
+forceWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.ForceVesselWidth, 'Position', [140, 40, 30, 22]);
 
 % Create a table for the VascularClasses, ArterialClasses, VenousClasses
 
-vascularClasses = sprintf('%g,', PW_params.params.Mask.VascularClasses);
-arterialClasses = sprintf('%g,', PW_params.params.Mask.ArterialClasses);
-venousClasses = sprintf('%g,', PW_params.params.Mask.VenousClasses);
+vascularClasses = sprintf('%g,', params.json.Mask.VascularClasses);
+arterialClasses = sprintf('%g,', params.json.Mask.ArterialClasses);
+venousClasses = sprintf('%g,', params.json.Mask.VenousClasses);
 
 % Create table for VascularClasses
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Vascular Classes:', 'Position', [10, 480, 120, 20]);
@@ -170,12 +170,12 @@ uiwait(d);
 % Nested function for mask creation
     function createMask(~, ~)
 
+        TB = ToolBoxClass(app.file.directory, app.file.param_name, true);
+
         % Ensure necessary steps are done before proceeding
         if ~app.file.is_preprocessed
-            app.PreProcessButtonPushed();
+            app.file.preprocessData();
         end
-
-        ToolBox = ToolBoxClass(app.file.directory, app.file.PW_param_name, true);
 
         % Update parameters and get the image and masks
         M0_ff_img = squeeze(mean(app.file.M0_ff_video, 3)); % Mean of the M0_ff_video
@@ -197,12 +197,12 @@ uiwait(d);
 
         % Display the image with the masks on the axes in the dialog
         imshow(M0_RGB, 'Parent', ax);
-        imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_all_16_Histo.png", ToolBox.main_foldername))), 'Parent', ax0);
-        if isfile(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_artery_23_Histo.png", ToolBox.main_foldername)))
-            imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_artery_23_Histo.png", ToolBox.main_foldername))), 'Parent', ax1);
+        imshow(imread(fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_all_16_Histo.png", TB.main_foldername))), 'Parent', ax0);
+        if isfile(fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_artery_23_Histo.png", TB.main_foldername)))
+            imshow(imread(fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_artery_23_Histo.png", TB.main_foldername))), 'Parent', ax1);
         end
-        if isfile(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_vein_23_Histo.png", ToolBox.main_foldername)))
-            imshow(imread(fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_vein_23_Histo.png", ToolBox.main_foldername))), 'Parent', ax2);
+        if isfile(fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_vein_23_Histo.png", TB.main_foldername)))
+            imshow(imread(fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_vein_23_Histo.png", TB.main_foldername))), 'Parent', ax2);
         end
 
     end
@@ -210,38 +210,38 @@ uiwait(d);
     function UpdateParameters(~, ~)
 
         % Extract parameter values from the UI components
-        PW_params.params.Mask.DiaphragmRadius = diaphragmRadiusEdit.Value;
-        PW_params.params.Mask.Blur = gaussianFilterEdit.Value;
-        PW_params.params.Mask.CropCoroidRadius = cropCoroidEdit.Value;
-        PW_params.params.Mask.VascularCorrelationMapThreshold = vascularThresholdEdit.Value;
-        PW_params.params.Mask.ArterialCorrelationMapThreshold = arterialThresholdEdit.Value;
-        PW_params.params.Mask.VenousCorrelationMapThreshold = venousThresholdEdit.Value;
-        PW_params.params.Mask.MinimumSeedAreaSize = minSizeEdit.Value;
-        PW_params.params.Mask.ImcloseRadius = imcloseRadiusEdit.Value;
-        PW_params.params.Mask.MinimumVesselWidth = minWidthEdit.Value;
-        PW_params.params.Mask.FinalDilation = imdilateFinalEdit.Value;
-        PW_params.params.Mask.DiaSysAnalysis = diasysCheckbox.Value;
-        PW_params.params.Mask.ForceVesselWidth = forceWidthEdit.Value;
+        params.json.Mask.DiaphragmRadius = diaphragmRadiusEdit.Value;
+        params.json.Mask.Blur = gaussianFilterEdit.Value;
+        params.json.Mask.CropCoroidRadius = cropCoroidEdit.Value;
+        params.json.Mask.VascularCorrelationMapThreshold = vascularThresholdEdit.Value;
+        params.json.Mask.ArterialCorrelationMapThreshold = arterialThresholdEdit.Value;
+        params.json.Mask.VenousCorrelationMapThreshold = venousThresholdEdit.Value;
+        params.json.Mask.MinimumSeedAreaSize = minSizeEdit.Value;
+        params.json.Mask.ImcloseRadius = imcloseRadiusEdit.Value;
+        params.json.Mask.MinimumVesselWidth = minWidthEdit.Value;
+        params.json.Mask.FinalDilation = imdilateFinalEdit.Value;
+        params.json.Mask.DiaSysAnalysis = diasysCheckbox.Value;
+        params.json.Mask.ForceVesselWidth = forceWidthEdit.Value;
 
         % Get the data from tables
-        PW_params.params.Mask.VascularClasses = str2double(split(vascularClassesTable.Value, ','));
-        PW_params.params.Mask.ArterialClasses = str2double(split(arterialClassesTable.Value, ','));
-        PW_params.params.Mask.VenousClasses = str2double(split(venousClassesTable.Value, ','));
+        params.json.Mask.VascularClasses = str2double(split(vascularClassesTable.Value, ','));
+        params.json.Mask.ArterialClasses = str2double(split(arterialClassesTable.Value, ','));
+        params.json.Mask.VenousClasses = str2double(split(venousClassesTable.Value, ','));
 
-        PW_params.WriteParametersToJson(fullfile(app.file.directory, 'pulsewave', 'json', app.file.PW_param_name));
+        params.WriteParametersToJson(fullfile(app.file.directory, 'eyeflow', 'json', app.file.param_name));
     end
 
 
     function openFolder(~, ~)
 
-        ToolBox = getGlobalToolBox;
-        if isempty(ToolBox)
+        TB = getGlobalToolBox;
+        if isempty(TB)
             fprintf(2, "You must create the masks first\n")
             return
         end
 
         % Specify the folder to open
-        folderPath = fullfile(ToolBox.PW_path_png, 'mask', 'steps');
+        folderPath = fullfile(TB.path_png, 'mask', 'steps');
 
         % Check if the folder exists
         if isfolder(folderPath)

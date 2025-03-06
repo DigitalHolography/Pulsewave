@@ -14,30 +14,34 @@
       "VideoLength": -1
     },
     "ValueOfTheInterpolationParameter": 1,
-    "RemoveOutliersOption": 0,
-    "VeinsAnalysis": 0,
+    "Preprocess": {
+      "RemoveOutliersOption": 1,
+      "Window Size": 5 
+    },
+    "VeinsAnalysis": 1,
     "ExportVideos": 1,
     "FlatFieldCorrection": {
       "GWRatio": 0.07,
       "Border": 0.15,
       "BorderDMAP": 0.33,
-      "BorderPulseAnalysis": 0
+      "BorderPulseAnalysis": 0,
+      "FittedParameters": false
     },
     "Mask": {
       "Vesselness Sigma Range": [1, 10],
       "Vesselness Sigma Step": 1,
-      "Diaphragm Radius": 0.9,
+      "Diaphragm Radius": 0.8,
       "Force Barycenter": [],
       "Blur": 1.5,
-      "Crop Choroid Radius": 0.1,
+      "Crop Choroid Radius": 0.2,
       "Vascular Threshold": -2,
       "Vascular Classes": [-1, 0, 1],
       "Improve Mask": 1,
       "DiaSys Analysis": 1,
       "Arterial Threshold": -2,
-      "Arterial Classes": [0, 1],
+      "Arterial Classes": [-1, 0, 1],
       "Venous Threshold": -2,
-      "Venous Classes": [0, -1],
+      "Venous Classes": [1, 0, -1],
       "Min Pixel Size": 150,
       "CRA CRV Threshold": 3,
       "Imclose Radius": 1,
@@ -69,7 +73,15 @@
       "ScaleFactorSize": 0.004,
       "MaskSliceThreshold": 0.01,
       "PixelSize": 0.0191,
-      "SliceHalfThickness": 10
+      "SliceHalfThickness": 10,
+      "sectionImage" : false,
+      "widthImage" : false,
+      "crossSectionImages" : true,
+      "widthHistogram" : false,
+      "plotRadius" : true,
+      "BloodFlowProfiles" : false,
+      "ARIBVR" : false,
+      "strokeAndTotalVolume" : true
     },
     "PulseAnalysis": {
       "RadiusPupil": 2,
@@ -84,7 +96,8 @@
       "BlurScaleFactor": 100,
       "FramePercentageBeforeMinimumOfDiastole": 0.1,
       "FramePercentageAroundPeakSystole": 0.1,
-      "Exponentiel": 2.718282
+      "Exponentiel": 2.718282,
+      "ExtendedFlag": false
     },
     "VesselsVideo": {
       "RadiusRatioFactor": 0.27,

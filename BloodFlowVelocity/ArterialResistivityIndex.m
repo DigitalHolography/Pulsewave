@@ -1,6 +1,6 @@
 function [] = ArterialResistivityIndex(t, v_video, maskArtery, name, folder)
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 % Color Maps
 cArtery = [255 22 18] / 255;
 
@@ -65,7 +65,7 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
     nonzeroMean = imgMean > 0; % Create a mask for non-zero mean values
     imgAPI = zeros(size(imgMean)); % Initialize API image
     imgAPI(nonzeroMean & maskArtery) = dV(nonzeroMean & maskArtery) ./ imgMean(nonzeroMean & maskArtery); % Compute API only where valid
-    imgAPI(imgAPI > 10) = 10;
+    imgAPI(imgAPI > 3) = 3;
     imgAPI(imgAPI < 0) = 0;
 
     % Generate colormap
@@ -80,14 +80,14 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
     imagesc(RGBARI), axis off, axis image;
     colorbar, colormap(cmapARI), clim([0 1]);
     title(sprintf('ARI %s = %0.2f', name, ARI));
-    saveas(fig, fullfile(ToolBox.PW_path_png, folder, strcat(ToolBox.main_foldername, '_', 'ARI', '_', name)), 'png');
+    saveas(fig, fullfile(TB.path_png, folder, strcat(TB.main_foldername, '_', 'ARI', '_', name)), 'png');
 
     % Display and save the API image
     f = figure(211354 + 1);
     imagesc(RGBAPI), axis off, axis image;
-    colorbar, colormap(cmapARI), clim([0 10]);
+    colorbar, colormap(cmapARI), clim([0 3]);
     title(sprintf('API %s = %0.2f', name, API));
-    saveas(f, fullfile(ToolBox.PW_path_png, folder, strcat(ToolBox.main_foldername, '_', 'API', '_', name)), 'png');
+    saveas(f, fullfile(TB.path_png, folder, strcat(TB.main_foldername, '_', 'API', '_', name)), 'png');
 
     % Close figures
     close(f), close(fig);
@@ -95,7 +95,7 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
 else
 
     % Save txt
-    fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+    fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
     if strcmp(name,'velocity')
         fprintf(fileID, 'Mean Velocity artery : %f (mm/s) \r\n',vMean);
         fprintf(fileID, 'Std Velocity artery : %f (mm/s) \r\n',vStd);

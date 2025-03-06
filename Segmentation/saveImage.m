@@ -1,18 +1,18 @@
-function saveImage(I, ToolBox, suffix, opt)
+function saveImage(I, TB, suffix, opt)
 arguments
     I
-    ToolBox
+    TB
     suffix
     opt.cmap = []
     opt.isStep = false
 end
 
-main_folder = ToolBox.main_foldername;
+main_folder = TB.main_foldername;
 
 if opt.isStep
-    folderPath = fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, suffix));
+    folderPath = fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_%s", main_folder, suffix));
 else
-    folderPath = fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", main_folder, suffix));
+    folderPath = fullfile(TB.path_png, 'mask', sprintf("%s_%s", main_folder, suffix));
 end
 
 if isempty(opt.cmap)

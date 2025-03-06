@@ -1,9 +1,8 @@
-classdef pulse < matlab.apps.AppBase
+classdef eyeflow < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        PulsewaveUIFigure             matlab.ui.Figure
-        PreProcessButton              matlab.ui.control.Button
+        EyeFlowUIFigure             matlab.ui.Figure
         PlayInputsButton              matlab.ui.control.Button
         EditParametersButton          matlab.ui.control.Button
         EditMasksButton               matlab.ui.control.Button
@@ -13,14 +12,11 @@ classdef pulse < matlab.apps.AppBase
         FolderManagementButton        matlab.ui.control.Button
         PreviewMasksButton            matlab.ui.control.Button
         SegmentationCheckBox          matlab.ui.control.CheckBox
-        PulsewaveanalysisCheckBox     matlab.ui.control.CheckBox
-        ExtendedPulsewaveCheckBox     matlab.ui.control.CheckBox
+        PulseanalysisCheckBox         matlab.ui.control.CheckBox
         velocityCheckBox              matlab.ui.control.CheckBox
         bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
-        bloodVelocityProfileCheckBox  matlab.ui.control.CheckBox
         ReferenceDirectory            matlab.ui.control.TextArea
         OverWriteCheckBox             matlab.ui.control.CheckBox
-        ErrorLabel                    matlab.ui.control.Label
         Lamp                          matlab.ui.control.Lamp
         ClearButton                   matlab.ui.control.Button
         LoadfolderButton              matlab.ui.control.Button
@@ -48,7 +44,7 @@ classdef pulse < matlab.apps.AppBase
                 fprintf("\n----------------------------------\n")
                 fprintf("Video Loading\n")
                 fprintf("----------------------------------\n")
-                app.file = OneCycleClass(path);
+                app.file = ExecutionClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
                 %% End
@@ -121,7 +117,7 @@ classdef pulse < matlab.apps.AppBase
             if exist("version.txt", 'file')
                 v = readlines('version.txt');
                 fprintf("==========================================\n " + ...
-                    "Welcome to Pulsewave %s\n" + ...
+                    "Welcome to EyeFlow %s\n" + ...
                     "------------------------------------------\n" + ...
                     "Developed by the DigitalHolographyFoundation\n" + ...
                     "==========================================\n", v(1));
@@ -133,15 +129,10 @@ classdef pulse < matlab.apps.AppBase
                 "PulseAnalysis\", "Scripts\", "Segmentation\", "SHAnalysis\", "Tools\");
 
             % Set the UI title
-            app.PulsewaveUIFigure.Name = ['Pulsewave ', char(v(1))];
+            app.EyeFlowUIFigure.Name = ['EyeFlow ', char(v(1))];
 
-            % Auto-detect the maximum available workers and update the spinner
-            maxWorkers = parcluster('local').NumWorkers;
-            app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
-            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
 
             % Initialize checkboxes and flags
-            app.updateCheckboxes();
             app.flag_is_load = false;
 
             % Display splash screen
@@ -150,7 +141,7 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: LoadfolderButton
         function LoadfolderButtonPushed(app, ~)
-            % clearing before loading
+            % Clearing before loading
             if ~isempty(app.file)
                 last_dir = app.file.directory;
             else
@@ -162,51 +153,60 @@ classdef pulse < matlab.apps.AppBase
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
 
-            clear Parameters_json
+            clear Parameters_json;
+
             if (app.flag_is_load)
-                disp("Files already loaded")
-                app.ClearButton.Enable = true ;
+                disp("Files already loaded");
+                app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
             else
-                f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
+                % Store original WindowStyle
+                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+                app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
+
                 selected_dir = uigetdir(last_dir);
                 if selected_dir == 0
-                    disp('No folder selected')
-                    return
+                    fprintf('No folder selected');
+                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
+                    return;
                 end
-                delete(f); %delete the dummy figure
+
+                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
                 app.flag_is_load = true;
                 app.Load(selected_dir);
             end
-
         end
-        function LoadHoloButtonPushed(app, ~)
-            % clearing before loading
 
-            app.file =  [];
+        function LoadHoloButtonPushed(app, ~)
+            % Clearing before loading
+            app.file = [];
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
 
-            clear Parameters_json
+            clear Parameters_json;
+
             if (app.flag_is_load)
-                disp("Files already loaded")
-                app.ClearButton.Enable = true ;
+                disp("Files already loaded");
+                app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
             else
-                f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
-                [selected_holo,path_holo] = uigetfile('*.holo');
-                if selected_holo == 0
-                    disp('No file selected')
-                    return
-                end
-                delete(f); %delete the dummy figure
-                app.flag_is_load = true;
-                app.Load(fullfile(path_holo,selected_holo));
+                % Store original WindowStyle
+                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+                app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
 
+                [selected_holo, path_holo] = uigetfile('*.holo');
+                if selected_holo == 0
+                    disp('No file selected');
+                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
+                    return;
+                end
+
+                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
+                app.flag_is_load = true;
+                app.Load(fullfile(path_holo, selected_holo));
             end
 
-            app.ErrorLabel.Text = "" ;
             app.Lamp.Color = [0, 1, 0];
         end
 
@@ -215,10 +215,6 @@ classdef pulse < matlab.apps.AppBase
             if ~app.flag_is_load
                 fprintf(2, "no input loaded\n")
                 return
-            end
-
-            if ~app.file.is_preprocessed
-                app.PreProcessButtonPushed();
             end
 
             warning('off');
@@ -234,38 +230,36 @@ classdef pulse < matlab.apps.AppBase
 
             clear Parameters_json
             app.Lamp.Color = [1, 0, 0];
-            app.ErrorLabel.Text = "" ;
             drawnow;
 
             % Actualizes the input Parameters
-            app.file.PW_params_names = checkPulsewaveParamsFromJson(app.file.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
+            app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
 
 
-            for i = 1:length(app.file.PW_params_names)
+            for i = 1:length(app.file.params_names)
 
-                app.file.PW_param_name = app.file.PW_params_names{i};
+                app.file.param_name = app.file.params_names{i};
 
                 fprintf("==========================================\n")
                 app.file.flag_Segmentation = app.SegmentationCheckBox.Value;
                 app.file.flag_SH_analysis = app.SHanalysisCheckBox.Value;
-                app.file.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
+                app.file.flag_Pulse_analysis = app.PulseanalysisCheckBox.Value;
                 app.file.flag_velocity_analysis = app.velocityCheckBox.Value;
-                app.file.flag_ExtendedPulseWave_analysis = app.ExtendedPulsewaveCheckBox.Value;
                 app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
-                app.file.flag_bloodVelocityProfile_analysis = app.bloodVelocityProfileCheckBox.Value;
 
                 app.file.OverWrite = app.OverWriteCheckBox.Value;
 
                 try
-                    app.file = app.file.onePulse();
+                    if ~app.file.is_preprocessed
+                        app.file = app.file.preprocessData();
+                    end
+                    app.file = app.file.analyzeData();
 
                 catch ME
 
                     diary off
 
-                    fprintf(2,"==========================================\n");
-                    fprintf(2,"ERROR\n");
-                    fprintf(2,"==========================================\n");
+                    fprintf(2,"==========================================\nERROR\n==========================================\n");
 
                     fprintf(2, 'Error with file : %s\n%s\n%s', app.file.directory, ME.identifier, ME.message);
 
@@ -274,6 +268,9 @@ classdef pulse < matlab.apps.AppBase
                     end
 
                     fprintf(2,"==========================================\n");
+
+                    % Update lamp color to indicate warning
+                    app.Lamp.Color = [1, 0.5, 0]; % Orange
                 end
             end
             app.Lamp.Color = [0, 1, 0];
@@ -308,60 +305,6 @@ classdef pulse < matlab.apps.AppBase
             catch
                 disp('Couldnt force overwrite')
             end
-        end
-
-        function PreProcessButtonPushed(app, ~)
-            if ~app.flag_is_load
-                fprintf(2, "no input loaded\n")
-                return
-            end
-            if app.file.is_preprocessed
-                disp('input already preprocessed. reload if needed.')
-                return
-            end
-            app.Lamp.Color = [1, 0, 0];
-            drawnow;
-
-            parfor_arg = app.NumberofWorkersSpinner.Value ;
-            poolobj = gcp('nocreate'); % check if a pool already exist
-            if isempty(poolobj)
-                parpool(parfor_arg); % create a new pool
-            elseif poolobj.NumWorkers ~= parfor_arg
-                delete(poolobj); %close the current pool to create a new one with correct num of workers
-                parpool(parfor_arg);
-            end
-
-            totalPreProcessTime = tic;
-
-            try
-                fprintf("\n----------------------------------\n")
-                fprintf("Video PreProcessing\n")
-                fprintf("----------------------------------\n")
-                app.file = app.file.preprocessData();
-                app.Lamp.Color = [0, 1, 0];
-            catch ME
-
-                fprintf("==========================================\nERROR\n==========================================\n")
-                if ~isempty(app.file)
-                    fprintf('Error while preprocessing : %s\n', app.file.directory)
-                else
-                    fprintf('Error while preprocessing : %s\n', 'xx')
-                end
-                fprintf("%s\n",ME.identifier)
-                fprintf("%s\n",ME.message)
-
-                for i = 1:size(ME.stack,1)
-                    fprintf('%s : %s, line : %d \n', ME.stack(i).file, ME.stack(i).name, ME.stack(i).line);
-                end
-
-                fprintf("==========================================\n")
-                app.Lamp.Color = [1, 1/2, 0];
-
-            end
-
-            fprintf("----------------------------------\n")
-            fprintf("- Total PreProcess timing took : %ds\n", round(toc(totalPreProcessTime)))
-
         end
 
         % Button pushed function: ClearButton
@@ -531,36 +474,47 @@ classdef pulse < matlab.apps.AppBase
             end
 
 
-            function import_param(~, ~)
+            function import_param(app, ~)
                 tic
-                f = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]); %create a dummy figure so that uigetfile doesn't minimize our GUI
-                [selected_json,path_json] = uigetfile('*.json');
+                % Store the current WindowStyle of the main GUI
+                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+
+                % Temporarily set the WindowStyle to 'modal' to prevent minimizing
+                app.EyeFlowUIFigure.WindowStyle = 'modal';
+
+                % Open the file selection dialog
+                [selected_json, json_path] = uigetfile('*.json');
                 if selected_json == 0
-                    disp('No file selected')
-                    return
+                    disp('No file selected');
+                    % Restore the original WindowStyle
+                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle;
+                    return;
                 end
-                delete(f); %delete the dummy figure
 
+                % Restore the original WindowStyle
+                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle;
+
+                % Process the selected file
                 for ind = 1:length(app.drawer_list)
-                    pw_path_json = fullfile(app.drawer_list{ind},'pulsewave','json');
-                    if ~isfolder(pw_path_json)
-                        mkdir(pw_path_json);
+                    path_json = fullfile(app.drawer_list{ind}, 'eyeflow', 'json');
+                    if ~isfolder(path_json)
+                        mkdir(path_json);
                     end
-                    copyfile(fullfile(path_json,selected_json),pw_path_json);
+                    copyfile(fullfile(json_path, selected_json), path_json);
 
-                    %get idx for renaming
+                    % Get idx for renaming
                     idx = 0;
-                    list_dir = dir(pw_path_json);
+                    list_dir = dir(path_json);
                     for i = 1:numel(list_dir)
                         match = regexp(list_dir(i).name, '\d+$', 'match');
                         if ~isempty(match) && str2double(match{1}) >= idx
-                            idx = str2double(match{1}); %suffix
+                            idx = str2double(match{1}); % Suffix
                         end
                     end
 
-                    %renaming
-                    copyfile(fullfile(pw_path_json,selected_json),fullfile(pw_path_json,sprintf('InputPulseWaveParams_%d.json',idx)));
-                    delete(fullfile(pw_path_json,selected_json));
+                    % Renaming
+                    copyfile(fullfile(path_json, selected_json), fullfile(path_json, sprintf('InputEyeFlowParams_%d.json', idx)));
+                    delete(fullfile(path_json, selected_json));
                 end
                 toc
             end
@@ -568,9 +522,11 @@ classdef pulse < matlab.apps.AppBase
             function render(~, ~)
                 for i = 1:length(app.drawer_list)
                     tic
+                    try
                     app.Load(app.drawer_list{i});
-                    app.PreProcessButtonPushed();
                     app.ExecuteButtonPushed();
+                    catch
+                    end
                     app.ClearButtonPushed();
                     toc
                 end
@@ -589,45 +545,29 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: PreviewMasksButtonPushed
         function PreviewMasksButtonPushed(app, ~)
+
+            parfor_arg = app.NumberofWorkersSpinner.Value ;
+            poolobj = gcp('nocreate'); % check if a pool already exist
+            if isempty(poolobj)
+                parpool(parfor_arg); % create a new pool
+            elseif poolobj.NumWorkers ~= parfor_arg
+                delete(poolobj); %close the current pool to create a new one with correct num of workers
+                parpool(parfor_arg);
+            end
+
             PreviewMasks(app);
         end
 
 
-        % Checkbox update function:
-        function updateCheckboxes(app, ~)
-            % if not(isempty(app.files)) && not(isempty(app.files{end}.maskArtery)) % if segmentation masks exists
-            %     app.PulsewaveanalysisCheckBox.Enable = true;
-            %     if not(isempty(app.files)) && not(isempty(app.files{end}.vRMS)) % if velocity estimate exists
-            %
-            %         app.ExtendedPulsewaveCheckBox.Enable = true;
-            %         app.velocityCheckBox.Enable = true;
-            %         app.bloodVolumeRateCheckBox.Enable = true;
-            %         app.bloodVelocityProfileCheckBox.Enable = true;
-            %     else
-            %         app.ExtendedPulsewaveCheckBox.Enable = false;
-            %         app.velocityCheckBox.Enable = false;
-            %         app.bloodVolumeRateCheckBox.Enable = false;
-            %         app.bloodVelocityProfileCheckBox.Enable = false;
-            %     end
-            %
-            % else
-            %     app.PulsewaveanalysisCheckBox.Enable = false;
-            %     app.ExtendedPulsewaveCheckBox.Enable = false;
-            %     app.velocityCheckBox.Enable = false;
-            %     app.bloodVolumeRateCheckBox.Enable = false;
-            %     app.bloodVelocityProfileCheckBox.Enable = false;
-            % end
-        end
-
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, ~)
             if (app.flag_is_load)
-                main_path = fullfile(app.file.directory, 'pulsewave');
-                if isfile(fullfile(main_path,'json',app.file.PW_param_name))
-                    disp(['opening : ', fullfile(main_path,'json',app.file.PW_param_name)])
-                    winopen(fullfile(main_path,'json',app.file.PW_param_name));
+                main_path = fullfile(app.file.directory, 'eyeflow');
+                if isfile(fullfile(main_path,'json',app.file.param_name))
+                    disp(['opening : ', fullfile(main_path,'json',app.file.param_name)])
+                    winopen(fullfile(main_path,'json',app.file.param_name));
                 else
-                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.PW_param_name)])
+                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.param_name)])
                 end
             else
                 fprintf(2, "no input loaded\n")
@@ -636,56 +576,84 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: EditMasksButton
         function EditMasksButtonPushed(app, ~)
-            ToolBox = getGlobalToolBox;
+            TB = getGlobalToolBox;
+
+            if isempty(TB)
+                TB = ToolBoxClass(app.file.directory, app.file.param_name, 1);
+            end
 
             if (app.flag_is_load)
-                if ~isfolder(fullfile(ToolBox.PW_path_main,'mask'))
-                    mkdir(fullfile(ToolBox.PW_path_main,'mask'))
+                if ~isfolder(fullfile(TB.path_main,'mask'))
+                    mkdir(fullfile(TB.path_main,'mask'))
                 end
                 try
-                    winopen(fullfile(ToolBox.PW_path_main,'mask'));
+                    winopen(fullfile(TB.path_main,'mask'));
                 catch
                     disp("opening failed.")
                 end
                 try
-                    list_dir = dir(ToolBox.PW_path_main);
+                    list_dir = dir(TB.path_main);
                     idx=0;
                     for i=1:length(list_dir)
-                        if contains(list_dir(i).name, ToolBox.PW_name)
+                        if contains(list_dir(i).name, TB.EF_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
                             if ~isempty(match) && str2double(match{1}) >= idx
                                 idx = str2double(match{1}) ; %suffix
                             end
                         end
                     end
-                    PW_path_dir = fullfile(ToolBox.PW_path_main, ToolBox.PW_folder_name);
+                    path_dir = fullfile(TB.path_main, TB.folder_name);
 
-                    disp(['Copying from : ',fullfile(PW_path_dir,'png','mask')])
-                    copyfile(fullfile(PW_path_dir,'png', 'mask', sprintf("%s_maskArtery.png", ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main, 'mask', 'MaskArtery.png'));
-                    copyfile(fullfile(PW_path_dir,'png', 'mask', sprintf("%s_maskVein.png", ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main, 'mask', 'MaskVein.png'));
+                    disp(['Copying from : ',fullfile(path_dir,'png','mask')])
+                    copyfile(fullfile(path_dir,'png', 'mask', sprintf("%s_maskArtery.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskArtery.png'));
+                    copyfile(fullfile(path_dir,'png', 'mask', sprintf("%s_maskVein.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskVein.png'));
                 catch
                     disp("last auto mask copying failed.")
                 end
                 try
 
-                    copyfile(fullfile(ToolBox.PW_path,'png',sprintf("%s_M0.png",ToolBox.main_foldername)),fullfile(ToolBox.PW_path_main,'mask','M0.png'));
-                    PW_folder_name = strcat(ToolBox.main_foldername, '_PW');
-                    list_dir = dir(ToolBox.PW_path_main);
+                    copyfile(fullfile(TB.path,'png',sprintf("%s_M0.png",TB.main_foldername)),fullfile(TB.path_main,'mask','M0.png'));
+                    folder_name = strcat(TB.main_foldername, '_EF');
+                    list_dir = dir(TB.path_main);
                     idx=0;
                     for i=1:length(list_dir)
-                        if contains(list_dir(i).name, PW_folder_name)
+                        if contains(list_dir(i).name, folder_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
                             if ~isempty(match) && str2double(match{1}) >= idx
                                 idx = str2double(match{1}) ; %suffix
                             end
                         end
                     end
-                    PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
-                    copyfile(fullfile(PW_path_dir,'gif',sprintf("%s_M0.gif",PW_folder_name)),fullfile(ToolBox.PW_path_main,'mask','M0.gif'));
+                    folder_name = sprintf('%s_%d', folder_name, idx);
+                    copyfile(fullfile(path_dir,'gif',sprintf("%s_M0.gif",folder_name)),fullfile(TB.path_main,'mask','M0.gif'));
                 catch
 
                     disp("last M0 png and gif copying failed")
                 end
+
+                try
+                    v = VideoReader(fullfile(TB.path,'avi',sprintf("%s_M0.avi",TB.main_foldername)));
+                    M0_video = read(v); clear v;
+                    M0_video = rescale(single(squeeze(mean(M0_video,3))));
+                    sz = size(M0_video);
+                    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video,  diskMask(sz(1),sz(2),0.9));
+                    diasysArtery = M0_Systole_img - M0_Diastole_img;
+                    RGBdiasys = labDuoImage(mean(M0_video,3), diasysArtery);
+                    imwrite(RGBdiasys, fullfile(TB.path_main,'mask','DiaSysRGB.png'), 'png');
+                catch
+
+                    disp("Diasys png failed")
+
+
+                end
+
+                % try
+                %     Commented until further fixes
+                %     openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
+                % catch
+                %     disp("paint.net macro failed")
+                % end
+
             else
 
                 fprintf(2, "no input loaded\n")
@@ -699,223 +667,203 @@ classdef pulse < matlab.apps.AppBase
 
         % Create UIFigure and components
         function createComponents(app)
+            % Create UIFigure and components with the specified layout.
 
             pathToMLAPP = fileparts(mfilename('fullpath'));
 
-            % Create PulsewaveUIFigure and hide until all components are created
-            app.PulsewaveUIFigure = uifigure('Visible', 'off');
-            app.PulsewaveUIFigure.Color = [0.149 0.149 0.149];
-            app.PulsewaveUIFigure.Position = [100 100 640 421];
-            app.PulsewaveUIFigure.Name = 'Pulsewave';
-            app.PulsewaveUIFigure.Icon = fullfile(pathToMLAPP, 'pulsewave_logo_temp.png');
+            % Create EyeFlowUIFigure and hide until all components are created
+            app.EyeFlowUIFigure = uifigure('Visible', 'off');
+            app.EyeFlowUIFigure.Color = [0.149 0.149 0.149];
+            app.EyeFlowUIFigure.Position = [100 100 640 421];
+            app.EyeFlowUIFigure.Name = 'EyeFlow';
+            app.EyeFlowUIFigure.Icon = fullfile(pathToMLAPP, 'eyeflow_logo.png');
 
-            % Create ExecuteButton
-            app.ExecuteButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.ExecuteButton.ButtonPushedFcn = createCallbackFcn(app, @ExecuteButtonPushed, true);
-            app.ExecuteButton.BackgroundColor = [0.502 0.502 0.502];
-            app.ExecuteButton.FontSize = 16;
-            app.ExecuteButton.FontColor = [0.9412 0.9412 0.9412];
-            app.ExecuteButton.Enable = 'off';
-            app.ExecuteButton.Position = [61 24 100 27];
-            app.ExecuteButton.Text = 'Execute';
+            % Create a grid layout to manage resizing
+            grid = uigridlayout(app.EyeFlowUIFigure);
+            grid.RowHeight = {'fit', '1x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
+            grid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            grid.BackgroundColor = [0.149, 0.149, 0.149];
 
-            % Create LoadfolderButton
-            app.LoadfolderButton = uibutton(app.PulsewaveUIFigure, 'push');
+            % Top Row: Load Folder, Load Holo, Clear, Folder Management
+            app.LoadfolderButton = uibutton(grid, 'push');
             app.LoadfolderButton.ButtonPushedFcn = createCallbackFcn(app, @LoadfolderButtonPushed, true);
             app.LoadfolderButton.BackgroundColor = [0.502 0.502 0.502];
             app.LoadfolderButton.FontSize = 16;
             app.LoadfolderButton.FontColor = [0.9412 0.9412 0.9412];
-            app.LoadfolderButton.Position = [61 322 123 28];
-            app.LoadfolderButton.Text = 'Load folder';
+            app.LoadfolderButton.Layout.Row = 1;
+            app.LoadfolderButton.Layout.Column = 1;
+            app.LoadfolderButton.Text = 'Load Folder';
 
-            % Create LoadHoloButton
-            app.LoadHoloButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.LoadHoloButton = uibutton(grid, 'push');
             app.LoadHoloButton.ButtonPushedFcn = createCallbackFcn(app, @LoadHoloButtonPushed, true);
             app.LoadHoloButton.BackgroundColor = [0.502 0.502 0.502];
             app.LoadHoloButton.FontSize = 16;
             app.LoadHoloButton.FontColor = [0.9412 0.9412 0.9412];
-            app.LoadHoloButton.Position = [61 362 123 28];
-            app.LoadHoloButton.Text = 'Load holo';
+            app.LoadHoloButton.Layout.Row = 1;
+            app.LoadHoloButton.Layout.Column = 2;
+            app.LoadHoloButton.Text = 'Load Holo';
 
-            % Create ClearButton
-            app.ClearButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.ClearButton = uibutton(grid, 'push');
             app.ClearButton.ButtonPushedFcn = createCallbackFcn(app, @ClearButtonPushed, true);
             app.ClearButton.BackgroundColor = [0.502 0.502 0.502];
             app.ClearButton.FontSize = 16;
             app.ClearButton.FontColor = [0.9412 0.9412 0.9412];
             app.ClearButton.Enable = 'off';
-            app.ClearButton.Position = [63 240 100 27];
+            app.ClearButton.Layout.Row = 1;
+            app.ClearButton.Layout.Column = 3;
             app.ClearButton.Text = 'Clear';
 
-            % Create Lamp
-            app.Lamp = uilamp(app.PulsewaveUIFigure);
-            app.Lamp.Position = [569 286 20 20];
-
-            % Create ErrorLabel
-            app.ErrorLabel = uilabel(app.PulsewaveUIFigure);
-            app.ErrorLabel.HorizontalAlignment = 'center';
-            app.ErrorLabel.FontSize = 16;
-            app.ErrorLabel.FontColor = [1 0 0];
-            app.ErrorLabel.Position = [61 372 542 23];
-            app.ErrorLabel.Text = '';
-
-            % Create ReferenceDirectory
-            app.ReferenceDirectory = uitextarea(app.PulsewaveUIFigure);
-            app.ReferenceDirectory.FontSize = 16;
-            app.ReferenceDirectory.FontColor = [0.9412 0.9412 0.9412];
-            app.ReferenceDirectory.BackgroundColor = [0.149 0.149 0.149];
-            app.ReferenceDirectory.Position = [61 284 485 24];
-
-            % Create SegmentationCheckBox
-            app.SegmentationCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.SegmentationCheckBox.Text = 'Segmentation';
-            app.SegmentationCheckBox.FontSize = 16;
-            app.SegmentationCheckBox.FontColor = [1 1 1];
-            app.SegmentationCheckBox.Position = [63 198 250 24];
-            app.SegmentationCheckBox.Value = true;
-            app.SegmentationCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
-
-            % Create PulsewaveanalysisCheckBox
-            app.PulsewaveanalysisCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.PulsewaveanalysisCheckBox.Text = 'Pulse wave analysis';
-            app.PulsewaveanalysisCheckBox.FontSize = 16;
-            app.PulsewaveanalysisCheckBox.FontColor = [1 1 1];
-            app.PulsewaveanalysisCheckBox.Position = [63 164 250 24];
-            app.PulsewaveanalysisCheckBox.Value = true;
-            app.PulsewaveanalysisCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
-
-            % Create velocityCheckBox
-            app.velocityCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.velocityCheckBox.Text = 'Blood Flow Velocity';
-            app.velocityCheckBox.FontSize = 16;
-            app.velocityCheckBox.FontColor = [1 1 1];
-            app.velocityCheckBox.Position = [63 130 250 24];
-            app.velocityCheckBox.Value = true;
-            app.velocityCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
-
-            % Create ExtendedPulsewaveCheckBox
-            app.ExtendedPulsewaveCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.ExtendedPulsewaveCheckBox.Text = 'Extended Pulse Analysis';
-            app.ExtendedPulsewaveCheckBox.FontSize = 16;
-            app.ExtendedPulsewaveCheckBox.FontColor = [1 1 1];
-            app.ExtendedPulsewaveCheckBox.Position = [250 164 250 24];
-            app.ExtendedPulsewaveCheckBox.Value = false;
-            app.ExtendedPulsewaveCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
-
-            % Create bloodVolumeRateCheckBox
-            app.bloodVolumeRateCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.bloodVolumeRateCheckBox.Text = 'Blood Volume Rate';
-            app.bloodVolumeRateCheckBox.FontSize = 16;
-            app.bloodVolumeRateCheckBox.FontColor = [1 1 1];
-            app.bloodVolumeRateCheckBox.Position = [63 96 250 24];
-            app.bloodVolumeRateCheckBox.Value = true;
-            app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
-
-            % Create bloodVelocityProfileCheckBox
-            app.bloodVelocityProfileCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.bloodVelocityProfileCheckBox.Text = 'Blood Velocity Profile';
-            app.bloodVelocityProfileCheckBox.FontSize = 16;
-            app.bloodVelocityProfileCheckBox.FontColor = [1 1 1];
-            app.bloodVelocityProfileCheckBox.Position = [250 96 250 24];
-            app.bloodVelocityProfileCheckBox.Value = false;
-            app.bloodVolumeRateCheckBox.ValueChangedFcn = createCallbackFcn(app, @updateCheckboxes, true);
-
-
-            % Create OverWriteCheckBox
-            app.OverWriteCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.OverWriteCheckBox.Text = 'over write';
-            app.OverWriteCheckBox.FontSize = 16;
-            app.OverWriteCheckBox.FontColor = [0.8 0.8 0.8];
-            app.OverWriteCheckBox.Position = [500 24 130 28];
-            app.OverWriteCheckBox.Value = false;
-            app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
-            app.OverWriteCheckBox.Tooltip = 'OverWrite the new results in the last PW_ result folder (to save space)';
-
-
-            % Create PreviewMasksButton
-            app.PreviewMasksButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.PreviewMasksButton.ButtonPushedFcn = createCallbackFcn(app, @PreviewMasksButtonPushed, true);
-            app.PreviewMasksButton.BackgroundColor = [0.502 0.502 0.502];
-            app.PreviewMasksButton.FontSize = 16;
-            app.PreviewMasksButton.FontColor = [0.9412 0.9412 0.9412];
-            app.PreviewMasksButton.Position = [400 200 130 28];
-            app.PreviewMasksButton.Text = 'Preview Masks';
-
-
-            % Create FolderManagementButton
-            app.FolderManagementButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.FolderManagementButton = uibutton(grid, 'push');
             app.FolderManagementButton.ButtonPushedFcn = createCallbackFcn(app, @FolderManagementButtonPushed, true);
             app.FolderManagementButton.BackgroundColor = [0.502 0.502 0.502];
             app.FolderManagementButton.FontSize = 16;
             app.FolderManagementButton.FontColor = [0.9412 0.9412 0.9412];
-            app.FolderManagementButton.Position = [431 238 158 28];
+            app.FolderManagementButton.Layout.Row = 1;
+            app.FolderManagementButton.Layout.Column = 4;
             app.FolderManagementButton.Text = 'Folder Management';
 
-            % Create SHanalysisCheckBox
-            app.SHanalysisCheckBox = uicheckbox(app.PulsewaveUIFigure);
-            app.SHanalysisCheckBox.Text = 'SH analysis';
-            app.SHanalysisCheckBox.FontSize = 16;
-            app.SHanalysisCheckBox.FontColor = [1 1 1];
-            app.SHanalysisCheckBox.Position = [63 62 250 24];
-            app.SHanalysisCheckBox.Enable = true;
+            % Second Row: Directory
 
-            % Create NumberofWorkersSpinnerLabel
-            app.NumberofWorkersSpinnerLabel = uilabel(app.PulsewaveUIFigure);
-            app.NumberofWorkersSpinnerLabel.HorizontalAlignment = 'right';
-            app.NumberofWorkersSpinnerLabel.FontColor = [0.902 0.902 0.902];
-            app.NumberofWorkersSpinnerLabel.Position = [169 26 109 22];
-            app.NumberofWorkersSpinnerLabel.Text = 'Number of Workers';
+            dirgrid = uigridlayout(grid);
+            dirgrid.Layout.Row = 2;
+            dirgrid.Layout.Column = [1, 4];
+            dirgrid.RowHeight = {'1x'};
+            dirgrid.ColumnWidth = {'1x', 20};
+            dirgrid.BackgroundColor = [0.149, 0.149, 0.149];
 
-            % Create NumberofWorkersSpinner
-            app.NumberofWorkersSpinner = uispinner(app.PulsewaveUIFigure);
-            app.NumberofWorkersSpinner.Limits = [-1 32];
-            app.NumberofWorkersSpinner.Position = [289 26 51 22];
-            app.NumberofWorkersSpinner.Value = 8;
+            app.ReferenceDirectory = uitextarea(dirgrid);
+            app.ReferenceDirectory.FontSize = 16;
+            app.ReferenceDirectory.FontColor = [0.9412 0.9412 0.9412];
+            app.ReferenceDirectory.BackgroundColor = [0.149 0.149 0.149];
+            app.ReferenceDirectory.Layout.Row = 1;
+            app.ReferenceDirectory.Layout.Column = 1;
 
-            % Create EditParametersButton
-            app.EditParametersButton = uibutton(app.PulsewaveUIFigure, 'push');
+            % Create Lamp
+            app.Lamp = uilamp(dirgrid);
+            app.Lamp.Layout.Row = 1;
+            app.Lamp.Layout.Column = 2;
+
+            % Third Row: Edit Parameters, Edit Masks, Play Inputs, Preview Masks
+            app.EditParametersButton = uibutton(grid, 'push');
             app.EditParametersButton.ButtonPushedFcn = createCallbackFcn(app, @EditParametersButtonPushed, true);
             app.EditParametersButton.BackgroundColor = [0.502 0.502 0.502];
             app.EditParametersButton.FontSize = 16;
             app.EditParametersButton.FontColor = [0.9412 0.9412 0.9412];
-            app.EditParametersButton.Position = [276 238 130 28];
+            app.EditParametersButton.Layout.Row = 3;
+            app.EditParametersButton.Layout.Column = 1;
             app.EditParametersButton.Text = 'Edit Parameters';
-            app.EditParametersButton.Enable = 'on';
-            app.EditParametersButton.Tooltip = 'Find the pulse wave parameters here.';
+            app.EditParametersButton.Tooltip = 'Find the eyeflow parameters here.';
 
-            % Create PreProcessButton
-            app.PreProcessButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.PreProcessButton.ButtonPushedFcn = createCallbackFcn(app, @PreProcessButtonPushed, true);
-            app.PreProcessButton.BackgroundColor = [0.502 0.502 0.502];
-            app.PreProcessButton.FontSize = 16;
-            app.PreProcessButton.FontColor = [0.9412 0.9412 0.9412];
-            app.PreProcessButton.Position = [191 322 130 28];
-            app.PreProcessButton.Text = 'Pre Process';
-            app.PreProcessButton.Enable = 'on';
-
-            % Create PlayInputsButton
-            app.PlayInputsButton = uibutton(app.PulsewaveUIFigure, 'push');
-            app.PlayInputsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayInputsButtonPushed, true);
-            app.PlayInputsButton.BackgroundColor = [0.502 0.502 0.502];
-            app.PlayInputsButton.FontSize = 16;
-            app.PlayInputsButton.FontColor = [0.9412 0.9412 0.9412];
-            app.PlayInputsButton.Position = [351 322 130 28];
-            app.PlayInputsButton.Text = 'Play Inputs';
-            app.PlayInputsButton.Enable = 'on';
-
-            % Create EditMasksButton
-            app.EditMasksButton = uibutton(app.PulsewaveUIFigure, 'push');
+            app.EditMasksButton = uibutton(grid, 'push');
             app.EditMasksButton.ButtonPushedFcn = createCallbackFcn(app, @EditMasksButtonPushed, true);
             app.EditMasksButton.BackgroundColor = [0.502 0.502 0.502];
             app.EditMasksButton.FontSize = 16;
             app.EditMasksButton.FontColor = [0.9412 0.9412 0.9412];
-            app.EditMasksButton.Position = [250 200 130 28];
+            app.EditMasksButton.Layout.Row = 3;
+            app.EditMasksButton.Layout.Column = 2;
             app.EditMasksButton.Text = 'Edit Masks';
-            app.EditMasksButton.Enable = 'on';
             app.EditMasksButton.Tooltip = 'Open mask folder and use forceMaskArtery.png and forceMaskVein.png to force the segmentation';
 
+            app.PlayInputsButton = uibutton(grid, 'push');
+            app.PlayInputsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayInputsButtonPushed, true);
+            app.PlayInputsButton.BackgroundColor = [0.502 0.502 0.502];
+            app.PlayInputsButton.FontSize = 16;
+            app.PlayInputsButton.FontColor = [0.9412 0.9412 0.9412];
+            app.PlayInputsButton.Layout.Row = 3;
+            app.PlayInputsButton.Layout.Column = 3;
+            app.PlayInputsButton.Text = 'Play Inputs';
+
+            app.PreviewMasksButton = uibutton(grid, 'push');
+            app.PreviewMasksButton.ButtonPushedFcn = createCallbackFcn(app, @PreviewMasksButtonPushed, true);
+            app.PreviewMasksButton.BackgroundColor = [0.502 0.502 0.502];
+            app.PreviewMasksButton.FontSize = 16;
+            app.PreviewMasksButton.FontColor = [0.9412 0.9412 0.9412];
+            app.PreviewMasksButton.Layout.Row = 3;
+            app.PreviewMasksButton.Layout.Column = 4;
+            app.PreviewMasksButton.Text = 'Preview Masks';
+
+            % Checkboxes: Segmentation, Pulse analysis, Blood Flow Velocity, Blood Volume Rate, SH analysis
+            app.SegmentationCheckBox = uicheckbox(grid);
+            app.SegmentationCheckBox.Text = 'Segmentation';
+            app.SegmentationCheckBox.FontSize = 16;
+            app.SegmentationCheckBox.FontColor = [1 1 1];
+            app.SegmentationCheckBox.Layout.Row = 4;
+            app.SegmentationCheckBox.Layout.Column = [1, 4];
+            app.SegmentationCheckBox.Value = true;
+
+            app.PulseanalysisCheckBox = uicheckbox(grid);
+            app.PulseanalysisCheckBox.Text = 'Pulse analysis';
+            app.PulseanalysisCheckBox.FontSize = 16;
+            app.PulseanalysisCheckBox.FontColor = [1 1 1];
+            app.PulseanalysisCheckBox.Layout.Row = 5;
+            app.PulseanalysisCheckBox.Layout.Column = [1, 4];
+            app.PulseanalysisCheckBox.Value = true;
+
+            app.velocityCheckBox = uicheckbox(grid);
+            app.velocityCheckBox.Text = 'Blood Flow Velocity';
+            app.velocityCheckBox.FontSize = 16;
+            app.velocityCheckBox.FontColor = [1 1 1];
+            app.velocityCheckBox.Layout.Row = 6;
+            app.velocityCheckBox.Layout.Column = [1, 4];
+            app.velocityCheckBox.Value = true;
+
+            app.bloodVolumeRateCheckBox = uicheckbox(grid);
+            app.bloodVolumeRateCheckBox.Text = 'Blood Volume Rate';
+            app.bloodVolumeRateCheckBox.FontSize = 16;
+            app.bloodVolumeRateCheckBox.FontColor = [1 1 1];
+            app.bloodVolumeRateCheckBox.Layout.Row = 7;
+            app.bloodVolumeRateCheckBox.Layout.Column = [1, 4];
+            app.bloodVolumeRateCheckBox.Value = true;
+
+            app.SHanalysisCheckBox = uicheckbox(grid);
+            app.SHanalysisCheckBox.Text = 'SH analysis';
+            app.SHanalysisCheckBox.FontSize = 16;
+            app.SHanalysisCheckBox.FontColor = [1 1 1];
+            app.SHanalysisCheckBox.Layout.Row = 8;
+            app.SHanalysisCheckBox.Layout.Column = [1, 4];
+            app.SHanalysisCheckBox.Enable = true;
+
+            % Bottom Left: Execute Button
+            app.ExecuteButton = uibutton(grid, 'push');
+            app.ExecuteButton.ButtonPushedFcn = createCallbackFcn(app, @ExecuteButtonPushed, true);
+            app.ExecuteButton.BackgroundColor = [0.502 0.502 0.502];
+            app.ExecuteButton.FontSize = 16;
+            app.ExecuteButton.FontColor = [0.9412 0.9412 0.9412];
+            app.ExecuteButton.Enable = 'off';
+            app.ExecuteButton.Layout.Row = 9;
+            app.ExecuteButton.Layout.Column = 1;
+            app.ExecuteButton.Text = 'Execute';
+
+            % Number of Workers Spinner and Label
+            app.NumberofWorkersSpinnerLabel = uilabel(grid);
+            app.NumberofWorkersSpinnerLabel.HorizontalAlignment = 'right';
+            app.NumberofWorkersSpinnerLabel.FontColor = [0.902 0.902 0.902];
+            app.NumberofWorkersSpinnerLabel.FontSize = 16;
+            app.NumberofWorkersSpinnerLabel.Layout.Row = 9;
+            app.NumberofWorkersSpinnerLabel.Layout.Column = 3;
+            app.NumberofWorkersSpinnerLabel.Text = 'Number of Workers';
+
+            app.NumberofWorkersSpinner = uispinner(grid);
+            app.NumberofWorkersSpinner.FontSize = 16;
+            app.NumberofWorkersSpinner.Layout.Row = 9;
+            app.NumberofWorkersSpinner.Layout.Column = 4;
+            maxWorkers = parcluster('local').NumWorkers;
+            app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
+            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
+
+            % Bottom Right: Overwrite Checkbox
+            app.OverWriteCheckBox = uicheckbox(grid);
+            app.OverWriteCheckBox.Text = 'Overwrite';
+            app.OverWriteCheckBox.FontSize = 16;
+            app.OverWriteCheckBox.FontColor = [0.8 0.8 0.8];
+            app.OverWriteCheckBox.Layout.Row = 9;
+            app.OverWriteCheckBox.Layout.Column = 2;
+            app.OverWriteCheckBox.Value = false;
+            app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
+            app.OverWriteCheckBox.Tooltip = 'Overwrite the new results in the last EF_ result folder (to save space)';
+
             % Show the figure after all components are created
-            app.PulsewaveUIFigure.Visible = 'on';
+            app.EyeFlowUIFigure.Visible = 'on';
         end
     end
 
@@ -923,13 +871,13 @@ classdef pulse < matlab.apps.AppBase
     methods (Access = public)
 
         % Construct app
-        function app = pulse
+        function app = eyeflow
 
             % Create UIFigure and components
             createComponents(app)
 
             % Register the app with App Designer
-            registerApp(app, app.PulsewaveUIFigure)
+            registerApp(app, app.EyeFlowUIFigure)
 
             % Execute the startup function
             runStartupFcn(app, @startupFcn)
@@ -943,7 +891,7 @@ classdef pulse < matlab.apps.AppBase
         function delete(app)
 
             % Delete UIFigure when app is deleted
-            delete(app.PulsewaveUIFigure)
+            delete(app.EyeFlowUIFigure)
         end
     end
 end

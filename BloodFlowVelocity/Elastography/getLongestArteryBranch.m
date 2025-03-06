@@ -1,10 +1,10 @@
 function [maskLongArtery, label, adjMatrix] = getLongestArteryBranch(maskArtery, xy_barycenter)
 % Returns the longest artery branch mask
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+params = TB.getParams;
 [numX, numY] = size(maskArtery);
 
-maskRadius = PW_params.params.Mask.CropChoroidRadius;
+maskRadius = params.json.Mask.CropChoroidRadius;
 
 x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
@@ -41,8 +41,8 @@ end
 
 figure(72)
 imagesc(label);
-foldername = ToolBox.main_foldername;
-imwrite(label, jet(max(label, [], 'all') + 1), fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskSeparateBranchesLabeled.png')), 'png');
+foldername = TB.main_foldername;
+imwrite(label, jet(max(label, [], 'all') + 1), fullfile(TB.path_png, 'mask', sprintf("%s_%s", foldername, 'maskSeparateBranchesLabeled.png')), 'png');
 
 %% compute the adjency matrix of the artery tree and make the graph
 adjMatrix = false(n);
@@ -73,8 +73,8 @@ for i = 1:length(bp) % iterates over all branch points
     
 end
 
-figure(402); imshow(all_circles | skel2); saveas(402, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'maskTree.png')));
-g = graph(adjMatrix); figure(403); plot(g); saveas(403, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s", foldername, 'graphTree.png')));
+figure(402); imshow(all_circles | skel2); saveas(402, fullfile(TB.path_png, 'mask', sprintf("%s_%s", foldername, 'maskTree.png')));
+g = graph(adjMatrix); figure(403); plot(g); saveas(403, fullfile(TB.path_png, 'mask', sprintf("%s_%s", foldername, 'graphTree.png')));
 %% get the graph's biggest connected component
 conn = conncomp(g);
 idx_most_frequent_conn = mode(conn);

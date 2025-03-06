@@ -1,8 +1,8 @@
-function [v_video_RGB, v_mean_RGB] = flowMap(v_video, maskSection, maskArtery, maskVein, M0_ff_video, xy_barycenter, ToolBox)
+function [v_video_RGB, v_mean_RGB] = flowMap(v_video, maskSection, maskArtery, maskVein, M0_ff_video, xy_barycenter, TB)
 
-PW_params = ToolBox.getParams;
-veinsAnalysis = PW_params.veins_analysis;
-exportVideos = PW_params.exportVideos;
+params = TB.getParams;
+veinsAnalysis = params.veins_analysis;
+exportVideos = params.exportVideos;
 
 % Rescale once
 M0_ff_video = rescale(M0_ff_video);
@@ -16,8 +16,8 @@ maskAV = maskArtery & maskVein;
 L = (numY + numX) / 2;
 x_center = xy_barycenter(1);
 y_center = xy_barycenter(2);
-r1 = PW_params.velocityBigRadiusRatio * L;
-r2 = PW_params.velocitySmallRadiusRatio * L;
+r1 = params.velocityBigRadiusRatio * L;
+r2 = params.velocitySmallRadiusRatio * L;
 
 % Precompute R and circles
 [X, Y] = meshgrid(1:numX, 1:numY);
@@ -59,7 +59,7 @@ if veinsAnalysis
     v_mean_AV = setcmap(v_mean_rescaled, (maskArtery&maskVein), cmapAV);
     v_mean_RGB = (v_mean_Artery + v_mean_Vein) .* ~maskAV + v_mean_AV + M0_ff_image .* ~(maskArtery | maskVein);
     v_mean_RGB = v_mean_RGB .* ~circles + circles .* 0.7;
-    imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
+    imwrite(v_mean_RGB, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_%s", TB.main_foldername, 'v_mean.png')))
 
     parfor frameIdx = 1:numFrames
         v_frame_Artery = setcmap(v_rescaled(:, :, frameIdx), maskArtery, cmapArtery);
@@ -73,7 +73,7 @@ else
 
     v_mean_RGB = v_mean_Artery .* maskArtery + M0_ff_image .* ~maskArtery;
     v_mean_RGB = v_mean_RGB .* ~circles + circles .* 0.7;
-    imwrite(v_mean_RGB, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_%s", ToolBox.main_foldername, 'v_mean.png')))
+    imwrite(v_mean_RGB, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_%s", TB.main_foldername, 'v_mean.png')))
 
     parfor frameIdx = 1:numFrames
         v_frame_Artery = setcmap(v_rescaled(:, :, frameIdx), maskArtery, cmapArtery);

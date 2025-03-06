@@ -32,7 +32,7 @@ combined_response = mat2gray(combined_response);
 
 % Thresholding to create a binary mask
 threshold = graythresh(combined_response); % Otsu's method
-vessel_mask = imbinarize(combined_response, threshold);
+vessel_mask = imbinarize(combined_response, 'adaptive');
 
 % Step 4: Morphological Operations
 % Clean up the mask using morphological operations

@@ -1,6 +1,6 @@
 function [mean_BvrT, mean_std_BvrT] = plotRadius(vr_avg_r, vr_std_r, fullTime, rad, index_start, index_end, name)
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 
 numCircles = size(vr_avg_r, 1);
 Color_std = [0.7 0.7 0.7];
@@ -28,7 +28,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), - 5 , 70])
+axis([axT(1), axT(2), 0 , 1.07 * axP(4)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -37,7 +37,7 @@ title("Time average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'LineWidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_meanVolumeRate_%s_radius.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_mean_%s_radius.png", TB.main_foldername, name)))
 
 figure("Visible","off");
 
@@ -51,7 +51,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), - 5 , 70])
+axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')
@@ -60,9 +60,9 @@ title("Radial variations of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_varianceVolumeRate_%s_time.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_variance_%s_time.png", TB.main_foldername, name)))
 
-figure("Visible","off");
+figure("Visible", "off");
 
 mean_BvrT = squeeze(mean(BvrR, 1))'; % mean of all circle's sum of all sections
 mean_BvrT_value = mean(mean_BvrT(index_start:index_end)); % average in time of this signal
@@ -74,39 +74,38 @@ hold off
 curve1 = mean_BvrT + 0.5 * mean_std_BvrT;
 curve2 = mean_BvrT - 0.5 * mean_std_BvrT;
 ft2 = [fullTime, fliplr(fullTime)];
-inBetween = [curve1, fliplr(curve2)]';
+inBetween = [curve1, fliplr(curve2)];
 
-fill(ft2, inBetween, Color_std);
 hold on;
+fill(ft2, inBetween, Color_std);
 yline(0, 'k-', 'LineWidth', 2)
 plot(fullTime, curve1, "Color", Color_std, 'LineWidth', 2);
 plot(fullTime, curve2, "Color", Color_std, 'LineWidth', 2);
 plot(fullTime, mean_BvrT, '-k', 'LineWidth', 2);
 yline(mean_BvrT_value, '--k', 'LineWidth', 2)
 
-plot(fullTime(index_start), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10);
-plot(fullTime(index_end), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10);
-plot(fullTime(index_start:index_end), repmat(1.07 * max_BvrT_value, index_end - index_start + 1), '-k');
-legend({'', '', '', '', '', sprintf('mean = %0.2f µL/min', mean_BvrT_value), '', ''});
+plot(fullTime(index_start), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10, 'LineWidth', 2);
+plot(fullTime(index_end), 1.07 * max_BvrT_value, 'k|', 'MarkerSize', 10, 'LineWidth', 2);
+plot(fullTime(index_start:index_end), repmat(1.07 * max_BvrT_value, index_end - index_start + 1), '-k', 'LineWidth', 2);
 
 axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), - 5 , 70])
+axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
 box on
 
 hold off
 
 ylabel('Blood Volume Rate (µL/min)')
 xlabel('time (s)')
-title("Radial average of Blood Volume Rate")
+title(sprintf("Total blood volume rate (Avg. %0.2f µL/min)", mean_BvrT_value))
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_volumeRate_allrad_%s_time.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_allrad_%s_time.png", TB.main_foldername, name)))
 
-fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'Mean Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_BvrT_value);
 fprintf(fileID, 'Std Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_std_BvrT_value);
 fclose(fileID);

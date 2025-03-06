@@ -1,4 +1,4 @@
-function [mask] = clearMasks(mask, name, colormap, ToolBox)
+function [mask] = clearMasks(mask, name, colormap, TB)
 % clearMasks - Processes a binary mask to remove small objects, close gaps, and dilate.
 %
 % Inputs:
@@ -23,16 +23,16 @@ if ~ischar(name) && ~isstring(name)
 end
 
 % Load parameters
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
-main_folder = ToolBox.main_foldername;
+params = TB.getParams;
+main_folder = TB.main_foldername;
 
-minPixelSize = PW_params.params.Mask.MinPixelSize;
-imCloseRadius = PW_params.params.Mask.ImcloseRadius;
-minWidth = PW_params.params.Mask.MinimumVesselWidth;
-imDilateSize = PW_params.params.Mask.FinalDilation;
+minPixelSize = params.json.Mask.MinPixelSize;
+imCloseRadius = params.json.Mask.ImcloseRadius;
+minWidth = params.json.Mask.MinimumVesselWidth;
+imDilateSize = params.json.Mask.FinalDilation;
 
 % Ensure the output directory exists
-outputDir = fullfile(ToolBox.PW_path_png, 'mask', 'steps');
+outputDir = fullfile(TB.path_png, 'mask', 'steps');
 if ~exist(outputDir, 'dir')
     mkdir(outputDir);
 end

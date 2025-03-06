@@ -1,6 +1,7 @@
 function [avg_blood_rate, avg_blood_velocity, size_section, new_mask] = SectionAnalysis(mask, k)
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+
+TB = getGlobalToolBox;
+params = TB.getParams;
 
 skel = bwskel(logical(mask));
 
@@ -36,7 +37,7 @@ H_cropped = H_cropped .* (H_cropped > 0);
 AVG_blood_rate = squeeze(sum(H_cropped, 1)) ./ squeeze(sum(H_cropped > 0, 1) + ~sum(H_cropped > 0, 1));
 
 size_section = nnz(AVG_blood_rate > 0);
-section_area = pi * (((size_section) / 2) * (0.7 * PW_params.cropSection_pixelSize / (2))) ^ 2;
+section_area = pi * (((size_section) / 2) * (0.7 * params.cropSection_pixelSize / (2))) ^ 2;
 
 avg_blood_velocity = sum(AVG_blood_rate) / nnz(AVG_blood_rate);
 avg_blood_rate = avg_blood_velocity * section_area * 60;

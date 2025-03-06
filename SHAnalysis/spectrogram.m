@@ -2,18 +2,18 @@ function [] = spectrogram(maskArtery, maskSection, SH_cube)
 
 %% Variables
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+params = TB.getParams;
 
-maskNeighbors = imdilate(maskArtery, strel('disk', PW_params.local_background_width)) - maskArtery;
+maskNeighbors = imdilate(maskArtery, strel('disk', params.local_background_width)) - maskArtery;
 
 cubeSize = size(SH_cube, 1);
 cubeFreqLength = size(SH_cube, 3);
 cubeFrameLength = size(SH_cube, 4);
 % f1 = ToolBox.f1;
-f2 = ToolBox.f2;
-fs = ToolBox.fs;
-batchStride = ToolBox.stride; %convert Hz to s
+f2 = TB.f2;
+fs = TB.fs;
+batchStride = TB.stride; %convert Hz to s
 % interpolation parameter
 k_int = 4;
 minimumTreshold = 10000; % for the log plotting, we change all smallest value to greater one. In order to avoid log(0).
@@ -25,7 +25,7 @@ maskNeighbors = logical(imresize(maskNeighbors, [cubeSize, cubeSize])) - maskArt
 maskSection = logical(imresize(maskSection, [cubeSize, cubeSize]));
 
 %% Video
-video = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_%s", ToolBox.main_foldername, "stdTemp.avi")));
+video = VideoWriter(fullfile(TB.path_avi, sprintf("%s_%s", TB.main_foldername, "stdTemp.avi")));
 open(video)
 
 %% Display
@@ -122,8 +122,8 @@ for i = 1:cubeFrameLength
     
 end
 
-writeGifOnDisc(specVideo, fullfile(ToolBox.PW_path_gif, strcat(ToolBox.main_foldername, '_spectrumDim4.gif')), 0.1);
-writeVideoOnDisc(specVideo, fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_spectrumDim4')));
+writeGifOnDisc(specVideo, fullfile(TB.path_gif, strcat(TB.main_foldername, '_spectrumDim4.gif')), 0.1);
+writeVideoOnDisc(specVideo, fullfile(TB.path_avi, strcat(TB.main_foldername, '_spectrumDim4')));
 clear specVideo
 disp('Video creation ok.')
 %clear tmp_BG tmp_A tmp_DELTA DELTA_Smooth A_Smooth BG_Smooth ArterySpectrum BgSpectrum DeltaSpectrum
@@ -145,7 +145,7 @@ ylabel('A.U.', 'FontSize', 14);
 legend('Artery', 'Background')
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, sprintf("%s_%s", ToolBox.main_foldername, 'Averaged_spectrum.png')));
+exportgraphics(gca, fullfile(TB.path_png, sprintf("%s_%s", TB.main_foldername, 'Averaged_spectrum.png')));
 
 % DELTA
 yAx = [0 f2];
@@ -230,9 +230,9 @@ r.Color = "yellow";
 legend('AVG', 'M1/M0', '(M2/M0)^(1/2)')
 hold off
 
-print('-f38', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_deltaSpectrogram.png')));
-print('-f39', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_arterySpectrogram.png')));
-print('-f40', '-dpng', fullfile(ToolBox.PW_path_png, strcat(ToolBox.main_foldername, '_backgroundSpectrogram.png')));
+print('-f38', '-dpng', fullfile(TB.path_png, strcat(TB.main_foldername, '_deltaSpectrogram.png')));
+print('-f39', '-dpng', fullfile(TB.path_png, strcat(TB.main_foldername, '_arterySpectrogram.png')));
+print('-f40', '-dpng', fullfile(TB.path_png, strcat(TB.main_foldername, '_backgroundSpectrogram.png')));
 
 [spec_plot, delt_spec_plot] = showSpectrum(maskArtery, maskNeighbors, maskSection, SH_cube(:, :, :, 1));
 figure(spec_plot); axis tight; ax1 = axis; ax1(3) = ax1(3) - 30; ax1(4) = ax1(4); axis(ax1);
@@ -246,7 +246,7 @@ for i = 1:cubeFrameLength
     specDeltVideo(:, :, :, i) = frame2im(getframe(delt_spec_plot));
 end
 
-writeGifOnDisc(specVideo, fullfile(ToolBox.PW_path_gif, strcat(ToolBox.main_foldername, 'SH_Spectrogram.gif')), 0.1);
-writeGifOnDisc(specDeltVideo, fullfile(ToolBox.PW_path_gif, strcat(ToolBox.main_foldername, 'SH_Delta_Spectrogram.gif')), 0.1);
+writeGifOnDisc(specVideo, fullfile(TB.path_gif, strcat(TB.main_foldername, 'SH_Spectrogram.gif')), 0.1);
+writeGifOnDisc(specDeltVideo, fullfile(TB.path_gif, strcat(TB.main_foldername, 'SH_Delta_Spectrogram.gif')), 0.1);
 
 end

@@ -11,7 +11,7 @@ if statusBranch == 0
     MessBranch = 'Current branch : %s \r';
 else
     vers = readlines('version.txt');
-    MessBranch = ['PulseWave GitHub version ', char(vers)];
+    MessBranch = sprintf('PulseWave GitHub version %s\r', char(vers));
 end
 
 % Get the latest commit hash
@@ -41,6 +41,6 @@ fprintf('==========================================\rGIT VERSION :\r');
 fprintf(MessBranch, resultBranch);
 fprintf(MessHash, resultHash);
 fprintf(MessTag, resultTag);
-fprintf('==========================================\r\n ');
+fprintf('==========================================\r');
 
 end

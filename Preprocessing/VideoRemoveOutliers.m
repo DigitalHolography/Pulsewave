@@ -1,14 +1,14 @@
 function obj = VideoRemoveOutliers(obj)
 %% Outlier Cleaning
 
-PW_params = Parameters_json(obj.directory, obj.PW_param_name);
+params = Parameters_json(obj.directory, obj.param_name);
 
-if ~PW_params.removeOutliers
+if ~params.json.Preprocess.RemoveOutliersOption
     return
 end
 
 [numX, numY, numFrames] = size(obj.f_RMS_video);
-window_size = 3;
+window_size = params.json.Preprocess.WindowSize;
 
 tmp_M0_ff_cleaned = zeros(numX, numY, numFrames);
 tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);

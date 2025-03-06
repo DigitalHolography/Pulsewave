@@ -1,7 +1,7 @@
 function interpolatedBloodVelocityProfile(v_profiles_avg_r, v_profiles_std_r, numSections, name, rad, numInterp)
 
-ToolBox = getGlobalToolBox;
-PW_params = ToolBox.getParams;
+TB = getGlobalToolBox;
+params = TB.getParams;
 numCircles = size(v_profiles_avg_r, 2);
 Color_std = [0.7 0.7 0.7];
 
@@ -16,9 +16,9 @@ for circleIdx = 1:numCircles
         hold on
     end
 
-    title(['Measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
+    title(['measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_circle_%d_%s_bloodVelocityProfiles.png", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", TB.main_foldername, name, circleIdx)))
 
     % interpolatedBloodVelocityProfile Figure
 
@@ -80,22 +80,22 @@ for circleIdx = 1:numCircles
     poiseuille_fit(poiseuille_fit < 0) = 0;
     plot(poiseuille_fit, '-r', 'LineWidth', 2);
 
-    axis tight;
-    aa = axis;
-    aa(3) = -10;
-    aa(4) = 30;
-    axis(aa);
+    axis padded
+    axP = axis;
+    axis tight
+    axT = axis;
+    axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
     hold off
 
-    title(['Interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
+    title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_circle_%d_%s_interpolatedBloodVelocityProfile.png", ToolBox.main_foldername, circleIdx, name)))
+    exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_interp_profile_%s%d.png", TB.main_foldername, name, circleIdx)))
 
 end
 
 numFrames = size(v_profiles_avg_r{circleIdx}{1}, 2);
 
-if PW_params.exportVideos
+if params.exportVideos
 
     fig = figure("Visible", "off");
     ax = axes(fig);
@@ -115,7 +115,7 @@ if PW_params.exportVideos
 
     parfor circleIdx = 1:numCircles
         video = zeros(420, 560, 3, numFrames, 'single'); % Preallocate video array
-        title(['Interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
+        title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
 
         for frameIdx = 1:numFrames
             % Precompute profiles
@@ -181,7 +181,7 @@ if PW_params.exportVideos
         end
 
         % Write only once per circle
-        writeGifOnDisc(video, sprintf("circle_%d_%s_interpolatedBloodVelocityProfile", circleIdx, name), "ToolBox", ToolBox);
+        writeGifOnDisc(video, sprintf("interp_profile_%s%d", name, circleIdx), "ToolBox", TB);
     end
 
 end

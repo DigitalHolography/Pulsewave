@@ -4,7 +4,7 @@ classdef Parameters_json < handle
     properties
         path
         name
-        params
+        json
         registerVideoFlag
         refAvgStart
         refAvgEnd
@@ -16,7 +16,6 @@ classdef Parameters_json < handle
         frameHeight
         videoLength
         k
-        removeOutliers
         radius_ratio
         radius_gap
         oneCycleNinterp
@@ -100,14 +99,14 @@ classdef Parameters_json < handle
             % Constructor method
             %[~, filename, ~] = fileparts(obj.path);
             filename_json =  obj.name;
-            dir_path_json = fullfile(obj.path, 'pulsewave', 'json');
+            dir_path_json = fullfile(obj.path, 'eyeflow', 'json');
             jsonPath = fullfile(dir_path_json, filename_json);
 
             if exist(jsonPath, 'file')
                 jsonData = fileread(jsonPath);
                 parsedData = jsondecode(jsonData);
 
-                obj.params = parsedData;
+                obj.json = parsedData;
                 % Recherche de chaque paramètre
                 obj.registerVideoFlag = parsedData.Video.Register;
                 obj.refAvgStart = parsedData.Video.RefStart;
@@ -125,11 +124,8 @@ classdef Parameters_json < handle
 
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
 
-                obj.removeOutliers = parsedData.RemoveOutliersOption;
-
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
-
 
                 obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
                 obj.flatField_border = parsedData.FlatFieldCorrection.Border;
@@ -204,7 +200,7 @@ classdef Parameters_json < handle
         function WriteParametersToJson(obj, outputPath)
 
             % Convert the structure into a JSON string
-            jsonString = jsonencode(obj.params, "PrettyPrint", true);
+            jsonString = jsonencode(obj.json, "PrettyPrint", true);
 
             % Write the JSON string to the specified output path
             fileID = fopen(outputPath, 'w');
