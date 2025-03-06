@@ -7,7 +7,7 @@ arguments
     name
 end
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 
 % Save colorbar
 colorfig = figure("Visible","off");
@@ -20,6 +20,6 @@ hCB.Position = [0.10 0.3 0.81 0.35];
 colorfig.Position(4) = 0.1000;
 fontsize(gca, 15, "points");
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_colorbarVelocity%s.png", ToolBox.main_foldername, name)))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_colorbarVelocity%s.eps", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_colorbarVelocity%s.png", TB.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_eps, 'bloodFlowVelocity', sprintf("%s_colorbarVelocity%s.eps", TB.main_foldername, name)))
 end

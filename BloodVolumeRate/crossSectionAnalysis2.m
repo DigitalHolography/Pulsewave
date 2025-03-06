@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(ToolBox, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, circleIdx, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(TB, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, circleIdx, force_width)
 % Perform cross-section analysis on blood vessels.
 %
 % Inputs:
@@ -28,8 +28,8 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVeloci
 % Initialize parameters
 numSections = size(locs, 1);
 [numX, numY, numFrames] = size(v_RMS);
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
-k = PW_params.k;
+params = TB.getParams;
+k = params.k;
 circleName = sprintf('circle_%d', circleIdx);
 
 avgVolumeRate = zeros(numSections, numFrames);
@@ -61,7 +61,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
 
     if width(sectionIdx) > 2
 
-        subImgHW = round(width(sectionIdx) * PW_params.cropSection_scaleFactorWidth);
+        subImgHW = round(width(sectionIdx) * params.cropSection_scaleFactorWidth);
         %FIXME bords d IMG,
 
         xRange = max(round(-subImgHW / 2) + locs(sectionIdx, 2), 1):min(round(subImgHW / 2) + locs(sectionIdx, 2), numX);
@@ -85,7 +85,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             central_range = find(profile < 0.1 * min(profile));
         end
         centt = mean(central_range);
-        r_range = (central_range - centt) * PW_params.cropSection_pixelSize / 2 ^ k;
+        r_range = (central_range - centt) * params.cropSection_pixelSize / 2 ^ k;
         [p1, p2, p3, rsquare, p1_err, p2_err, p3_err] = customPoly2Fit(r_range', profile(central_range)');
         [r1, r2, r1_err, r2_err] = customPoly2Roots(p1, p2, p3, p1_err, p2_err, p3_err);
 
@@ -93,8 +93,8 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
             stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
         else
-            crossSectionWidth(sectionIdx) = abs(r1 - r2) / (PW_params.cropSection_pixelSize / 2 ^ k);
-            stdCrossSectionWidth(sectionIdx) = sqrt(r1_err ^ 2 + r2_err ^ 2) / (PW_params.cropSection_pixelSize / 2 ^ k);
+            crossSectionWidth(sectionIdx) = abs(r1 - r2) / (params.cropSection_pixelSize / 2 ^ k);
+            stdCrossSectionWidth(sectionIdx) = sqrt(r1_err ^ 2 + r2_err ^ 2) / (params.cropSection_pixelSize / 2 ^ k);
         end
 
         if isnan(crossSectionWidth(sectionIdx)) || crossSectionWidth(sectionIdx) > mean(sum(subImg ~= 0, 2))
@@ -102,12 +102,12 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
         end
         
-        crossSectionMask = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, PW_params);
-        mask_sections(:, :, sectionIdx) = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, PW_params);
+        crossSectionMask = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, params);
+        mask_sections(:, :, sectionIdx) = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, params);
 
         % Create Figures
-        poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, circleName, name_section, ToolBox)
-        saveCrossSectionFigure(subImg, crossSectionWidth(sectionIdx), ToolBox, circleName, name_section)
+        poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, circleName, name_section, TB)
+        saveCrossSectionFigure(subImg, crossSectionWidth(sectionIdx), TB, circleName, name_section)
 
         if rsquare < 0.6 || isnan(crossSectionWidth(sectionIdx)) || crossSectionWidth(sectionIdx) > mean(sum(subImg ~= 0, 2))
             rejected_MasksRGB(:, :, 1) = rejected_MasksRGB(:, :, 1) + mask_sections(:, :, sectionIdx);
@@ -121,8 +121,8 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         crossSectionWidth(sectionIdx) = force_width;
     end
 
-    crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) * (PW_params.cropSection_pixelSize / 2 ^ k) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
-    stdCrossSectionArea(sectionIdx) = pi * (1/2 * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
+    crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) * (params.cropSection_pixelSize / 2 ^ k) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+    stdCrossSectionArea(sectionIdx) = pi * (1/2 * (params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
 end
 
 %% Blood Volume Rate computation
@@ -185,8 +185,8 @@ for sectionIdx = 1:numSections
         %     title("Peaks of luminosity")
         %     pbaspect([1.618 1 1]);
 
-        %print(['-f' num2str(70+sectionIdx)],'-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(sectionIdx) '.png']))) ;
-        %print(['-f' num2str(1000+sectionIdx)],'-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Proj_Artery_Section_' num2str(sectionIdx) '.png']))) ;
+        %print(['-f' num2str(70+sectionIdx)],'-dpng',fullfile(ToolBox.path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(sectionIdx) '.png']))) ;
+        %print(['-f' num2str(1000+sectionIdx)],'-dpng',fullfile(ToolBox.path_png,strcat(ToolBox.main_foldername,['_Proj_Artery_Section_' num2str(sectionIdx) '.png']))) ;
 
     end
 

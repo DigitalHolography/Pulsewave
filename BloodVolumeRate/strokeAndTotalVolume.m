@@ -78,9 +78,9 @@ set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 box on
 set(gca, 'LineWidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
+exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
 
-fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+fileID = fopen(fullfile(ToolBox.path_txt, strcat(ToolBox.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'MaxSystole Blood Volume Rate Artery : %f (µL/min) \r\n', maxsystole_bvr_value);
 fprintf(fileID, 'MinDiastole Blood Volume Rate Artery : %f (µL/min) \r\n', mindiastole_bvr_value);
 fprintf(fileID, 'Stroke Volume Artery : %f (nL) \r\n', stroke_volume_value);

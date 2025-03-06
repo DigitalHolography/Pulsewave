@@ -5,17 +5,16 @@ function PWV = pulseWaveVelocity(U, mask)
 
 % U(x,y,t) usually M0
 % center the [x,y] barycenter (the center of the CRA)
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+params = TB.getParams;
 
 implay(rescale(U) .* mask);
 
 [numX, numY] = size(mask);
 N_frame = size(U, 3);
-[X, Y] = meshgrid(1:numY, 1:numX);
 
-x_bary = ToolBox.x_barycenter;
-y_bary = ToolBox.y_barycenter;
+x_bary = TB.x_barycenter;
+y_bary = TB.y_barycenter;
 
 % radii approach
 % m = floor((numX+numY)/2/10);
@@ -67,7 +66,7 @@ for kb = 2:numpoints
 end
 
 for kb = 2:numpoints
-    abs_dist(kb) = abs_dist(kb - 1) + sqrt((absx(kb) - absx(kb - 1)) ^ 2 + (absy(kb) - absy(kb - 1)) ^ 2) * PW_params.cropSection_pixelSize / 2 ^ PW_params.k;
+    abs_dist(kb) = abs_dist(kb - 1) + sqrt((absx(kb) - absx(kb - 1)) ^ 2 + (absy(kb) - absy(kb - 1)) ^ 2) * params.cropSection_pixelSize / 2 ^ params.k;
 end
 
 figure(73)
@@ -79,7 +78,7 @@ U_x = single(zeros([numpoints, N_frame]));
 for i = 1:numpoints
     sk_mask = ones(size(mask)) < 0;
     sk_mask(absy(i), absx(i)) = true;
-    sectio = imdilate(sk_mask, strel('disk', floor(numX * PW_params.masks_radius / 5))) & mask;
+    sectio = imdilate(sk_mask, strel('disk', floor(numX * params.masks_radius / 5))) & mask;
     L(sectio) = i;
     U_x(i, :) = squeeze(mean(U .* sectio, [1, 2]));
 end

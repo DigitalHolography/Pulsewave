@@ -41,7 +41,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
 
     % Get global toolbox settings
     TB = getGlobalToolBox;
-    PW_params = TB.getParams;
+    params = TB.getParams;
     
 
     % Rescale video and get dimensions
@@ -52,8 +52,8 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     x_barycenter = xy_barycenter(1);
     y_barycenter = xy_barycenter(2);
     L = (numY + numX) / 2;
-    r1 = PW_params.velocityBigRadiusRatio * L;
-    r2 = PW_params.velocitySmallRadiusRatio * L;
+    r1 = params.velocityBigRadiusRatio * L;
+    r2 = params.velocitySmallRadiusRatio * L;
 
     % Precompute R and circles
     [X, Y] = meshgrid(1:numX, 1:numY);
@@ -131,8 +131,8 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     combinedFrames = cat(1, videoInterp, mat2gray(signalPlotFrames));
 
     % Save final frames as PNGs
-    imwrite(mat2gray(signalPlotFrames(:, :, :, end)), fullfile(TB.PW_path_png, 'volumeRate', sprintf("%s_%s_plot.png", TB.PW_folder_name, dirname)));
-    imwrite(combinedFrames(:, :, :, end), fullfile(TB.PW_path_png, 'volumeRate', sprintf("%s_%s_combined.png", TB.PW_folder_name, dirname)));
+    imwrite(mat2gray(signalPlotFrames(:, :, :, end)), fullfile(TB.path_png, 'volumeRate', sprintf("%s_%s_plot.png", TB.folder_name, dirname)));
+    imwrite(combinedFrames(:, :, :, end), fullfile(TB.path_png, 'volumeRate', sprintf("%s_%s_combined.png", TB.folder_name, dirname)));
 
     % Save as GIF if not skipping frames
     if ~opt.skip

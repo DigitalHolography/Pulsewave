@@ -2,7 +2,7 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, avgVelocity, stdVeloci
 % validate_cross_section
 %   Detailed explanation goes here FIXME
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 if strcmp(type_of_vessel, 'artery')
     name_section = 'A';
 else
@@ -17,8 +17,8 @@ end
 
 numSections = size(locs, 1);
 
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
-k = PW_params.k;
+params = getParams;
+k = params.k;
 subImg_cell = cell([1 numSections]);
 subVideo_cell = cell([1 numSections]);
 
@@ -46,7 +46,7 @@ stdVelocityProfiles = cell([1 numSections]);
 for sectionIdx = 1:numSections % sectionIdx: vessel_number
     
     if width(sectionIdx) > 2
-        subImgHW = round(width(sectionIdx) * PW_params.cropSection_scaleFactorWidth);
+        subImgHW = round(width(sectionIdx) * params.cropSection_scaleFactorWidth);
         %FIXME bords d IMG,
         
         xRange = max(round(-subImgHW / 2) + locs(sectionIdx, 2), 1):min(round(subImgHW / 2) + locs(sectionIdx, 2), numX);
@@ -119,11 +119,11 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             set(gca, 'PlotBoxAspectRatio', [1, 1.618, 1]);
             f = getframe(gca); %# Capture the current window
             
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'volumeRate', 'projection', strcat(ToolBox.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
+            imwrite(f.cdata, fullfile(TB.path_png, 'volumeRate', 'projection', strcat(TB.main_foldername, insert, ['_proj_' name_section num2str(sectionIdx) '.png'])));
         end
         
         % Video_subIm_rotate = circshift(Video_subIm_rotate,[0 0 -tilt_angle_list(sectionIdx)]);
-        w = VideoWriter(fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, ['_' name_section num2str(sectionIdx) '.avi'])));
+        w = VideoWriter(fullfile(TB.path_avi, strcat(TB.main_foldername, ['_' name_section num2str(sectionIdx) '.avi'])));
         tmp_video = mat2gray(Video_subIm_rotate);
         open(w)
         
@@ -133,7 +133,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         
         close(w);
         
-        % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(PW_params.cropSection_scaleFactorSize*size(mask,1)));
+        % [ ~, ~, tmp_0, ~] = findpeaks(section_cut,1:size(subImg,1), 'MinPeakWidth', round(params.cropSection_scaleFactorSize*size(mask,1)));
         tmp = nnz(section_cut);
         crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
         stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
@@ -157,7 +157,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
             f = getframe(gca); %# Capture the current
             
             %bords blancs
-            imwrite(f.cdata, fullfile(ToolBox.PW_path_png, 'volumeRate', 'crossSection', strcat(ToolBox.main_foldername, insert, ['_' name_section num2str(sectionIdx) '.png'])));
+            imwrite(f.cdata, fullfile(TB.path_png, 'volumeRate', 'crossSection', strcat(TB.main_foldername, insert, ['_' name_section num2str(sectionIdx) '.png'])));
         end
         
         maskSlice_subImg = false(size(subImg, 1), size(subImg, 2));
@@ -166,7 +166,7 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         slice_half_thickness_tmp = min(slice_half_thickness, floor(subImgHW / 2));
         maskSlice_subImg((slice_center - slice_half_thickness_tmp):(slice_center + slice_half_thickness_tmp), :) = true;
         maskSlice_subImg = imrotate(double(maskSlice_subImg), -tilt_angle_list(sectionIdx), 'bilinear', 'crop');
-        maskSlice_subImg = maskSlice_subImg > PW_params.cropSection_maskThreshold;
+        maskSlice_subImg = maskSlice_subImg > params.cropSection_maskThreshold;
         
         %% Average the blood flow calculation over a circle before dividing by the section
         
@@ -190,8 +190,8 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         crossSectionWidth(sectionIdx) = force_width;
     end
     
-    crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
-    stdCrossSectionArea(sectionIdx) = pi * (1/2 * (PW_params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
+    crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) / 2) * (params.cropSection_pixelSize / 2 ^ k)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
+    stdCrossSectionArea(sectionIdx) = pi * (1/2 * (params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
 end
 
 %% Blood Volume Rate computation
@@ -248,8 +248,8 @@ for sectionIdx = 1:numSections
         %     title("Peaks of luminosity")
         %     pbaspect([1.618 1 1]);
         
-        %print(['-f' num2str(70+sectionIdx)],'-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(sectionIdx) '.png']))) ;
-        %print(['-f' num2str(1000+sectionIdx)],'-dpng',fullfile(ToolBox.PW_path_png,strcat(ToolBox.main_foldername,['_Proj_Artery_Section_' num2str(sectionIdx) '.png']))) ;
+        %print(['-f' num2str(70+sectionIdx)],'-dpng',fullfile(ToolBox.path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(sectionIdx) '.png']))) ;
+        %print(['-f' num2str(1000+sectionIdx)],'-dpng',fullfile(ToolBox.path_png,strcat(ToolBox.main_foldername,['_Proj_Artery_Section_' num2str(sectionIdx) '.png']))) ;
         
     end
     
@@ -266,7 +266,7 @@ end % sectionIdx
 if isempty(circle) && flagBloodVelocityProfile && flag_show_fig % only for the main circle (not all circles)
     
     bloodSectionProfile(subImg_cell, subVideo_cell, type_of_vessel);
-    % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.PW_path_dir, ToolBox.main_foldername);
+    % viscosity_video = viscosity(subImg_cell, subVideo_cell, tilt_angle_list, ToolBox.path_dir, ToolBox.main_foldername);
     
 end
 

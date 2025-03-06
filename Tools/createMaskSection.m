@@ -1,7 +1,7 @@
-function [maskSection, VesselImageRGB] = createMaskSection(ToolBox, img, r1, r2, xy_barycenter, figname, maskArtery, maskVein,option)
+function [maskSection, VesselImageRGB] = createMaskSection(TB, img, r1, r2, xy_barycenter, figname, maskArtery, maskVein,option)
 
 arguments
-    ToolBox
+    TB
     img
     r1
     r2
@@ -106,11 +106,11 @@ if isempty(maskVein)
         maskSectionRGB .* ~maskArtery + ...
         img_RGB .* ~maskArtery .* ~maskSection;
 
-    if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
-        mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
+    if ~isfolder(fullfile(TB.path_png, 'mask'))
+        mkdir(fullfile(TB.path_png, 'mask'));
     end
 
-    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
+    imwrite(VesselImageRGB, fullfile(TB.path_png, 'mask', sprintf("%s_%s.png", TB.main_foldername, figname)), 'png');
 
 else
 
@@ -140,10 +140,10 @@ else
         maskSectionRGB .* ~maskVessel + ...
         img_RGB .* ~maskArtery .* ~maskVein .* ~maskSection;
 
-    if ~isfolder(fullfile(ToolBox.PW_path_png, 'mask'))
-        mkdir(fullfile(ToolBox.PW_path_png, 'mask'));
+    if ~isfolder(fullfile(TB.path_png, 'mask'))
+        mkdir(fullfile(TB.path_png, 'mask'));
     end
-    imwrite(VesselImageRGB, fullfile(ToolBox.PW_path_png, 'mask', sprintf("%s_%s.png", ToolBox.main_foldername, figname)), 'png');
+    imwrite(VesselImageRGB, fullfile(TB.path_png, 'mask', sprintf("%s_%s.png", TB.main_foldername, figname)), 'png');
 end
 
 end

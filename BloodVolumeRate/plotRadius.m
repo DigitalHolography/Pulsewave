@@ -1,6 +1,6 @@
 function [mean_BvrT, mean_std_BvrT] = plotRadius(vr_avg_r, vr_std_r, fullTime, rad, index_start, index_end, name)
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 
 numCircles = size(vr_avg_r, 1);
 Color_std = [0.7 0.7 0.7];
@@ -37,7 +37,7 @@ title("Time average of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'LineWidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_mean_%s_radius.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_mean_%s_radius.png", TB.main_foldername, name)))
 
 figure("Visible","off");
 
@@ -60,7 +60,7 @@ title("Radial variations of Blood Volume Rate")
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_variance_%s_time.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_variance_%s_time.png", TB.main_foldername, name)))
 
 figure("Visible", "off");
 
@@ -103,9 +103,9 @@ title(sprintf("Total blood volume rate (Avg. %0.2f µL/min)", mean_BvrT_value))
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 set(gca, 'Linewidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_allrad_%s_time.png", ToolBox.main_foldername, name)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_allrad_%s_time.png", TB.main_foldername, name)))
 
-fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'PW_main_outputs', '.txt')), 'a');
+fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'Mean Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_BvrT_value);
 fprintf(fileID, 'Std Blood Volume Rate %s : %f (µL/min) \r\n', name,mean_std_BvrT_value);
 fclose(fileID);

@@ -1,7 +1,6 @@
 function topvel2csv(t, top_vel, top_vel_std, name)
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+TB = getGlobalToolBox;
 
 %csv output of the widths
 T = table();
@@ -17,6 +16,6 @@ for rIdx = 1:numR
     end
 end
 
-writetable(T,fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'MaxVelocityTable', '_', name, '.csv')));
+writetable(T,fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'MaxVelocityTable', '_', name, '.csv')));
 
 end

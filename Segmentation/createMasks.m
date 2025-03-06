@@ -1,12 +1,12 @@
 function [maskArtery, maskVein, maskSection, maskNeighbors, xy_barycenter] = createMasks(M0_ff_video, f_AVG_mean)
 
 TB = getGlobalToolBox;
-PW_params = TB.getParams;
+params = TB.getParams;
 
-if ~isfolder(fullfile(TB.PW_path_png, 'mask'))
-    mkdir(TB.PW_path_png, 'mask')
-    mkdir(fullfile(TB.PW_path_png, 'mask'), 'steps')
-    mkdir(fullfile(TB.PW_path_eps, 'mask'), 'steps')
+if ~isfolder(fullfile(TB.path_png, 'mask'))
+    mkdir(TB.path_png, 'mask')
+    mkdir(fullfile(TB.path_png, 'mask'), 'steps')
+    mkdir(fullfile(TB.path_eps, 'mask'), 'steps')
 end
 folder_steps = fullfile('mask', 'steps');
 
@@ -16,33 +16,33 @@ folder_steps = fullfile('mask', 'steps');
 
 [numX, numY, numFrames] = size(M0_ff_video);
 
-diaphragmRadius = PW_params.params.Mask.DiaphragmRadius;
-forceBarycenter = PW_params.params.Mask.ForceBarycenter;
-blur = PW_params.params.Mask.Blur;
-cropChoroidRadius = PW_params.params.Mask.CropChoroidRadius;
+diaphragmRadius = params.json.Mask.DiaphragmRadius;
+forceBarycenter = params.json.Mask.ForceBarycenter;
+blur = params.json.Mask.Blur;
+cropChoroidRadius = params.json.Mask.CropChoroidRadius;
 
 % Parameters for arteries
-vesselParams.threshold = PW_params.params.Mask.VascularThreshold;
-vesselParams.classes = PW_params.params.Mask.VascularClasses;
+vesselParams.threshold = params.json.Mask.VascularThreshold;
+vesselParams.classes = params.json.Mask.VascularClasses;
 
-diasysAnalysis = PW_params.params.Mask.DiaSysAnalysis;
+diasysAnalysis = params.json.Mask.DiaSysAnalysis;
 
 % Parameters for arteries
-arteryParams.threshold = PW_params.params.Mask.ArterialThreshold;
-arteryParams.classes = PW_params.params.Mask.ArterialClasses;
+arteryParams.threshold = params.json.Mask.ArterialThreshold;
+arteryParams.classes = params.json.Mask.ArterialClasses;
 
 % Parameters for veins
-veinParams.threshold = PW_params.params.Mask.VenousThreshold;
-veinParams.classes = PW_params.params.Mask.VenousClasses;
+veinParams.threshold = params.json.Mask.VenousThreshold;
+veinParams.classes = params.json.Mask.VenousClasses;
 
-minPixelSize = PW_params.params.Mask.MinPixelSize;
-CRACRV_Threshold = PW_params.params.Mask.CRACRVThreshold;
-forceVesselWidth = PW_params.params.Mask.ForceVesselWidth;
+minPixelSize = params.json.Mask.MinPixelSize;
+CRACRV_Threshold = params.json.Mask.CRACRVThreshold;
+forceVesselWidth = params.json.Mask.ForceVesselWidth;
 
-bgWidth = PW_params.params.Velocity.LocalBackgroundWidth;
+bgWidth = params.json.Velocity.LocalBackgroundWidth;
 L = (numY + numX) / 2;
-r1 = PW_params.params.SizeOfField.SmallRadiusRatio * L;
-r2 = PW_params.params.SizeOfField.BigRadiusRatio * L;
+r1 = params.json.SizeOfField.SmallRadiusRatio * L;
+r2 = params.json.SizeOfField.BigRadiusRatio * L;
 
 % 0) 2) Test the input for usual cases of wrong aquisition data
 
@@ -58,7 +58,7 @@ maskDiaphragm = diskMask(numX, numY, diaphragmRadius);
 M0_ff_img = squeeze(mean(M0_ff_video, 3));
 M0_ff_video_centered = M0_ff_video .* maskDiaphragm - (sum(M0_ff_video .* maskDiaphragm, [1 2]) ./ nnz(maskDiaphragm));
 saveImage(M0_ff_img, TB, 'all_10_M0.png', isStep = true)
-if ~isfile(fullfile(TB.PW_path_gif, sprintf("%s_M0.gif", TB.PW_folder_name)))
+if ~isfile(fullfile(TB.path_gif, sprintf("%s_M0.gif", TB.folder_name)))
     writeGifOnDisc(rescale(M0_ff_video), "M0")
 end
 
@@ -155,7 +155,7 @@ saveImage(RGBM0, TB,  'all_19_RGB.png', isStep = true)
 
 %% 2)  Improvements of the first mask
 
-if PW_params.params.Mask.ImproveMask
+if params.json.Mask.ImproveMask
 
     % 2) 0) Computation of the M0 in Diastole and in Systole
 
@@ -224,15 +224,15 @@ if PW_params.params.Mask.ImproveMask
 
     % 3) 2) Force Create Masks in case they exist
 
-    if isfile(fullfile(TB.PW_path_main, 'mask', 'forceMaskArtery.png'))
-        maskArtery = mat2gray(mean(imread(fullfile(TB.PW_path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
+    if isfile(fullfile(TB.path_main, 'mask', 'forceMaskArtery.png'))
+        maskArtery = mat2gray(mean(imread(fullfile(TB.path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
         if size(maskArtery, 1) ~= maskCircle
             maskArtery = imresize(maskArtery, [numX, numY], "nearest");
         end
     end
 
-    if isfile(fullfile(TB.PW_path_main, 'mask', 'forceMaskVein.png'))
-        maskVein = mat2gray(mean(imread(fullfile(TB.PW_path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
+    if isfile(fullfile(TB.path_main, 'mask', 'forceMaskVein.png'))
+        maskVein = mat2gray(mean(imread(fullfile(TB.path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
         if size(maskVein, 1) ~= maskCircle
             maskVein = imresize(maskVein, [numX, numY], "nearest");
         end

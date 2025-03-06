@@ -1,19 +1,19 @@
-function [sys_index_list, fullPulseWave, sys_max_list, sys_min_list] = find_systole_index(video, maskArtery)
+function [sys_index_list, fullPulse, sys_max_list, sys_min_list] = find_systole_index(video, maskArtery)
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+params = TB.getParams;
 
-fullPulseWave = squeeze(sum(video .* maskArtery, [1 2]) / nnz(maskArtery));
-pulse_init = detrend(fullPulseWave);
+fullPulse = squeeze(sum(video .* maskArtery, [1 2]) / nnz(maskArtery));
+pulse_init = detrend(fullPulse);
 pulse_init = pulse_init - mean(pulse_init, "all");
 
-%figure(990);plot(fullPulseWave);
+%figure(990);plot(fullPulse);
 
 % fullArterialPulseRmOut = filloutliers(pulse_init, 'linear');
 % fullArterialPulseClean = smoothdata(fullArterialPulseRmOut, 'lowess');
 
 diff_signal = diff(pulse_init);
-[~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * PW_params.systoleThreshold);
+[~, sys_index_list] = findpeaks(diff_signal, 1:length(diff_signal), 'MinPeakHeight', max(diff_signal) * params.systoleThreshold);
 %figure(991);plot(diff_signal);
 i=1;
 while i < (numel(sys_index_list))

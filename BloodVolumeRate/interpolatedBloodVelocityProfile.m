@@ -1,7 +1,7 @@
 function interpolatedBloodVelocityProfile(v_profiles_avg_r, v_profiles_std_r, numSections, name, rad, numInterp)
 
-ToolBox = getGlobalToolBox;
-PW_params = ToolBox.getParams;
+TB = getGlobalToolBox;
+params = TB.getParams;
 numCircles = size(v_profiles_avg_r, 2);
 Color_std = [0.7 0.7 0.7];
 
@@ -18,7 +18,7 @@ for circleIdx = 1:numCircles
 
     title(['measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", ToolBox.main_foldername, name, circleIdx)))
+    exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", TB.main_foldername, name, circleIdx)))
 
     % interpolatedBloodVelocityProfile Figure
 
@@ -89,13 +89,13 @@ for circleIdx = 1:numCircles
 
     title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_interp_profile_%s%d.png", ToolBox.main_foldername, name, circleIdx)))
+    exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_interp_profile_%s%d.png", TB.main_foldername, name, circleIdx)))
 
 end
 
 numFrames = size(v_profiles_avg_r{circleIdx}{1}, 2);
 
-if PW_params.exportVideos
+if params.exportVideos
 
     fig = figure("Visible", "off");
     ax = axes(fig);
@@ -181,7 +181,7 @@ if PW_params.exportVideos
         end
 
         % Write only once per circle
-        writeGifOnDisc(video, sprintf("interp_profile_%s%d", name, circleIdx), "ToolBox", ToolBox);
+        writeGifOnDisc(video, sprintf("interp_profile_%s%d", name, circleIdx), "ToolBox", TB);
     end
 
 end

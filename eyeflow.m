@@ -1,8 +1,8 @@
-classdef pulse < matlab.apps.AppBase
+classdef eyeflow < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        PulsewaveUIFigure             matlab.ui.Figure
+        EyeFlowUIFigure             matlab.ui.Figure
         PlayInputsButton              matlab.ui.control.Button
         EditParametersButton          matlab.ui.control.Button
         EditMasksButton               matlab.ui.control.Button
@@ -12,7 +12,7 @@ classdef pulse < matlab.apps.AppBase
         FolderManagementButton        matlab.ui.control.Button
         PreviewMasksButton            matlab.ui.control.Button
         SegmentationCheckBox          matlab.ui.control.CheckBox
-        PulsewaveanalysisCheckBox     matlab.ui.control.CheckBox
+        PulseanalysisCheckBox         matlab.ui.control.CheckBox
         velocityCheckBox              matlab.ui.control.CheckBox
         bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
         ReferenceDirectory            matlab.ui.control.TextArea
@@ -117,7 +117,7 @@ classdef pulse < matlab.apps.AppBase
             if exist("version.txt", 'file')
                 v = readlines('version.txt');
                 fprintf("==========================================\n " + ...
-                    "Welcome to Pulsewave %s\n" + ...
+                    "Welcome to EyeFlow %s\n" + ...
                     "------------------------------------------\n" + ...
                     "Developed by the DigitalHolographyFoundation\n" + ...
                     "==========================================\n", v(1));
@@ -129,7 +129,7 @@ classdef pulse < matlab.apps.AppBase
                 "PulseAnalysis\", "Scripts\", "Segmentation\", "SHAnalysis\", "Tools\");
 
             % Set the UI title
-            app.PulsewaveUIFigure.Name = ['Pulsewave ', char(v(1))];
+            app.EyeFlowUIFigure.Name = ['EyeFlow ', char(v(1))];
 
 
             % Initialize checkboxes and flags
@@ -161,17 +161,17 @@ classdef pulse < matlab.apps.AppBase
                 app.EditParametersButton.Enable = true;
             else
                 % Store original WindowStyle
-                originalWindowStyle = app.PulsewaveUIFigure.WindowStyle;
-                app.PulsewaveUIFigure.WindowStyle = 'modal'; % Prevent minimizing
+                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+                app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
 
                 selected_dir = uigetdir(last_dir);
                 if selected_dir == 0
                     fprintf('No folder selected');
-                    app.PulsewaveUIFigure.WindowStyle = originalWindowStyle; % Restore
+                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
                     return;
                 end
 
-                app.PulsewaveUIFigure.WindowStyle = originalWindowStyle; % Restore
+                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
                 app.flag_is_load = true;
                 app.Load(selected_dir);
             end
@@ -192,17 +192,17 @@ classdef pulse < matlab.apps.AppBase
                 app.EditParametersButton.Enable = true;
             else
                 % Store original WindowStyle
-                originalWindowStyle = app.PulsewaveUIFigure.WindowStyle;
-                app.PulsewaveUIFigure.WindowStyle = 'modal'; % Prevent minimizing
+                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+                app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
 
                 [selected_holo, path_holo] = uigetfile('*.holo');
                 if selected_holo == 0
                     disp('No file selected');
-                    app.PulsewaveUIFigure.WindowStyle = originalWindowStyle; % Restore
+                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
                     return;
                 end
 
-                app.PulsewaveUIFigure.WindowStyle = originalWindowStyle; % Restore
+                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
                 app.flag_is_load = true;
                 app.Load(fullfile(path_holo, selected_holo));
             end
@@ -233,17 +233,17 @@ classdef pulse < matlab.apps.AppBase
             drawnow;
 
             % Actualizes the input Parameters
-            app.file.PW_params_names = checkPulsewaveParamsFromJson(app.file.directory); % checks compatibility between found PW params and Default PW params of this version of PW.
+            app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
 
 
-            for i = 1:length(app.file.PW_params_names)
+            for i = 1:length(app.file.params_names)
 
-                app.file.PW_param_name = app.file.PW_params_names{i};
+                app.file.param_name = app.file.params_names{i};
 
                 fprintf("==========================================\n")
                 app.file.flag_Segmentation = app.SegmentationCheckBox.Value;
                 app.file.flag_SH_analysis = app.SHanalysisCheckBox.Value;
-                app.file.flag_PulseWave_analysis = app.PulsewaveanalysisCheckBox.Value;
+                app.file.flag_Pulse_analysis = app.PulseanalysisCheckBox.Value;
                 app.file.flag_velocity_analysis = app.velocityCheckBox.Value;
                 app.file.flag_bloodVolumeRate_analysis = app.bloodVolumeRateCheckBox.Value;
 
@@ -477,34 +477,34 @@ classdef pulse < matlab.apps.AppBase
             function import_param(app, ~)
                 tic
                 % Store the current WindowStyle of the main GUI
-                originalWindowStyle = app.PulsewaveUIFigure.WindowStyle;
+                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
 
                 % Temporarily set the WindowStyle to 'modal' to prevent minimizing
-                app.PulsewaveUIFigure.WindowStyle = 'modal';
+                app.EyeFlowUIFigure.WindowStyle = 'modal';
 
                 % Open the file selection dialog
-                [selected_json, path_json] = uigetfile('*.json');
+                [selected_json, json_path] = uigetfile('*.json');
                 if selected_json == 0
                     disp('No file selected');
                     % Restore the original WindowStyle
-                    app.PulsewaveUIFigure.WindowStyle = originalWindowStyle;
+                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle;
                     return;
                 end
 
                 % Restore the original WindowStyle
-                app.PulsewaveUIFigure.WindowStyle = originalWindowStyle;
+                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle;
 
                 % Process the selected file
                 for ind = 1:length(app.drawer_list)
-                    pw_path_json = fullfile(app.drawer_list{ind}, 'pulsewave', 'json');
-                    if ~isfolder(pw_path_json)
-                        mkdir(pw_path_json);
+                    path_json = fullfile(app.drawer_list{ind}, 'eyeflow', 'json');
+                    if ~isfolder(path_json)
+                        mkdir(path_json);
                     end
-                    copyfile(fullfile(path_json, selected_json), pw_path_json);
+                    copyfile(fullfile(json_path, selected_json), path_json);
 
                     % Get idx for renaming
                     idx = 0;
-                    list_dir = dir(pw_path_json);
+                    list_dir = dir(path_json);
                     for i = 1:numel(list_dir)
                         match = regexp(list_dir(i).name, '\d+$', 'match');
                         if ~isempty(match) && str2double(match{1}) >= idx
@@ -513,8 +513,8 @@ classdef pulse < matlab.apps.AppBase
                     end
 
                     % Renaming
-                    copyfile(fullfile(pw_path_json, selected_json), fullfile(pw_path_json, sprintf('InputPulseWaveParams_%d.json', idx)));
-                    delete(fullfile(pw_path_json, selected_json));
+                    copyfile(fullfile(path_json, selected_json), fullfile(path_json, sprintf('InputEyeFlowParams_%d.json', idx)));
+                    delete(fullfile(path_json, selected_json));
                 end
                 toc
             end
@@ -559,12 +559,12 @@ classdef pulse < matlab.apps.AppBase
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, ~)
             if (app.flag_is_load)
-                main_path = fullfile(app.file.directory, 'pulsewave');
-                if isfile(fullfile(main_path,'json',app.file.PW_param_name))
-                    disp(['opening : ', fullfile(main_path,'json',app.file.PW_param_name)])
-                    winopen(fullfile(main_path,'json',app.file.PW_param_name));
+                main_path = fullfile(app.file.directory, 'eyeflow');
+                if isfile(fullfile(main_path,'json',app.file.param_name))
+                    disp(['opening : ', fullfile(main_path,'json',app.file.param_name)])
+                    winopen(fullfile(main_path,'json',app.file.param_name));
                 else
-                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.PW_param_name)])
+                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.param_name)])
                 end
             else
                 fprintf(2, "no input loaded\n")
@@ -573,70 +573,70 @@ classdef pulse < matlab.apps.AppBase
 
         % Button pushed function: EditMasksButton
         function EditMasksButtonPushed(app, ~)
-            ToolBox = getGlobalToolBox;
+            TB = getGlobalToolBox;
 
-            if isempty(ToolBox)
-                ToolBox = ToolBoxClass(app.file.directory, app.file.PW_param_name, 1);
+            if isempty(TB)
+                TB = ToolBoxClass(app.file.directory, app.file.param_name, 1);
             end
 
             if (app.flag_is_load)
-                if ~isfolder(fullfile(ToolBox.PW_path_main,'mask'))
-                    mkdir(fullfile(ToolBox.PW_path_main,'mask'))
+                if ~isfolder(fullfile(TB.path_main,'mask'))
+                    mkdir(fullfile(TB.path_main,'mask'))
                 end
                 try
-                    winopen(fullfile(ToolBox.PW_path_main,'mask'));
+                    winopen(fullfile(TB.path_main,'mask'));
                 catch
                     disp("opening failed.")
                 end
                 try
-                    list_dir = dir(ToolBox.PW_path_main);
+                    list_dir = dir(TB.path_main);
                     idx=0;
                     for i=1:length(list_dir)
-                        if contains(list_dir(i).name, ToolBox.PW_name)
+                        if contains(list_dir(i).name, TB.EF_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
                             if ~isempty(match) && str2double(match{1}) >= idx
                                 idx = str2double(match{1}) ; %suffix
                             end
                         end
                     end
-                    PW_path_dir = fullfile(ToolBox.PW_path_main, ToolBox.PW_folder_name);
+                    path_dir = fullfile(TB.path_main, TB.folder_name);
 
-                    disp(['Copying from : ',fullfile(PW_path_dir,'png','mask')])
-                    copyfile(fullfile(PW_path_dir,'png', 'mask', sprintf("%s_maskArtery.png", ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main, 'mask', 'MaskArtery.png'));
-                    copyfile(fullfile(PW_path_dir,'png', 'mask', sprintf("%s_maskVein.png", ToolBox.main_foldername)), fullfile(ToolBox.PW_path_main, 'mask', 'MaskVein.png'));
+                    disp(['Copying from : ',fullfile(path_dir,'png','mask')])
+                    copyfile(fullfile(path_dir,'png', 'mask', sprintf("%s_maskArtery.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskArtery.png'));
+                    copyfile(fullfile(path_dir,'png', 'mask', sprintf("%s_maskVein.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskVein.png'));
                 catch
                     disp("last auto mask copying failed.")
                 end
                 try
 
-                    copyfile(fullfile(ToolBox.PW_path,'png',sprintf("%s_M0.png",ToolBox.main_foldername)),fullfile(ToolBox.PW_path_main,'mask','M0.png'));
-                    PW_folder_name = strcat(ToolBox.main_foldername, '_PW');
-                    list_dir = dir(ToolBox.PW_path_main);
+                    copyfile(fullfile(TB.path,'png',sprintf("%s_M0.png",TB.main_foldername)),fullfile(TB.path_main,'mask','M0.png'));
+                    folder_name = strcat(TB.main_foldername, '_EF');
+                    list_dir = dir(TB.path_main);
                     idx=0;
                     for i=1:length(list_dir)
-                        if contains(list_dir(i).name, PW_folder_name)
+                        if contains(list_dir(i).name, folder_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
                             if ~isempty(match) && str2double(match{1}) >= idx
                                 idx = str2double(match{1}) ; %suffix
                             end
                         end
                     end
-                    PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
-                    copyfile(fullfile(PW_path_dir,'gif',sprintf("%s_M0.gif",PW_folder_name)),fullfile(ToolBox.PW_path_main,'mask','M0.gif'));
+                    folder_name = sprintf('%s_%d', folder_name, idx);
+                    copyfile(fullfile(path_dir,'gif',sprintf("%s_M0.gif",folder_name)),fullfile(TB.path_main,'mask','M0.gif'));
                 catch
 
                     disp("last M0 png and gif copying failed")
                 end
 
                 try
-                    v = VideoReader(fullfile(ToolBox.PW_path,'avi',sprintf("%s_M0.avi",ToolBox.main_foldername)));
+                    v = VideoReader(fullfile(TB.path,'avi',sprintf("%s_M0.avi",TB.main_foldername)));
                     M0_video = read(v); clear v;
                     M0_video = rescale(single(squeeze(mean(M0_video,3))));
                     sz = size(M0_video);
                     [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video,  diskMask(sz(1),sz(2),0.9));
                     diasysArtery = M0_Systole_img - M0_Diastole_img;
                     RGBdiasys = labDuoImage(mean(M0_video,3), diasysArtery);
-                    imwrite(RGBdiasys, fullfile(ToolBox.PW_path_main,'mask','DiaSysRGB.png'), 'png');
+                    imwrite(RGBdiasys, fullfile(TB.path_main,'mask','DiaSysRGB.png'), 'png');
                 catch
 
                     disp("Diasys png failed")
@@ -644,12 +644,12 @@ classdef pulse < matlab.apps.AppBase
 
                 end
 
-                try
-                    % Commented until further fixes
-                    % openmaskinpaintnet(fullfile(ToolBox.PW_path_main,'mask','M0.png'), fullfile(ToolBox.PW_path_main,'mask','DiaSysRGB.png'));
-                catch
-                    disp("paint.net macro failed")
-                end
+                % try
+                %     Commented until further fixes
+                %     openmaskinpaintnet(fullfile(ToolBox.path_main,'mask','M0.png'), fullfile(ToolBox.path_main,'mask','DiaSysRGB.png'));
+                % catch
+                %     disp("paint.net macro failed")
+                % end
 
             else
 
@@ -668,15 +668,15 @@ classdef pulse < matlab.apps.AppBase
 
             pathToMLAPP = fileparts(mfilename('fullpath'));
 
-            % Create PulsewaveUIFigure and hide until all components are created
-            app.PulsewaveUIFigure = uifigure('Visible', 'off');
-            app.PulsewaveUIFigure.Color = [0.149 0.149 0.149];
-            app.PulsewaveUIFigure.Position = [100 100 640 421];
-            app.PulsewaveUIFigure.Name = 'Pulsewave';
-            app.PulsewaveUIFigure.Icon = fullfile(pathToMLAPP, 'pulsewave_logo_temp.png');
+            % Create EyeFlowUIFigure and hide until all components are created
+            app.EyeFlowUIFigure = uifigure('Visible', 'off');
+            app.EyeFlowUIFigure.Color = [0.149 0.149 0.149];
+            app.EyeFlowUIFigure.Position = [100 100 640 421];
+            app.EyeFlowUIFigure.Name = 'EyeFlow';
+            app.EyeFlowUIFigure.Icon = fullfile(pathToMLAPP, 'eyeflow_logo.png');
 
             % Create a grid layout to manage resizing
-            grid = uigridlayout(app.PulsewaveUIFigure);
+            grid = uigridlayout(app.EyeFlowUIFigure);
             grid.RowHeight = {'fit', '1x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
             grid.ColumnWidth = {'1x', '1x', '1x', '1x'};
             grid.BackgroundColor = [0.149, 0.149, 0.149];
@@ -749,7 +749,7 @@ classdef pulse < matlab.apps.AppBase
             app.EditParametersButton.Layout.Row = 3;
             app.EditParametersButton.Layout.Column = 1;
             app.EditParametersButton.Text = 'Edit Parameters';
-            app.EditParametersButton.Tooltip = 'Find the pulse wave parameters here.';
+            app.EditParametersButton.Tooltip = 'Find the eyeflow parameters here.';
 
             app.EditMasksButton = uibutton(grid, 'push');
             app.EditMasksButton.ButtonPushedFcn = createCallbackFcn(app, @EditMasksButtonPushed, true);
@@ -779,7 +779,7 @@ classdef pulse < matlab.apps.AppBase
             app.PreviewMasksButton.Layout.Column = 4;
             app.PreviewMasksButton.Text = 'Preview Masks';
 
-            % Checkboxes: Segmentation, Pulse wave analysis, Blood Flow Velocity, Blood Volume Rate, SH analysis
+            % Checkboxes: Segmentation, Pulse analysis, Blood Flow Velocity, Blood Volume Rate, SH analysis
             app.SegmentationCheckBox = uicheckbox(grid);
             app.SegmentationCheckBox.Text = 'Segmentation';
             app.SegmentationCheckBox.FontSize = 16;
@@ -788,13 +788,13 @@ classdef pulse < matlab.apps.AppBase
             app.SegmentationCheckBox.Layout.Column = [1, 4];
             app.SegmentationCheckBox.Value = true;
 
-            app.PulsewaveanalysisCheckBox = uicheckbox(grid);
-            app.PulsewaveanalysisCheckBox.Text = 'Pulse wave analysis';
-            app.PulsewaveanalysisCheckBox.FontSize = 16;
-            app.PulsewaveanalysisCheckBox.FontColor = [1 1 1];
-            app.PulsewaveanalysisCheckBox.Layout.Row = 5;
-            app.PulsewaveanalysisCheckBox.Layout.Column = [1, 4];
-            app.PulsewaveanalysisCheckBox.Value = true;
+            app.PulseanalysisCheckBox = uicheckbox(grid);
+            app.PulseanalysisCheckBox.Text = 'Pulse analysis';
+            app.PulseanalysisCheckBox.FontSize = 16;
+            app.PulseanalysisCheckBox.FontColor = [1 1 1];
+            app.PulseanalysisCheckBox.Layout.Row = 5;
+            app.PulseanalysisCheckBox.Layout.Column = [1, 4];
+            app.PulseanalysisCheckBox.Value = true;
 
             app.velocityCheckBox = uicheckbox(grid);
             app.velocityCheckBox.Text = 'Blood Flow Velocity';
@@ -857,10 +857,10 @@ classdef pulse < matlab.apps.AppBase
             app.OverWriteCheckBox.Layout.Column = 2;
             app.OverWriteCheckBox.Value = false;
             app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
-            app.OverWriteCheckBox.Tooltip = 'Overwrite the new results in the last PW_ result folder (to save space)';
+            app.OverWriteCheckBox.Tooltip = 'Overwrite the new results in the last EF_ result folder (to save space)';
 
             % Show the figure after all components are created
-            app.PulsewaveUIFigure.Visible = 'on';
+            app.EyeFlowUIFigure.Visible = 'on';
         end
     end
 
@@ -868,13 +868,13 @@ classdef pulse < matlab.apps.AppBase
     methods (Access = public)
 
         % Construct app
-        function app = pulse
+        function app = eyeflow
 
             % Create UIFigure and components
             createComponents(app)
 
             % Register the app with App Designer
-            registerApp(app, app.PulsewaveUIFigure)
+            registerApp(app, app.EyeFlowUIFigure)
 
             % Execute the startup function
             runStartupFcn(app, @startupFcn)
@@ -888,7 +888,7 @@ classdef pulse < matlab.apps.AppBase
         function delete(app)
 
             % Delete UIFigure when app is deleted
-            delete(app.PulsewaveUIFigure)
+            delete(app.EyeFlowUIFigure)
         end
     end
 end

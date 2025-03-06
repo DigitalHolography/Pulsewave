@@ -21,9 +21,9 @@ function [M0_binary_img] = frangiVesselness(M0_ff_img, name, TB, opt)
     M0_norm_img = rescale(M0_gray_img);
 
 %     % Step 2: Denoising
-%     PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+%     params = TB.getParams;
 %     % Apply Gaussian smoothing
-%     sigma = PW_params.gauss_filt_size_for_barycenter; % Standard deviation for Gaussian filter
+%     sigma = params.gauss_filt_size_for_barycenter; % Standard deviation for Gaussian filter
 %     M0_gaussian_img = imgaussfilt(M0_norm_img, sigma);
 % 
 %     % Apply Non-Local Means (NLM) denoising
@@ -33,13 +33,13 @@ function [M0_binary_img] = frangiVesselness(M0_ff_img, name, TB, opt)
 %                            'SearchWindowSize', search_window, ...
 %                            'ComparisonWindowSize', patch_size);
 
-    PW_params = TB.getParams();
+    params = TB.getParams();
 
     % Step 3: Vessel Enhancement
     % Apply Frangi Vesselness Filter
     M0_vesselness_img = FrangiFilter2D(M0_norm_img, ...
-        "FrangiScaleRange", PW_params.params.Mask.VesselnessSigmaRange, ...
-        "FrangiScaleRatio", PW_params.params.Mask.VesselnessSigmaStep, ...
+        "FrangiScaleRange", params.json.Mask.VesselnessSigmaRange, ...
+        "FrangiScaleRatio", params.json.Mask.VesselnessSigmaStep, ...
         "BlackWhite", opt.BlackWhite);
 
     % Thresholding to segment vessels (optional)

@@ -1,4 +1,4 @@
-function poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, insert, name_section, ToolBox)
+function poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, insert, name_section, TB)
 % Generate a figure showing the velocity profile and Poiseuille fit.
 %
 % Inputs:
@@ -15,11 +15,11 @@ function poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, 
 %   sectionIdx      - Scalar, index of the current section.
 
 % Get parameters
-PW_params = ToolBox.getParams;
-k = PW_params.k;
+params = TB.getParams;
+k = params.k;
 
 % Calculate x-axis values (position in µm)
-r_ = ((1:length(profile)) - centt) * (PW_params.cropSection_pixelSize / 2 ^ k) * 1000;
+r_ = ((1:length(profile)) - centt) * (params.cropSection_pixelSize / 2 ^ k) * 1000;
 
 % Calculate standard deviation and confidence interval
 stdprofile = std(subImg, [], 1);
@@ -72,8 +72,8 @@ title('velocity profile and laminar flow model fit');
 
 % Save figure
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', 'projection', ...
-    sprintf('%s_%s_proj_poiseuille_%s.png', ToolBox.main_foldername, insert, name_section)))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'projection', ...
+    sprintf('%s_%s_proj_poiseuille_%s.png', TB.main_foldername, insert, name_section)))
 
 % Close figure
 close(f);

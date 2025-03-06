@@ -1,4 +1,4 @@
-function saveCrossSectionFigure(subImg, crossSectionWidth, ToolBox, insert, name_section)
+function saveCrossSectionFigure(subImg, crossSectionWidth, TB, insert, name_section)
 % Save a figure showing the cross-section of the blood vessel.
 %
 % Inputs:
@@ -49,8 +49,8 @@ axis off;
 frame = getframe(gca);
 
 % Save the figure
-outputPath = fullfile(ToolBox.PW_path_png, 'volumeRate', 'crossSection', ...
-    sprintf('%s_%s_cross_section_%s.png', ToolBox.main_foldername, insert, name_section));
+outputPath = fullfile(TB.path_png, 'volumeRate', 'crossSection', ...
+    sprintf('%s_%s_cross_section_%s.png', TB.main_foldername, insert, name_section));
 imwrite(frame.cdata, outputPath);
 
 % Close the figure

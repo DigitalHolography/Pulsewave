@@ -1,6 +1,6 @@
 function sectionImage(M0_ff_img, mask_r, name)
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 [numX, numY] = size(M0_ff_img);
 numCircles = size(mask_r, 3);
 
@@ -26,6 +26,6 @@ end
 
 figure("Visible","off")
 imshow(imgRGB)
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s.png", ToolBox.main_foldername, sprintf('%s_sections%s', name))))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_%s.png", TB.main_foldername, sprintf('%s_sections%s', name))))
 
 end

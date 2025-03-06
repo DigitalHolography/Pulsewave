@@ -1,10 +1,10 @@
 function [] = spectrum_analysis(SH_cube, data_M0)
 
-ToolBox = getGlobalToolBox;
-fs = ToolBox.fs / 2;
-f1 = ToolBox.f1;
-f2 = (ToolBox.f1 + ToolBox.f2) / 2;
-f3 = ToolBox.f2;
+TB = getGlobalToolBox;
+fs = TB.fs / 2;
+f1 = TB.f1;
+f2 = (TB.f1 + TB.f2) / 2;
+f3 = TB.f2;
 cubeFrameLength = size(SH_cube, 4);
 batch_size = size(SH_cube, 3);
 % gw = 3;
@@ -99,10 +99,10 @@ end
 
 %% save video
 
-writeVideoOnDisc(SH_ColorVideoRGB, fullfile(ToolBox.PW_path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')));
+writeVideoOnDisc(SH_ColorVideoRGB, fullfile(TB.path_avi, strcat(TB.main_foldername, '_SH_ColorVideo')));
 writeGifOnDisc(SH_ColorVideoRGB, (strcat('ColorVideo.gif')), 0.1);
 
-imwrite(ImHSVscaled, fullfile(ToolBox.PW_path_png, [ToolBox.main_foldername, '_ColorDoppler.png']), 'png');
+imwrite(ImHSVscaled, fullfile(TB.path_png, [TB.main_foldername, '_ColorDoppler.png']), 'png');
 
 
 close([15, 16 17])

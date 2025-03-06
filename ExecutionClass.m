@@ -22,13 +22,13 @@ classdef ExecutionClass < handle
         vRMS % video estimate of velocity map in retinal vessels
 
         directory char % directory of input data (from HoloDoppler or HoloVibes)
-        PW_params_names cell % filenames of all the current input parameters ('InputPulsewaveParams.json' for example by default)
-        PW_param_name char % current filename
+        params_names cell % filenames of all the current input parameters ('InputEyeFlowParams.json' for example by default)
+        param_name char % current filename
         filenames char % name id used for storing the measured rendered data
 
         flag_Segmentation
         flag_SH_analysis
-        flag_PulseWave_analysis
+        flag_Pulse_analysis
         flag_velocity_analysis
         flag_bloodVolumeRate_analysis
 
@@ -56,8 +56,8 @@ classdef ExecutionClass < handle
             end
 
             % Load parameters
-            obj.PW_params_names = checkPulsewaveParamsFromJson(obj.directory);
-            obj.PW_param_name = obj.PW_params_names{1}; % Default behavior
+            obj.params_names = checkEyeFlowParamsFromJson(obj.directory);
+            obj.param_name = obj.params_names{1}; % Default behavior
 
             % Load video data
             if ~isfolder(path) % If .holo file
@@ -122,11 +122,11 @@ classdef ExecutionClass < handle
 
 
         function obj = analyzeData(obj)
-            % Main routine for PulseWave analysis.
+            % Main routine for EyeFlow analysis.
 
             % Initialize ToolBox and parameters
-            ToolBox = ToolBoxClass(obj.directory, obj.PW_param_name, obj.OverWrite);
-            PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+            TB = ToolBoxClass(obj.directory, obj.param_name, obj.OverWrite);
+            params = TB.getParams;
             totalTime = tic;
             saveGit;
 
@@ -142,24 +142,24 @@ classdef ExecutionClass < handle
                 fprintf("- Mask Creation took: %ds\n", round(toc(createMasksTimer)));
             end
 
-            %% PulseWave Analysis
-            if obj.flag_PulseWave_analysis
+            %% Pulse Analysis
+            if obj.flag_Pulse_analysis
                 fprintf("\n----------------------------------\nFind Systole\n----------------------------------\n");
                 findSystoleTimer = tic;
 
                 [obj.sysIdxList, ~, sysMaxList, sysMinList] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
 
                 % Log systole results
-                fileID = fopen(fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_PW_main_outputs.txt')), 'a');
-                fprintf(fileID, 'Heart beat: %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList) * ToolBox.stride / ToolBox.fs / 1000));
+                fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_EF_main_outputs.txt')), 'a');
+                fprintf(fileID, 'Heart beat: %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList) * TB.stride / TB.fs / 1000));
                 fprintf(fileID, 'Systole Indices: %s \r\n', strcat('[', sprintf("%d,", obj.sysIdxList), ']'));
                 fprintf(fileID, 'Number of Cycles: %d \r\n', numel(obj.sysIdxList) - 1);
                 fprintf(fileID, 'Max Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMaxList), ']'));
                 fprintf(fileID, 'Min Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMinList), ']'));
                 fprintf(fileID, 'Time diastolic min to systolic max derivative (ms): %f \r\n', ...
-                    1000 * mean((obj.sysIdxList(2:end) - sysMinList) * ToolBox.stride / ToolBox.fs / 1000));
+                    1000 * mean((obj.sysIdxList(2:end) - sysMinList) * TB.stride / TB.fs / 1000));
                 fprintf(fileID, 'Time diastolic min to systolic max (ms): %f \r\n', ...
-                    1000 * mean((sysMaxList(2:end) - sysMinList(1:end - 1)) * ToolBox.stride / ToolBox.fs / 1000));
+                    1000 * mean((sysMaxList(2:end) - sysMinList(1:end - 1)) * TB.stride / TB.fs / 1000));
                 fclose(fileID);
 
                 fprintf("- FindSystoleIndex took: %ds\n", round(toc(findSystoleTimer)));
@@ -170,7 +170,7 @@ classdef ExecutionClass < handle
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
                 obj.vRMS = pulseAnalysis(obj.f_RMS_video, obj.maskArtery, obj.maskVein, obj.maskSection, obj.maskNeighbors);
 
-                if PW_params.params.PulseAnalysis.ExtendedFlag
+                if params.json.PulseAnalysis.ExtendedFlag
                     extendedPulseAnalysis(obj.M0_ff_video, obj.f_RMS_video, f_AVG_mean, obj.vRMS, obj.maskArtery, obj.maskVein, obj.maskSection, obj.sysIdxList);
                 end
 
@@ -209,13 +209,13 @@ classdef ExecutionClass < handle
             end
 
             %% Spectral Analysis
-            if obj.flag_SH_analysis && isfile(fullfile(ToolBox.PW_path, 'raw', [strcat(ToolBox.main_foldername, '_SH'), '.raw']))
+            if obj.flag_SH_analysis && isfile(fullfile(TB.EF_path, 'raw', [strcat(TB.main_foldername, '_SH'), '.raw']))
                 fprintf("\n----------------------------------\nSpectral Analysis\n----------------------------------\n");
                 timeSpectralAnalysis = tic;
 
                 % Import SH data
-                tmpname = strcat(ToolBox.main_foldername, '_SH');
-                fileID = fopen(fullfile(ToolBox.PW_path, 'raw', [tmpname, '.raw']));
+                tmpname = strcat(TB.main_foldername, '_SH');
+                fileID = fopen(fullfile(TB.EF_path, 'raw', [tmpname, '.raw']));
                 videoSH = fread(fileID, 'float32');
                 fclose(fileID);
 
@@ -245,10 +245,10 @@ classdef ExecutionClass < handle
 
             %% Final Output
             tTotal = toc(totalTime);
-            fprintf("\n----------------------------------\nTotal Pulsewave timing: %ds\n", round(tTotal));
+            fprintf("\n----------------------------------\nTotal EyeFlow timing: %ds\n", round(tTotal));
             fprintf("End Computer Time: %s\n", datetime('now', 'Format', 'yyyy/MM/dd HH:mm:ss'));
 
-            clear ToolBox;
+            clear TB;
             diary off;
             displaySuccessMsg(1);
         end

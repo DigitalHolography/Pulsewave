@@ -1,23 +1,23 @@
-function [PW_paramsNames] = checkPulsewaveParamsFromJson(path)
+function [paramsNames] = checkEyeFlowParamsFromJson(path)
 
-    % This function checks if in the folder you can find a Pulsewave
+    % This function checks if in the folder you can find a EyeFlow
     % parameter file. If not it creates a Default one. If you find obsolete files it also
     % fills them with the new parameters
 
     % Additionally this function returns the list of the names of all valid
-    % PulseWaveParameters files found (they must be in the form
-    % 'InputPulsewaveParams*.json')
+    % EyeFlowParameters files found (they must be in the form
+    % 'InputEyeFlowParams*.json')
 
-    dir_path_json = fullfile(path, 'pulsewave', 'json');
+    dir_path_json = fullfile(path, 'eyeflow', 'json');
 
     % We first check if an old txt parameter exists and write a json parameter file instead
-    filename_txt = 'InputPulsewaveParams.txt';
-    filename_json = 'InputPulsewaveParams.json';
+    filename_txt = 'InputEyeFlowParams.txt';
+    filename_json = 'InputEyeFlowParams.json';
     dir_path_txt = fullfile(path, 'txt');
     txtFilePath = fullfile(dir_path_txt, filename_txt);
     txt_exists = exist(txtFilePath);
 
-    jsonInput = fileread(fullfile("Parameters","DefaultPulsewaveParams.json"));
+    jsonInput = fileread(fullfile("Parameters","DefaultEyeFlowParams.json"));
     init_data = jsondecode(jsonInput);
 
     if txt_exists
@@ -36,8 +36,8 @@ function [PW_paramsNames] = checkPulsewaveParamsFromJson(path)
         fclose(fileID);
     end
 
-    % We now check all the existing json files named like 'InputPulsewaveParams*.json'
-    jsonFiles = dir(fullfile(dir_path_json, 'InputPulsewaveParams*.json'));
+    % We now check all the existing json files named like 'InputEyeFlowParams*.json'
+    jsonFiles = dir(fullfile(dir_path_json, 'InputEyeFlowParams*.json'));
 
     if ~isempty(jsonFiles)
         disp("Found parameter files : ")
@@ -85,14 +85,14 @@ function [PW_paramsNames] = checkPulsewaveParamsFromJson(path)
 
     % At this point at least one parameter file exists. We collect the
     % names of all and return it.
-    jsonFiles = dir(fullfile(dir_path_json, 'InputPulsewaveParams*.json'));
+    jsonFiles = dir(fullfile(dir_path_json, 'InputEyeFlowParams*.json'));
 
     % Initialize a cell array to store the file names
-    PW_paramsNames = cell(1, numel(jsonFiles));
+    paramsNames = cell(1, numel(jsonFiles));
     
     % Store each file name in the cell array
     for i = 1:numel(jsonFiles)
-        PW_paramsNames{i} = jsonFiles(i).name;
+        paramsNames{i} = jsonFiles(i).name;
     end
 
 end

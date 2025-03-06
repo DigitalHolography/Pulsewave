@@ -1,7 +1,6 @@
 function widthHistogram(width, width_std, area, name)
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
+TB = getGlobalToolBox;
 
 figure("Visible","off")
 histogram(2 * sqrt(area(area ~= 0) / pi) * 1000, 50, FaceColor = 'k');
@@ -12,7 +11,7 @@ aa(4) = aa(4) * 1.14;
 axis(aa);
 title(sprintf('Histogram of %s sections width (µm)', name));
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('histogram_of_%s_section_width.png', name))))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_%s", TB.main_foldername, sprintf('histogram_of_%s_section_width.png', name))))
 
 %csv output of the widths
 T = table();
@@ -26,6 +25,6 @@ for rIdx = 1:numR
     end
 end
 
-writetable(T,fullfile(ToolBox.PW_path_txt, strcat(ToolBox.main_foldername, '_', 'WidthTable', '_', name, '.csv')));
+writetable(T,fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'WidthTable', '_', name, '.csv')));
 
 end

@@ -8,13 +8,14 @@ function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMa
     %   mask (logical, numX x numY) : result of the region growing segmentation
 
 %% INITIALISATION
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+params = TB.getParams;
 
     [numX, numY] = size(img);
     mask = seed_map; % will be update at each step ;  represents the pixels already visited
     max_iter = round(numX / 4);
-    floor = PW_params.RG_FloorThreshold * mean2(img(conditionMask));
-    alpha = PW_params.RG_alpha;
+    floor = params.RG_FloorThreshold * mean2(img(conditionMask));
+    alpha = params.RG_alpha;
 
 %Represents the seeds points as a list of coordinates
 [row, col] = find(seed_map);

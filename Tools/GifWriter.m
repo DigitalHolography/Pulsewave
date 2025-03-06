@@ -34,26 +34,26 @@ classdef GifWriter < handle
             end
 
             if isempty(opt.ToolBox)
-                ToolBox = getGlobalToolBox;
+                TB = getGlobalToolBox;
             else
-                ToolBox = opt.ToolBox;
+                TB = opt.ToolBox;
             end
 
-            PW_params = ToolBox.getParams;
+            params = TB.getParams;
             obj.name = name;
-            obj.filename_gif = fullfile(ToolBox.PW_path_gif, sprintf("%s_%s.gif", ToolBox.PW_folder_name, name));
-            obj.filename_avi = fullfile(ToolBox.PW_path_avi, sprintf("%s_%s.avi", ToolBox.PW_folder_name, name));
-            obj.filename_mp4 = fullfile(ToolBox.PW_path_mp4, sprintf("%s_%s.mp4", ToolBox.PW_folder_name, name));
+            obj.filename_gif = fullfile(TB.path_gif, sprintf("%s_%s.gif", TB.folder_name, name));
+            obj.filename_avi = fullfile(TB.path_avi, sprintf("%s_%s.avi", TB.folder_name, name));
+            obj.filename_mp4 = fullfile(TB.path_mp4, sprintf("%s_%s.mp4", TB.folder_name, name));
 
             if isnan(timePeriodMin)
-                obj.timePeriodMin = PW_params.timePeriodMin;
+                obj.timePeriodMin = params.timePeriodMin;
             else
                 obj.timePeriodMin = timePeriodMin;
             end
 
             obj.numFramesFixed = numFramesFixed;
 
-            obj.timePeriod = ToolBox.stride / ToolBox.fs / 1000;
+            obj.timePeriod = TB.stride / TB.fs / 1000;
             obj.numFrames = gifLength;
             obj.t = tic;
 

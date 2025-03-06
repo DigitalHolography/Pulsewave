@@ -1,9 +1,9 @@
 function obj = VideoNormalizingLocally(obj)
 
-PW_params = Parameters_json(obj.directory,obj.PW_param_name);
+params = Parameters_json(obj.directory,obj.param_name);
 
 [N, M, F] = size(obj.M0_data_video);
-alpha = PW_params.alphaConvolveNorm;
+alpha = params.alphaConvolveNorm;
 D = (M + N) / 2;
 
 if alpha == 1
@@ -24,12 +24,12 @@ else
     S = sum(obj.M0_data_video, [1, 2]);
     S2 = sum(M0_data_convoluated, [1, 2]);
     
-    imwrite(rescale(mean(M0_data_convoluated,3)),fullfile(obj.directory,'pulsewave', sprintf("%s_alpha=%s_%s", obj.filenames, num2str(alpha), 'M0_Convolution_Norm.png')), 'png');
+    imwrite(rescale(mean(M0_data_convoluated,3)),fullfile(obj.directory, 'eyeflow', sprintf("%s_alpha=%s_%s", obj.filenames, num2str(alpha), 'M0_Convolution_Norm.png')), 'png');
     
     M0_data_convoluated = M0_data_convoluated .* S ./ S2; % normalizing to get the average with alpha = 0;
 end
 
-if PW_params.NormTempMode
+if params.NormTempMode
         M0_data_convoluated = mean(M0_data_convoluated, 3);
 end
 
@@ -43,6 +43,6 @@ obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_convoluated;
 fitParams = fitGaussian(binCenters, radialAverage);
 
 % Apply flat-field correction using the fitted Gaussian parameters
-obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, PW_params.flatField_border) ./ M0_data_convoluated;
+obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, params.flatField_border) ./ M0_data_convoluated;
 
 end

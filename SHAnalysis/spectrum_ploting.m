@@ -117,8 +117,8 @@ om_RMS_line.Tag = 'f RMS';
 text(0, I_omega_background, 'f_{RMS background}', 'HorizontalAlignment','center', 'VerticalAlignment','top')
 legend('','','','','','Arteries', 'Background');
 
-% print('-f33533','-depsc', 'C:\Users\Vladikavkaz\Pictures\article_PulseWave\spectrum.eps') ;
-% print('-f33533','-dpng', 'C:\Users\Vladikavkaz\Pictures\article_PulseWave\spectrum.png') ;
+% print('-f33533','-depsc', 'C:\Users\Vladikavkaz\Pictures\article_Pulse\spectrum.eps') ;
+% print('-f33533','-dpng', 'C:\Users\Vladikavkaz\Pictures\article_Pulse\spectrum.png') ;
 
 
 % x = [0.74 0.79];    % adjust length and location of arrow 

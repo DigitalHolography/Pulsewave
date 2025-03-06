@@ -1,8 +1,8 @@
 function [data_ref, data_test] = compare_json_data(data_ref, data_test)
 
-    % jsonData = fileread('InputPulsewaveParams.json');
+    % jsonData = fileread('InputEyeFlowParams.json');
     % data_ref = jsondecode(jsonData);
-    % jsonData = fileread('Copy_of_InputPulsewaveParams.json');
+    % jsonData = fileread('Copy_of_InputEyeFlowParams.json');
     % data_test = jsondecode(jsonData);
 
     if isstruct(data_ref)
