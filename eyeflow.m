@@ -522,8 +522,11 @@ classdef eyeflow < matlab.apps.AppBase
             function render(~, ~)
                 for i = 1:length(app.drawer_list)
                     tic
+                    try
                     app.Load(app.drawer_list{i});
                     app.ExecuteButtonPushed();
+                    catch
+                    end
                     app.ClearButtonPushed();
                     toc
                 end
