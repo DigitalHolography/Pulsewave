@@ -20,5 +20,5 @@ for rIdx = 1:numR
     T.(sprintf('STDVolumeRate_%d_Total_%s', rIdx, type)) = squeeze(sum(vr_std_mat(rIdx, :, :), 2));
 end
 
-writetable(T,fullfile(ToolBox.path_txt, strcat(ToolBox.main_foldername, '_', 'BloodVolumeRateTable', '_', type, '.csv')));
+writetable(T,fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'BloodVolumeRateTable', '_', type, '.csv')));
 end

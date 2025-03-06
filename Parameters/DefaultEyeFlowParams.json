@@ -21,7 +21,8 @@
       "GWRatio": 0.07,
       "Border": 0.15,
       "BorderDMAP": 0.33,
-      "BorderPulseAnalysis": 0
+      "BorderPulseAnalysis": 0,
+      "FittedParameters": false
     },
     "Mask": {
       "Vesselness Sigma Range": [1, 10],

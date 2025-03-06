@@ -15,7 +15,7 @@ arguments
     NameValueArgs.fullTime
 end
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 mean_signal = mean(signal);
 
 if NameValueArgs.cropIndx > 0
@@ -25,8 +25,8 @@ end
 
 Color_std = [0.7, 0.7, 0.7];
 figure(figId);
-if ~isempty(ToolBox)
-    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+if ~isempty(TB)
+    fullTime = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
 else % in a parfor no ToolBox
     fullTime = NameValueArgs.fullTime;
 end

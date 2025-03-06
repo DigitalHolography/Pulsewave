@@ -646,7 +646,7 @@ classdef eyeflow < matlab.apps.AppBase
 
                 % try
                 %     Commented until further fixes
-                %     openmaskinpaintnet(fullfile(ToolBox.path_main,'mask','M0.png'), fullfile(ToolBox.path_main,'mask','DiaSysRGB.png'));
+                %     openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
                 % catch
                 %     disp("paint.net macro failed")
                 % end

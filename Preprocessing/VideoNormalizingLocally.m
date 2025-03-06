@@ -36,13 +36,18 @@ end
 obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_convoluated);
 obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_convoluated;
 
-% Compute the radial average
-[radialAverage, binCenters] = computeRadialAverage(obj.M0_data_video);
-
-% Perform the Gaussian fit
-fitParams = fitGaussian(binCenters, radialAverage);
-
 % Apply flat-field correction using the fitted Gaussian parameters
-obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, params.flatField_border) ./ M0_data_convoluated;
+if params.json.FlatFieldCorrection.FittedParameters
+
+    % Compute the radial average
+    [radialAverage, binCenters] = computeRadialAverage(obj.M0_data_video);
+
+    % Perform the Gaussian fit
+    fitParams = fitGaussian(binCenters, radialAverage);
+
+    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, params.flatField_border) ./ M0_data_convoluated;
+else
+    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_ff_video, 1)), PW_params.flatField_border);
+end
 
 end

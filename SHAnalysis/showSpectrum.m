@@ -1,10 +1,10 @@
 function [spec_plot, delt_spec_plot] = showSpectrum(maskArtery, maskBackground, maskSection, SH)
 % Shows the spectrum of the preview batch if any
 
-ToolBox = getGlobalToolBox;
-fs = ToolBox.fs;
-f1 = ToolBox.f1;
-f2 = ToolBox.f2;
+TB = getGlobalToolBox;
+fs = TB.fs;
+f1 = TB.f1;
+f2 = TB.f2;
 
 SH = abs(SH) .^ 2;
 

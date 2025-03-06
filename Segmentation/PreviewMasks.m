@@ -234,14 +234,14 @@ uiwait(d);
 
     function openFolder(~, ~)
 
-        ToolBox = getGlobalToolBox;
-        if isempty(ToolBox)
+        TB = getGlobalToolBox;
+        if isempty(TB)
             fprintf(2, "You must create the masks first\n")
             return
         end
 
         % Specify the folder to open
-        folderPath = fullfile(ToolBox.path_png, 'mask', 'steps');
+        folderPath = fullfile(TB.path_png, 'mask', 'steps');
 
         % Check if the folder exists
         if isfolder(folderPath)

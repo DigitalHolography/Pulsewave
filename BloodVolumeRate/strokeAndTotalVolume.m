@@ -1,6 +1,6 @@
 function strokeAndTotalVolume(mean_BvrT, mean_std_BvrT, systolesIndexes, fullTime, numInterp)
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 
 figure("Visible", "off");
 
@@ -78,9 +78,9 @@ set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
 box on
 set(gca, 'LineWidth', 2)
 
-exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, 'strokeAndTotalVolume.png')))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_%s", TB.main_foldername, 'strokeAndTotalVolume.png')))
 
-fileID = fopen(fullfile(ToolBox.path_txt, strcat(ToolBox.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
+fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'MaxSystole Blood Volume Rate Artery : %f (µL/min) \r\n', maxsystole_bvr_value);
 fprintf(fileID, 'MinDiastole Blood Volume Rate Artery : %f (µL/min) \r\n', mindiastole_bvr_value);
 fprintf(fileID, 'Stroke Volume Artery : %f (nL) \r\n', stroke_volume_value);
