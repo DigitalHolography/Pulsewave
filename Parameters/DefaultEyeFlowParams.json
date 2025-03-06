@@ -14,7 +14,10 @@
       "VideoLength": -1
     },
     "ValueOfTheInterpolationParameter": 1,
-    "RemoveOutliersOption": 1,
+    "Preprocess": {
+      "RemoveOutliersOption": 1,
+      "Window Size": 5 
+    },
     "VeinsAnalysis": 1,
     "ExportVideos": 1,
     "FlatFieldCorrection": {

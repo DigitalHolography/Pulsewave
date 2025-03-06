@@ -45,9 +45,9 @@ if params.json.FlatFieldCorrection.FittedParameters
     % Perform the Gaussian fit
     fitParams = fitGaussian(binCenters, radialAverage);
 
-    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, params.flatField_border) ./ M0_data_convoluated;
+    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, params.flatField_border, 'fittedGaussian') ./ M0_data_convoluated;
 else
-    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, ceil(PW_params.flatField_gwRatio * size(obj.M0_ff_video, 1)), PW_params.flatField_border);
+    obj.M0_ff_video = flat_field_correction(obj.M0_ff_video, ceil(params.flatField_gwRatio * size(obj.M0_ff_video, 1)), params.flatField_border, 'gaussianBlur');
 end
 
 end

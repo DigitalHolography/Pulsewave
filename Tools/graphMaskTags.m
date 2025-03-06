@@ -48,23 +48,24 @@ end
 % Get the image dimensions
 [imgHeight, imgWidth, ~] = size(Image);
 
-if ~isempty(etiquettes_locs) && ~isempty(etiquettes_values)
+if ~isempty(etiquettes_locs)
     for etIdx = 1:size(etiquettes_locs, 1)
-        % Calculate the new position for the text
-        new_x = x_center + ratio_etiquette * (etiquettes_locs(etIdx, 2) - x_center);
-        new_y = y_center + ratio_etiquette * (etiquettes_locs(etIdx, 1) - y_center);
+        try
+            % Calculate the new position for the text
+            new_x = x_center + ratio_etiquette * (etiquettes_locs(etIdx, 2) - x_center);
+            new_y = y_center + ratio_etiquette * (etiquettes_locs(etIdx, 1) - y_center);
 
-        % Ensure the text is within the image bounds
-        new_x = max(1, min(new_x, imgWidth));  % Clamp x to image width
-        new_y = max(1, min(new_y, imgHeight)); % Clamp y to image height
+            % Ensure the text is within the image bounds
+            new_x = max(1, min(new_x, imgWidth));  % Clamp x to image width
+            new_y = max(1, min(new_y, imgHeight)); % Clamp y to image height
 
-        % Add the text
-        text(new_x, new_y, sprintf(string(etiquettes_values(etIdx))), ...
-            "FontWeight", "bold", ...
-            "FontSize", opt.Fontsize, ...
-            "Color", "white", ...
-            "BackgroundColor", "black");
+            % Add the text
+            text(new_x, new_y, sprintf(string(etiquettes_values(etIdx))), ...
+                "FontWeight", "bold", ...
+                "FontSize", opt.Fontsize, ...
+                "Color", "white", ...
+                "BackgroundColor", "black");
+        catch
+        end
     end
-end
-
 end

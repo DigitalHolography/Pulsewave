@@ -56,7 +56,7 @@ end
 maskDiaphragm = diskMask(numX, numY, diaphragmRadius);
 
 M0_ff_img = squeeze(mean(M0_ff_video, 3));
-M0_ff_video_centered = M0_ff_video .* maskDiaphragm - (sum(M0_ff_video .* maskDiaphragm, [1 2]) ./ nnz(maskDiaphragm));
+M0_ff_video_centered = M0_ff_video - mean(M0_ff_video, [1 2]);
 saveImage(M0_ff_img, TB, 'all_10_M0.png', isStep = true)
 if ~isfile(fullfile(TB.path_gif, sprintf("%s_M0.gif", TB.folder_name)))
     writeGifOnDisc(rescale(M0_ff_video), "M0")
@@ -67,7 +67,7 @@ saveImage(rescale(M0_ff_img) + maskDiaphragm .* 0.5, TB, 'all_11_maskDiaphragm.p
 % 1) 1) Compute vesselness response
 
 [maskVesselnessFrangi] = frangiVesselness(M0_ff_img, 'all_12', TB);
-[maskVesselnessGabor] = gaborVesselness(M0_ff_img, 'all_13', TB);
+[maskVesselnessGabor, M0_Gabor] = gaborVesselness(M0_ff_img, 'all_13', TB);
 
 maskVesselness = (maskVesselnessFrangi | maskVesselnessGabor) & maskDiaphragm;
 
@@ -92,7 +92,7 @@ end
 maskCircle = diskMask(numX, numY, cropChoroidRadius, 'center', [x_CRA/numX, y_CRA/numY]);
 maskCircle = maskCircle | diskMask(numX, numY, cropChoroidRadius, 'center', [x_CRV/numX, y_CRV/numY]);
 
-maskVesselnessClean = removeDisconnected(maskVesselness, maskCircle, 'all_14_VesselMask', TB);
+maskVesselnessClean = removeDisconnected(maskVesselness, maskVesselness, maskCircle, 'all_14_VesselMask', TB);
 
 %  1) 3) Compute first correlation
 
@@ -112,7 +112,9 @@ vascularSignal_centered = vascularSignal - mean(vascularSignal, 3);
 R_VascularSignal = mean(M0_ff_video_centered .* vascularSignal_centered, 3) ./ (std((M0_ff_video_centered), [], 3) * std(vascularSignal_centered, [], 3));
 saveImage(R_VascularSignal, TB, 'all_15_Correlation.png', isStep = true)
 
-RGBcorr = labDuoImage(M0_ff_img, R_VascularSignal);
+mR_vascular = sum(R_VascularSignal .* fftshift(diskMask(numX, numY, 0.1)), [1 2]) ./ nnz(fftshift(diskMask(numX, numY, 0.1)));
+
+RGBcorr = labDuoImage(M0_ff_img, R_VascularSignal - mR_vascular);
 saveImage(RGBcorr, TB, 'all_15_Correlation_rgb.png', isStep = true)
 
 % 1) 4) Segment Vessels
@@ -159,7 +161,7 @@ if params.json.Mask.ImproveMask
 
     % 2) 0) Computation of the M0 in Diastole and in Systole
 
-    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_ff_video, maskArtery);
+    [M0_Systole_img, M0_Diastole_img, M0_Systole_video, ~] = compute_diasys(M0_ff_video, maskArtery);
     saveImage(rescale(M0_Systole_img), TB,  'artery_20_systole_img.png', isStep = true)
     saveImage(rescale(M0_Diastole_img), TB,  'vein_20_diastole_img.png', isStep = true)
 
@@ -170,18 +172,17 @@ if params.json.Mask.ImproveMask
     Systole_Gabor = gaborVesselness(M0_Systole_img,'artery_20', TB);
     Diastole_Gabor = gaborVesselness(M0_Diastole_img, 'vein_20', TB);
     maskVesselness = (Systole_Frangi | Diastole_Frangi | Systole_Gabor | Diastole_Gabor) & maskDiaphragm;
-    maskVesselnessClean = removeDisconnected(maskVesselness, maskCircle, 'all_20_VesselMask', TB);
+    maskVesselnessClean = removeDisconnected(maskVesselness, maskVesselness, maskCircle, 'all_20_VesselMask', TB);
 
     % 2) 2) Diastole-Systole Image
 
     diasysArtery = M0_Systole_img - M0_Diastole_img;
-    mDiasys = sum(diasysArtery .* maskDiaphragm, [1 2]) ./ nnz(maskDiaphragm);
+    mDiasys = sum(diasysArtery .* fftshift(diskMask(numX, numY, 0.1)), [1 2]) ./ nnz(fftshift(diskMask(numX, numY, 0.1)));
     diasysVein = mDiasys - diasysArtery;
     saveImage(diasysArtery, TB,  'artery_21_diasys_img.png', isStep = true)
     saveImage(diasysVein, TB,  'vein_21_diasys_img.png', isStep = true)
 
-
-    RGBdiasys = labDuoImage(M0_ff_img, (diasysArtery - mDiasys));
+    RGBdiasys = labDuoImage(M0_Gabor, (diasysArtery - mDiasys));
     saveImage(RGBdiasys, TB, 'vessel_40_diasys_rgb.png', isStep = true)
     saveImage(RGBdiasys, TB, 'DiaSysRGB.png')
 
@@ -194,8 +195,9 @@ if params.json.Mask.ImproveMask
     else % Second Correlation Analysis
 
         % 2) 3) Artery-Vein correlation based Segmentation
-        maskArtery = processVascularSignal(M0_ff_video, maskArtery, maskVesselnessClean, arteryParams, cmapArtery, 'artery_23', TB);
-        maskVein = processVascularSignal(M0_ff_video, maskVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23', TB);
+        maskArtery = processVascularSignal(M0_Systole_video, maskArtery, maskVesselnessClean, arteryParams, cmapArtery, 'artery_23', TB);
+%         maskVein = processVascularSignal(M0_Diastole_video, maskVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23', TB);
+        [~, maskVein] = processDiaSysSignal(diasysVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23');
 
     end
 
@@ -218,9 +220,9 @@ if params.json.Mask.ImproveMask
     maskVein = results{2};
 
     % 3) 1) Final Blob removal
-
-    maskArtery = removeDisconnected(maskArtery, maskCircle, 'artery_31_VesselMask', TB);
-    maskVein = removeDisconnected(maskVein, maskCircle, 'vein_31_VesselMask', TB);
+    maskVessel = maskArtery | maskVein;
+    maskArtery = removeDisconnected(maskArtery, maskVessel, maskCircle, 'artery_31_VesselMask', TB);
+    maskVein = removeDisconnected(maskVein, maskVessel, maskCircle, 'vein_31_VesselMask', TB);
 
     % 3) 2) Force Create Masks in case they exist
 
@@ -271,8 +273,9 @@ else
     maskArtery = results{1};
     maskVein = results{2};
 
-    maskArtery = removeDisconnected(maskArtery, maskCircle, 'artery_31_VesselMask', TB);
-    maskVein = removeDisconnected(maskVein, maskCircle, 'vein_31_VesselMask', TB);
+    maskVessel = maskArtery | maskVein;
+    maskArtery = removeDisconnected(maskArtery, maskVessel, maskCircle, 'artery_31_VesselMask', TB);
+    maskVein = removeDisconnected(maskVein, maskVessel, maskCircle, 'vein_31_VesselMask', TB);
 
 end
 

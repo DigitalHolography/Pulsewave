@@ -16,7 +16,6 @@ classdef Parameters_json < handle
         frameHeight
         videoLength
         k
-        removeOutliers
         radius_ratio
         radius_gap
         oneCycleNinterp
@@ -125,11 +124,8 @@ classdef Parameters_json < handle
 
                 obj.k = parsedData.ValueOfTheInterpolationParameter;
 
-                obj.removeOutliers = parsedData.RemoveOutliersOption;
-
                 obj.veins_analysis = parsedData.VeinsAnalysis;
                 obj.exportVideos = parsedData.ExportVideos;
-
 
                 obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
                 obj.flatField_border = parsedData.FlatFieldCorrection.Border;

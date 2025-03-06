@@ -14,8 +14,8 @@ params = TB.getParams;
     [numX, numY] = size(img);
     mask = seed_map; % will be update at each step ;  represents the pixels already visited
     max_iter = round(numX / 4);
-    floor = params.RG_FloorThreshold * mean2(img(conditionMask));
-    alpha = params.RG_alpha;
+    floor = params.json.RegionGrowing.FloorThreshold * mean2(img(conditionMask));
+    alpha = params.json.RegionGrowing.Alpha;
 
 %Represents the seeds points as a list of coordinates
 [row, col] = find(seed_map);
