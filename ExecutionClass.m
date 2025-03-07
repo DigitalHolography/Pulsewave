@@ -149,18 +149,23 @@ classdef ExecutionClass < handle
 
                 [obj.sysIdxList, ~, sysMaxList, sysMinList] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
 
-                % Log systole results
-                fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_EF_main_outputs.txt')), 'a');
-                fprintf(fileID, 'Heart beat: %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList) * TB.stride / TB.fs / 1000));
-                fprintf(fileID, 'Systole Indices: %s \r\n', strcat('[', sprintf("%d,", obj.sysIdxList), ']'));
-                fprintf(fileID, 'Number of Cycles: %d \r\n', numel(obj.sysIdxList) - 1);
-                fprintf(fileID, 'Max Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMaxList), ']'));
-                fprintf(fileID, 'Min Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMinList), ']'));
-                fprintf(fileID, 'Time diastolic min to systolic max derivative (ms): %f \r\n', ...
-                    1000 * mean((obj.sysIdxList(2:end) - sysMinList) * TB.stride / TB.fs / 1000));
-                fprintf(fileID, 'Time diastolic min to systolic max (ms): %f \r\n', ...
-                    1000 * mean((sysMaxList(2:end) - sysMinList(1:end - 1)) * TB.stride / TB.fs / 1000));
-                fclose(fileID);
+                % Check if the output vectors are long enough
+                if numel(obj.sysIdxList) < 2 || numel(sysMaxList) < 2 || numel(sysMinList) < 2
+                    warning('There isnt enough systoles.');
+                else
+                    % Log systole results
+                    fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_EF_main_outputs.txt')), 'a');
+                    fprintf(fileID, 'Heart beat: %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList) * TB.stride / TB.fs / 1000));
+                    fprintf(fileID, 'Systole Indices: %s \r\n', strcat('[', sprintf("%d,", obj.sysIdxList), ']'));
+                    fprintf(fileID, 'Number of Cycles: %d \r\n', numel(obj.sysIdxList) - 1);
+                    fprintf(fileID, 'Max Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMaxList), ']'));
+                    fprintf(fileID, 'Min Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMinList), ']'));
+                    fprintf(fileID, 'Time diastolic min to systolic max derivative (ms): %f \r\n', ...
+                        1000 * mean((obj.sysIdxList(2:end) - sysMinList) * TB.stride / TB.fs / 1000));
+                    fprintf(fileID, 'Time diastolic min to systolic max (ms): %f \r\n', ...
+                        1000 * mean((sysMaxList(2:end) - sysMinList(1:end - 1)) * TB.stride / TB.fs / 1000));
+                    fclose(fileID);
+                end
 
                 fprintf("- FindSystoleIndex took: %ds\n", round(toc(findSystoleTimer)));
 

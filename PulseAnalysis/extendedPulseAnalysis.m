@@ -4,6 +4,12 @@ TB = getGlobalToolBox;
 params = TB.getParams;
 numFramesInterp = params.oneCycleNinterp;
 
+% Check if sysIdxList is empty
+if isempty(sysIdxList)
+    warning('sysIdxList is empty. Skipping extended pulse analysis.');
+    return
+end
+
 tic
 
 [~, ~, numFrames] = size(f_RMS_video);
