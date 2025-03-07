@@ -48,7 +48,7 @@ classdef eyeflow < matlab.apps.AppBase
                 % Compute the mean of M0_data_video along the third dimension
                 mean_M0 = mean(app.file.M0_data_video, 3);
                 % Display the mean image in the uiimage component
-                app.ImageDisplay.ImageSource = rescale(mean_M0); % Rescale the image for display
+                app.ImageDisplay.ImageSource = repmat(rescale(mean_M0), [1 1 3]); % Rescale the image for display
 
                 %% End
                 app.LoadfolderButton.Enable = true ;
@@ -77,8 +77,8 @@ classdef eyeflow < matlab.apps.AppBase
 
                 else
 
-                    for i = 1:numel(ME.stack)
-                        fprintf(2, "%s", ME.stack(i))
+                    for stackIdx = 1:size(ME.stack, 1)
+                        fprintf(2,"%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
                     end
 
                 end
@@ -678,7 +678,7 @@ classdef eyeflow < matlab.apps.AppBase
             % Create EyeFlowUIFigure and hide until all components are created
             app.EyeFlowUIFigure = uifigure('Visible', 'off');
             app.EyeFlowUIFigure.Color = [0.149 0.149 0.149];
-            app.EyeFlowUIFigure.Position = [100 100 640 421];
+            app.EyeFlowUIFigure.Position = [100 100 1050 421];
             app.EyeFlowUIFigure.Name = 'EyeFlow';
             app.EyeFlowUIFigure.Icon = fullfile(pathToMLAPP, 'eyeflow_logo.png');
 
