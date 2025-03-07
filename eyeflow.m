@@ -22,6 +22,7 @@ classdef eyeflow < matlab.apps.AppBase
         LoadfolderButton              matlab.ui.control.Button
         LoadHoloButton                matlab.ui.control.Button
         ExecuteButton                 matlab.ui.control.Button
+        ImageDisplay                  matlab.ui.control.Image
         file
         drawer_list = {}
         flag_is_load
