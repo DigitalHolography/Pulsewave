@@ -29,7 +29,6 @@ classdef eyeflow < matlab.apps.AppBase
 
     methods (Access = private)
         function Load(app, path)
-
             app.Lamp.Color = [1, 0, 0];
             drawnow;
             if isfolder(path)
@@ -41,11 +40,14 @@ classdef eyeflow < matlab.apps.AppBase
             try
                 % add file
                 tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Loading\n")
-                fprintf("----------------------------------\n")
+                fprintf("\n----------------------------------\nVideo Loading\n----------------------------------\n")
                 app.file = ExecutionClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
+
+                % Compute the mean of M0_data_video along the third dimension
+                mean_M0 = mean(app.file.M0_data_video, 3);
+                % Display the mean image in the uiimage component
+                app.ImageDisplay.ImageSource = rescale(mean_M0); % Rescale the image for display
 
                 %% End
                 app.LoadfolderButton.Enable = true ;
@@ -682,7 +684,7 @@ classdef eyeflow < matlab.apps.AppBase
             % Create a grid layout to manage resizing
             grid = uigridlayout(app.EyeFlowUIFigure);
             grid.RowHeight = {'fit', '1x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
-            grid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            grid.ColumnWidth = {'1x', '1x', '1x', '1x', '3x'};
             grid.BackgroundColor = [0.149, 0.149, 0.149];
 
             % Top Row: Load Folder, Load Holo, Clear, Folder Management
@@ -862,6 +864,12 @@ classdef eyeflow < matlab.apps.AppBase
             app.OverWriteCheckBox.Value = false;
             app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
             app.OverWriteCheckBox.Tooltip = 'Overwrite the new results in the last EF_ result folder (to save space)';
+
+            % Add a new column for the image
+            app.ImageDisplay = uiimage(grid);
+            app.ImageDisplay.Layout.Row = [1, 9]; % Span all rows
+            app.ImageDisplay.Layout.Column = 5;   % Place in the new column
+            app.ImageDisplay.ScaleMethod = 'stretch'; % Adjust the image to fit the component
 
             % Show the figure after all components are created
             app.EyeFlowUIFigure.Visible = 'on';
