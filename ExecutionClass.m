@@ -121,7 +121,7 @@ classdef ExecutionClass < handle
         end
 
 
-        function obj = analyzeData(obj)
+        function obj = analyzeData(obj, app)
             % Main routine for EyeFlow analysis.
 
             % Initialize ToolBox and parameters
@@ -138,6 +138,17 @@ classdef ExecutionClass < handle
                 f_AVG_mean = squeeze(mean(obj.f_AVG_video, 3));
                 [obj.maskArtery, obj.maskVein, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = ...
                     createMasks(obj.M0_ff_video, f_AVG_mean);
+
+                cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+                cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+                cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
+
+                M0_Artery = setcmap(M0_ff_img, obj.maskArtery, cmapArtery);
+                M0_Vein = setcmap(M0_ff_img, obj.maskVein, cmapVein);
+                M0_AV = setcmap(M0_ff_img, obj.maskArtery & obj.maskVein, cmapAV);
+
+                M0_RGB = (M0_Artery + M0_Vein) .* ~(obj.maskArtery & obj.maskVein) + M0_AV + rescale(M0_ff_img) .* ~(obj.maskArtery | obj.maskVein);
+                app.ImageDisplay.ImageSource = mat2gray(M0_RGB); % Rescale the image for display
 
                 fprintf("- Mask Creation took: %ds\n", round(toc(createMasksTimer)));
             end

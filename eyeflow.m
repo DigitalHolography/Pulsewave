@@ -256,7 +256,7 @@ classdef eyeflow < matlab.apps.AppBase
                     if ~app.file.is_preprocessed
                         app.file = app.file.preprocessData();
                     end
-                    app.file = app.file.analyzeData();
+                    app.file = app.file.analyzeData(app);
 
                 catch ME
 
