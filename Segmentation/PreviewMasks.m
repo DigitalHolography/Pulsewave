@@ -212,7 +212,7 @@ uiwait(d);
         % Extract parameter values from the UI components
         params.json.Mask.DiaphragmRadius = diaphragmRadiusEdit.Value;
         params.json.Mask.Blur = gaussianFilterEdit.Value;
-        params.json.Mask.CropCoroidRadius = cropCoroidEdit.Value;
+        params.json.Mask.CropChoroidRadius = cropCoroidEdit.Value;
         params.json.Mask.VascularCorrelationMapThreshold = vascularThresholdEdit.Value;
         params.json.Mask.ArterialCorrelationMapThreshold = arterialThresholdEdit.Value;
         params.json.Mask.VenousCorrelationMapThreshold = venousThresholdEdit.Value;
