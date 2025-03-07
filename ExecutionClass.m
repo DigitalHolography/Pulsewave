@@ -139,6 +139,7 @@ classdef ExecutionClass < handle
                 [obj.maskArtery, obj.maskVein, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = ...
                     createMasks(obj.M0_ff_video, f_AVG_mean);
 
+                M0_ff_img = rescale(mean(obj.M0_ff_video, 3));
                 cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
                 cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
                 cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
