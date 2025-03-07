@@ -1,4 +1,4 @@
-function [mask] = clearMasks(mask, circle, name, colormap, ToolBox)
+function [mask] = clearMasks(mask, name, colormap, TB)
 % clearMasks - Processes a binary mask to remove small objects, close gaps, and dilate.
 %
 % Inputs:
@@ -23,42 +23,38 @@ if ~ischar(name) && ~isstring(name)
 end
 
 % Load parameters
-PW_params = Parameters_json(ToolBox.PW_path, ToolBox.PW_param_name);
-main_folder = ToolBox.main_foldername;
+params = TB.getParams;
+main_folder = TB.main_foldername;
+
+minPixelSize = params.json.Mask.MinPixelSize;
+imCloseRadius = params.json.Mask.ImcloseRadius;
+minWidth = params.json.Mask.MinimumVesselWidth;
+imDilateSize = params.json.Mask.FinalDilation;
 
 % Ensure the output directory exists
-outputDir = fullfile(ToolBox.PW_path_png, 'mask', 'steps');
+outputDir = fullfile(TB.path_png, 'mask', 'steps');
 if ~exist(outputDir, 'dir')
     mkdir(outputDir);
 end
 
-% Step 0: Remove disconnected objects using area filtering
-initialMask = single(mask);
-mask = mask & bwareafilt(mask | circle, 1, 4);
-imwrite(initialMask + single(circle) .* 0.5, colormap, fullfile(outputDir, sprintf("%s_%s_1_AreaFiltered.png", main_folder, name)))
-
 % Step 1: Remove small objects using area opening
-mask = bwareaopen(mask, PW_params.masks_minSize, 4);
-imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_2_AreaOpened.png", main_folder, name)));
+mask = bwareaopen(mask, minPixelSize, 4);
+imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_1_AreaOpened.png", main_folder, name)));
 
-% Step 2: Fill
-% mask = imfill(mask, "holes");
-% imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_3_2_Filled.png", main_folder, name)));
-
-% Step 3: Close small gaps using morphological closing
-imcloseSE = strel('disk', PW_params.masks_imclose_radius);
+% Step 2: Close small gaps using morphological closing
+imcloseSE = strel('disk', imCloseRadius);
 mask = imclose(mask, imcloseSE);
-imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_3_Closed.png", main_folder, name)));
+imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_2_Closed.png", main_folder, name)));
 
-% Step 4: Ensure minimum mask width using skeletonization and dilation
-minWidthSE = strel('disk', PW_params.masks_min_width);
+% Step 3: Ensure minimum mask width using skeletonization and dilation
+minWidthSE = strel('disk', minWidth);
 skel = bwskel(mask);
 mask = mask | imdilate(skel, minWidthSE);
-imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_4_MinWidth.png", main_folder, name)));
+imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_3_MinWidth.png", main_folder, name)));
 
-% Step 5: Final dilation
-dilationSE = strel('disk', PW_params.masks_imdilateFinal);
+% Step 4: Final dilation
+dilationSE = strel('disk', imDilateSize);
 mask = imdilate(mask, dilationSE);
-imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_5_Dilated.png", main_folder, name)));
+imwrite(mask, colormap, fullfile(outputDir, sprintf("%s_%s_4_Dilated.png", main_folder, name)));
 
 end

@@ -30,7 +30,7 @@ arguments
     opt.xLineLabels = {}
 end
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 f = figure(Visible="off");
 hold on
 
@@ -91,7 +91,7 @@ axT = axis;
 axis([axT(1), axT(2), axP(3), axP(4)])
 box on
 
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, folder, sprintf("%s_%s.png", ToolBox.main_foldername, filename)))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, folder, sprintf("%s_%s.eps", ToolBox.main_foldername, filename)))
+exportgraphics(gca, fullfile(TB.path_png, folder, sprintf("%s_%s_graph.png", TB.main_foldername, filename)))
+exportgraphics(gca, fullfile(TB.path_eps, folder, sprintf("%s_%s_graph.eps", TB.main_foldername, filename)))
 
 end

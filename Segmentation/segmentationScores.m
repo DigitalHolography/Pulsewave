@@ -12,14 +12,13 @@ function [results, log] = segmentationScores(maskArtery, maskVein)
 %   log - A string indicating the status of the logging operation
 
 % Ensure Toolbox is initialized
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 
 % Check if the target masks exist, otherwise return an error message
-targetMaskArteryPath = fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskArtery.png');
-targetMaskVeinPath = fullfile(ToolBox.PW_path_main, 'mask', 'targetMaskVein.png');
+targetMaskArteryPath = fullfile(TB.path_main, 'mask', 'targetMaskArtery.png');
+targetMaskVeinPath = fullfile(TB.path_main, 'mask', 'targetMaskVein.png');
 
 if ~isfile(targetMaskArteryPath) || ~isfile(targetMaskVeinPath)
-    disp('One or both target masks do not exist in the expected directory.');
     return
 end
 
@@ -56,7 +55,7 @@ PrecisionArtery = 100 * TPArtery / (TPArtery + FPArtery);
 PrecisionVein = 100 * TPVein / (TPVein + FPVein);
 
 % Define the log file path and open for writing
-logFilePath = fullfile(ToolBox.PW_path_log, sprintf("%s_confusionMatrix.txt", ToolBox.main_foldername));
+logFilePath = fullfile(TB.path_log, sprintf("%s_confusionMatrix.txt", TB.main_foldername));
 fileID = fopen(logFilePath, 'w+');
 
 if fileID == -1

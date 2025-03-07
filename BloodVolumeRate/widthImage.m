@@ -1,6 +1,6 @@
 function widthImage(subimage_size, sub_images_r, numSections,  name)
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 
 numCircles = size(sub_images_r, 2);
 figure("Visible","off")
@@ -24,6 +24,6 @@ for circleIdx = 1:numCircles
 end
 
 montage(sub_images_mat, "Size", [max(1,numSectionMax), max(1,numCircles)]);
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'volumeRate', sprintf("%s_%s", ToolBox.main_foldername, sprintf('5_all_%s_sections_with_increasing_radius.png', name))))
+exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_%s", TB.main_foldername, sprintf('5_all_%s_sections_with_increasing_radius.png', name))))
 
 end

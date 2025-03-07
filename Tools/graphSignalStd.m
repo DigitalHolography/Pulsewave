@@ -1,4 +1,4 @@
-function graphSignalStd(figId, signal, stdsignal, numFrames, ylabl, xlabl, titl, unit, NameValueArgs)
+function graphSignalStd(figId, signal, stdsignal, numFrames, ylabl, xlabl, fig_title, unit, NameValueArgs)
 % Plots on an existing graph the signal and its std
 
 arguments
@@ -8,14 +8,14 @@ arguments
     numFrames
     ylabl
     xlabl
-    titl
+    fig_title
     unit
     NameValueArgs.ylimm double = [min(signal) max(signal)]
     NameValueArgs.cropIndx double = 0
     NameValueArgs.fullTime
 end
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 mean_signal = mean(signal);
 
 if NameValueArgs.cropIndx > 0
@@ -25,8 +25,8 @@ end
 
 Color_std = [0.7, 0.7, 0.7];
 figure(figId);
-if ~isempty(ToolBox)
-    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
+if ~isempty(TB)
+    fullTime = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
 else % in a parfor no ToolBox
     fullTime = NameValueArgs.fullTime;
 end
@@ -51,7 +51,7 @@ hold off;
 
 ylabel(ylabl)
 xlabel(xlabl)
-title(sprintf("%s : %02.0f %s", titl, round(mean_signal)), unit)
+title(sprintf("%s : %02.0f %s", fig_title, round(mean_signal), unit))
 
 axis tight;
 

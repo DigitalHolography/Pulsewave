@@ -1,51 +1,58 @@
 function [p1, p2, p3, rsquared, p1_err, p2_err, p3_err] = customPoly2Fit(x, y)
-    % Fits data to a polynomial of order 2 without using polyfit or fit
-    % Calculates coefficients and their standard errors
-    % Input:
-    %   x - vector of x data points
-    %   y - vector of y data points
-    % Output:
-    %   p1, p2, p3 - coefficients of the polynomial y = p1*x^2 + p2*x + p3
-    %   rsquared - coefficient of determination (R^2) value
-    %   p1_err, p2_err, p3_err - standard errors of the coefficients
+% Fits data to a polynomial of order 2 without using polyfit or fit
+% Improves conditioning by centering and scaling the input data
+% Input:
+%   x - vector of n data points
+%   y - vector of n data points
+% Output:
+%   p1, p2, p3 - coefficients of the polynomial y = p1*x^2 + p2*x + p3
+%   rsquared - coefficient of determination (R^2) value
+%   p1_err, p2_err, p3_err - standard errors of the coefficients
 
-    % Ensure x and y are column vectors
-    x = x(:);
-    y = y(:);
+% Ensure x and y are column vectors
+x = x(:);
+y = y(:);
+
+% Center and scale x to improve conditioning
+x_mean = mean(x);
+x_std = std(x);
+x_scaled = (x - x_mean) / x_std;
+
+% Construct the design matrix
+X = [x_scaled.^2, x_scaled, ones(length(x_scaled), 1)];
+
+% Solve for the coefficients using normal equations
+p = (X' * X) \ (X' * y);
+
+% Transform coefficients back to original scale
+p1 = p(1) / (x_std^2);  % Rescale p1
+p2 = p(2) / x_std;      % Rescale p2
+p3 = p(3) - (p1 * x_mean^2 + p2 * x_mean); % Adjust p3
+
+% Compute fitted values
+y_fit = p1 * x.^2 + p2 * x + p3;
+
+% Compute R-squared value
+ss_res = sum((y - y_fit).^2);  % Sum of squares of residuals
+ss_tot = sum((y - mean(y)).^2); % Total sum of squares
+rsquared = 1 - (ss_res / ss_tot); % Coefficient of determination
+
+% Compute standard errors of the coefficients
+n = length(y);
+p_len = length(p);
+
+if n > p_len  % Avoid division by zero in perfect fits
+    variance = ss_res / (n - p_len); % Estimated variance of residuals
+    cov_matrix = variance .* inv(X' * X);
     
-    % Set up the design matrix for a 2nd order polynomial fit
-    X = [x.^2, x, ones(size(x))];
-    
-    % Solve for the coefficients using the normal equation
-    warning('off');
-    p = (X' * X) \ (X' * y);
-    warning('on');
-    
-    % Extract coefficients
-    p1 = p(1);
-    p2 = p(2);
-    p3 = p(3);
-    
-    % Calculate fitted y values
-    y_fit = X * p;
-    
-    % Calculate R-squared value
-    ss_res = sum((y - y_fit).^2); % sum of squares of residuals
-    ss_tot = sum((y - mean(y)).^2); % total sum of squares
-    rsquared = 1 - (ss_res / ss_tot); % coefficient of determination
-    
-    % Estimate the variance of residuals
-    n = length(y); % number of data points
-    p_len = length(p); % number of parameters (3 for quadratic fit)
-    variance = ss_res / (n - p_len); % estimated variance of residuals
-    
-    % Calculate covariance matrix
-    warning('off');
-    cov_matrix = variance * inv(X' * X);
-    warning('on');
-    
-    % Extract standard errors (square root of diagonal elements of covariance matrix)
-    p1_err = sqrt(cov_matrix(1,1));
-    p2_err = sqrt(cov_matrix(2,2));
+    % Extract standard errors
+    p1_err = sqrt(cov_matrix(1,1)) / (x_std^2);
+    p2_err = sqrt(cov_matrix(2,2)) / x_std;
     p3_err = sqrt(cov_matrix(3,3));
+else
+    p1_err = 0;
+    p2_err = 0;
+    p3_err = 0;
+end
+
 end

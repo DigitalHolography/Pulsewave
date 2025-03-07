@@ -2,8 +2,8 @@ function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = crea
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
+TB = getGlobalToolBox;
+params = TB.getParams;
 
 tic
 
@@ -18,8 +18,6 @@ if numSys > 0 % we have detected at least two systoles
         interp_range = linspace(sysIdxList(ii), sysIdxList(ii + 1) - 1, numInterp);
         frame_range = sysIdxList(ii):sysIdxList(ii + 1) - 1;
         tmp = squeeze(sum(video(:, :, frame_range) .* mask, [1 2]) / nnz(mask));
-        %        [idxOutPw, tmp] = discardPulseWaveOutliers( tmp,3);
-        %       tmp= smoothdata( tmp,'lowess');
         cyclesSignal(ii, :) = interp1(frame_range, tmp, interp_range);
     end
     clear tmp
@@ -62,7 +60,7 @@ if numSys > 0 % we have detected at least two systoles
         %         disp(std(noise))
         %         idxOutNoise = find(noise > 0.5* global_noise_std);
         %         noiseIntensity = squeeze(mean(noise(idxOutNoise)));
-        %         idxOutNoise = find(noise>PW_params.oneCycle_outNoiseThreshold*std(noise));
+        %         idxOutNoise = find(noise>params.oneCycle_outNoiseThreshold*std(noise));
         %         dataReliabilityIndex(ii) = ceil(100*(1-(length(idxOutNoise)/length(noise))));
         %         dataReliabilityIndex2(ii) = (100*(1 - (noiseIntensity)/max(abs(cycles_signal), [], "all")));
         dataReliabilityIndex(ii) = C;
@@ -102,11 +100,11 @@ if numSys > 0 % we have detected at least two systoles
     tmp = zeros(size(video, 1), size(video, 2), numInterp);
     tmpM0 = zeros(size(video, 1), size(video, 2), numInterp);
     %     ctr = 0;
-    cycles_accepted = (dataReliabilityIndex > PW_params.oneCycle_outNoiseThreshold);
+    cycles_accepted = (dataReliabilityIndex > params.oneCycle_outNoiseThreshold);
     %cycles_accepted = [1 ;1 ;0;0];
     %     for ii = 1:M
     % %         if (dataReliabilityIndex(ii) < 50)
-    %         if (dataReliabilityIndex(ii) > PW_params.oneCycle_dataReliabilityThreshold)
+    %         if (dataReliabilityIndex(ii) > params.oneCycle_dataReliabilityThreshold)
     % %             tmp = tmp + squeeze(one_cycle_video(:,:,:,ii)); % average selected cycles
     % %             ctr = ctr + 1;
     % %             signal_one_cycle(:,ii,2) = ones(1,size(signal_one_cycle,1));
@@ -160,7 +158,7 @@ oneCycleVideo = tmp; % average all detected cycles
 oneCycleVideoM0 = tmpM0; % average all detected cycles
 
 oneP = squeeze(sum(oneCycleVideo .* mask, [1 2]) / nnz(mask));
-[minVal, shift] = min(oneP); % find bottom systole
+[~, shift] = min(oneP); % find bottom systole
 oneCycleVideo = circshift(oneCycleVideo, -shift, 3);
 oneCycleVideoM0 = circshift(oneCycleVideoM0, -shift, 3);
 cyclesSignal = circshift(cyclesSignal, -shift, 2); % shift pulse to start & end with bottom diastole

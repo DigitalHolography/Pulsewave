@@ -21,9 +21,9 @@ end
 
 tVelocityVideo = tic;
 
-ToolBox = getGlobalToolBox;
-PW_params = Parameters_json(ToolBox.PW_path,ToolBox.PW_param_name);
-exportVideos = PW_params.exportVideos;
+TB = getGlobalToolBox;
+params = TB.getParams;
+exportVideos = params.exportVideos;
 
 [numX, numY, numFrames] = size(v_video);
 
@@ -44,7 +44,7 @@ yAx = [v_min v_max];
 %% Velocity Histogram
 
 X = linspace(v_min, v_max, n);
-xAx = [0 numFrames * ToolBox.stride / (1000 * ToolBox.fs)];
+xAx = [0 numFrames * TB.stride / (1000 * TB.fs)];
 histo = zeros(n, numFrames);
 D = (v_max - v_min) / (n - 1);
 
@@ -83,7 +83,7 @@ if exportVideos
         set(gca, 'YDir', 'normal')
         ylabel('Velocity (mm.s^{-1})')
         xlabel('Time (s)')
-        title(sprintf("Velocity distribution in %s", name))
+        title(sprintf("velocity distribution in %s", name))
         set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
         f = getframe(gcf);
         histoVideo(:, :, :, frameIdx) = f.cdata;
@@ -94,33 +94,8 @@ if exportVideos
     gifWriter.generate();
     gifWriter.delete();
 
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", ToolBox.main_foldername, name)))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", ToolBox.main_foldername, name)))
-
-    % AVI
-
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_histogramVelocity%s.mp4", ToolBox.main_foldername, name)));
-
-    tmp = mat2gray(histoVideo);
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, tmp(:, :, :, frameIdx));
-    end
-
-    close(w);
-
-    % MP4
-
-    w = VideoWriter(fullfile(ToolBox.PW_path_avi, sprintf("%s_histogramVelocity%s.mp4", ToolBox.main_foldername, name)), 'MPEG-4');
-    tmp = mat2gray(histoVideo);
-    open(w)
-
-    for frameIdx = 1:numFrames
-        writeVideo(w, tmp(:, :, :, frameIdx));
-    end
-
-    close(w);
+    exportgraphics(gca, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", TB.main_foldername, name)))
+    exportgraphics(gca, fullfile(TB.path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", TB.main_foldername, name)))
 else
     for frameIdx = 1:numFrames
 
@@ -144,12 +119,12 @@ else
     set(gca, 'YDir', 'normal')
     ylabel('Velocity (mm.s^{-1})')
     xlabel('Time (s)')
-    title(sprintf("Velocity distribution in %s", name))
+    title(sprintf("velocity distribution in %s", name))
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     f = getframe(gcf);
     histoVideo = f.cdata;
-    exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", ToolBox.main_foldername, name)))
-    exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", ToolBox.main_foldername, name)))
+    exportgraphics(gca, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", TB.main_foldername, name)))
+    exportgraphics(gca, fullfile(TB.path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", TB.main_foldername, name)))
 
 end
 

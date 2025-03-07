@@ -3,18 +3,26 @@ function graphThreshHistogram(R, thresholds, mask, colors, name)
 %   Detailed explanation goes here
 % Set the threshold
 
-ToolBox = getGlobalToolBox;
+TB = getGlobalToolBox;
 numLevel = size(thresholds, 2);
 numColors = size(colors, 1);
+
+if contains(name, "arter")
+    cmap = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+elseif contains(name, "vein")
+    cmap = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+else
+    cmap = cmapLAB(256, [0 0 0], 0, [1 1 1], 1);
+end
 
 figure('Visible','off')
 imagesc(R .* mask)
 title('Map with Colorbar');
-colormap(cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1))
+colormap(cmap)
 colorbar
 axis off
 axis image
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_MapColorbar.png', name))))
+exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_%s", TB.main_foldername, sprintf('%s_MapColorbar.png', name))))
 
 
 if size(colors, 1) ~= numLevel + 1
@@ -65,7 +73,7 @@ set(gca, 'Linewidth', 2)
 pbaspect([1.68 1 1])
 box on
 hold off;
-exportgraphics(gca, fullfile(ToolBox.PW_path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.png', name))))
-exportgraphics(gca, fullfile(ToolBox.PW_path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.eps', name))))
+exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_%s", TB.main_foldername, sprintf('%s_Histo.png', name))))
+exportgraphics(gca, fullfile(TB.path_eps, 'mask', 'steps', sprintf("%s_%s", TB.main_foldername, sprintf('%s_Histo.eps', name))))
 
 end

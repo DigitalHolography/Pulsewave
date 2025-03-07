@@ -1,22 +1,23 @@
 classdef ToolBoxClass < handle
-    % ToolBoxClass holds useful variables for pulsewave processing.
-
+    % ToolBoxClass holds useful variables for eyeflow processing.
+    
     properties
         % Paths
-        PW_path char
-        PW_path_main char
-        PW_path_dir char
-        PW_path_png char
-        PW_path_eps char
-        PW_path_gif char
-        PW_path_txt char
-        PW_path_avi char
-        PW_path_mp4 char
-        PW_path_json char
-        PW_path_log char
+        EF_path char
+        EF_name char
+        path_main char
+        path_dir char
+        path_png char
+        path_eps char
+        path_gif char
+        path_txt char
+        path_avi char
+        path_mp4 char
+        path_json char
+        path_log char
         main_foldername char
-        PW_param_name char
-        PW_folder_name char
+        param_name char
+        folder_name char
         % Parameters
         stride double
         fs double
@@ -24,71 +25,79 @@ classdef ToolBoxClass < handle
         f2 double
         ScalingFactorVelocityInPlane double
     end
-
+    
     methods
-
-        function obj = ToolBoxClass(path, PW_param_name, OverWrite)
+        
+        function obj = ToolBoxClass(path, EF_param_name, OverWrite)
             % Constructor for ToolBoxClass: Initializes paths, parameters, and calculates scaling factors.
-
+            
             % Store paths and parameters
-            obj.PW_path = path;
-            obj.PW_param_name = PW_param_name;
+            obj.EF_path = path;
+            obj.param_name = EF_param_name;
             obj.main_foldername = obj.extractFolderName(path);
-
-            % Initialize Pulsewave-related paths
+            
+            % Initialize EyeFlow-related paths
             obj.initializePaths(OverWrite);
-
+            
             % Load parameters from cache or fall back to defaults
             obj.loadParameters(path);
-
+            
             % Calculate Scaling Factors for velocity
-            obj.calculateScalingFactors(path);
-
+            obj.calculateScalingFactors;
+            
             % Set up logging (diary)
             obj.setupLogging();
-
+            
             % Copy input parameters to result folder
             obj.copyInputParameters();
-
+            
+            obj.setGlobalToolBox;
+            
         end
-
-        function mainFolder = extractFolderName(obj, path)
+        
+        function mainFolder = extractFolderName(~, path)
             % Helper function to extract the folder name
             split_path = strsplit(path, filesep);
             mainFolder = split_path{end - 1};
         end
-
+        
+        function setGlobalToolBox(obj)
+            global ToolBoxGlobal
+            ToolBoxGlobal = obj;
+        end
+        
         function initializePaths(obj, OverWrite)
-            % Helper function to initialize paths for storing pulsewave-related data
-
+            % Helper function to initialize paths for storing eyeflow-related data
+            
             % Define main and subdirectories for storing data
-            obj.PW_path_main = fullfile(obj.PW_path, 'pulsewave');
-            PW_folder_name = strcat(obj.main_foldername, '_PW');
+            obj.path_main = fullfile(obj.EF_path, 'eyeflow');
+            foldername_EF = strcat(obj.main_foldername, '_EF');
             
             % Create or identify a unique folder for the current run
-            idx = obj.getUniqueFolderIndex(PW_folder_name, OverWrite);
-
+            idx = obj.getUniqueFolderIndex(foldername_EF, OverWrite);
+            
             % Set the folder name and paths for various data types
-            obj.PW_folder_name = sprintf('%s_%d', PW_folder_name, idx);
-            obj.PW_path_dir = fullfile(obj.PW_path_main, obj.PW_folder_name);
-            obj.PW_path_png = fullfile(obj.PW_path_dir, 'png');
-            obj.PW_path_eps = fullfile(obj.PW_path_dir, 'eps');
-            obj.PW_path_txt = fullfile(obj.PW_path_dir, 'txt');
-            obj.PW_path_avi = fullfile(obj.PW_path_dir, 'avi');
-            obj.PW_path_gif = fullfile(obj.PW_path_dir, 'gif');
-            obj.PW_path_mp4 = fullfile(obj.PW_path_dir, 'mp4');
-            obj.PW_path_json = fullfile(obj.PW_path_dir, 'json');
-            obj.PW_path_log = fullfile(obj.PW_path_dir, 'log');
-
+            obj.EF_name = foldername_EF;
+            obj.folder_name = sprintf('%s_%d', foldername_EF, idx);
+            obj.path_dir = fullfile(obj.path_main, obj.folder_name);
+            obj.path_png = fullfile(obj.path_dir, 'png');
+            obj.path_eps = fullfile(obj.path_dir, 'eps');
+            obj.path_txt = fullfile(obj.path_dir, 'txt');
+            obj.path_avi = fullfile(obj.path_dir, 'avi');
+            obj.path_gif = fullfile(obj.path_dir, 'gif');
+            obj.path_mp4 = fullfile(obj.path_dir, 'mp4');
+            obj.path_json = fullfile(obj.path_dir, 'json');
+            obj.path_log = fullfile(obj.path_dir, 'log');
+            
             % Create directories if they don't exist
             obj.createDirectories();
         end
-
+        
         function idx = getUniqueFolderIndex(obj, folderBaseName, OverWrite)
             % Helper function to determine the unique folder index based on existing directories
-
+            
             idx = 0;
-            list_dir = dir(obj.PW_path_main);
+            list_dir = dir(obj.path_main);
             for i = 1:length(list_dir)
                 if contains(list_dir(i).name, folderBaseName)
                     match = regexp(list_dir(i).name, '\d+$', 'match');
@@ -102,42 +111,48 @@ classdef ToolBoxClass < handle
                 end
             end
         end
-
+        
         function createDirectories(obj)
             % Helper function to create necessary directories if they don't exist
-
-            dirs = {obj.PW_path_dir, obj.PW_path_png, obj.PW_path_eps, obj.PW_path_gif, ...
-                    obj.PW_path_txt, obj.PW_path_avi, obj.PW_path_mp4, obj.PW_path_json, ...
-                    obj.PW_path_log};
-
+            
+            dirs = {obj.path_dir, obj.path_png, obj.path_eps, obj.path_gif, ...
+                obj.path_txt, obj.path_avi, obj.path_mp4, obj.path_json, ...
+                obj.path_log};
+            
             for i = 1:length(dirs)
                 if ~isfolder(dirs{i})
                     mkdir(dirs{i});
                 end
             end
         end
-
+        
         function loadParameters(obj, path)
             % Load or fall back to default parameters from cache or config files
-
+            
             % Try loading parameters from existing .mat or .json files
-            if isfile(fullfile(path, 'mat', [obj.main_foldername, '.mat']))
+            if ~isempty(dir(fullfile(path, ['*', 'RenderingParameters', '*'])))  % since HD 2.0
+                disp('Reading cache parameters from .json');
+                fpath = fullfile(path, dir(fullfile(path, ['*', 'RenderingParameters', '*'])).name);
+                decoded_data = jsondecode(fileread(fpath));
+                obj.stride = decoded_data.batch_stride;
+                obj.fs = decoded_data.fs;  % Convert kHz to kHz
+                obj.f1 = decoded_data.time_range(1);
+                obj.f2 = decoded_data.time_range(2);
+                disp('Done.');
+            elseif isfile(fullfile(path, 'mat', [obj.main_foldername, '.mat']))
                 disp('Reading cache parameters from .mat');
                 load(fullfile(path, 'mat', [obj.main_foldername, '.mat']), 'cache');
                 obj.stride = cache.batch_stride;
                 obj.fs = cache.Fs / 1000;  % Convert Hz to kHz
                 obj.f1 = cache.time_transform.f1;
                 obj.f2 = cache.time_transform.f2;
-                disp('Done.');
             elseif isfile(fullfile(path, 'Holovibes_rendering_parameters.json'))
-                disp('Reading cache parameters from Holovibes');
                 json_txt = fileread(fullfile(path, 'Holovibes_rendering_parameters.json'));
                 footer_parsed = jsondecode(json_txt);
                 obj.stride = footer_parsed.compute_settings.image_rendering.time_transformation_stride;
                 obj.fs = footer_parsed.info.camera_fps / 1000;  % Convert FPS to kHz
                 obj.f1 = footer_parsed.compute_settings.view.z.start / footer_parsed.compute_settings.image_rendering.time_transformation_size * obj.fs;
                 obj.f2 = obj.fs / 2;
-                disp('Done.');
             else
                 % Default values if no parameters are found
                 disp('WARNING: No rendering parameters file found. Using default values.');
@@ -147,35 +162,39 @@ classdef ToolBoxClass < handle
                 obj.f2 = 15;
             end
         end
-
-        function calculateScalingFactors(obj, path)
-            % Calculate scaling factors based on pulsewave parameters
-
-            PW_params = Parameters_json(obj.PW_path, obj.PW_param_name);
-            obj.ScalingFactorVelocityInPlane = 1000 * 1000 * 2 * PW_params.lambda / sin(PW_params.phi);  % 6.9 mm/s / kHz
+        
+        function calculateScalingFactors(obj)
+            % Calculate scaling factors based on eyeflow parameters
+            
+            params = obj.getParams;
+            obj.ScalingFactorVelocityInPlane = 1000 * 1000 * 2 * params.lambda / sin(params.phi);  % 6.9 mm/s / kHz
         end
-
+        
         function setupLogging(obj)
             % Set up logging (diary) for the current session
-
+            
             diary off  % Turn off logging first to avoid logging this script
-            diary_filename = fullfile(obj.PW_path_log, sprintf('%s_log.txt', obj.main_foldername));
+            diary_filename = fullfile(obj.path_log, sprintf('%s_log.txt', obj.main_foldername));
             set(0, 'DiaryFile', diary_filename);
             diary on  % Turn on logging
             fprintf("==========================================\n");
-            fprintf("Current Folder Path: %s\n", obj.PW_path);
-            fprintf("Current File: %s\n", obj.PW_folder_name);
+            fprintf("Current Folder Path: %s\n", obj.EF_path);
+            fprintf("Current File: %s\n", obj.folder_name);
             fprintf("Start Time: %s\n", datetime('now', 'Format', 'yyyy/MM/dd HH:mm:ss'));
             fprintf("==========================================\n");
         end
-
+        
         function copyInputParameters(obj)
             % Copy the input parameters to the result folder
-
-            path_dir_json = fullfile(obj.PW_path, 'pulsewave', 'json');
-            path_file_json_params = fullfile(path_dir_json, obj.PW_param_name);
-            copyfile(path_file_json_params, obj.PW_path_json);
+            
+            path_dir_json = fullfile(obj.EF_path, 'eyeflow', 'json');
+            path_file_json_params = fullfile(path_dir_json, obj.param_name);
+            copyfile(path_file_json_params, obj.path_json);
         end
-
+        
+        function Params = getParams(obj)
+            Params = Parameters_json(obj.EF_path,obj.param_name);
+        end
+        
     end
 end
