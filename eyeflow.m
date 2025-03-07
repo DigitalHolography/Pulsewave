@@ -526,6 +526,7 @@ classdef eyeflow < matlab.apps.AppBase
                     app.Load(app.drawer_list{i});
                     app.ExecuteButtonPushed();
                     catch
+                        fprintf(2, 'Error in rendering: %s', ME.message)
                     end
                     app.ClearButtonPushed();
                     toc
