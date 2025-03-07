@@ -264,7 +264,7 @@ classdef eyeflow < matlab.apps.AppBase
 
                     fprintf(2,"==========================================\nERROR\n==========================================\n");
 
-                    fprintf(2, 'Error with file : %s\n%s\n%s', app.file.directory, ME.identifier, ME.message);
+                    fprintf(2, 'Error with file : %s\n%s\n%s\n', app.file.directory, ME.identifier, ME.message);
 
                     for stackIdx = 1:size(ME.stack, 1)
                         fprintf(2,"%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);

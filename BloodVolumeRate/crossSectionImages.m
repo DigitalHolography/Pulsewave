@@ -59,7 +59,7 @@ for circleIdx = 1:numCircles
 
     title(sprintf("cross section width in %s (µm)", titleFig));
     set(gca, 'FontSize', 14)
-    vesselWidthsVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
+    vesselWidthsVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca, [465 465])));
 
     exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'sectionsImages', 'widths', sprintf("%s_circle_%d_crossSectionWidth%sImage.png", TB.main_foldername, circleIdx, name)))
     exportgraphics(gca, fullfile(TB.path_eps, 'volumeRate', 'sectionsImages', 'widths', sprintf("%s_circle_%d_crossSectionWidth%sImage.eps", TB.main_foldername, circleIdx, name)))
@@ -70,7 +70,7 @@ parfor circleIdx = 1:numCircles
     str = name;
     etiquettes_frame_values = append(sprintf("%s°",str(1)),string(NumVessel(1:find(area(circleIdx, :),1,'last')))); % last non zero cross section area
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name, Title = sprintf("Numerotation in %s", titleFig));
-    vesselNumVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
+    vesselNumVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca, [465 465])));
 
     exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'sectionsImages', 'num', sprintf("%s_circle_%d_Numerotation%sImage.png", TB.main_foldername, circleIdx, name)))
     exportgraphics(gca, fullfile(TB.path_eps, 'volumeRate', 'sectionsImages', 'num', sprintf("%s_circle_%d_Numerotation%sImage.eps", TB.main_foldername, circleIdx, name)))
@@ -79,7 +79,7 @@ figure(312)
 parfor circleIdx = 1:numCircles
     etiquettes_frame_values = round(mean(bvr(circleIdx,1:find(area(circleIdx, :),1,'last'),:),3),1); 
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name, Title = sprintf("Mean Blood Volume Rate in %s (µL/min)", titleFig));
-    vesselBVRVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
+    vesselBVRVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca, [465 465])));
 
     exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'sectionsImages', 'bvr', sprintf("%s_circle_%d_MeanBVR%sImage.png", TB.main_foldername, circleIdx, name)))
     exportgraphics(gca, fullfile(TB.path_eps, 'volumeRate', 'sectionsImages', 'bvr', sprintf("%s_circle_%d_MeanBVR%sImage.eps", TB.main_foldername, circleIdx, name)))
@@ -97,7 +97,7 @@ parfor circleIdx = 1:numCircles
     
     etiquettes_frame_values = round(mean(max(vel,[],2),3),1); 
     graphMaskTags(312, M0_ff_img, squeeze(mask_r(:, :, circleIdx)), locs{circleIdx}, etiquettes_frame_values, x_barycenter, y_barycenter, Color = name, Title = sprintf("Max Velocity in %s (mm/s)", titleFig));
-    vesselMaxVelocityVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca)));
+    vesselMaxVelocityVideo(:, :, :, circleIdx) = rescale(frame2im(getframe(gca, [465 465])));
 
     exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'sectionsImages', 'vel', sprintf("%s_circle_%d_MaxVelocity%sImage.png", TB.main_foldername, circleIdx, name)))
     exportgraphics(gca, fullfile(TB.path_eps, 'volumeRate', 'sectionsImages', 'vel', sprintf("%s_circle_%d_MaxVelocity%sImage.eps", TB.main_foldername, circleIdx, name)))
