@@ -66,20 +66,15 @@ classdef eyeflow < matlab.apps.AppBase
                 fprintf(2, 'Error while loading : %s\n', path)
                 fprintf(2, "%s\n",ME.identifier)
                 fprintf(2, "%s\n",ME.message)
-                % for i = 1:size(exception.stack,1)
-                %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
-                %     fprintf(stack);
-                % end
+
+                for stackIdx = 1:size(ME.stack, 1)
+                    fprintf(2,"%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
+                end
+
 
                 if ME.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
 
                     fprintf(2, "No Raw File was found, please check 'save raw files' in HoloDoppler\n")
-
-                else
-
-                    for stackIdx = 1:size(ME.stack, 1)
-                        fprintf(2,"%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
-                    end
 
                 end
 
@@ -253,14 +248,13 @@ classdef eyeflow < matlab.apps.AppBase
                 app.file.OverWrite = app.OverWriteCheckBox.Value;
 
                 try
+                    app.file.ToolBox = ToolBoxClass(app.file.directory, app.file.param_name, app.file.OverWrite);
                     if ~app.file.is_preprocessed
                         app.file = app.file.preprocessData();
                     end
                     app.file = app.file.analyzeData(app);
 
                 catch ME
-
-                    diary off
 
                     fprintf(2,"==========================================\nERROR\n==========================================\n");
 
@@ -274,6 +268,7 @@ classdef eyeflow < matlab.apps.AppBase
 
                     % Update lamp color to indicate warning
                     app.Lamp.Color = [1, 0.5, 0]; % Orange
+                    diary off
                 end
             end
             app.Lamp.Color = [0, 1, 0];
@@ -526,8 +521,8 @@ classdef eyeflow < matlab.apps.AppBase
                 for i = 1:length(app.drawer_list)
                     tic
                     try
-                    app.Load(app.drawer_list{i});
-                    app.ExecuteButtonPushed();
+                        app.Load(app.drawer_list{i});
+                        app.ExecuteButtonPushed();
                     catch
                         fprintf(2, 'Error in rendering: %s', ME.message)
                     end
