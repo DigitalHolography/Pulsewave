@@ -148,7 +148,7 @@ fprintf("    3. Cross-sections analysis for all circles output took %ds\n", roun
 %% 4. Sections Image
 tic
 
-if isempty(params.forcewidth)
+if isempty(params.forcewidth) && ~isempty(systolesIndexes)
     index_start = systolesIndexes(1);
     index_end = systolesIndexes(end);
 else
@@ -240,7 +240,7 @@ if params.json.BloodVolumeRate.ARIBVR
     ArterialResistivityIndex(t, mean_BvrT_A, maskArtery, 'BVR', 'volumeRate');
 end
 
-if params.json.BloodVolumeRate.strokeAndTotalVolume
+if params.json.BloodVolumeRate.strokeAndTotalVolume && ~isempty(systolesIndexes)
 strokeAndTotalVolume(mean_BvrT_A, mean_std_BvrT_A, systolesIndexes, t, 1000);
 end
 

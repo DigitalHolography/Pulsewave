@@ -33,9 +33,10 @@ classdef ExecutionClass < handle
         flag_bloodVolumeRate_analysis
 
         OverWrite logical
+        ToolBox ToolBoxClass
     end
 
-     methods
+    methods
         function obj = ExecutionClass(path)
             % Constructor for ExecutionClass.
             % Input: path - directory or .holo file path.
@@ -121,11 +122,11 @@ classdef ExecutionClass < handle
         end
 
 
-        function obj = analyzeData(obj)
+        function obj = analyzeData(obj, app)
             % Main routine for EyeFlow analysis.
 
             % Initialize ToolBox and parameters
-            TB = ToolBoxClass(obj.directory, obj.param_name, obj.OverWrite);
+            TB = obj.ToolBox;
             params = TB.getParams;
             totalTime = tic;
             saveGit;
@@ -139,6 +140,18 @@ classdef ExecutionClass < handle
                 [obj.maskArtery, obj.maskVein, obj.maskSection, obj.maskNeighbors, obj.xy_barycenter] = ...
                     createMasks(obj.M0_ff_video, f_AVG_mean);
 
+                M0_ff_img = rescale(mean(obj.M0_ff_video, 3));
+                cmapArtery = cmapLAB(256, [0 0 0], 0, [1 0 0], 1/3, [1 1 0], 2/3, [1 1 1], 1);
+                cmapVein = cmapLAB(256, [0 0 0], 0, [0 0 1], 1/3, [0 1 1], 2/3, [1 1 1], 1);
+                cmapAV = cmapLAB(256, [0 0 0], 0, [1 0 1], 1/3, [1 1 1], 1);
+
+                M0_Artery = setcmap(M0_ff_img, obj.maskArtery, cmapArtery);
+                M0_Vein = setcmap(M0_ff_img, obj.maskVein, cmapVein);
+                M0_AV = setcmap(M0_ff_img, obj.maskArtery & obj.maskVein, cmapAV);
+
+                M0_RGB = (M0_Artery + M0_Vein) .* ~(obj.maskArtery & obj.maskVein) + M0_AV + rescale(M0_ff_img) .* ~(obj.maskArtery | obj.maskVein);
+                app.ImageDisplay.ImageSource = mat2gray(M0_RGB); % Rescale the image for display
+
                 fprintf("- Mask Creation took: %ds\n", round(toc(createMasksTimer)));
             end
 
@@ -149,18 +162,23 @@ classdef ExecutionClass < handle
 
                 [obj.sysIdxList, ~, sysMaxList, sysMinList] = find_systole_index(obj.M0_ff_video, obj.maskArtery);
 
-                % Log systole results
-                fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_EF_main_outputs.txt')), 'a');
-                fprintf(fileID, 'Heart beat: %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList) * TB.stride / TB.fs / 1000));
-                fprintf(fileID, 'Systole Indices: %s \r\n', strcat('[', sprintf("%d,", obj.sysIdxList), ']'));
-                fprintf(fileID, 'Number of Cycles: %d \r\n', numel(obj.sysIdxList) - 1);
-                fprintf(fileID, 'Max Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMaxList), ']'));
-                fprintf(fileID, 'Min Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMinList), ']'));
-                fprintf(fileID, 'Time diastolic min to systolic max derivative (ms): %f \r\n', ...
-                    1000 * mean((obj.sysIdxList(2:end) - sysMinList) * TB.stride / TB.fs / 1000));
-                fprintf(fileID, 'Time diastolic min to systolic max (ms): %f \r\n', ...
-                    1000 * mean((sysMaxList(2:end) - sysMinList(1:end - 1)) * TB.stride / TB.fs / 1000));
-                fclose(fileID);
+                % Check if the output vectors are long enough
+                if numel(obj.sysIdxList) < 2 || numel(sysMaxList) < 2 || numel(sysMinList) < 2
+                    warning('There isnt enough systoles.');
+                else
+                    % Log systole results
+                    fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_EF_main_outputs.txt')), 'a');
+                    fprintf(fileID, 'Heart beat: %f (bpm) \r\n', 60 / mean(diff(obj.sysIdxList) * TB.stride / TB.fs / 1000));
+                    fprintf(fileID, 'Systole Indices: %s \r\n', strcat('[', sprintf("%d,", obj.sysIdxList), ']'));
+                    fprintf(fileID, 'Number of Cycles: %d \r\n', numel(obj.sysIdxList) - 1);
+                    fprintf(fileID, 'Max Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMaxList), ']'));
+                    fprintf(fileID, 'Min Systole Indices: %s \r\n', strcat('[', sprintf("%d,", sysMinList), ']'));
+                    fprintf(fileID, 'Time diastolic min to systolic max derivative (ms): %f \r\n', ...
+                        1000 * mean((obj.sysIdxList(2:end) - sysMinList) * TB.stride / TB.fs / 1000));
+                    fprintf(fileID, 'Time diastolic min to systolic max (ms): %f \r\n', ...
+                        1000 * mean((sysMaxList(2:end) - sysMinList(1:end - 1)) * TB.stride / TB.fs / 1000));
+                    fclose(fileID);
+                end
 
                 fprintf("- FindSystoleIndex took: %ds\n", round(toc(findSystoleTimer)));
 
@@ -226,16 +244,16 @@ classdef ExecutionClass < handle
                 %% Spectrum Analysis
                 fprintf("\n----------------------------------\nSpectrum Analysis\n----------------------------------\n");
                 spectrumAnalysisTimer = tic;
-                
+
                 spectrum_analysis(SH_cube, obj.M0_data_video);
-                
+
                 time_spectrumAnalysis = toc(spectrumAnalysisTimer);
                 fprintf("- Spectrum Analysis took : %ds\n", round(time_spectrumAnalysis))
-                
+
                 %% Spectrogram
                 fprintf("\n----------------------------------\nSpectrogram\n----------------------------------\n");
                 spectrogramTimer = tic;
-                
+
                 spectrum_video(SH_cube, obj.maskArtery, obj.maskNeighbors);
 
                 fprintf("- Spectrogram took: %ds\n", round(toc(spectrogramTimer)));

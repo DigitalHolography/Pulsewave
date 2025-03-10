@@ -2,36 +2,38 @@ classdef eyeflow < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        EyeFlowUIFigure             matlab.ui.Figure
-        PlayInputsButton              matlab.ui.control.Button
-        EditParametersButton          matlab.ui.control.Button
-        EditMasksButton               matlab.ui.control.Button
-        NumberofWorkersSpinner        matlab.ui.control.Spinner
-        NumberofWorkersSpinnerLabel   matlab.ui.control.Label
-        SHanalysisCheckBox            matlab.ui.control.CheckBox
-        FolderManagementButton        matlab.ui.control.Button
-        PreviewMasksButton            matlab.ui.control.Button
-        SegmentationCheckBox          matlab.ui.control.CheckBox
-        PulseanalysisCheckBox         matlab.ui.control.CheckBox
-        velocityCheckBox              matlab.ui.control.CheckBox
-        bloodVolumeRateCheckBox       matlab.ui.control.CheckBox
-        ReferenceDirectory            matlab.ui.control.TextArea
-        OverWriteCheckBox             matlab.ui.control.CheckBox
-        Lamp                          matlab.ui.control.Lamp
-        ClearButton                   matlab.ui.control.Button
-        LoadfolderButton              matlab.ui.control.Button
-        LoadHoloButton                matlab.ui.control.Button
-        ExecuteButton                 matlab.ui.control.Button
+        EyeFlowUIFigure matlab.ui.Figure
+        PlayInputsButton matlab.ui.control.Button
+        EditParametersButton matlab.ui.control.Button
+        EditMasksButton matlab.ui.control.Button
+        NumberofWorkersSpinner matlab.ui.control.Spinner
+        NumberofWorkersSpinnerLabel matlab.ui.control.Label
+        SHanalysisCheckBox matlab.ui.control.CheckBox
+        FolderManagementButton matlab.ui.control.Button
+        PreviewMasksButton matlab.ui.control.Button
+        SegmentationCheckBox matlab.ui.control.CheckBox
+        PulseanalysisCheckBox matlab.ui.control.CheckBox
+        velocityCheckBox matlab.ui.control.CheckBox
+        bloodVolumeRateCheckBox matlab.ui.control.CheckBox
+        ReferenceDirectory matlab.ui.control.TextArea
+        OverWriteCheckBox matlab.ui.control.CheckBox
+        Lamp matlab.ui.control.Lamp
+        ClearButton matlab.ui.control.Button
+        LoadfolderButton matlab.ui.control.Button
+        LoadHoloButton matlab.ui.control.Button
+        ExecuteButton matlab.ui.control.Button
+        ImageDisplay matlab.ui.control.Image
         file
         drawer_list = {}
         flag_is_load
     end
 
-    methods (Access = private)
-        function Load(app, path)
+    methods (Access = public)
 
+        function Load(app, path)
             app.Lamp.Color = [1, 0, 0];
             drawnow;
+
             if isfolder(path)
                 path = strcat(path, '\');
             end
@@ -41,19 +43,22 @@ classdef eyeflow < matlab.apps.AppBase
             try
                 % add file
                 tic
-                fprintf("\n----------------------------------\n")
-                fprintf("Video Loading\n")
-                fprintf("----------------------------------\n")
+                fprintf("\n----------------------------------\nVideo Loading\n----------------------------------\n")
                 app.file = ExecutionClass(path);
                 fprintf("- Video Loading took : %ds\n", round(toc))
 
+                % Compute the mean of M0_data_video along the third dimension
+                mean_M0 = mean(app.file.M0_data_video, 3);
+                % Display the mean image in the uiimage component
+                app.ImageDisplay.ImageSource = repmat(rescale(mean_M0), [1 1 3]); % Rescale the image for display
+
                 %% End
-                app.LoadfolderButton.Enable = true ;
-                app.ExecuteButton.Enable = true ;
-                app.ClearButton.Enable = true ;
+                app.LoadfolderButton.Enable = true;
+                app.ExecuteButton.Enable = true;
+                app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
                 % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
-                app.ReferenceDirectory.Value = path ;
+                app.ReferenceDirectory.Value = path;
                 app.Lamp.Color = [0, 1, 0];
                 app.flag_is_load = true;
 
@@ -61,22 +66,16 @@ classdef eyeflow < matlab.apps.AppBase
 
                 fprintf(2, "==========================================\nERROR\n==========================================\n")
                 fprintf(2, 'Error while loading : %s\n', path)
-                fprintf(2, "%s\n",ME.identifier)
-                fprintf(2, "%s\n",ME.message)
-                % for i = 1:size(exception.stack,1)
-                %     stack = sprintf('%s : %s, line : %d \n', exception.stack(i).file, exception.stack(i).name, exception.stack(i).line);
-                %     fprintf(stack);
-                % end
+                fprintf(2, "%s\n", ME.identifier)
+                fprintf(2, "%s\n", ME.message)
+
+                for stackIdx = 1:size(ME.stack, 1)
+                    fprintf(2, "%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
+                end
 
                 if ME.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
 
                     fprintf(2, "No Raw File was found, please check 'save raw files' in HoloDoppler\n")
-
-                else
-
-                    for i = 1:numel(ME.stack)
-                        fprintf(2, "%s", ME.stack(i))
-                    end
 
                 end
 
@@ -91,22 +90,30 @@ classdef eyeflow < matlab.apps.AppBase
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
 
         end
+
     end
+
     methods (Access = private)
 
         function LoadFromTxt(app)
 
-            [selected_file,path] = uigetfile('*.txt');
+            [selected_file, path] = uigetfile('*.txt');
+
             if (selected_file)
-                files_lines = readlines(fullfile(path,selected_file));
+                files_lines = readlines(fullfile(path, selected_file));
+
                 for nn = 1:length(files_lines)
+
                     if ~isempty(files_lines(nn))
                         app.drawer_list{end + 1} = files_lines(nn);
                     end
+
                 end
+
             end
 
         end
+
     end
 
     % Callbacks that handle component events
@@ -114,6 +121,7 @@ classdef eyeflow < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+
             if exist("version.txt", 'file')
                 v = readlines('version.txt');
                 fprintf("==========================================\n " + ...
@@ -130,7 +138,6 @@ classdef eyeflow < matlab.apps.AppBase
 
             % Set the UI title
             app.EyeFlowUIFigure.Name = ['EyeFlow ', char(v(1))];
-
 
             % Initialize checkboxes and flags
             app.flag_is_load = false;
@@ -165,6 +172,7 @@ classdef eyeflow < matlab.apps.AppBase
                 app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
 
                 selected_dir = uigetdir(last_dir);
+
                 if selected_dir == 0
                     fprintf('No folder selected');
                     app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
@@ -175,6 +183,7 @@ classdef eyeflow < matlab.apps.AppBase
                 app.flag_is_load = true;
                 app.Load(selected_dir);
             end
+
         end
 
         function LoadHoloButtonPushed(app, ~)
@@ -196,6 +205,7 @@ classdef eyeflow < matlab.apps.AppBase
                 app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
 
                 [selected_holo, path_holo] = uigetfile('*.holo');
+
                 if selected_holo == 0
                     disp('No file selected');
                     app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
@@ -211,16 +221,20 @@ classdef eyeflow < matlab.apps.AppBase
         end
 
         % Button pushed function: ExecuteButton
-        function ExecuteButtonPushed(app, ~)
+        function err = ExecuteButtonPushed(app, ~)
+
+            err = [];
+            
             if ~app.flag_is_load
                 fprintf(2, "no input loaded\n")
                 return
             end
 
             warning('off');
-            parfor_arg = app.NumberofWorkersSpinner.Value ;
+            parfor_arg = app.NumberofWorkersSpinner.Value;
 
             poolobj = gcp('nocreate'); % check if a pool already exist
+
             if isempty(poolobj)
                 parpool(parfor_arg); % create a new pool
             elseif poolobj.NumWorkers ~= parfor_arg
@@ -234,7 +248,6 @@ classdef eyeflow < matlab.apps.AppBase
 
             % Actualizes the input Parameters
             app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
-
 
             for i = 1:length(app.file.params_names)
 
@@ -250,61 +263,73 @@ classdef eyeflow < matlab.apps.AppBase
                 app.file.OverWrite = app.OverWriteCheckBox.Value;
 
                 try
+                    app.file.ToolBox = ToolBoxClass(app.file.directory, app.file.param_name, app.file.OverWrite);
+
                     if ~app.file.is_preprocessed
                         app.file = app.file.preprocessData();
                     end
-                    app.file = app.file.analyzeData();
+
+                    app.file = app.file.analyzeData(app);
 
                 catch ME
+                    err = ME;
+                    fprintf(2, "==========================================\nERROR\n==========================================\n");
 
-                    diary off
-
-                    fprintf(2,"==========================================\nERROR\n==========================================\n");
-
-                    fprintf(2, 'Error with file : %s\n%s\n%s', app.file.directory, ME.identifier, ME.message);
+                    fprintf(2, 'Error with file : %s\n%s\n%s\n', app.file.directory, ME.identifier, ME.message);
 
                     for stackIdx = 1:size(ME.stack, 1)
-                        fprintf(2,"%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
+                        fprintf(2, "%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
                     end
 
-                    fprintf(2,"==========================================\n");
+                    fprintf(2, "==========================================\n");
 
                     % Update lamp color to indicate warning
                     app.Lamp.Color = [1, 0.5, 0]; % Orange
+                    diary off
                 end
+
             end
+
             app.Lamp.Color = [0, 1, 0];
         end
 
         function PlayInputsButtonPushed(app, ~)
+
             if ~app.flag_is_load
                 fprintf(2, "no input loaded\n")
                 return
             end
+
             try
+
                 if app.file.is_preprocessed
                     disp('inputs after preprocess.')
                 else
                     disp('inputs before preprocess.')
                 end
+
                 implay(rescale(app.file.M0_data_video));
                 implay(rescale(app.file.M1_data_video));
                 implay(rescale(app.file.M2_data_video));
             catch
                 disp('Input not well loaded')
             end
+
         end
 
         function OverWriteCheckBoxChanged(app, ~)
+
             if ~app.flag_is_load
                 fprintf(2, "no input loaded\n")
                 return
             end
+
             try
                 app.file.OverWrite = app.OverWriteCheckBox.Value;
             catch
                 disp('Couldnt force overwrite')
             end
+
         end
 
         % Button pushed function: ClearButton
@@ -320,94 +345,92 @@ classdef eyeflow < matlab.apps.AppBase
 
         % Button pushed function: FolderManagementButton
         function FolderManagementButtonPushed(app, ~)
-            d = dialog('Position', [300, 300, 750, 190 + length(app.drawer_list) * 14],...
-                'Color', [0.2, 0.2, 0.2],...
-                'Name', 'Folder management',...
-                'Resize', 'on',...
+            d = dialog('Position', [300, 300, 750, 190 + length(app.drawer_list) * 14], ...
+                'Color', [0.2, 0.2, 0.2], ...
+                'Name', 'Folder management', ...
+                'Resize', 'on', ...
                 'WindowStyle', 'normal');
 
-            txt = uicontrol('Parent', d,...
-                'Style', 'text',...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.2, 0.2, 0.2],...
-                'ForegroundColor', [0.8, 0.8, 0.8],...
-                'Position', [20, 70, 710, length(app.drawer_list) * 14],...
-                'HorizontalAlignment', 'left',...
+            txt = uicontrol('Parent', d, ...
+                'Style', 'text', ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.2, 0.2, 0.2], ...
+                'ForegroundColor', [0.8, 0.8, 0.8], ...
+                'Position', [20, 70, 710, length(app.drawer_list) * 14], ...
+                'HorizontalAlignment', 'left', ...
                 'String', app.drawer_list);
 
-            uicontrol('Parent', d,...
-                'Position', [20, 20, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Select folder',...
+            uicontrol('Parent', d, ...
+                'Position', [20, 20, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Select folder', ...
                 'Callback', @select);
 
-            uicontrol('Parent', d,...
-                'Position', [140, 20, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Select entire folder',...
+            uicontrol('Parent', d, ...
+                'Position', [140, 20, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Select entire folder', ...
                 'Callback', @select_all);
 
-            uicontrol('Parent', d,...
-                'Position', [260, 20, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Clear list',...
+            uicontrol('Parent', d, ...
+                'Position', [260, 20, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Clear list', ...
                 'Callback', @clear_drawer);
 
-            uicontrol('Parent', d,...
-                'Position', [380, 20, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Load from text',...
+            uicontrol('Parent', d, ...
+                'Position', [380, 20, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Load from text', ...
                 'Callback', @load_from_txt);
 
-            uicontrol('Parent', d,...
-                'Position', [500, 70, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Clear Parameters',...
+            uicontrol('Parent', d, ...
+                'Position', [500, 70, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Clear Parameters', ...
                 'Callback', @clear_params);
 
-            uicontrol('Parent', d,...
-                'Position', [500, 120, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Import Parameter',...
+            uicontrol('Parent', d, ...
+                'Position', [500, 120, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Import Parameter', ...
                 'Callback', @import_param);
 
-
-            uicontrol('Parent', d,...
-                'Position', [500, 20, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Render',...
+            uicontrol('Parent', d, ...
+                'Position', [500, 20, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Render', ...
                 'Callback', @render);
 
-            uicontrol('Parent', d,...
-                'Position', [620, 20, 100, 25],...
-                'FontName', 'Helvetica',...
-                'BackgroundColor', [0.5, 0.5, 0.5],...
-                'ForegroundColor', [0.9 0.9 0.9],...
-                'FontWeight', 'bold',...
-                'String', 'Show Results',...
+            uicontrol('Parent', d, ...
+                'Position', [620, 20, 100, 25], ...
+                'FontName', 'Helvetica', ...
+                'BackgroundColor', [0.5, 0.5, 0.5], ...
+                'ForegroundColor', [0.9 0.9 0.9], ...
+                'FontWeight', 'bold', ...
+                'String', 'Show Results', ...
                 'Callback', @show_outputs);
-
 
             uiwait(d);
 
@@ -428,16 +451,18 @@ classdef eyeflow < matlab.apps.AppBase
                 % remove all files (isdir property is 0)
                 subfoldersName = tmp_dir([tmp_dir(:).isdir]);
                 % remove '.' and '..' folders
-                subfoldersName = subfoldersName(~ismember({subfoldersName(:).name},{'.','..'}));
+                subfoldersName = subfoldersName(~ismember({subfoldersName(:).name}, {'.', '..'}));
                 subfoldersName = {subfoldersName.name};
                 % remove of other folders (ex: 'config' subfolders)
-                for ii=1:length(subfoldersName)
+                for ii = 1:length(subfoldersName)
+
                     if contains(subfoldersName{ii}, '_HD_') || contains(subfoldersName{ii}, '_HW_')
-                        app.drawer_list{end + 1} = fullfile(selected_dir,'\',subfoldersName{ii});
+                        app.drawer_list{end + 1} = fullfile(selected_dir, '\', subfoldersName{ii});
                         txt.String = app.drawer_list;
                         d.Position(4) = 100 + length(app.drawer_list) * 14;
                         txt.Position(4) = length(app.drawer_list) * 14;
                     end
+
                 end
 
             end
@@ -445,9 +470,11 @@ classdef eyeflow < matlab.apps.AppBase
             function select(~, ~)
                 %% selection of one processed folder with uigetdir
                 selected_dir = uigetdir();
+
                 if (selected_dir)
                     app.drawer_list{end + 1} = selected_dir;
                 end
+
                 txt.String = app.drawer_list;
                 d.Position(4) = 100 + length(app.drawer_list) * 14;
                 txt.Position(4) = length(app.drawer_list) * 14;
@@ -473,7 +500,6 @@ classdef eyeflow < matlab.apps.AppBase
                 toc
             end
 
-
             function import_param(app, ~)
                 tic
                 % Store the current WindowStyle of the main GUI
@@ -484,6 +510,7 @@ classdef eyeflow < matlab.apps.AppBase
 
                 % Open the file selection dialog
                 [selected_json, json_path] = uigetfile('*.json');
+
                 if selected_json == 0
                     disp('No file selected');
                     % Restore the original WindowStyle
@@ -497,57 +524,95 @@ classdef eyeflow < matlab.apps.AppBase
                 % Process the selected file
                 for ind = 1:length(app.drawer_list)
                     path_json = fullfile(app.drawer_list{ind}, 'eyeflow', 'json');
+
                     if ~isfolder(path_json)
                         mkdir(path_json);
                     end
+
                     copyfile(fullfile(json_path, selected_json), path_json);
 
                     % Get idx for renaming
                     idx = 0;
                     list_dir = dir(path_json);
+
                     for i = 1:numel(list_dir)
                         match = regexp(list_dir(i).name, '\d+$', 'match');
+
                         if ~isempty(match) && str2double(match{1}) >= idx
                             idx = str2double(match{1}); % Suffix
                         end
+
                     end
 
                     % Renaming
                     copyfile(fullfile(path_json, selected_json), fullfile(path_json, sprintf('InputEyeFlowParams_%d.json', idx)));
                     delete(fullfile(path_json, selected_json));
                 end
+
                 toc
             end
 
             function render(~, ~)
-                for i = 1:length(app.drawer_list)
+
+                num_drawers = length(app.drawer_list);
+                error_list = cell(1, num_drawers);
+                faulty_folders = cell(1, num_drawers);
+                error_count = 0;
+
+                for i = 1:num_drawers
                     tic
-                    try
+
                     app.Load(app.drawer_list{i});
-                    app.ExecuteButtonPushed();
-                    catch
+                    ME = app.ExecuteButtonPushed();
+
+                    if ~isempty(ME)
+                        error_count = error_count + 1;
+                        error_list{error_count} = ME;
+                        faulty_folders{error_count} = app.drawer_list{i};
                     end
+
                     app.ClearButtonPushed();
                     toc
                 end
-                %                 clear app.drawer_list
+
+                if error_count > 0
+                    disp('Errors in rendering:')
+
+                    for i = 1:error_count
+                        exception = error_list{i};
+                        path = faulty_folders{i};
+                        fprintf(2, "==========================================\nERROR N°:%d\n==========================================\n", i)
+                        fprintf(2, 'Folder : %s\n', path)
+                        fprintf(2, "%s\n", exception.identifier)
+                        fprintf(2, "%s\n", exception.message)
+
+                        for stackIdx = 1:size(exception.stack, 1)
+                            fprintf(2, "%s : %s, line : %d\n", exception.stack(stackIdx).file, exception.stack(stackIdx).name, exception.stack(stackIdx).line);
+                        end
+
+                    end
+
+                end
+
             end
 
             function show_outputs(~, ~)
-                out_dir_path = fullfile(app.drawer_list{1},'Multiple_Results');
+                out_dir_path = fullfile(app.drawer_list{1}, 'Multiple_Results');
                 mkdir(out_dir_path) % creates if it doesn't exists
                 tic
-                ShowOutputs(app.drawer_list,out_dir_path)
+                ShowOutputs(app.drawer_list, out_dir_path)
                 toc
             end
+
             delete(d);
         end
 
         % Button pushed function: PreviewMasksButtonPushed
         function PreviewMasksButtonPushed(app, ~)
 
-            parfor_arg = app.NumberofWorkersSpinner.Value ;
+            parfor_arg = app.NumberofWorkersSpinner.Value;
             poolobj = gcp('nocreate'); % check if a pool already exist
+
             if isempty(poolobj)
                 parpool(parfor_arg); % create a new pool
             elseif poolobj.NumWorkers ~= parfor_arg
@@ -558,20 +623,23 @@ classdef eyeflow < matlab.apps.AppBase
             PreviewMasks(app);
         end
 
-
         % Button pushed function: EditParametersButton
         function EditParametersButtonPushed(app, ~)
+
             if (app.flag_is_load)
                 main_path = fullfile(app.file.directory, 'eyeflow');
-                if isfile(fullfile(main_path,'json',app.file.param_name))
-                    disp(['opening : ', fullfile(main_path,'json',app.file.param_name)])
-                    winopen(fullfile(main_path,'json',app.file.param_name));
+
+                if isfile(fullfile(main_path, 'json', app.file.param_name))
+                    disp(['opening : ', fullfile(main_path, 'json', app.file.param_name)])
+                    winopen(fullfile(main_path, 'json', app.file.param_name));
                 else
-                    disp(['couldn''t open : ',fullfile(main_path,'json',app.file.param_name)])
+                    disp(['couldn''t open : ', fullfile(main_path, 'json', app.file.param_name)])
                 end
+
             else
                 fprintf(2, "no input loaded\n")
             end
+
         end
 
         % Button pushed function: EditMasksButton
@@ -583,67 +651,82 @@ classdef eyeflow < matlab.apps.AppBase
             end
 
             if (app.flag_is_load)
-                if ~isfolder(fullfile(TB.path_main,'mask'))
-                    mkdir(fullfile(TB.path_main,'mask'))
+
+                if ~isfolder(fullfile(TB.path_main, 'mask'))
+                    mkdir(fullfile(TB.path_main, 'mask'))
                 end
+
                 try
-                    winopen(fullfile(TB.path_main,'mask'));
+                    winopen(fullfile(TB.path_main, 'mask'));
                 catch
                     disp("opening failed.")
                 end
+
                 try
                     list_dir = dir(TB.path_main);
-                    idx=0;
-                    for i=1:length(list_dir)
+                    idx = 0;
+
+                    for i = 1:length(list_dir)
+
                         if contains(list_dir(i).name, TB.EF_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
+
                             if ~isempty(match) && str2double(match{1}) >= idx
-                                idx = str2double(match{1}) ; %suffix
+                                idx = str2double(match{1}); %suffix
                             end
+
                         end
+
                     end
+
                     path_dir = fullfile(TB.path_main, TB.folder_name);
 
-                    disp(['Copying from : ',fullfile(path_dir,'png','mask')])
-                    copyfile(fullfile(path_dir,'png', 'mask', sprintf("%s_maskArtery.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskArtery.png'));
-                    copyfile(fullfile(path_dir,'png', 'mask', sprintf("%s_maskVein.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskVein.png'));
+                    disp(['Copying from : ', fullfile(path_dir, 'png', 'mask')])
+                    copyfile(fullfile(path_dir, 'png', 'mask', sprintf("%s_maskArtery.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskArtery.png'));
+                    copyfile(fullfile(path_dir, 'png', 'mask', sprintf("%s_maskVein.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'MaskVein.png'));
                 catch
                     disp("last auto mask copying failed.")
                 end
+
                 try
 
-                    copyfile(fullfile(TB.path,'png',sprintf("%s_M0.png",TB.main_foldername)),fullfile(TB.path_main,'mask','M0.png'));
+                    copyfile(fullfile(TB.path, 'png', sprintf("%s_M0.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'M0.png'));
                     folder_name = strcat(TB.main_foldername, '_EF');
                     list_dir = dir(TB.path_main);
-                    idx=0;
-                    for i=1:length(list_dir)
+                    idx = 0;
+
+                    for i = 1:length(list_dir)
+
                         if contains(list_dir(i).name, folder_name)
                             match = regexp(list_dir(i).name, '\d+$', 'match');
+
                             if ~isempty(match) && str2double(match{1}) >= idx
-                                idx = str2double(match{1}) ; %suffix
+                                idx = str2double(match{1}); %suffix
                             end
+
                         end
+
                     end
+
                     folder_name = sprintf('%s_%d', folder_name, idx);
-                    copyfile(fullfile(path_dir,'gif',sprintf("%s_M0.gif",folder_name)),fullfile(TB.path_main,'mask','M0.gif'));
+                    copyfile(fullfile(path_dir, 'gif', sprintf("%s_M0.gif", folder_name)), fullfile(TB.path_main, 'mask', 'M0.gif'));
                 catch
 
                     disp("last M0 png and gif copying failed")
                 end
 
                 try
-                    v = VideoReader(fullfile(TB.path,'avi',sprintf("%s_M0.avi",TB.main_foldername)));
+                    v = VideoReader(fullfile(TB.path, 'avi', sprintf("%s_M0.avi", TB.main_foldername)));
                     M0_video = read(v); clear v;
-                    M0_video = rescale(single(squeeze(mean(M0_video,3))));
+                    M0_video = rescale(single(squeeze(mean(M0_video, 3))));
                     sz = size(M0_video);
-                    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video,  diskMask(sz(1),sz(2),0.9));
+                    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video, diskMask(sz(1), sz(2), 0.9));
                     diasysArtery = M0_Systole_img - M0_Diastole_img;
-                    RGBdiasys = labDuoImage(mean(M0_video,3), diasysArtery);
-                    imwrite(RGBdiasys, fullfile(TB.path_main,'mask','DiaSysRGB.png'), 'png');
+                    RGBdiasys = labDuoImage(mean(M0_video, 3), diasysArtery);
+                    imwrite(RGBdiasys, fullfile(TB.path_main, 'mask', 'DiaSysRGB.png'), 'png');
                 catch
 
                     disp("Diasys png failed")
-
 
                 end
 
@@ -659,7 +742,9 @@ classdef eyeflow < matlab.apps.AppBase
                 fprintf(2, "no input loaded\n")
 
             end
+
         end
+
     end
 
     % Component initialization
@@ -674,14 +759,14 @@ classdef eyeflow < matlab.apps.AppBase
             % Create EyeFlowUIFigure and hide until all components are created
             app.EyeFlowUIFigure = uifigure('Visible', 'off');
             app.EyeFlowUIFigure.Color = [0.149 0.149 0.149];
-            app.EyeFlowUIFigure.Position = [100 100 640 421];
+            app.EyeFlowUIFigure.Position = [100 100 1050 421];
             app.EyeFlowUIFigure.Name = 'EyeFlow';
             app.EyeFlowUIFigure.Icon = fullfile(pathToMLAPP, 'eyeflow_logo.png');
 
             % Create a grid layout to manage resizing
             grid = uigridlayout(app.EyeFlowUIFigure);
             grid.RowHeight = {'fit', '1x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
-            grid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            grid.ColumnWidth = {'1x', '1x', '1x', '1x', '3x'};
             grid.BackgroundColor = [0.149, 0.149, 0.149];
 
             % Top Row: Load Folder, Load Holo, Clear, Folder Management
@@ -848,8 +933,8 @@ classdef eyeflow < matlab.apps.AppBase
             app.NumberofWorkersSpinner.Layout.Row = 9;
             app.NumberofWorkersSpinner.Layout.Column = 4;
             maxWorkers = parcluster('local').NumWorkers;
-            app.NumberofWorkersSpinner.Limits = [0 maxWorkers];  % Ensure valid range
-            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers/2)); % Default to 10 or max available
+            app.NumberofWorkersSpinner.Limits = [0 maxWorkers]; % Ensure valid range
+            app.NumberofWorkersSpinner.Value = min(10, floor(maxWorkers / 2)); % Default to 10 or max available
 
             % Bottom Right: Overwrite Checkbox
             app.OverWriteCheckBox = uicheckbox(grid);
@@ -859,12 +944,20 @@ classdef eyeflow < matlab.apps.AppBase
             app.OverWriteCheckBox.Layout.Row = 9;
             app.OverWriteCheckBox.Layout.Column = 2;
             app.OverWriteCheckBox.Value = false;
+            app.OverWriteCheckBox.Enable = 'off';
             app.OverWriteCheckBox.ValueChangedFcn = createCallbackFcn(app, @OverWriteCheckBoxChanged, true);
             app.OverWriteCheckBox.Tooltip = 'Overwrite the new results in the last EF_ result folder (to save space)';
+
+            % Add a new column for the image
+            app.ImageDisplay = uiimage(grid);
+            app.ImageDisplay.Layout.Row = [1, 9]; % Span all rows
+            app.ImageDisplay.Layout.Column = 5; % Place in the new column
+            app.ImageDisplay.ScaleMethod = 'stretch'; % Adjust the image to fit the component
 
             % Show the figure after all components are created
             app.EyeFlowUIFigure.Visible = 'on';
         end
+
     end
 
     % App creation and deletion
@@ -885,6 +978,7 @@ classdef eyeflow < matlab.apps.AppBase
             if nargout == 0
                 clear app
             end
+
         end
 
         % Code that executes before app deletion
@@ -893,5 +987,7 @@ classdef eyeflow < matlab.apps.AppBase
             % Delete UIFigure when app is deleted
             delete(app.EyeFlowUIFigure)
         end
+
     end
+
 end

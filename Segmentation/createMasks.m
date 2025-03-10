@@ -5,6 +5,7 @@ params = TB.getParams;
 
 if ~isfolder(fullfile(TB.path_png, 'mask'))
     mkdir(TB.path_png, 'mask')
+    mkdir(TB.path_eps, 'mask')
     mkdir(fullfile(TB.path_png, 'mask'), 'steps')
     mkdir(fullfile(TB.path_eps, 'mask'), 'steps')
 end

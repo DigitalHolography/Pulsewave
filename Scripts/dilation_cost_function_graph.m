@@ -1,8 +1,10 @@
-paths = readlines("C:\Users\Mikhalkino\Desktop\etgziopuuerg_t.txt");
+paths = readlines("X:\250117\AUZ_L\aaa.txt");
 
 %% ensure set default parameters and no forced mask
 
 Ndilation = 9;
+
+ratio = 2*512;
 
 for ind = 1:length(paths)
     ef_path = fullfile(paths(ind),'eyeflow');
@@ -98,6 +100,10 @@ for ind = 1:length(paths)
     end
     
     
-    plot(1:Ndilation ,cell2mat(diffRMS(2:end)));
+    plot((2*(1:Ndilation)+1)/ratio ,cell2mat(diffRMS(2:end)), 'LineWidth', 2);
+    %findpeaks(cell2mat(diffRMS(2:end)));
 end
+ylabel('Mean difference f_{RMS}');
+xlabel('width on max dimension ratio');
+
 
