@@ -15,7 +15,7 @@
     },
     "ValueOfTheInterpolationParameter": 1,
     "Preprocess": {
-      "RemoveOutliersOption": 1,
+      "RemoveOutliersOption": false,
       "Window Size": 5 
     },
     "VeinsAnalysis": 1,
