@@ -690,7 +690,7 @@ classdef eyeflow < matlab.apps.AppBase
 
                 try
 
-                    copyfile(fullfile(TB.path, 'png', sprintf("%s_M0.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'M0.png'));
+                    copyfile(fullfile(TB.EF_path, 'png', sprintf("%s_M0.png", TB.main_foldername)), fullfile(TB.path_main, 'mask', 'M0.png'));
                     folder_name = strcat(TB.main_foldername, '_EF');
                     list_dir = dir(TB.path_main);
                     idx = 0;
@@ -716,7 +716,7 @@ classdef eyeflow < matlab.apps.AppBase
                 end
 
                 try
-                    v = VideoReader(fullfile(TB.path, 'avi', sprintf("%s_M0.avi", TB.main_foldername)));
+                    v = VideoReader(fullfile(TB.EF_path, 'avi', sprintf("%s_M0.avi", TB.main_foldername)));
                     M0_video = read(v); clear v;
                     M0_video = rescale(single(squeeze(mean(M0_video, 3))));
                     sz = size(M0_video);
@@ -731,7 +731,7 @@ classdef eyeflow < matlab.apps.AppBase
                 end
 
                 % try
-                %     Commented until further fixes
+                %     Commented until further fixes MESSAGE TO ZACHARIE
                 %     openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
                 % catch
                 %     disp("paint.net macro failed")
