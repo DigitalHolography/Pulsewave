@@ -13,7 +13,7 @@ function [sys_index_list, fullPulse, sys_max_list, sys_min_list] = find_systole_
 fullPulse = squeeze(sum(video .* maskArtery, [1 2]) / nnz(maskArtery));
 
 % Step 2: Preprocess the pulse signal
-pulse_init = detrend(fullPulse); % Remove linear trend
+pulse_init = double(detrend(fullPulse)); % Remove linear trend
 pulse_init = pulse_init - mean(pulse_init); % Remove mean to center the signal
 
 % Step 3: Detect and replace outliers using a manual MAD calculation
