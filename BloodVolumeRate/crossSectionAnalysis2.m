@@ -147,15 +147,15 @@ for sectionIdx = 1:numSections
         avg_profil = mean(subFrame, 1);
         profils(:, tt) = avg_profil;
 
-        for ll = 1:size(subFrame, 1)
-            subFrame(ll, :) = subFrame(ll, :) - avg_profil;
-
-        end
+        % for ll = 1:size(subFrame, 1)
+        %     subFrame(ll, :) = subFrame(ll, :) - avg_profil;
+        % 
+        % end
 
         %FIXME calcul std avg avec des v = 0
         %avgVelocity(sectionIdx,tt) = sum(tmp(:))/nnz(tmp(:));
         avgVelocity(sectionIdx, tt) = mean(tmp(tmp ~= 0));
-        topVelocity(sectionIdx, tt) = max(avg_profil) + min(avg_profil); % WHAT?
+        topVelocity(sectionIdx, tt) = mean(max(subFrame, 2)) + mean(min(subFrame, 2));
 
         if isnan(avgVelocity(sectionIdx, tt))
             avgVelocity(sectionIdx, tt) = 0;
@@ -168,7 +168,7 @@ for sectionIdx = 1:numSections
         stdProfils(:, tt) = std(subFrame, [], 1);
 
 
-        stdVelocity(sectionIdx, tt) = std(max(subFrame,[],2)); % mean of std along first dimension (columns)
+        stdVelocity(sectionIdx, tt) = std(max(subFrame, [], 2)); % mean of std along first dimension (columns)
 
         if isnan(stdVelocity(sectionIdx, tt))
             stdVelocity(sectionIdx, tt) = 0;
