@@ -646,7 +646,7 @@ classdef eyeflow < matlab.apps.AppBase
         function EditMasksButtonPushed(app, ~)
             TB = getGlobalToolBox;
 
-            if isempty(TB)
+            if isempty(TB) || ~strcmp(app.file.directory,TB.EF_path)
                 TB = ToolBoxClass(app.file.directory, app.file.param_name, 1);
             end
 
@@ -730,12 +730,12 @@ classdef eyeflow < matlab.apps.AppBase
 
                 end
 
-                % try
-                %     Commented until further fixes MESSAGE TO ZACHARIE
-                %     openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
-                % catch
-                %     disp("paint.net macro failed")
-                % end
+                try
+                    % Commented until further fixes MESSAGE TO ZACHARIE
+                    % openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
+                catch
+                    disp("paint.net macro failed")
+                end
 
             else
 

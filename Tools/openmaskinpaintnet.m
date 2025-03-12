@@ -31,9 +31,9 @@ pause(1);
 
 typesomething(INPUT_PATH);
 set(0,'PointerLocation',[1088 464] .* sratio);
-robot.mousePress(java.awt.event.InputEvent.BUTTON1_MASK); % Click "Open"
-robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
-
+pause(1);
+robot.keyPress(java.awt.event.KeyEvent.VK_ENTER); % Click "Open"
+robot.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
 pause(1);
 sz = size(imread(INPUT_PATH));
 
