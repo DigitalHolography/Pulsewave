@@ -41,9 +41,8 @@ CRACRV_Threshold = params.json.Mask.CRACRVThreshold;
 forceVesselWidth = params.json.Mask.ForceVesselWidth;
 
 bgWidth = params.json.Velocity.LocalBackgroundWidth;
-L = (numY + numX) / 2;
-r1 = params.json.SizeOfField.SmallRadiusRatio * L;
-r2 = params.json.SizeOfField.BigRadiusRatio * L;
+r1 = params.json.SizeOfField.SmallRadiusRatio;
+r2 = params.json.SizeOfField.BigRadiusRatio;
 
 % 0) 2) Test the input for usual cases of wrong aquisition data
 
@@ -183,7 +182,7 @@ if params.json.Mask.ImproveMask
     saveImage(diasysArtery, TB,  'artery_21_diasys_img.png', isStep = true)
     saveImage(diasysVein, TB,  'vein_21_diasys_img.png', isStep = true)
 
-    RGBdiasys = labDuoImage(M0_Gabor, (diasysArtery - mDiasys));
+    RGBdiasys = labDuoImage(rescale(M0_Gabor), (diasysArtery - mDiasys));
     saveImage(RGBdiasys, TB, 'vessel_40_diasys_rgb.png', isStep = true)
     saveImage(RGBdiasys, TB, 'DiaSysRGB.png')
 
@@ -336,8 +335,8 @@ saveImage(bwskel(maskVein), TB, 'skeletonVein.png')
 % 4) 5) Mask Section & Force Barycenter
 
 xy_barycenter = [x_CRA, y_CRA];
-maskSection = createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery, thin=10);
-createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein, thin=10);
+maskSection = createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery, thin= 0.01);
+createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein, thin = 0.01);
 
 close all
 end

@@ -1,4 +1,4 @@
-function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirname, opt)
+function graphCombined(video, mask, signal, stdsignal, xy_barycenter, dirname, opt)
     % Combines a video and a signal into an animated GIF, overlaying them frame by frame.
     %
     % Inputs:
@@ -22,7 +22,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     %   Visible: Visibility of figures (logical, default false).
 
     arguments
-        Videofield
+        video
         mask
         signal
         stdsignal
@@ -43,24 +43,20 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
     TB = getGlobalToolBox;
     params = TB.getParams;
     
-
     % Rescale video and get dimensions
-    Videofield_rescaled = rescale(Videofield);
+    [numX, numY, numFrames] = size(video);
+    video = rescale(video);
 
     % Precompute constants
-    [numX, numY, numFrames] = size(Videofield_rescaled);
-    x_barycenter = xy_barycenter(1);
-    y_barycenter = xy_barycenter(2);
-    L = (numY + numX) / 2;
-    r1 = params.velocityBigRadiusRatio * L;
-    r2 = params.velocitySmallRadiusRatio * L;
+    x_c = xy_barycenter(1);
+    y_c = xy_barycenter(2);
+    r1 = params.velocityBigRadiusRatio;
+    r2 = params.velocitySmallRadiusRatio;
+    w = 0.01;
 
-    % Precompute R and circles
-    [X, Y] = meshgrid(1:numX, 1:numY);
-    R = sqrt((X - x_barycenter) .^ 2 + (Y - y_barycenter) .^ 2);
-    width = ceil(L / 500);
-    circle1 = (R > round(r1) - width) & (R < round(r1) + width);
-    circle2 = (R > round(r2) - width) & (R < round(r2) + width);
+    % Precompute circles
+    circle1 = diskMask(numX, numY, r1 - w, r1 + w, center = [x_c, y_c]);
+    circle2 = diskMask(numX, numY, r2 - w, r2 + w, center = [x_c, y_c]);
     maskCircles = circle1 | circle2;
 
     % Set y-axis limits for the signal plot
@@ -92,7 +88,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
 
     videoPlot = figure(410);
     videoPlot.Visible = opt.Visible;
-    graphMaskTags(videoPlot, Videofield_rescaled(:, :, end), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color, circles = maskCircles);
+    graphMaskTags(videoPlot, video(:, :, end), mask, etiquette_locs, etiquettes_frame_values, x_c, y_c, Color = color, circles = maskCircles);
         
     videoPlot.Position = [200 200 600 600];
 
@@ -101,7 +97,7 @@ function graphCombined(Videofield, mask, signal, stdsignal, xy_barycenter, dirna
 
     % Generate video frames
     parfor (frameIdx = startingFrame:numFrames, parforArg)
-        graphMaskTags(videoPlot, Videofield_rescaled(:, :, frameIdx), mask, etiquette_locs, etiquettes_frame_values, x_barycenter, y_barycenter, Color = color, circles = maskCircles);
+        graphMaskTags(videoPlot, video(:, :, frameIdx), mask, etiquette_locs, etiquettes_frame_values, x_c, y_c, Color = color, circles = maskCircles);
         set(gca, 'FontSize', 14);
         videoPlotFrames(:, :, :, frameIdx) = frame2im(getframe(gca));
     end

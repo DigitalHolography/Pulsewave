@@ -116,7 +116,7 @@ uicontrol(paramPanel, 'Style', 'text', 'String', 'Imdilate Final:', 'Position', 
 imdilateFinalEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.FinalDilation, 'Position', [140, 80, 30, 22]);
 
 uicontrol(paramPanel, 'Style', 'text', 'String', 'Force Width:', 'Position', [10, 40, 120, 20]);
-forceWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.ForceVesselWidth, 'Position', [140, 40, 30, 22]);
+forceVesselWidthEdit = uieditfield(paramPanel, 'numeric', 'Value', params.json.Mask.ForceVesselWidth, 'Position', [140, 40, 30, 22]);
 
 % Create a table for the VascularClasses, ArterialClasses, VenousClasses
 
@@ -221,7 +221,7 @@ uiwait(d);
         params.json.Mask.MinimumVesselWidth = minWidthEdit.Value;
         params.json.Mask.FinalDilation = imdilateFinalEdit.Value;
         params.json.Mask.DiaSysAnalysis = diasysCheckbox.Value;
-        params.json.Mask.ForceVesselWidth = forceWidthEdit.Value;
+        params.json.Mask.ForceVesselWidth = forceVesselWidthEdit.Value;
 
         % Get the data from tables
         params.json.Mask.VascularClasses = str2double(split(vascularClassesTable.Value, ','));

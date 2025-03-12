@@ -11,7 +11,7 @@ video = obj.M0_ff_video;
 numX = size(video, 1);
 numY = size(video, 2);
 
-disc_ratio = 0.7; % parametrize this coef if needed
+disc_ratio = 0.35; % parametrize this coef if needed
 
 disc = diskMask(numX, numY, disc_ratio);
 video_reg = video .* disc - disc .* sum(video .* disc, [1, 2]) / nnz(disc); % minus the mean in the disc of each frame
