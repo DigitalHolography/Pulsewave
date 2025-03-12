@@ -129,11 +129,11 @@ cmapVessels = [cVein; cArtery];
 
 if vesselParams.threshold >= -1 && vesselParams.threshold <= 1
     % IF Manual Thresholds have been set between -1 and 1 then they are used
-
+    
     maskArtery = (R_VascularSignal > vesselParams.threshold) .* maskVesselnessClean;
     maskVein = (R_VascularSignal < vesselParams.threshold) .* maskVesselnessClean;
     graphThreshHistogram(R_VascularSignal, vesselParams.threshold, maskVesselnessClean, cmapVessels, 'all_16')
-
+    
 else
     % ELSE automatic Otsu segmentation is performed
     % Number of classes for Vessels: 4
@@ -159,54 +159,54 @@ saveImage(RGBM0, TB,  'all_19_RGB.png', isStep = true)
 %% 2)  Improvements of the first mask
 
 if params.json.Mask.ImproveMask
-
+    
     % 2) 0) Computation of the M0 in Diastole and in Systole
-
+    
     [M0_Systole_img, M0_Diastole_img, M0_Systole_video, ~] = compute_diasys(M0_ff_video, maskArtery);
     saveImage(rescale(M0_Systole_img), TB,  'artery_20_systole_img.png', isStep = true)
     saveImage(rescale(M0_Diastole_img), TB,  'vein_20_diastole_img.png', isStep = true)
-
+    
     % 2) 1) New Vesselness Mask
-
+    
     Systole_Frangi = frangiVesselness(M0_Systole_img, 'artery_20', TB);
     Diastole_Frangi = frangiVesselness(M0_Diastole_img, 'vein_20', TB);
     Systole_Gabor = gaborVesselness(M0_Systole_img,'artery_20', TB);
     Diastole_Gabor = gaborVesselness(M0_Diastole_img, 'vein_20', TB);
     maskVesselness = (Systole_Frangi | Diastole_Frangi | Systole_Gabor | Diastole_Gabor) & maskDiaphragm;
     maskVesselnessClean = removeDisconnected(maskVesselness, maskVesselness, maskCircle, 'all_20_VesselMask', TB);
-
+    
     % 2) 2) Diastole-Systole Image
-
+    
     diasysArtery = M0_Systole_img - M0_Diastole_img;
     mDiasys = sum(diasysArtery .* fftshift(diskMask(numX, numY, 0.1)), [1 2]) ./ nnz(fftshift(diskMask(numX, numY, 0.1)));
     diasysVein = mDiasys - diasysArtery;
     saveImage(diasysArtery, TB,  'artery_21_diasys_img.png', isStep = true)
     saveImage(diasysVein, TB,  'vein_21_diasys_img.png', isStep = true)
-
+    
     RGBdiasys = labDuoImage(M0_Gabor, (diasysArtery - mDiasys));
     saveImage(RGBdiasys, TB, 'vessel_40_diasys_rgb.png', isStep = true)
     saveImage(RGBdiasys, TB, 'DiaSysRGB.png')
-
+    
     if diasysAnalysis % Systole/Diastole Analysis
-
+        
         % 2) 3) Diastole-Systole based Segmentation
         maskArtery = processDiaSysSignal(diasysArtery, maskVesselnessClean, arteryParams, cmapArtery, 'artery_23');
         [~, maskVein] = processDiaSysSignal(diasysVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23');
-
+        
     else % Second Correlation Analysis
-
+        
         % 2) 3) Artery-Vein correlation based Segmentation
         maskArtery = processVascularSignal(M0_Systole_video, maskArtery, maskVesselnessClean, arteryParams, cmapArtery, 'artery_23', TB);
-%         maskVein = processVascularSignal(M0_Diastole_video, maskVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23', TB);
+        %         maskVein = processVascularSignal(M0_Diastole_video, maskVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23', TB);
         [~, maskVein] = processDiaSysSignal(diasysVein, maskVesselnessClean, veinParams, cmapVein, 'vein_23');
-
+        
     end
-
+    
     %% 3) Mask Clearing
-
+    
     % 3) 0) Morphological Operations
     results = cell(2, 1);
-
+    
     parfor i = 1:2
         if i == 1
             % Process artery mask
@@ -216,51 +216,57 @@ if params.json.Mask.ImproveMask
             results{i} = clearMasks(maskVein, 'vein_30', cmapVein, TB);
         end
     end
-
+    
     maskArtery = results{1};
     maskVein = results{2};
-
+    
     % 3) 1) Final Blob removal
     maskVessel = maskArtery | maskVein;
     maskArtery = removeDisconnected(maskArtery, maskVessel, maskCircle, 'artery_31_VesselMask', TB);
     maskVein = removeDisconnected(maskVein, maskVessel, maskCircle, 'vein_31_VesselMask', TB);
-
+    
+    % 3) 1 prime) HoloNet intervention
+    % holonet_vessels = getHolonetprediction(M0_ff_img);
+    % maskVessel = maskVessel & holonet_vessels;
+    % maskArtery = maskArtery & holonet_vessels;
+    % maskVein = maskVein & holonet_vessels;
+    
     % 3) 2) Force Create Masks in case they exist
-
+    
     if isfile(fullfile(TB.path_main, 'mask', 'forceMaskArtery.png'))
         maskArtery = mat2gray(mean(imread(fullfile(TB.path_main, 'mask', 'forceMaskArtery.png')), 3)) > 0;
         if size(maskArtery, 1) ~= maskCircle
             maskArtery = imresize(maskArtery, [numX, numY], "nearest");
         end
     end
-
+    
     if isfile(fullfile(TB.path_main, 'mask', 'forceMaskVein.png'))
         maskVein = mat2gray(mean(imread(fullfile(TB.path_main, 'mask', 'forceMaskVein.png')), 3)) > 0;
         if size(maskVein, 1) ~= maskCircle
             maskVein = imresize(maskVein, [numX, numY], "nearest");
         end
     end
-
+    
     % 3) 3) Segmentation Scores Calculation
-
+    
     segmentationScores(maskArtery, maskVein);
-
+    
     % 3) 4) Segmention force width
-
+    
     if forceVesselWidth > 0
         dilationSE = strel('disk', forceVesselWidth);
         maskArtery = imdilate(bwskel(maskArtery), dilationSE);
         maskVein = imdilate(bwskel(maskVein), dilationSE);
-
+        
         maskArtery = imdilate(bwskel(maskArtery), dilationSE);
         maskVein = imdilate(bwskel(maskVein), dilationSE);
     end
-
+    
 else
-
+    
     % 3) 0) Morphological Operations
     results = cell(2, 1);
-
+    
     parfor i = 1:2
         if i == 1
             % Process artery mask
@@ -270,14 +276,14 @@ else
             results{i} = clearMasks(maskVein, 'vein_30', cmapVein, TB);
         end
     end
-
+    
     maskArtery = results{1};
     maskVein = results{2};
-
+    
     maskVessel = maskArtery | maskVein;
     maskArtery = removeDisconnected(maskArtery, maskVessel, maskCircle, 'artery_31_VesselMask', TB);
     maskVein = removeDisconnected(maskVein, maskVessel, maskCircle, 'vein_31_VesselMask', TB);
-
+    
 end
 
 % 3) 5) Create Vessel and Background Mask
