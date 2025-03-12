@@ -155,7 +155,7 @@ for sectionIdx = 1:numSections
         %FIXME calcul std avg avec des v = 0
         %avgVelocity(sectionIdx,tt) = sum(tmp(:))/nnz(tmp(:));
         avgVelocity(sectionIdx, tt) = mean(tmp(tmp ~= 0));
-        topVelocity(sectionIdx, tt) = mean(max(subFrame, 2)) + mean(min(subFrame, 2));
+        topVelocity(sectionIdx, tt) = mean(max(subFrame,[], 2)) + mean(min(subFrame,[], 2));
 
         if isnan(avgVelocity(sectionIdx, tt))
             avgVelocity(sectionIdx, tt) = 0;
