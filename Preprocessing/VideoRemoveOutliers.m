@@ -1,66 +1,58 @@
 function obj = VideoRemoveOutliers(obj)
-%% Outlier Cleaning
+    %% Outlier Cleaning
 
-params = Parameters_json(obj.directory, obj.param_name);
+    params = Parameters_json(obj.directory, obj.param_name);
 
-if ~params.json.Preprocess.RemoveOutliersOption
-    return
-end
-
-[numX, numY, numFrames] = size(obj.f_RMS_video);
-window_size = params.json.Preprocess.WindowSize;
-
-tmp_M0_ff_cleaned = zeros(numX, numY, numFrames);
-tmp_f_RMS_cleaned = zeros(numX, numY, numFrames);
-tmp_f_AVG_cleaned = zeros(numX, numY, numFrames);
-tmp_M0_ff = obj.M0_ff_video;
-tmp_f_RMS = obj.f_RMS_video;
-tmp_f_AVG = obj.f_AVG_video;
-
-% Compute the frame-wise mean (spatial average per frame)
-frame_means = squeeze(mean(obj.f_RMS_video, [1 2])); % 1D array: numFrames x 1
-
-% Identify outlier frames
-outlier_frames_mask = isoutlier(frame_means);
-
-% If no outliers detected, return early
-if ~any(outlier_frames_mask)
-    return;
-end
-
-parfor xx = 1:numX
-
-    for yy = 1:numY
-        tmp_M0_ff_cleaned(xx, yy, :) = filloutliers(tmp_M0_ff(xx, yy, :), 'linear', 'movmedian', window_size);
+    if ~params.json.Preprocess.RemoveOutliersOption
+        return
     end
 
-end
+    % Compute the average profile over time (mean intensity per frame)
+    frame_means = squeeze(mean(obj.f_RMS_video, [1 2])); % 1D array: numFrames x 1
 
-obj.M0_ff_video = tmp_M0_ff_cleaned;
+    % Detect outlier frames
+    outlier_frames_mask = isoutlier(frame_means);
 
-clear tmp_M0_ff_cleaned tmp_M0_ff
-
-parfor xx = 1:numX
-
-    for yy = 1:numY
-        tmp_f_RMS_cleaned(xx, yy, :) = filloutliers(tmp_f_RMS(xx, yy, :), 'linear', 'movmedian', window_size);
+    % If no outliers detected, return early
+    if ~any(outlier_frames_mask)
+        return;
     end
 
+    % Interpolate outlier frames for each video
+    obj.M0_ff_video = interpolateOutlierFrames(obj.M0_ff_video, outlier_frames_mask);
+    obj.f_RMS_video = interpolateOutlierFrames(obj.f_RMS_video, outlier_frames_mask);
+    obj.f_AVG_video = interpolateOutlierFrames(obj.f_AVG_video, outlier_frames_mask);
 end
 
-obj.f_RMS_video = tmp_f_RMS_cleaned;
+function video_cleaned = interpolateOutlierFrames(video, outlier_frames_mask)
+    % Input:
+    %   video: 3D array (numX x numY x numFrames)
+    %   outlier_frames_mask: logical array (1 x numFrames), true for outlier frames
 
-clear tmp_f_RMS_cleaned tmp_f_RMS
+    % Output:
+    %   video_cleaned: 3D array (numX x numY x numFrames), with outlier frames interpolated
+    
+    video_cleaned = video; % Initialize with the original video
 
-parfor xx = 1:numX
+    % Find the indices of outlier frames
+    outlier_indices = find(outlier_frames_mask);
 
-    for yy = 1:numY
-        tmp_f_AVG_cleaned(xx, yy, :) = filloutliers(tmp_f_AVG(xx, yy, :), 'linear', 'movmedian', window_size);
+    % For each outlier frame, interpolate linearly using neighboring frames
+    for idx = outlier_indices
+        % Find the previous and next non-outlier frames
+        prev_frame = find(~outlier_frames_mask(1:idx-1), 1, 'last'); % Last non-outlier before idx
+        next_frame = find(~outlier_frames_mask(idx+1:end), 1, 'first') + idx; % First non-outlier after idx
+
+        % Handle edge cases (e.g., first or last frame is an outlier)
+        if isempty(prev_frame)
+            prev_frame = next_frame; % If no previous frame, use the next frame
+        end
+        if isempty(next_frame)
+            next_frame = prev_frame; % If no next frame, use the previous frame
+        end
+
+        % Linearly interpolate the outlier frame
+        alpha = (idx - prev_frame) / (next_frame - prev_frame); % Interpolation weight
+        video_cleaned(:, :, idx) = (1 - alpha) * video(:, :, prev_frame) + alpha * video(:, :, next_frame);
     end
-
-end
-
-obj.f_AVG_video = tmp_f_AVG_cleaned;
-
-clear tmp_f_AVG_cleaned tmp_f_AVG
 end
