@@ -1,4 +1,4 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(TB, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, circleIdx, force_width)
+function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(TB, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, circleIdx)
 % Perform cross-section analysis on blood vessels.
 %
 % Inputs:
@@ -10,7 +10,6 @@ function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVeloci
 %   slice_half_thickness    - Scalar, half-thickness of the slice.
 %   type_of_vessel          - String, type of vessel ('artery' or 'vein').
 %   circleIdx               - Scalar, index of the circle (optional).
-%   force_width             - Scalar, force a specific width (optional).
 %
 % Outputs:
 %   avgVolumeRate           - NxF array, average volume rate over time.
@@ -117,10 +116,6 @@ for sectionIdx = 1:numSections % sectionIdx: vessel_number
         
     end
 
-    if ~isempty(force_width)
-        crossSectionWidth(sectionIdx) = force_width;
-    end
-
     crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) * (params.cropSection_pixelSize / 2 ^ k) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
     stdCrossSectionArea(sectionIdx) = pi * (1/2 * (params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
 end
@@ -147,15 +142,15 @@ for sectionIdx = 1:numSections
         avg_profil = mean(subFrame, 1);
         profils(:, tt) = avg_profil;
 
-        for ll = 1:size(subFrame, 1)
-            subFrame(ll, :) = subFrame(ll, :) - avg_profil;
-
-        end
+        % for ll = 1:size(subFrame, 1)
+        %     subFrame(ll, :) = subFrame(ll, :) - avg_profil;
+        % 
+        % end
 
         %FIXME calcul std avg avec des v = 0
         %avgVelocity(sectionIdx,tt) = sum(tmp(:))/nnz(tmp(:));
         avgVelocity(sectionIdx, tt) = mean(tmp(tmp ~= 0));
-        topVelocity(sectionIdx, tt) = max(avg_profil) + min(avg_profil);
+        topVelocity(sectionIdx, tt) = max(avg_profil) ; %- mean(min(subFrame, [], 2));
 
         if isnan(avgVelocity(sectionIdx, tt))
             avgVelocity(sectionIdx, tt) = 0;
@@ -168,7 +163,7 @@ for sectionIdx = 1:numSections
         stdProfils(:, tt) = std(subFrame, [], 1);
 
 
-        stdVelocity(sectionIdx, tt) = std(max(subFrame,[],2)); % mean of std along first dimension (columns)
+        stdVelocity(sectionIdx, tt) = std(max(subFrame, [], 2)); % mean of std along first dimension (columns)
 
         if isnan(stdVelocity(sectionIdx, tt))
             stdVelocity(sectionIdx, tt) = 0;

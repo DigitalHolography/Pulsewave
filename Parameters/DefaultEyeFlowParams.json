@@ -15,7 +15,7 @@
     },
     "ValueOfTheInterpolationParameter": 1,
     "Preprocess": {
-      "RemoveOutliersOption": 1,
+      "RemoveOutliersOption": false,
       "Window Size": 5 
     },
     "VeinsAnalysis": 1,
@@ -30,7 +30,7 @@
     "Mask": {
       "Vesselness Sigma Range": [1, 10],
       "Vesselness Sigma Step": 1,
-      "Diaphragm Radius": 0.8,
+      "Diaphragm Radius": 0.4,
       "Force Barycenter": [],
       "Blur": 1.5,
       "Crop Choroid Radius": 0.2,
@@ -78,7 +78,6 @@
       "widthImage" : false,
       "crossSectionImages" : true,
       "widthHistogram" : false,
-      "plotRadius" : true,
       "BloodFlowProfiles" : false,
       "ARIBVR" : false,
       "strokeAndTotalVolume" : true
@@ -124,7 +123,6 @@
     "Other": {
       "NumberOfSides": 120,
       "AllCircles": 0,
-      "ForceWidthInPixels": [],
       "MinimumGifPeriod": 0.04
     }
   }

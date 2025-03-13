@@ -82,7 +82,6 @@ classdef Parameters_json < handle
         DiffFirstCalculationsFlag
         AllCirclesFlag
         nbCircles
-        forcewidth
         timePeriodMin
     end
 
@@ -188,7 +187,6 @@ classdef Parameters_json < handle
 
                 obj.nbSides = parsedData.Other.NumberOfSides;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
-                obj.forcewidth = parsedData.Other.ForceWidthInPixels;
                 obj.timePeriodMin = parsedData.Other.MinimumGifPeriod;
 
             else

@@ -55,7 +55,7 @@ parfor frameIdx = 1:numFrames
     f_RMS_background(:, :, frameIdx) = single(maskedAverage(f_RMS_video(:, :, frameIdx), 10 * w * 2^k, maskNeighbors, maskVessel));
 end
 
-imwrite(rescale(squeeze(mean(f_RMS_background, 3))), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_frequency_RMS_bkg.png')), 'png');
+imwrite(rescale(squeeze(mean(f_RMS_background, 3))), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_frequency_RMS_bkg.png')), 'png');
 
 graphSignal('1_Arteries_fRMS', folder, ...
     t, squeeze(sum(f_RMS_video .* maskArterySection, [1, 2]) / nnz(maskArterySection)), '-', cArtery, ...
@@ -121,7 +121,7 @@ fprintf("    2. Difference calculation took %ds\n", round(toc))
 
 ArterialResistivityIndex(t, v_RMS_video, maskArtery, 'velocity', folder);
 
-%% 6) Plots of f_RMS mean Local Background in vessels and Delta frequency in vessels and their colorbars
+%% 3) Plots of f_RMS mean Local Background in vessels and Delta frequency in vessels and their colorbars
 tic
 
 f18 = figure("Visible", "off");
@@ -140,7 +140,7 @@ axis off
 axis image
 range(1:2) = clim;
 
-imwrite(rescale(LocalBackground_in_vessels), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_LocalBackground_in_vessels.png')))
+imwrite(rescale(LocalBackground_in_vessels), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_LocalBackground_in_vessels.png')))
 
 colorfig = figure("Visible", "off");
 colorfig.Units = 'normalized';
@@ -157,8 +157,8 @@ colorTitleHandle = get(LocalBackground_colorbar, 'Title');
 titleString = 'Local Background RMS frequency (kHz)';
 set(colorTitleHandle, 'String', titleString);
 
-exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_ColorBarLocalBackground_in_vessels.png')))
-exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_ColorBarLocalBackground_in_vessels.eps')))
+exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_ColorBarLocalBackground_in_vessels.png')))
+exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_ColorBarLocalBackground_in_vessels.eps')))
 
 
 
@@ -176,7 +176,7 @@ c.Label.FontSize = 12;
 axis off
 axis image
 range(1:2) = clim;
-imwrite(rescale(in_vessels), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_Df_in_vessels.png')))
+imwrite(rescale(in_vessels), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_Df_in_vessels.png')))
 
 colorfig = figure("Visible", "off");
 colorfig.Units = 'normalized';
@@ -193,8 +193,8 @@ colorTitleHandle = get(Df_colorbar, 'Title');
 titleString = 'Delta Doppler RMS frequency (kHz)';
 set(colorTitleHandle, 'String', titleString);
 
-exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_ColorBarDf_in_vessels.png')))
-exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_ColorBarDf_in_vessels.eps')))
+exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_ColorBarDf_in_vessels.png')))
+exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_ColorBarDf_in_vessels.eps')))
 
 
 figure("Visible", "off")
@@ -209,8 +209,7 @@ c.Label.FontSize = 12;
 axis off
 axis image
 range(1:2) = clim;
-imwrite(rescale(squeeze(mean(f_RMS_video, 3))), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_frequency_RMS.png')), 'png');
-
+imwrite(rescale(squeeze(mean(f_RMS_video, 3))), fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_frequency_RMS.png')), 'png');
 
 colorfig = figure("Visible", "off");
 colorfig.Units = 'normalized';
@@ -227,10 +226,10 @@ colorTitleHandle = get(f_RMS_colorbar, 'Title');
 titleString = 'RMS frequency (kHz)';
 set(colorTitleHandle, 'String', titleString);
 
-exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_ColorbarRMSFrequency.png')))
-exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '6_ColorbarRMSFrequency.eps')))
+exportgraphics(gca, fullfile(TB.path_png, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_ColorbarRMSFrequency.png')))
+exportgraphics(gca, fullfile(TB.path_eps, 'pulseAnalysis', sprintf("%s_%s", TB.main_foldername, '3_ColorbarRMSFrequency.eps')))
 
-fprintf("    6. Plotting heatmaps took %ds\n", round(toc))
+fprintf("    3. Plotting heatmaps took %ds\n", round(toc))
 
 
 if exportVideos

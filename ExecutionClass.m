@@ -33,9 +33,10 @@ classdef ExecutionClass < handle
         flag_bloodVolumeRate_analysis
 
         OverWrite logical
+        ToolBox ToolBoxClass
     end
 
-     methods
+    methods
         function obj = ExecutionClass(path)
             % Constructor for ExecutionClass.
             % Input: path - directory or .holo file path.
@@ -125,7 +126,7 @@ classdef ExecutionClass < handle
             % Main routine for EyeFlow analysis.
 
             % Initialize ToolBox and parameters
-            TB = ToolBoxClass(obj.directory, obj.param_name, obj.OverWrite);
+            TB = obj.ToolBox;
             params = TB.getParams;
             totalTime = tic;
             saveGit;
@@ -243,16 +244,16 @@ classdef ExecutionClass < handle
                 %% Spectrum Analysis
                 fprintf("\n----------------------------------\nSpectrum Analysis\n----------------------------------\n");
                 spectrumAnalysisTimer = tic;
-                
+
                 spectrum_analysis(SH_cube, obj.M0_data_video);
-                
+
                 time_spectrumAnalysis = toc(spectrumAnalysisTimer);
                 fprintf("- Spectrum Analysis took : %ds\n", round(time_spectrumAnalysis))
-                
+
                 %% Spectrogram
                 fprintf("\n----------------------------------\nSpectrogram\n----------------------------------\n");
                 spectrogramTimer = tic;
-                
+
                 spectrum_video(SH_cube, obj.maskArtery, obj.maskNeighbors);
 
                 fprintf("- Spectrogram took: %ds\n", round(toc(spectrogramTimer)));

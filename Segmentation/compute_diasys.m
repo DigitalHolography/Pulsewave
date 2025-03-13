@@ -39,7 +39,7 @@ function [M0_Systole_img, M0_Diastole_img, M0_Systole_video, M0_Diastole_video] 
         try
             % Calculate sysindexes and ensure the values stay within the valid range
             start_idx = sys_index_list(idx) + round(fpCycle * 0.05);
-            end_idx = sys_index_list(idx) + round(fpCycle * 0.2);
+            end_idx = sys_index_list(idx) + round(fpCycle * 0.1);
             sys_range = start_idx:min(end_idx, numFrames);
             sysindexes = [sysindexes, sys_range];
             plot(fullTime(sys_range), fullPulse(sys_range), 'r-', 'LineWidth', 2)
@@ -62,7 +62,7 @@ function [M0_Systole_img, M0_Diastole_img, M0_Systole_video, M0_Diastole_video] 
         try
             % Calculate sysindexes and ensure the values stay within the valid range
             start_idx = sys_max_list(idx);
-            end_idx = sys_max_list(idx) + round(fpCycleMax * 0.15);
+            end_idx = sys_max_list(idx) + round(fpCycleMax * 0.05);
             sys_range = start_idx:min(end_idx, numFrames);
             sysindexes = [sysindexes, sys_range];
             plot(fullTime(sys_range), fullPulse(sys_range), 'r-', 'LineWidth', 2)
@@ -107,7 +107,9 @@ function [M0_Systole_img, M0_Diastole_img, M0_Systole_video, M0_Diastole_video] 
     set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
     title('diastole and systole')
 
-    exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', ...
+    if exist(fullfile(TB.path_png, 'mask'))
+        exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', ...
         sprintf('%s_vessel_20_plot_diasys.png', TB.main_foldername)))
+    end
 
 end
