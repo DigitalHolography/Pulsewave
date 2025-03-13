@@ -31,7 +31,8 @@ classdef eyeflow < matlab.apps.AppBase
     methods (Access = public)
 
         function Load(app, path)
-            app.Lamp.Color = [1, 0, 0];
+            % Update lamp color to indicate loading
+            app.Lamp.Color = [1, 1/2, 0]; % Orange
             drawnow;
 
             if isfolder(path)
@@ -57,20 +58,23 @@ classdef eyeflow < matlab.apps.AppBase
                 app.ExecuteButton.Enable = true;
                 app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
-                % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
                 app.ReferenceDirectory.Value = path;
-                app.Lamp.Color = [0, 1, 0];
-                app.flag_is_load = true;
 
             catch ME
 
                 MEdisp(ME, path)
 
                 diary off
-                app.Lamp.Color = [1, 1/2, 0];
+                % Update lamp color to indicate error
+                app.Lamp.Color = [1, 0, 0]; % Red
+                app.flag_is_load = false;
 
             end
 
+            % Update lamp color to indicate success
+            app.Lamp.Color = [0, 1, 0]; % Green
+            app.flag_is_load = true;
+                
             fprintf("----------------------------------\n")
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
 
@@ -145,8 +149,6 @@ classdef eyeflow < matlab.apps.AppBase
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
 
-            clear Parameters_json;
-
             if (app.flag_is_load)
                 disp("Files already loaded");
                 app.ClearButton.Enable = true;
@@ -178,8 +180,6 @@ classdef eyeflow < matlab.apps.AppBase
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
 
-            clear Parameters_json;
-
             if (app.flag_is_load)
                 disp("Files already loaded");
                 app.ClearButton.Enable = true;
@@ -202,7 +202,6 @@ classdef eyeflow < matlab.apps.AppBase
                 app.Load(fullfile(path_holo, selected_holo));
             end
 
-            app.Lamp.Color = [0, 1, 0];
         end
 
         % Button pushed function: ExecuteButton
@@ -215,7 +214,18 @@ classdef eyeflow < matlab.apps.AppBase
                 return
             end
 
-            warning('off');
+            % Update lamp color to indicate processing
+            app.Lamp.Color = [1, 1/2, 0]; % Orange
+            drawnow;
+
+            % Actualizes the input Parameters
+            app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
+            params = Parameters_json(app.file.directory, app.file.params_names);
+
+            if params.json.Other.NumberOfWorkers > 0 && params.json.Other.NumberOfWorkers < app.NumberofWorkersSpinner.Limits(2)
+                app.NumberofWorkersSpinner.Value = params.json.Other.NumberOfWorkers;
+            end
+
             parfor_arg = app.NumberofWorkersSpinner.Value;
 
             poolobj = gcp('nocreate'); % check if a pool already exist
@@ -226,13 +236,6 @@ classdef eyeflow < matlab.apps.AppBase
                 delete(poolobj); %close the current pool to create a new one with correct num of workers
                 parpool(parfor_arg);
             end
-
-            clear Parameters_json
-            app.Lamp.Color = [1, 0, 0];
-            drawnow;
-
-            % Actualizes the input Parameters
-            app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
 
             for i = 1:length(app.file.params_names)
 
@@ -261,13 +264,15 @@ classdef eyeflow < matlab.apps.AppBase
                     MEdisp(ME, app.file.directory)
 
                     % Update lamp color to indicate warning
-                    app.Lamp.Color = [1, 0.5, 0]; % Orange
+                    app.Lamp.Color = [1, 0, 0]; % Red
                     diary off
                 end
 
             end
 
-            app.Lamp.Color = [0, 1, 0];
+            % Update lamp color to indicate success
+            app.Lamp.Color = [0, 1, 0]; % Green
+
         end
 
         function PlayInputsButtonPushed(app, ~)
@@ -315,8 +320,6 @@ classdef eyeflow < matlab.apps.AppBase
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
-
-            clear Parameters_json
 
         end
 
@@ -804,6 +807,7 @@ classdef eyeflow < matlab.apps.AppBase
             app.Lamp = uilamp(dirgrid);
             app.Lamp.Layout.Row = 1;
             app.Lamp.Layout.Column = 2;
+            app.Lamp.Color = [0 1 0];
 
             % Third Row: Edit Parameters, Edit Masks, Play Inputs, Preview Masks
             app.EditParametersButton = uibutton(grid, 'push');

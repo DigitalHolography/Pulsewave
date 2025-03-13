@@ -123,6 +123,7 @@
     "Other": {
       "NumberOfSides": 120,
       "AllCircles": 0,
-      "MinimumGifPeriod": 0.04
+      "MinimumGifPeriod": 0.04,
+      "NumberOfWorkers": 0
     }
   }
