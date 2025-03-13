@@ -12,17 +12,6 @@ function crossSectionImages(M0_ff_img, xy_barycenter, area, bvr, velocity, mask_
 
     section_width_plot = figure("Visible", "off");
 
-    mkdir(fullfile(path_png, 'volumeRate'), 'sectionsImages')
-    mkdir(fullfile(path_eps, 'volumeRate'), 'sectionsImages')
-    mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'widths')
-    mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'widths')
-    mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'num')
-    mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'num')
-    mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'bvr')
-    mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'bvr')
-    mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'vel')
-    mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'vel')
-
     x_barycenter = xy_barycenter(1);
     y_barycenter = xy_barycenter(2);
 

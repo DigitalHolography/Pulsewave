@@ -35,7 +35,7 @@ function video_cleaned = interpolateOutlierFrames(video, outlier_frames_mask)
     video_cleaned = video; % Initialize with the original video
 
     % Find the indices of outlier frames
-    outlier_indices = find(outlier_frames_mask);
+    outlier_indices = find(outlier_frames_mask)';
 
     % For each outlier frame, interpolate linearly using neighboring frames
     for idx = outlier_indices

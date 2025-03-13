@@ -15,9 +15,11 @@ colormap(cmap)
 imagesc(v_mean .* mask)
 if options.colorbarOn
     c = colorbar;
+    c.Label.String = 'mm/s';
 end
-c.Label.String = 'mm/s';
 axis image; axis off;
-exportgraphics(gcf, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_v_imagesc_Mean_%s.png", TB.main_foldername, name)), 'BackgroundColor', 'none', 'ContentType', 'vector', 'Resolution', 300);
+
+% Export the figure as a PNG with a white background
+exportgraphics(gcf, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_v_mean_%s.png", TB.main_foldername, name)), 'Resolution', 300);
 
 end

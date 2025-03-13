@@ -184,6 +184,21 @@ end
 
 try
     if params.json.BloodVolumeRate.crossSectionImages
+
+        path_png = TB.path_png;
+        path_eps = TB.path_eps;
+
+        mkdir(fullfile(path_png, 'volumeRate'), 'sectionsImages')
+        mkdir(fullfile(path_eps, 'volumeRate'), 'sectionsImages')
+        mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'widths')
+        mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'widths')
+        mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'num')
+        mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'num')
+        mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'bvr')
+        mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'bvr')
+        mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'vel')
+        mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'vel')
+
         crossSectionImages(M0_ff_img, xy_barycenter, area_A_mat, vr_avg_A_mat, ...
             v_profiles_avg_A_r,  mask_A_r, locs_A, 'Artery')
         if veins_analysis

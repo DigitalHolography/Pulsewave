@@ -55,14 +55,7 @@ if exportVideos
         combinedGifs = cat(1, v_video_RGB4Gif, mat2gray(histoVideoArtery));
     end
 
-    gifWriter = GifWriter("velocityHistogramCombined", numFrames);
-
-    for frameIdx = 1:numFrames
-        gifWriter.write(combinedGifs(:, :, :, frameIdx), frameIdx);
-    end
-
-    gifWriter.generate();
-    gifWriter.delete();
+    writeGifOnDisc(mat2gray(combinedGifs), "velocityHistogramCombined", 0.04);
 
 else
     if veinsAnalysis

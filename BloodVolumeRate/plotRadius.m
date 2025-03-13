@@ -22,7 +22,7 @@ plot(rad, curve1, "Color", Color_std, 'LineWidth', 2);
 plot(rad, curve2, "Color", Color_std, 'LineWidth', 2);
 plot(rad, mean_BvrR, '-k', 'LineWidth', 2);
 yline(mean(mean_BvrR), '--k', 'LineWidth', 2);
-legend({'', '', '', '', sprintf('mean = %0.2f µL/min', mean(mean_BvrR)), '', ''});
+legend({'', '', '', '', sprintf('mean = %0.2f µL/min', mean(mean_BvrR))});
 
 axis padded
 axP = axis;
@@ -51,7 +51,7 @@ axis padded
 axP = axis;
 axis tight
 axT = axis;
-axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
+axis([axT(1), axT(2), 0 , 1.07 * axP(4)])
 box on
 
 ylabel('Blood Volume Rate (µL/min)')

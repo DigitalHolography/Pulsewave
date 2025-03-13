@@ -48,13 +48,13 @@ function [v_video_RGB, v_mean_RGB] = flowMap(v_video, maskSection, maskArtery, m
 
     if veinsAnalysis
         % Velocity Images
-        velocityIm(v_mean, maskArtery, cmapArtery, 'arteries', colorbarOn = true);
-        velocityIm(v_mean, maskVein, cmapVein, 'veins', colorbarOn = true);
-        velocityIm(v_mean, maskArtery | maskVein, turbo, 'vessels', colorbarOn = true);
+        velocityIm(v_mean, maskArtery, cmapArtery, 'Artery', colorbarOn = true);
+        velocityIm(v_mean, maskVein, cmapVein, 'Vein', colorbarOn = true);
+        velocityIm(v_mean, maskArtery | maskVein, turbo, 'Vessel', colorbarOn = true);
 
         % velocity Colorbars of the gif
-        velocityColorbar(cmapArtery, v_min, v_max, 'Arteries');
-        velocityColorbar(cmapVein, v_min, v_max, 'Veins');
+        velocityColorbar(cmapArtery, v_min, v_max, 'Artery');
+        velocityColorbar(cmapVein, v_min, v_max, 'Vein');
         
         % Average Image
         v_mean_RGB = flowMapImg(v_mean_rescaled, {maskArtery, maskVein, maskAV}, {cmapArtery, cmapVein, cmapAV} ,background = M0_ff_image, circles = circles);
@@ -68,10 +68,10 @@ function [v_video_RGB, v_mean_RGB] = flowMap(v_video, maskSection, maskArtery, m
     else
 
         % Velocity Images
-        velocityIm(v_mean, maskArtery, cmapArtery, 'arteries', colorbarOn = true);
+        velocityIm(v_mean, maskArtery, cmapArtery, 'Artery', colorbarOn = true);
 
         % velocity Colorbars of the gif
-        velocityColorbar(cmapArtery, v_min, v_max, 'Arteries');
+        velocityColorbar(cmapArtery, v_min, v_max, 'Artery');
 
         % Average Image
         v_mean_RGB = flowMapImg(v_mean_rescaled, {maskArtery}, {cmapArtery} ,background = M0_ff_image, circles = circles);

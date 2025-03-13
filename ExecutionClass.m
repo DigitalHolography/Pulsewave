@@ -151,6 +151,8 @@ classdef ExecutionClass < handle
 
                 M0_RGB = (M0_Artery + M0_Vein) .* ~(obj.maskArtery & obj.maskVein) + M0_AV + rescale(M0_ff_img) .* ~(obj.maskArtery | obj.maskVein);
                 app.ImageDisplay.ImageSource = mat2gray(M0_RGB); % Rescale the image for display
+                ax = ancestor(app.ImageDisplay, 'axes');
+                axis(ax, 'equal');
 
                 fprintf("- Mask Creation took: %ds\n", round(toc(createMasksTimer)));
             end

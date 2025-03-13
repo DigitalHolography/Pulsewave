@@ -51,7 +51,10 @@ classdef eyeflow < matlab.apps.AppBase
                 % Compute the mean of M0_data_video along the third dimension
                 mean_M0 = mean(app.file.M0_data_video, 3);
                 % Display the mean image in the uiimage component
-                app.ImageDisplay.ImageSource = repmat(rescale(mean_M0), [1 1 3]); % Rescale the image for display
+                img = repmat(rescale(mean_M0), [1 1 3]);
+                app.ImageDisplay.ImageSource = img; % Rescale the image for display
+                ax = ancestor(app.ImageDisplay, 'axes');
+                axis(ax, 'equal');
 
                 %% End
                 app.LoadfolderButton.Enable = true;
@@ -220,7 +223,7 @@ classdef eyeflow < matlab.apps.AppBase
 
             % Actualizes the input Parameters
             app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
-            params = Parameters_json(app.file.directory, app.file.params_names);
+            params = Parameters_json(app.file.directory, app.file.params_names{1});
 
             if params.json.Other.NumberOfWorkers > 0 && params.json.Other.NumberOfWorkers < app.NumberofWorkersSpinner.Limits(2)
                 app.NumberofWorkersSpinner.Value = params.json.Other.NumberOfWorkers;
@@ -933,7 +936,7 @@ classdef eyeflow < matlab.apps.AppBase
             app.ImageDisplay = uiimage(grid);
             app.ImageDisplay.Layout.Row = [1, 9]; % Span all rows
             app.ImageDisplay.Layout.Column = 5; % Place in the new column
-            app.ImageDisplay.ScaleMethod = 'stretch'; % Adjust the image to fit the component
+            app.ImageDisplay.ScaleMethod = 'fit'; % Adjust the image to fit the component
 
             % Show the figure after all components are created
             app.EyeFlowUIFigure.Visible = 'on';
