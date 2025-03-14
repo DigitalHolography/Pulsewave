@@ -4,7 +4,7 @@ TB = getGlobalToolBox;
 mkdir(TB.path_png, 'volumeRate')
 mkdir(TB.path_eps, 'volumeRate')
 params = TB.getParams;
-veins_analysis = params.json.ExportVideos;
+veins_analysis = params.json.VeinsAnalysis;
 
 [numX, numY, numFrames] = size(v_RMS);
 x_barycenter = xy_barycenter(1);
