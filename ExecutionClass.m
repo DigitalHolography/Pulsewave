@@ -224,7 +224,7 @@ classdef ExecutionClass < handle
                 bloodVolumeRateTimer = tic;
 
                 bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_ff_video, obj.xy_barycenter, obj.sysIdxList);
-                generateHealthReport(TB, obj.vRMS, obj.maskArtery)
+                generateHealthReport(TB, obj.vRMS, obj.maskArtery, obj.maskVein)
 
                 fprintf("- Blood Volume Rate calculation took: %ds\n", round(toc(bloodVolumeRateTimer)));
             end
