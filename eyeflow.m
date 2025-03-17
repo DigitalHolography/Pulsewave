@@ -19,6 +19,7 @@ classdef eyeflow < matlab.apps.AppBase
         OverWriteCheckBox matlab.ui.control.CheckBox
         Lamp matlab.ui.control.Lamp
         ClearButton matlab.ui.control.Button
+        OpenDirectoryButton matlab.ui.control.Button
         LoadfolderButton matlab.ui.control.Button
         LoadHoloButton matlab.ui.control.Button
         ExecuteButton matlab.ui.control.Button
@@ -42,7 +43,7 @@ classdef eyeflow < matlab.apps.AppBase
             totalLoadingTime = tic;
 
             try
-                % add file
+                % Add file
                 tic
                 fprintf("\n----------------------------------\nVideo Loading\n----------------------------------\n")
                 app.file = ExecutionClass(path);
@@ -56,31 +57,28 @@ classdef eyeflow < matlab.apps.AppBase
                 ax = ancestor(app.ImageDisplay, 'axes');
                 axis(ax, 'equal');
 
-                %% End
+                %% Enable buttons
                 app.LoadfolderButton.Enable = true;
                 app.ExecuteButton.Enable = true;
                 app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
+                app.OpenDirectoryButton.Enable = true; % Enable the Open Directory button
                 app.ReferenceDirectory.Value = path;
 
             catch ME
-
                 MEdisp(ME, path)
-
                 diary off
                 % Update lamp color to indicate error
                 app.Lamp.Color = [1, 0, 0]; % Red
                 app.flag_is_load = false;
-
             end
 
             % Update lamp color to indicate success
             app.Lamp.Color = [0, 1, 0]; % Green
             app.flag_is_load = true;
-                
+
             fprintf("----------------------------------\n")
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
-
         end
 
     end
@@ -211,7 +209,7 @@ classdef eyeflow < matlab.apps.AppBase
         function err = ExecuteButtonPushed(app, ~)
 
             err = [];
-            
+
             if ~app.flag_is_load
                 fprintf(2, "no input loaded\n")
                 return
@@ -323,6 +321,19 @@ classdef eyeflow < matlab.apps.AppBase
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
+            app.OpenDirectoryButton.Enable = false; % Disable the Open Directory button
+        end
+
+        % Callback function for Open Directory button
+        function OpenDirectoryButtonPushed(app, ~)
+
+            if ~isempty(app.file) && isfolder(app.file.directory)
+                % Open the directory in the system file explorer
+                winopen(fullfile(app.file.directory, 'eyeflow')); % For Windows
+                % Use `open(app.file.directory)` for macOS/Linux
+            else
+                fprintf(2, "No valid directory loaded.\n");
+            end
 
         end
 
@@ -629,7 +640,7 @@ classdef eyeflow < matlab.apps.AppBase
         function EditMasksButtonPushed(app, ~)
             TB = getGlobalToolBox;
 
-            if isempty(TB) || ~strcmp(app.file.directory,TB.EF_path)
+            if isempty(TB) || ~strcmp(app.file.directory, TB.EF_path)
                 TB = ToolBoxClass(app.file.directory, app.file.param_name, 1);
             end
 
@@ -937,6 +948,17 @@ classdef eyeflow < matlab.apps.AppBase
             app.ImageDisplay.Layout.Row = [1, 9]; % Span all rows
             app.ImageDisplay.Layout.Column = 5; % Place in the new column
             app.ImageDisplay.ScaleMethod = 'fit'; % Adjust the image to fit the component
+
+            % Add the new button under Preview Masks
+            app.OpenDirectoryButton = uibutton(grid, 'push');
+            app.OpenDirectoryButton.ButtonPushedFcn = createCallbackFcn(app, @OpenDirectoryButtonPushed, true);
+            app.OpenDirectoryButton.BackgroundColor = [0.502 0.502 0.502];
+            app.OpenDirectoryButton.FontSize = 16;
+            app.OpenDirectoryButton.FontColor = [0.9412 0.9412 0.9412];
+            app.OpenDirectoryButton.Layout.Row = 4; % Adjust the row as needed
+            app.OpenDirectoryButton.Layout.Column = 4; % Same column as Preview Masks
+            app.OpenDirectoryButton.Text = 'Open Directory';
+            app.OpenDirectoryButton.Enable = 'off'; % Disabled by default
 
             % Show the figure after all components are created
             app.EyeFlowUIFigure.Visible = 'on';
