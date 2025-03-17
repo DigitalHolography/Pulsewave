@@ -107,7 +107,9 @@ function [M0_Systole_img, M0_Diastole_img, M0_Systole_video, M0_Diastole_video] 
     set(gca, 'PlotBoxAspectRatio', [1.618 1 1])
     title('diastole and systole')
 
-    exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', ...
+    if exist(fullfile(TB.path_png, 'mask'))
+        exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', ...
         sprintf('%s_vessel_20_plot_diasys.png', TB.main_foldername)))
+    end
 
 end

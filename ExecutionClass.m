@@ -151,6 +151,8 @@ classdef ExecutionClass < handle
 
                 M0_RGB = (M0_Artery + M0_Vein) .* ~(obj.maskArtery & obj.maskVein) + M0_AV + rescale(M0_ff_img) .* ~(obj.maskArtery | obj.maskVein);
                 app.ImageDisplay.ImageSource = mat2gray(M0_RGB); % Rescale the image for display
+                ax = ancestor(app.ImageDisplay, 'axes');
+                axis(ax, 'equal');
 
                 fprintf("- Mask Creation took: %ds\n", round(toc(createMasksTimer)));
             end
@@ -222,6 +224,7 @@ classdef ExecutionClass < handle
                 bloodVolumeRateTimer = tic;
 
                 bloodVolumeRate(obj.maskArtery, obj.maskVein, obj.vRMS, obj.M0_ff_video, obj.xy_barycenter, obj.sysIdxList);
+                generateHealthReport(TB, obj.vRMS, obj.maskArtery, obj.maskVein)
 
                 fprintf("- Blood Volume Rate calculation took: %ds\n", round(toc(bloodVolumeRateTimer)));
             end

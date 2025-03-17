@@ -31,7 +31,8 @@ classdef eyeflow < matlab.apps.AppBase
     methods (Access = public)
 
         function Load(app, path)
-            app.Lamp.Color = [1, 0, 0];
+            % Update lamp color to indicate loading
+            app.Lamp.Color = [1, 1/2, 0]; % Orange
             drawnow;
 
             if isfolder(path)
@@ -50,42 +51,33 @@ classdef eyeflow < matlab.apps.AppBase
                 % Compute the mean of M0_data_video along the third dimension
                 mean_M0 = mean(app.file.M0_data_video, 3);
                 % Display the mean image in the uiimage component
-                app.ImageDisplay.ImageSource = repmat(rescale(mean_M0), [1 1 3]); % Rescale the image for display
+                img = repmat(rescale(mean_M0), [1 1 3]);
+                app.ImageDisplay.ImageSource = img; % Rescale the image for display
+                ax = ancestor(app.ImageDisplay, 'axes');
+                axis(ax, 'equal');
 
                 %% End
                 app.LoadfolderButton.Enable = true;
                 app.ExecuteButton.Enable = true;
                 app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
-                % FIXME app.ReferenceDirectory.Value = fullfile(path,file)
                 app.ReferenceDirectory.Value = path;
-                app.Lamp.Color = [0, 1, 0];
-                app.flag_is_load = true;
 
             catch ME
 
-                fprintf(2, "==========================================\nERROR\n==========================================\n")
-                fprintf(2, 'Error while loading : %s\n', path)
-                fprintf(2, "%s\n", ME.identifier)
-                fprintf(2, "%s\n", ME.message)
-
-                for stackIdx = 1:size(ME.stack, 1)
-                    fprintf(2, "%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
-                end
-
-                if ME.identifier == "MATLAB:audiovideo:VideoReader:FileNotFound"
-
-                    fprintf(2, "No Raw File was found, please check 'save raw files' in HoloDoppler\n")
-
-                end
-
-                fprintf(2, "==========================================\n")
+                MEdisp(ME, path)
 
                 diary off
-                app.Lamp.Color = [1, 1/2, 0];
+                % Update lamp color to indicate error
+                app.Lamp.Color = [1, 0, 0]; % Red
+                app.flag_is_load = false;
 
             end
 
+            % Update lamp color to indicate success
+            app.Lamp.Color = [0, 1, 0]; % Green
+            app.flag_is_load = true;
+                
             fprintf("----------------------------------\n")
             fprintf("- Total Load timing took : %ds\n", round(toc(totalLoadingTime)))
 
@@ -160,8 +152,6 @@ classdef eyeflow < matlab.apps.AppBase
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
 
-            clear Parameters_json;
-
             if (app.flag_is_load)
                 disp("Files already loaded");
                 app.ClearButton.Enable = true;
@@ -193,8 +183,6 @@ classdef eyeflow < matlab.apps.AppBase
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
 
-            clear Parameters_json;
-
             if (app.flag_is_load)
                 disp("Files already loaded");
                 app.ClearButton.Enable = true;
@@ -217,7 +205,6 @@ classdef eyeflow < matlab.apps.AppBase
                 app.Load(fullfile(path_holo, selected_holo));
             end
 
-            app.Lamp.Color = [0, 1, 0];
         end
 
         % Button pushed function: ExecuteButton
@@ -230,7 +217,18 @@ classdef eyeflow < matlab.apps.AppBase
                 return
             end
 
-            warning('off');
+            % Update lamp color to indicate processing
+            app.Lamp.Color = [1, 1/2, 0]; % Orange
+            drawnow;
+
+            % Actualizes the input Parameters
+            app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
+            params = Parameters_json(app.file.directory, app.file.params_names{1});
+
+            if params.json.Other.NumberOfWorkers > 0 && params.json.Other.NumberOfWorkers < app.NumberofWorkersSpinner.Limits(2)
+                app.NumberofWorkersSpinner.Value = params.json.Other.NumberOfWorkers;
+            end
+
             parfor_arg = app.NumberofWorkersSpinner.Value;
 
             poolobj = gcp('nocreate'); % check if a pool already exist
@@ -241,13 +239,6 @@ classdef eyeflow < matlab.apps.AppBase
                 delete(poolobj); %close the current pool to create a new one with correct num of workers
                 parpool(parfor_arg);
             end
-
-            clear Parameters_json
-            app.Lamp.Color = [1, 0, 0];
-            drawnow;
-
-            % Actualizes the input Parameters
-            app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
 
             for i = 1:length(app.file.params_names)
 
@@ -273,24 +264,18 @@ classdef eyeflow < matlab.apps.AppBase
 
                 catch ME
                     err = ME;
-                    fprintf(2, "==========================================\nERROR\n==========================================\n");
-
-                    fprintf(2, 'Error with file : %s\n%s\n%s\n', app.file.directory, ME.identifier, ME.message);
-
-                    for stackIdx = 1:size(ME.stack, 1)
-                        fprintf(2, "%s : %s, line : %d\n", ME.stack(stackIdx).file, ME.stack(stackIdx).name, ME.stack(stackIdx).line);
-                    end
-
-                    fprintf(2, "==========================================\n");
+                    MEdisp(ME, app.file.directory)
 
                     % Update lamp color to indicate warning
-                    app.Lamp.Color = [1, 0.5, 0]; % Orange
+                    app.Lamp.Color = [1, 0, 0]; % Red
                     diary off
                 end
 
             end
 
-            app.Lamp.Color = [0, 1, 0];
+            % Update lamp color to indicate success
+            app.Lamp.Color = [0, 1, 0]; % Green
+
         end
 
         function PlayInputsButtonPushed(app, ~)
@@ -338,8 +323,6 @@ classdef eyeflow < matlab.apps.AppBase
             app.ReferenceDirectory.Value = "";
             app.LoadfolderButton.Enable = true;
             app.flag_is_load = false;
-
-            clear Parameters_json
 
         end
 
@@ -646,7 +629,7 @@ classdef eyeflow < matlab.apps.AppBase
         function EditMasksButtonPushed(app, ~)
             TB = getGlobalToolBox;
 
-            if isempty(TB)
+            if isempty(TB) || ~strcmp(app.file.directory,TB.EF_path)
                 TB = ToolBoxClass(app.file.directory, app.file.param_name, 1);
             end
 
@@ -730,12 +713,12 @@ classdef eyeflow < matlab.apps.AppBase
 
                 end
 
-                % try
-                %     Commented until further fixes MESSAGE TO ZACHARIE
-                %     openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
-                % catch
-                %     disp("paint.net macro failed")
-                % end
+                try
+                    % Commented until further fixes MESSAGE TO ZACHARIE
+                    % openmaskinpaintnet(fullfile(TB.path_main,'mask','M0.png'), fullfile(TB.path_main,'mask','DiaSysRGB.png'));
+                catch
+                    disp("paint.net macro failed")
+                end
 
             else
 
@@ -827,6 +810,7 @@ classdef eyeflow < matlab.apps.AppBase
             app.Lamp = uilamp(dirgrid);
             app.Lamp.Layout.Row = 1;
             app.Lamp.Layout.Column = 2;
+            app.Lamp.Color = [0 1 0];
 
             % Third Row: Edit Parameters, Edit Masks, Play Inputs, Preview Masks
             app.EditParametersButton = uibutton(grid, 'push');
@@ -952,7 +936,7 @@ classdef eyeflow < matlab.apps.AppBase
             app.ImageDisplay = uiimage(grid);
             app.ImageDisplay.Layout.Row = [1, 9]; % Span all rows
             app.ImageDisplay.Layout.Column = 5; % Place in the new column
-            app.ImageDisplay.ScaleMethod = 'stretch'; % Adjust the image to fit the component
+            app.ImageDisplay.ScaleMethod = 'fit'; % Adjust the image to fit the component
 
             % Show the figure after all components are created
             app.EyeFlowUIFigure.Visible = 'on';

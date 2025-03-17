@@ -183,9 +183,9 @@ classdef GifWriter < handle
                 end
 
                 % avi
-                parfeval(backgroundPool, @writeVideoOnDisc, 0, images_interp, obj.filename_avi);
+                parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(images_interp), obj.filename_avi);
                 % mp4
-                parfeval(backgroundPool, @writeVideoOnDisc, 0, obj.images, obj.filename_mp4, 'MPEG-4');
+                parfeval(backgroundPool, @writeVideoOnDisc, 0, mat2gray(obj.images), obj.filename_mp4, 'MPEG-4');
 
             end
 

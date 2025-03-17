@@ -9,6 +9,7 @@ classdef ToolBoxClass < handle
         path_dir char
         path_png char
         path_eps char
+        path_pdf char
         path_gif char
         path_txt char
         path_avi char
@@ -82,6 +83,7 @@ classdef ToolBoxClass < handle
             obj.path_dir = fullfile(obj.path_main, obj.folder_name);
             obj.path_png = fullfile(obj.path_dir, 'png');
             obj.path_eps = fullfile(obj.path_dir, 'eps');
+            obj.path_pdf = fullfile(obj.path_dir, 'pdf');
             obj.path_txt = fullfile(obj.path_dir, 'txt');
             obj.path_avi = fullfile(obj.path_dir, 'avi');
             obj.path_gif = fullfile(obj.path_dir, 'gif');
@@ -117,7 +119,7 @@ classdef ToolBoxClass < handle
             
             dirs = {obj.path_dir, obj.path_png, obj.path_eps, obj.path_gif, ...
                 obj.path_txt, obj.path_avi, obj.path_mp4, obj.path_json, ...
-                obj.path_log};
+                obj.path_log, obj.path_pdf};
             
             for i = 1:length(dirs)
                 if ~isfolder(dirs{i})

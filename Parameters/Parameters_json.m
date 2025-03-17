@@ -82,7 +82,6 @@ classdef Parameters_json < handle
         DiffFirstCalculationsFlag
         AllCirclesFlag
         nbCircles
-        forcewidth
         timePeriodMin
     end
 
@@ -102,7 +101,7 @@ classdef Parameters_json < handle
             dir_path_json = fullfile(obj.path, 'eyeflow', 'json');
             jsonPath = fullfile(dir_path_json, filename_json);
 
-            if exist(jsonPath, 'file')
+            if isfile(jsonPath)
                 jsonData = fileread(jsonPath);
                 parsedData = jsondecode(jsonData);
 
@@ -188,7 +187,6 @@ classdef Parameters_json < handle
 
                 obj.nbSides = parsedData.Other.NumberOfSides;
                 obj.AllCirclesFlag = parsedData.Other.AllCircles;
-                obj.forcewidth = parsedData.Other.ForceWidthInPixels;
                 obj.timePeriodMin = parsedData.Other.MinimumGifPeriod;
 
             else

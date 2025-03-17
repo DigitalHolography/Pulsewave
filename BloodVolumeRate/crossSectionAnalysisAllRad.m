@@ -1,4 +1,4 @@
-function [vr_avg_r, vr_std_r, area_r, mask_r, v_profiles_avg_r, v_profiles_std_r, sub_images_r, width_avg_r, width_std_r, vtop_avg_r, vtop_std_r] = crossSectionAnalysisAllRad(numSections, locs, widths, mask, v_RMS, name, force_width)
+function [vr_avg_r, vr_std_r, area_r, mask_r, v_profiles_avg_r, v_profiles_std_r, sub_images_r, width_avg_r, width_std_r, vtop_avg_r, vtop_std_r] = crossSectionAnalysisAllRad(numSections, locs, widths, mask, v_RMS, name)
 
 % Parameters 
 TB = getGlobalToolBox;
@@ -25,7 +25,11 @@ width_std_r = cell(1, numCircles); % Standard deviation of cross-section width
 % Cross-Section Analysis of the arteries
 parfor circleIdx = 1:numCircles
     % Call crossSectionAnalysis2
-    [vr_avg, vr_std, area, top_velocity, std_velocity, maskCross, v_profiles_avg, v_profiles_std, subImg_cell, width_avg, width_std, rejected_masks] = crossSectionAnalysis2(TB, locs{circleIdx}, widths{circleIdx}, mask, v_RMS, flowRate_sliceHalfThickness, name, circleIdx, force_width);
+    [vr_avg, vr_std, area, top_velocity, std_velocity, maskCross, ...
+        v_profiles_avg, v_profiles_std, subImg_cell, ...
+        width_avg, width_std, rejected_masks] = ...
+        crossSectionAnalysis2(TB, locs{circleIdx}, widths{circleIdx}, ...
+        mask, v_RMS, flowRate_sliceHalfThickness, name, circleIdx);
 
     % Map outputs to variables
     vr_avg_r{circleIdx} = vr_avg;
