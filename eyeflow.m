@@ -62,6 +62,7 @@ classdef eyeflow < matlab.apps.AppBase
                 app.ExecuteButton.Enable = true;
                 app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
+                app.OverWriteCheckBox.Enable = true;
                 app.OpenDirectoryButton.Enable = true; % Enable the Open Directory button
                 app.ReferenceDirectory.Value = path;
 
@@ -811,6 +812,7 @@ classdef eyeflow < matlab.apps.AppBase
             dirgrid.BackgroundColor = [0.149, 0.149, 0.149];
 
             app.ReferenceDirectory = uitextarea(dirgrid);
+            app.ReferenceDirectory.Editable = 'off';
             app.ReferenceDirectory.FontSize = 16;
             app.ReferenceDirectory.FontColor = [0.9412 0.9412 0.9412];
             app.ReferenceDirectory.BackgroundColor = [0.149 0.149 0.149];
