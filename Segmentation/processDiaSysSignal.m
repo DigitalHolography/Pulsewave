@@ -2,6 +2,7 @@ function [mask1, mask2] = processDiaSysSignal(diasys, maskClean, params, cmap, s
 
 if params.threshold >= -1 && params.threshold <= 1
     % Manual threshold
+    diasys = rescale(diasys);
     mask1 = diasys >= params.threshold;
     mask2 = diasys <= params.threshold;
     graphThreshHistogram(diasys, params.threshold, maskClean, cmap, suffix);
