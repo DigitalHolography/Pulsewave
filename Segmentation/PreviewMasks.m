@@ -216,7 +216,7 @@ uiwait(d);
         params.json.Mask.VascularCorrelationMapThreshold = vascularThresholdEdit.Value;
         params.json.Mask.ArterialCorrelationMapThreshold = arterialThresholdEdit.Value;
         params.json.Mask.VenousCorrelationMapThreshold = venousThresholdEdit.Value;
-        params.json.Mask.MinimumSeedAreaSize = minSizeEdit.Value;
+        params.json.Mask.MinPixelSize = minSizeEdit.Value;
         params.json.Mask.ImcloseRadius = imcloseRadiusEdit.Value;
         params.json.Mask.MinimumVesselWidth = minWidthEdit.Value;
         params.json.Mask.FinalDilation = imdilateFinalEdit.Value;

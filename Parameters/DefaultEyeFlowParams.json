@@ -16,7 +16,7 @@
     "ValueOfTheInterpolationParameter": 1,
     "Preprocess": {
       "RemoveOutliersOption": true,
-      "Window Size": 5 
+      "WindowSize": 10 
     },
     "VeinsAnalysis": 1,
     "ExportVideos": 1,
@@ -28,8 +28,10 @@
       "FittedParameters": false
     },
     "Mask": {
-      "Vesselness Sigma Range": [1, 10],
-      "Vesselness Sigma Step": 1,
+      "Vesselness Frangi Range": [4, 6],
+      "Vesselness Frangi Step": 1,
+      "Vesselness Gabor Range": [4, 6],
+      "Vesselness Gabor Step": 1,
       "Diaphragm Radius": 0.4,
       "Force Barycenter": [],
       "Blur": 1.5,

@@ -16,7 +16,10 @@ smoothed_image = imgaussfilt(input_image, 2); % Adjust sigma as needed
 
 % Step 2: Gabor Filtering
 % Define Gabor filter parameters
-wavelength = 4:6; % Adjust based on vessel thickness
+params = TB.getParams;
+range = params.json.Mask.VesselnessGaborRange;
+step = params.json.Mask.VesselnessGaborStep;
+wavelength = (range(1):step:range(2)); % Adjust based on vessel thickness
 orientation = 0:30:150; % Multiple orientations to capture all vessel directions
 gabor_bank = gabor(wavelength, orientation);
 

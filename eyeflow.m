@@ -3,7 +3,7 @@ classdef eyeflow < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         EyeFlowUIFigure matlab.ui.Figure
-        PlayInputsButton matlab.ui.control.Button
+        PlayMomentsButton matlab.ui.control.Button
         EditParametersButton matlab.ui.control.Button
         EditMasksButton matlab.ui.control.Button
         NumberofWorkersSpinner matlab.ui.control.Spinner
@@ -53,17 +53,17 @@ classdef eyeflow < matlab.apps.AppBase
                 mean_M0 = mean(app.file.M0_data_video, 3);
                 % Display the mean image in the uiimage component
                 img = repmat(rescale(mean_M0), [1 1 3]);
-                app.ImageDisplay.ImageSource = img; % Rescale the image for display
-                ax = ancestor(app.ImageDisplay, 'axes');
-                axis(ax, 'equal');
+                [numX, numY] = size(img);
+                app.ImageDisplay.ImageSource = imresize(img, [max(numX, numY) max(numX, numY)]); % Rescale the image for display
 
                 %% Enable buttons
-                app.LoadfolderButton.Enable = true;
                 app.ExecuteButton.Enable = true;
                 app.ClearButton.Enable = true;
                 app.EditParametersButton.Enable = true;
                 app.OverWriteCheckBox.Enable = true;
-                app.OpenDirectoryButton.Enable = true; % Enable the Open Directory button
+                app.EditMasksButton.Enable = true;
+                app.PlayMomentsButton.Enable = true;
+                app.OpenDirectoryButton.Enable = true;
                 app.ReferenceDirectory.Value = path;
 
             catch ME
@@ -139,70 +139,49 @@ classdef eyeflow < matlab.apps.AppBase
 
         % Button pushed function: LoadfolderButton
         function LoadfolderButtonPushed(app, ~)
-            % Clearing before loading
             if ~isempty(app.file)
                 last_dir = app.file.directory;
             else
                 last_dir = [];
             end
+            
+            % Clearing before loading
+            ClearButtonPushed(app)
 
-            app.file = [];
-            app.ReferenceDirectory.Value = "";
-            app.LoadfolderButton.Enable = true;
-            app.flag_is_load = false;
+            % Store original WindowStyle
+            originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+            app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
 
-            if (app.flag_is_load)
-                disp("Files already loaded");
-                app.ClearButton.Enable = true;
-                app.EditParametersButton.Enable = true;
+            selected_dir = uigetdir(last_dir);
+
+            if selected_dir == 0
+                fprintf(2, 'No folder selected\n');
             else
-                % Store original WindowStyle
-                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
-                app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
-
-                selected_dir = uigetdir(last_dir);
-
-                if selected_dir == 0
-                    fprintf('No folder selected');
-                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
-                    return;
-                end
-
-                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
-                app.flag_is_load = true;
                 app.Load(selected_dir);
             end
 
+            app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
+
         end
 
+        % Button pushed function: LoadHoloButton
         function LoadHoloButtonPushed(app, ~)
             % Clearing before loading
-            app.file = [];
-            app.ReferenceDirectory.Value = "";
-            app.LoadfolderButton.Enable = true;
-            app.flag_is_load = false;
+            ClearButtonPushed(app)
 
-            if (app.flag_is_load)
-                disp("Files already loaded");
-                app.ClearButton.Enable = true;
-                app.EditParametersButton.Enable = true;
+            % Store original WindowStyle
+            originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
+            app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
+
+            [selected_holo, path_holo] = uigetfile('*.holo');
+
+            if selected_holo == 0
+                fprintf(2, 'No file selected\n');
             else
-                % Store original WindowStyle
-                originalWindowStyle = app.EyeFlowUIFigure.WindowStyle;
-                app.EyeFlowUIFigure.WindowStyle = 'modal'; % Prevent minimizing
-
-                [selected_holo, path_holo] = uigetfile('*.holo');
-
-                if selected_holo == 0
-                    disp('No file selected');
-                    app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
-                    return;
-                end
-
-                app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
-                app.flag_is_load = true;
                 app.Load(fullfile(path_holo, selected_holo));
             end
+
+            app.EyeFlowUIFigure.WindowStyle = originalWindowStyle; % Restore
 
         end
 
@@ -212,7 +191,7 @@ classdef eyeflow < matlab.apps.AppBase
             err = [];
 
             if ~app.flag_is_load
-                fprintf(2, "no input loaded\n")
+                fprintf(2, "No input loaded.\n")
                 return
             end
 
@@ -277,7 +256,7 @@ classdef eyeflow < matlab.apps.AppBase
 
         end
 
-        function PlayInputsButtonPushed(app, ~)
+        function PlayMomentsButtonPushed(app, ~)
 
             if ~app.flag_is_load
                 fprintf(2, "no input loaded\n")
@@ -320,9 +299,17 @@ classdef eyeflow < matlab.apps.AppBase
         function ClearButtonPushed(app, ~)
             app.file = [];
             app.ReferenceDirectory.Value = "";
-            app.LoadfolderButton.Enable = true;
+
             app.flag_is_load = false;
-            app.OpenDirectoryButton.Enable = false; % Disable the Open Directory button
+
+            app.ExecuteButton.Enable = false;
+            app.ClearButton.Enable = false;
+            app.EditParametersButton.Enable = false;
+            app.OverWriteCheckBox.Enable = false;
+            app.OpenDirectoryButton.Enable = false;
+            app.EditMasksButton.Enable = false;
+            app.PlayMomentsButton.Enable = false;
+
         end
 
         % Callback function for Open Directory button
@@ -833,6 +820,7 @@ classdef eyeflow < matlab.apps.AppBase
             app.EditParametersButton.FontColor = [0.9412 0.9412 0.9412];
             app.EditParametersButton.Layout.Row = 3;
             app.EditParametersButton.Layout.Column = 1;
+            app.EditParametersButton.Enable = 'off';
             app.EditParametersButton.Text = 'Edit Parameters';
             app.EditParametersButton.Tooltip = 'Find the eyeflow parameters here.';
 
@@ -843,17 +831,19 @@ classdef eyeflow < matlab.apps.AppBase
             app.EditMasksButton.FontColor = [0.9412 0.9412 0.9412];
             app.EditMasksButton.Layout.Row = 3;
             app.EditMasksButton.Layout.Column = 2;
+            app.EditMasksButton.Enable = 'off';
             app.EditMasksButton.Text = 'Edit Masks';
             app.EditMasksButton.Tooltip = 'Open mask folder and use forceMaskArtery.png and forceMaskVein.png to force the segmentation';
 
-            app.PlayInputsButton = uibutton(grid, 'push');
-            app.PlayInputsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayInputsButtonPushed, true);
-            app.PlayInputsButton.BackgroundColor = [0.502 0.502 0.502];
-            app.PlayInputsButton.FontSize = 16;
-            app.PlayInputsButton.FontColor = [0.9412 0.9412 0.9412];
-            app.PlayInputsButton.Layout.Row = 3;
-            app.PlayInputsButton.Layout.Column = 3;
-            app.PlayInputsButton.Text = 'Play Inputs';
+            app.PlayMomentsButton = uibutton(grid, 'push');
+            app.PlayMomentsButton.ButtonPushedFcn = createCallbackFcn(app, @PlayMomentsButtonPushed, true);
+            app.PlayMomentsButton.BackgroundColor = [0.502 0.502 0.502];
+            app.PlayMomentsButton.FontSize = 16;
+            app.PlayMomentsButton.FontColor = [0.9412 0.9412 0.9412];
+            app.PlayMomentsButton.Layout.Row = 3;
+            app.PlayMomentsButton.Layout.Column = 3;
+            app.PlayMomentsButton.Enable = 'off';
+            app.PlayMomentsButton.Text = 'Play Moments';
 
             app.PreviewMasksButton = uibutton(grid, 'push');
             app.PreviewMasksButton.ButtonPushedFcn = createCallbackFcn(app, @PreviewMasksButtonPushed, true);
