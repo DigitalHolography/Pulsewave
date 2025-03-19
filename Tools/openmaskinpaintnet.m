@@ -16,13 +16,13 @@ end
 robot.delay(1500); % wait 1.5s for paint net to open
 displaysize = get(0, 'ScreenSize'); % for a script indifferent of the display size 3=width 4=height
 
-sratio = displaysize(3:4) ./ [1920 1200];
+sratio = displaysize(3:4)/[1920 1200];
 
-set(0,'PointerLocation',[20 1165] .* sratio); % Go on "File"
+set(0,'PointerLocation',[20 displaysize(4)-35] ); % Go on "File"
 robot.mousePress  (java.awt.event.InputEvent.BUTTON1_MASK); % Click
 robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
 
-set(0,'PointerLocation',[20 1115] .* sratio);
+set(0,'PointerLocation',[20 displaysize(4)-85] );
 robot.mousePress  (java.awt.event.InputEvent.BUTTON1_MASK); % Click "Open"
 robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
 
@@ -30,7 +30,6 @@ robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
 pause(1);
 
 typesomething(INPUT_PATH);
-set(0,'PointerLocation',[1088 464] .* sratio);
 pause(1);
 robot.keyPress(java.awt.event.KeyEvent.VK_ENTER); % Click "Open"
 robot.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
@@ -50,7 +49,7 @@ if sz(1)~=sz(2)
     robot.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
 end
 
-set(0,'PointerLocation',[187	1164] .* sratio);
+set(0,'PointerLocation',[187	displaysize(4)-36]);
 robot.mousePress(java.awt.event.InputEvent.BUTTON1_MASK); % Click "Layers"
 robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
 
@@ -61,7 +60,7 @@ if sz1(1:2) ~=sz(1:2)
     imwrite(img, INPUT_PATH_Layer, 'png');
 end
 
-set(0,'PointerLocation',[196	1013] .* sratio);
+set(0,'PointerLocation',[196	displaysize(4)-187]);
 robot.mousePress(java.awt.event.InputEvent.BUTTON1_MASK); % Click "Import from file"
 robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
 
@@ -132,7 +131,7 @@ robot.keyPress(java.awt.event.KeyEvent.VK_B); % select pen
 robot.keyRelease(java.awt.event.KeyEvent.VK_B);
 
 
-set(0,'PointerLocation',[220	1112] .* sratio);
+set(0,'PointerLocation',[220	displaysize(4)-88]);
 robot.mousePress(java.awt.event.InputEvent.BUTTON1_MASK); % Click to select
 robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
 typesomething("13") % set brush size
@@ -143,7 +142,7 @@ robot.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
 
 
 
-set(0,'PointerLocation',[541	1114] .* sratio); % set hardness to max
+set(0,'PointerLocation',[541	displaysize(4)-88]); % set hardness to max
 for i=1:50
     robot.mousePress(java.awt.event.InputEvent.BUTTON1_MASK);
     robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);

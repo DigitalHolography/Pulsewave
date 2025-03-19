@@ -715,7 +715,7 @@ classdef eyeflow < matlab.apps.AppBase
                     M0_video = read(v); clear v;
                     M0_video = rescale(single(squeeze(mean(M0_video, 3))));
                     sz = size(M0_video);
-                    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video, diskMask(sz(1), sz(2), 0.9));
+                    [M0_Systole_img, M0_Diastole_img] = compute_diasys(M0_video, diskMask(sz(1), sz(2), 0.45));
                     diasysArtery = M0_Systole_img - M0_Diastole_img;
                     RGBdiasys = labDuoImage(mean(M0_video, 3), diasysArtery);
                     imwrite(RGBdiasys, fullfile(TB.path_main, 'mask', 'DiaSysRGB.png'), 'png');
