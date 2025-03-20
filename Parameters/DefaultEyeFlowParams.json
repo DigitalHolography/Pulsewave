@@ -35,7 +35,7 @@
       "Diaphragm Radius": 0.4,
       "Force Barycenter": [],
       "Blur": 1.5,
-      "Crop Choroid Radius": 0.2,
+      "Crop Choroid Radius": 0.1,
       "Vascular Threshold": -2,
       "Vascular Classes": [-1, 0, 1],
       "Improve Mask": 1,

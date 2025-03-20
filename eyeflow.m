@@ -10,7 +10,7 @@ classdef eyeflow < matlab.apps.AppBase
         NumberofWorkersSpinnerLabel matlab.ui.control.Label
         SHanalysisCheckBox matlab.ui.control.CheckBox
         FolderManagementButton matlab.ui.control.Button
-        PreviewMasksButton matlab.ui.control.Button
+        MaskToolButton matlab.ui.control.Button
         SegmentationCheckBox matlab.ui.control.CheckBox
         PulseanalysisCheckBox matlab.ui.control.CheckBox
         velocityCheckBox matlab.ui.control.CheckBox
@@ -589,8 +589,8 @@ classdef eyeflow < matlab.apps.AppBase
             delete(d);
         end
 
-        % Button pushed function: PreviewMasksButtonPushed
-        function PreviewMasksButtonPushed(app, ~)
+        % Button pushed function: MaskToolButtonPushed
+        function MaskToolButtonPushed(app, ~)
 
             parfor_arg = app.NumberofWorkersSpinner.Value;
             poolobj = gcp('nocreate'); % check if a pool already exist
@@ -845,14 +845,14 @@ classdef eyeflow < matlab.apps.AppBase
             app.PlayMomentsButton.Enable = 'off';
             app.PlayMomentsButton.Text = 'Play Moments';
 
-            app.PreviewMasksButton = uibutton(grid, 'push');
-            app.PreviewMasksButton.ButtonPushedFcn = createCallbackFcn(app, @PreviewMasksButtonPushed, true);
-            app.PreviewMasksButton.BackgroundColor = [0.502 0.502 0.502];
-            app.PreviewMasksButton.FontSize = 16;
-            app.PreviewMasksButton.FontColor = [0.9412 0.9412 0.9412];
-            app.PreviewMasksButton.Layout.Row = 3;
-            app.PreviewMasksButton.Layout.Column = 4;
-            app.PreviewMasksButton.Text = 'Preview Masks';
+            app.MaskToolButton = uibutton(grid, 'push');
+            app.MaskToolButton.ButtonPushedFcn = createCallbackFcn(app, @MaskToolButtonPushed, true);
+            app.MaskToolButton.BackgroundColor = [0.502 0.502 0.502];
+            app.MaskToolButton.FontSize = 16;
+            app.MaskToolButton.FontColor = [0.9412 0.9412 0.9412];
+            app.MaskToolButton.Layout.Row = 3;
+            app.MaskToolButton.Layout.Column = 4;
+            app.MaskToolButton.Text = 'Mask Tool';
 
             % Checkboxes: Segmentation, Pulse analysis, Blood Flow Velocity, Blood Volume Rate, SH analysis
             app.SegmentationCheckBox = uicheckbox(grid);

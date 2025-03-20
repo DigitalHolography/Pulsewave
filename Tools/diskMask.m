@@ -11,7 +11,7 @@ arguments
     numX
     numY
     R1
-    R2 = sqrt(2)/2
+    R2 = 2
     opt.center = [1/2, 1/2]
 end
 

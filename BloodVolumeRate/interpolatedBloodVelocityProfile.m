@@ -8,18 +8,16 @@ Color_std = [0.7 0.7 0.7];
 for circleIdx = 1:numCircles
 
     % bloodVelocityProfiles Figure
-
     figure("Visible", "off");
 
     for sectionIdx = 1:numSections(circleIdx)
-        plot(mean(v_profiles_avg_r{circleIdx}{sectionIdx}, 2), Linewidth = 2)
+        plot(v_profiles_avg_r{circleIdx}{sectionIdx}, Linewidth = 2)
         hold on
     end
 
     title(['measured time-averaged velocity profiles at radius = ', num2str(rad(circleIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
     exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", TB.main_foldername, name, circleIdx)))
-
     % interpolatedBloodVelocityProfile Figure
 
     figure("Visible", "off");
@@ -28,8 +26,8 @@ for circleIdx = 1:numCircles
 
     parfor sectionIdx = 1:numSections(circleIdx)
 
-        profile_avg = mean(v_profiles_avg_r{circleIdx}{sectionIdx}, 2); % mean velocity profile
-        profile_std = mean(v_profiles_std_r{circleIdx}{sectionIdx}, 2);
+        profile_avg = v_profiles_avg_r{circleIdx}{sectionIdx}; % mean velocity profile
+        profile_std = v_profiles_std_r{circleIdx}{sectionIdx};
 
         if any(profile_avg < 0) % edge case when there is negative velocities
             [~, locs] = findpeaks(-profile_avg);
@@ -57,7 +55,7 @@ for circleIdx = 1:numCircles
         interp_profile_std(sectionIdx, :) = interp1(1:length(indx), profile_std(indx), linspace(1, length(indx), numInterp));
     end
 
-    mean_interp_profile = mean(interp_profile, 1);
+    mean_interp_profile = double(mean(interp_profile, 1));
     std_interp_profile = mean(interp_profile_std, 1);
     curve1 = mean_interp_profile + 0.5 * std_interp_profile;
     curve2 = mean_interp_profile - 0.5 * std_interp_profile;
@@ -123,8 +121,8 @@ if params.exportVideos
             interp_profile_std = zeros([numSections(circleIdx), numInterp], 'single');
 
             for sectionIdx = 1:numSections(circleIdx)
-                profile_avg = v_profiles_avg_r{circleIdx}{sectionIdx}(:, frameIdx);
-                profile_std = v_profiles_std_r{circleIdx}{sectionIdx}(:, frameIdx);
+                profile_avg = v_profiles_avg_r{circleIdx}{sectionIdx, frameIdx};
+                profile_std = v_profiles_std_r{circleIdx}{sectionIdx, frameIdx};
 
                 if any(profile_avg < 0) % edge case when there is negative velocities
                     [~, locs] = findpeaks(-profile_avg);
@@ -153,7 +151,7 @@ if params.exportVideos
             end
 
             % Compute new plot data
-            mean_interp_profile = mean(interp_profile, 1);
+            mean_interp_profile = double(mean(interp_profile, 1));
             std_interp_profile = mean(interp_profile_std, 1);
             curve1 = mean_interp_profile + 0.5 * std_interp_profile;
             curve2 = mean_interp_profile - 0.5 * std_interp_profile;

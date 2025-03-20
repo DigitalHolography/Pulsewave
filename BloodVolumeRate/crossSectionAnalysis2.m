@@ -1,197 +1,146 @@
-function [avgVolumeRate, stdVolumeRate, crossSectionArea, topVelocity, stdVelocity, crossSectionMask, velocityProfiles, stdVelocityProfiles, subImg_cell, crossSectionWidth, stdCrossSectionWidth, rejected_MasksRGB] = crossSectionAnalysis2(TB, locs, width, mask, v_RMS, slice_half_thickness, type_of_vessel, circleIdx)
+function [results] = crossSectionAnalysis2(ToolBox, locs, mask, v_RMS, circleName)
+
 % Perform cross-section analysis on blood vessels.
 %
 % Inputs:
-%   ToolBox                 - Struct, contains parameters and paths.
-%   locs                    - Nx2 array, locations of vessel centers.
-%   width                   - Nx1 array, widths of vessels.
-%   mask                    - 2D array, mask for the region of interest.
-%   v_RMS                   - 3D array, velocity data over time.
-%   slice_half_thickness    - Scalar, half-thickness of the slice.
-%   type_of_vessel          - String, type of vessel ('artery' or 'vein').
-%   circleIdx               - Scalar, index of the circle (optional).
+%   TB          - Struct, contains parameters and paths.
+%   locs        - Nx2 array, locations of vessel centers.
+%   mask        - 2D array, mask for the region of interest.
+%   v_RMS       - 3D array, velocity data over time.
+%   circleName  - String, name of the circle (for saving results).
 %
 % Outputs:
-%   avgVolumeRate           - NxF array, average volume rate over time.
-%   stdVolumeRate           - NxF array, standard deviation of volume rate.
-%   crossSectionArea        - Nx1 array, cross-sectional area of vessels.
-%   topVelocity             - NxF array, top velocity over time.
-%   stdVelocity             - NxF array, standard deviation of velocity.
-%   crossSectionMask        - 2D array, mask for cross-sections.
-%   velocityProfiles        - Cell array, velocity profiles for each vessel.
-%   stdVelocityProfiles     - Cell array, std of velocity profiles.
-%   subImg_cell             - Cell array, sub-images of vessels.
-%   crossSectionWidth       - Nx1 array, width of cross-sections.
-%   stdCrossSectionWidth    - Nx1 array, std of cross-section width.
+%   results     - Struct containing analysis results.
 
 % Initialize parameters
+params = ToolBox.getParams;
 numSections = size(locs, 1);
 [numX, numY, numFrames] = size(v_RMS);
-params = TB.getParams;
-k = params.k;
-circleName = sprintf('circle_%d', circleIdx);
 
-avgVolumeRate = zeros(numSections, numFrames);
-stdVolumeRate = zeros(numSections, numFrames);
-crossSectionArea = zeros(numSections, 1);
-stdCrossSectionArea = zeros(numSections, 1);
-avgVelocity = zeros(numSections, numFrames);
-topVelocity = zeros(numSections, numFrames);
-stdVelocity = zeros(numSections, numFrames);
-crossSectionMask = zeros(numX, numY);
-velocityProfiles = cell([1 numSections]);
-stdVelocityProfiles = cell([1 numSections]);
-subImg_cell = cell([1 numSections]);
-crossSectionWidth = zeros(numSections, 1);
-stdCrossSectionWidth = zeros(numSections, 1);
-mask_sections = zeros(numX, numY, numSections);
-tilt_angle_list = zeros(1, length(locs));
-rejected_MasksRGB = zeros(numX, numY, 3);
+% Initialize the results struct with preallocated fields.
+results = struct();
 
+% Sub-images
+results.subImg_cell = cell(1, numSections);
+
+% Velocity and Flow Rate
+results.v = zeros(numSections, numFrames); % Average velocity
+results.v_std = zeros(numSections, numFrames);
+results.Q = zeros(numSections, numFrames); % Volumetric flow rate
+results.Q_std = zeros(numSections, numFrames);
+results.v_profiles = cell(numSections, numFrames);
+results.v_profiles_std = cell(numSections, numFrames);
+
+% Vessel Dimensions
+results.D = zeros(numSections, 1);
+results.D_std = zeros(numSections, 1);
+results.A = zeros(numSections, 1);
+results.A_std = zeros(numSections, 1);
+
+% Masks
+results.mask_sections = zeros(numX, numY, numSections);
+
+% Compute mean velocity over time
 v_RMS_mean_masked = squeeze(mean(v_RMS, 3)) .* mask;
 
-for sectionIdx = 1:numSections % sectionIdx: vessel_number
+% Define sub-image dimensions
+subImgHW = round(0.01 * size(v_RMS_mean_masked, 1) * params.cropSection_scaleFactorWidth);
 
-    if strcmp(type_of_vessel, 'artery')
-        name_section = sprintf('A%d', sectionIdx);
+% Initialize rejected masks
+rejected_masks = zeros(numX, numY, 3);
+crossSectionMask = zeros(numX, numY);
+
+for n = 1:numSections
+    % Define sub-image dimensions
+    xRange = max(round(-subImgHW / 2) + locs(n, 2), 1):min(round(subImgHW / 2) + locs(n, 2), numX);
+    yRange = max(round(-subImgHW / 2) + locs(n, 1), 1):min(round(subImgHW / 2) + locs(n, 1), numY);
+    subImg = v_RMS_mean_masked(yRange, xRange);
+
+    % Crop and rotate sub-image
+    subImg = cropCircle(subImg);
+    [subImg, tilt_angle] = rotateSubImage(subImg);
+    results.subImg_cell{n} = subImg;
+
+    % Update cross-section mask
+    [crossSectionMask, maskCurrentSlice] = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, n, tilt_angle, params);
+    results.mask_sections(:, :, n) = maskCurrentSlice;
+
+    % Compute the Vessel Cross Section
+    figName = sprintf('%s%d', circleName, n);
+    [D, D_std, A, A_std, c1, c2, rsquare] = computeVesselCrossSection(subImg, figName, ToolBox);
+    results.D(n) = D;
+    results.D_std(n) = D_std;
+    results.A(n) = A;
+    results.A_std(n) = A_std;
+
+    % Generate figures
+    saveCrossSectionFigure(subImg, D, ToolBox, circleName, figName);
+
+    % Update rejected masks
+    if rsquare < 0.6 || isnan(D) || D > mean(sum(subImg ~= 0, 2))
+        rejected_masks(:, :, 1) = rejected_masks(:, :, 1) + maskCurrentSlice;
     else
-        name_section = sprintf('V%d', sectionIdx);
+        rejected_masks(:, :, 2) = rejected_masks(:, :, 2) + maskCurrentSlice;
     end
 
-    if width(sectionIdx) > 2
+    % Compute blood volume rate and average velocity
 
-        subImgHW = round(width(sectionIdx) * params.cropSection_scaleFactorWidth);
-        %FIXME bords d IMG,
-
-        xRange = max(round(-subImgHW / 2) + locs(sectionIdx, 2), 1):min(round(subImgHW / 2) + locs(sectionIdx, 2), numX);
-        yRange = max(round(-subImgHW / 2) + locs(sectionIdx, 1), 1):min(round(subImgHW / 2) + locs(sectionIdx, 1), numY);
-        subImg = v_RMS_mean_masked(yRange, xRange);
-
-        %make disk mask
-        %FIXME img anamorphique
-        subImg = cropCircle(subImg);
-
-        % Rotate the sub-image to align the blood vessel vertically
-        [subImg, tilt_angle] = rotateSubImage(subImg);
-
-        subImg_cell{sectionIdx} = subImg;
-        tilt_angle_list(sectionIdx) = tilt_angle;
-
-        profile = mean(subImg, 1);
-        if mean(profile) > 0
-            central_range = find(profile > 0.1 * max(profile));
-        else % case of fully negative vessel taken in the choroid; this makes the vessel detection independent of sign
-            central_range = find(profile < 0.1 * min(profile));
-        end
-        centt = mean(central_range);
-        r_range = (central_range - centt) * params.cropSection_pixelSize / 2 ^ k;
-        [p1, p2, p3, rsquare, p1_err, p2_err, p3_err] = customPoly2Fit(r_range', profile(central_range)');
-        [r1, r2, r1_err, r2_err] = customPoly2Roots(p1, p2, p3, p1_err, p2_err, p3_err);
-
-        if rsquare < 0.6 % if bad fit : reject the fit
-            crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
-            stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
-        else
-            crossSectionWidth(sectionIdx) = abs(r1 - r2) / (params.cropSection_pixelSize / 2 ^ k);
-            stdCrossSectionWidth(sectionIdx) = sqrt(r1_err ^ 2 + r2_err ^ 2) / (params.cropSection_pixelSize / 2 ^ k);
-        end
-
-        if isnan(crossSectionWidth(sectionIdx)) || crossSectionWidth(sectionIdx) > mean(sum(subImg ~= 0, 2))
-            crossSectionWidth(sectionIdx) = mean(sum(subImg ~= 0, 2));
-            stdCrossSectionWidth(sectionIdx) = std(sum(subImg ~= 0, 2));
-        end
-        
-        crossSectionMask = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, params);
-        mask_sections(:, :, sectionIdx) = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, params);
-
-        % Create Figures
-        poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, circleName, name_section, TB)
-        saveCrossSectionFigure(subImg, crossSectionWidth(sectionIdx), TB, circleName, name_section)
-
-        if rsquare < 0.6 || isnan(crossSectionWidth(sectionIdx)) || crossSectionWidth(sectionIdx) > mean(sum(subImg ~= 0, 2))
-            rejected_MasksRGB(:, :, 1) = rejected_MasksRGB(:, :, 1) + mask_sections(:, :, sectionIdx);
-        else
-            rejected_MasksRGB(:, :, 2) = rejected_MasksRGB(:, :, 2) + mask_sections(:, :, sectionIdx);
-        end
-        
-    end
-
-    crossSectionArea(sectionIdx) = pi * ((crossSectionWidth(sectionIdx) * (params.cropSection_pixelSize / 2 ^ k) / 2)) ^ 2; % /2 because radius=d/2 - 0.0102/2^k mm = size pixel with k coef interpolation
-    stdCrossSectionArea(sectionIdx) = pi * (1/2 * (params.cropSection_pixelSize / 2 ^ k)) ^ 2 * sqrt(stdCrossSectionWidth(sectionIdx) ^ 4 + 2 * stdCrossSectionWidth(sectionIdx) ^ 2 * crossSectionWidth(sectionIdx) ^ 2);
-end
-
-%% Blood Volume Rate computation
-
-for sectionIdx = 1:numSections
-    stdProfils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)), numFrames], 'single');
-    profils = zeros([length(round(-subImgHW / 2):round(subImgHW / 2)), numFrames], 'single');
-
-    for tt = 1:numFrames
-
-        current_frame = v_RMS(:, :, tt);
-
-        %FIXME mean(v_RMS,3)
-        tmp = current_frame .* mask_sections(:, :, sectionIdx);
-
-        %tmp_velocity = zeros(1,size(nnz(tmp(:))));
-        xRange = round(-subImgHW / 2) + locs(sectionIdx, 2):round(subImgHW / 2) + locs(sectionIdx, 2);
-        yRange = round(-subImgHW / 2) + locs(sectionIdx, 1):round(subImgHW / 2) + locs(sectionIdx, 1);
+    for t = 1:numFrames
+        tmp = v_RMS(:, :, t) .* crossSectionMask;
         subFrame = tmp(yRange, xRange);
         subFrame = cropCircle(subFrame);
-        subFrame = imrotate(subFrame, tilt_angle_list(sectionIdx), 'bilinear', 'crop');
-        avg_profil = mean(subFrame, 1);
-        profils(:, tt) = avg_profil;
+        subFrame = imrotate(subFrame, tilt_angle, 'bilinear', 'crop');
 
-        % for ll = 1:size(subFrame, 1)
-        %     subFrame(ll, :) = subFrame(ll, :) - avg_profil;
-        % 
-        % end
+        v_profile = mean(subFrame, 1);
+        v_cross = mean(subFrame(c1:c2, :), 2);
 
-        %FIXME calcul std avg avec des v = 0
-        %avgVelocity(sectionIdx,tt) = sum(tmp(:))/nnz(tmp(:));
-        avgVelocity(sectionIdx, tt) = mean(tmp(tmp ~= 0));
-        topVelocity(sectionIdx, tt) = max(avg_profil) ; %- mean(min(subFrame, [], 2));
+        % Compute average velocity
+        v = mean(v_profile(c1:c2));
 
-        if isnan(avgVelocity(sectionIdx, tt))
-            avgVelocity(sectionIdx, tt) = 0;
-        end
-        if isnan(topVelocity(sectionIdx, tt))
-            topVelocity(sectionIdx, tt) = 0;
-        end
+        % Compute standard deviation of velocity
+        v_std = std(v_cross);
 
-        %stdVelocity(sectionIdx,tt) = std(tmp(tmp~=0));
-        stdProfils(:, tt) = std(subFrame, [], 1);
+        % Compute volumetric flow rate
+        Q = v * A * 60; % microL/min
 
-
-        stdVelocity(sectionIdx, tt) = std(max(subFrame, [], 2)); % mean of std along first dimension (columns)
-
-        if isnan(stdVelocity(sectionIdx, tt))
-            stdVelocity(sectionIdx, tt) = 0;
+        % Uncertainty in volumetric flow rate
+        if v ~= 0 && A ~= 0
+            Q_std = Q * sqrt((v_std / v)^2 + (A_std / A)^2 + (A_std * v_std / (A * v))^2 );
+        else
+            Q_std = 0; % Handle division by zero
         end
 
-        avgVolumeRate(sectionIdx, tt) = topVelocity(sectionIdx, tt)/2 * crossSectionArea(sectionIdx) * 60; % microL/min
-        stdVolumeRate(sectionIdx, tt) = stdVelocity(sectionIdx, tt) * crossSectionArea(sectionIdx) * 60; % microL/min
+        % Handle NaN values
+        if isnan(v)
+            v = 0;
+        end
 
-        %     figure(101)
-        %     plot(plot_values);
-        %     findpeaks(plot_values,size(plot_values, 2),'MinPeakProminence',param_peak);
-        %     % text(locs,pks,num2str((1:numel(pks))'))
-        %     text(locs,pks,string(round(avg_blood_rate,3)))
-        %     title("Peaks of luminosity")
-        %     pbaspect([1.618 1 1]);
+        if isnan(Q)
+            Q = 0;
+        end
 
-        %print(['-f' num2str(70+sectionIdx)],'-dpng',fullfile(ToolBox.path_png,strcat(ToolBox.main_foldername,['_Artery_Section_' num2str(sectionIdx) '.png']))) ;
-        %print(['-f' num2str(1000+sectionIdx)],'-dpng',fullfile(ToolBox.path_png,strcat(ToolBox.main_foldername,['_Proj_Artery_Section_' num2str(sectionIdx) '.png']))) ;
+        if isnan(v_std)
+            v_std = 0;
+        end
+
+        if isnan(Q_std)
+            Q_std = 0;
+        end
+
+        % Store results
+        results.v(n, t) = v;
+        results.v_std(n, t) = v_std;
+        results.Q(n, t) = Q;
+        results.Q_std(n, t) = Q_std;
+        results.v_profiles{n, t} = v_profile;
+        results.v_profiles_std{n, t} = std(subFrame, [], 1);
 
     end
 
-    velocityProfiles{sectionIdx} = profils;
-    stdVelocityProfiles{sectionIdx} = stdProfils;
+end
 
-    avgVolumeRate(sectionIdx, :) = filloutliers(avgVolumeRate(sectionIdx, :), 'linear');
-    stdVolumeRate(sectionIdx, tt) = sqrt(stdVelocity(sectionIdx, tt) ^ 2 * stdCrossSectionArea(sectionIdx) ^ 2 + stdVelocity(sectionIdx, tt) ^ 2 * crossSectionArea(sectionIdx) ^ 2 + stdCrossSectionArea(sectionIdx) ^ 2 * avgVelocity(sectionIdx, tt) ^ 2) * 60; % microL/min
+results.crossSectionMask = crossSectionMask;
+results.rejected_masks = rejected_masks;
 
-end % sectionIdx
-
-close all
+close all;
 end

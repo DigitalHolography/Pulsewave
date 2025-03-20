@@ -1,25 +1,51 @@
-function poiseuilleProfileFigure(subImg, profile, centt, central_range, p1, p2, p3, r1, r2, rsquare, insert, name_section, TB)
-% Generate a figure showing the velocity profile and Poiseuille fit.
-%
-% Inputs:
-%   subImg          - 2D array, the sub-image of the blood vessel.
-%   profile         - 1D array, the velocity profile across the vessel.
-%   centt           - Scalar, the center of the profile.
-%   central_range   - Indices of the central range used for fitting.
-%   p1, p2, p3      - Coefficients of the quadratic fit.
-%   r1, r2          - Roots of the quadratic fit (vessel boundaries).
-%   rsquare         - Coefficient of determination.
-%   insert          - String, additional identifier for the filename.
-%   name_section    - String, name of the section.
-%   ToolBox         - Struct, contains parameters and paths.
-%   sectionIdx      - Scalar, index of the current section.
+function [D, D_std, A, A_std, c1, c2, rsquare] = computeVesselCrossSection(subImg, figName, TB)
 
-% Get parameters
+% Parameters
 params = TB.getParams;
-k = params.k;
+px_size = params.cropSection_pixelSize / (2 ^ params.k);
+
+% Compute velocity profile
+profile = mean(subImg, 1);
+L = length(profile);
+
+if mean(profile) > 0
+    central_range = find(profile > 0.1 * max(profile));
+else
+    central_range = find(profile < 0.1 * min(profile));
+end
+
+centt = mean(central_range);
+
+r_range = (central_range - centt) * px_size;
+[p1, p2, p3, rsquare, p1_err, p2_err, p3_err] = customPoly2Fit(r_range', profile(central_range)');
+[r1, r2, r1_err, r2_err] = customPoly2Roots(p1, p2, p3, p1_err, p2_err, p3_err);
+
+if isnan(r1)
+    c1 = 2;
+    c2 = L - 1;
+else
+    c1 = round(centt + (r1 / px_size));
+    c2 = round(centt + (r2 / px_size));
+    c3 = max(c1, c2);
+    c1 = max(min(c1, c2), 2);
+    c2 = min(c3, L - 1);
+end
+
+% Determine cross-section width
+if rsquare < 0.6 || isnan(r1) || isnan(r2)
+    D = mean(sum(subImg ~= 0, 2));
+    D_std = std(sum(subImg ~= 0, 2));
+else
+    D = abs(r1 - r2) / px_size;
+    D_std = sqrt(r1_err ^ 2 + r2_err ^ 2) / px_size;
+end
+
+% Compute cross-sectional area
+A = pi * (px_size / 2) ^ 2 * D ^ 2;
+A_std = pi * (px_size / 2) ^ 2 * sqrt(D_std ^ 4 + 2 * D_std ^ 2 * D ^ 2);
 
 % Calculate x-axis values (position in µm)
-r_ = ((1:length(profile)) - centt) * (params.cropSection_pixelSize / 2 ^ k) * 1000;
+r_ = ((1:L) - centt) * px_size * 1000;
 
 % Calculate standard deviation and confidence interval
 stdprofile = std(subImg, [], 1);
@@ -73,9 +99,8 @@ title('velocity profile and laminar flow model fit');
 % Save figure
 
 exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'projection', ...
-    sprintf('%s_%s_proj_poiseuille_%s.png', TB.main_foldername, insert, name_section)))
+    sprintf('%s_proj_poiseuille_%s.png', TB.main_foldername, figName)))
 
 % Close figure
 close(f);
-
 end

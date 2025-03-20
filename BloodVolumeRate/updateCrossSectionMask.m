@@ -1,4 +1,7 @@
-function crossSectionMask = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, slice_half_thickness, params)
+function [crossSectionMask, maskCurrentSlice] = updateCrossSectionMask(crossSectionMask, mask, subImg, locs, sectionIdx, tilt_angle, params)
+
+slice_half_thickness = params.flowRate_sliceHalfThickness;
+
 % Update the cross-section mask for a vessel section.
 maskSlice_subImg = false(size(subImg, 1), size(subImg, 2));
 slice_center = round(size(subImg, 1) / 2);
