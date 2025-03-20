@@ -355,5 +355,9 @@ xy_barycenter = [x_CRA, y_CRA];
 maskSection = createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'vesselMapArtery', maskArtery, thin = 0.01);
 createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'vesselMap', maskArtery, maskVein, thin = 0.01);
 
+% 4) 6) Arteries tree
+
+getLongestArteryBranch(maskArtery, xy_barycenter);
+
 close all
 end
