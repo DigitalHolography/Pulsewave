@@ -1,4 +1,6 @@
-function [vr_avg_r, vr_std_r, area_r, mask_r, v_profiles_avg_r, v_profiles_std_r, sub_images_r, width_avg_r, width_std_r, vtop_avg_r, vtop_std_r] = crossSectionAnalysisAllRad(numSections, locs, mask, v_RMS, vesselName)
+function [Q_cell, dQ_cell, v_cell, dv_cell, v_profiles_cell, dv_profiles_cell, ...
+    A_cell, D_cell, dD_cell, mask_mat, subImg_cell] = ...
+    crossSectionAnalysisAllRad(numSections, locs, mask, v_RMS, vesselName)
 
 % Parameters
 TB = getGlobalToolBox;
@@ -7,18 +9,18 @@ numCircles = size(numSections, 2);
 
 % Arteries Cross-sections analysis
 % Initialisation of the cells for arteries
-vr_avg_r = cell(1, numCircles); % Average volume rate
-vr_std_r = cell(1, numCircles); % Standard deviation of volume rate
-vtop_avg_r = cell(1, numCircles); % Top velocity
-vtop_std_r = cell(1, numCircles); % Standard deviation of velocity
-area_r = cell(1, numCircles); % Cross-sectional area
-mask_r = zeros(numX, numY, numCircles); % Cross-section mask
-rejected_mask_all_rad = zeros(numX, numY, 3); % Cross-section mask
-v_profiles_avg_r = cell(1, numCircles); % Velocity profiles
-v_profiles_std_r = cell(1, numCircles); % Standard deviation of velocity profiles
-sub_images_r = cell(1, numCircles); % Sub-images of vessels
-width_avg_r = cell(1, numCircles); % Cross-section width
-width_std_r = cell(1, numCircles); % Standard deviation of cross-section width
+Q_cell = cell(1, numCircles); % Average volume rate
+dQ_cell = cell(1, numCircles); % Standard deviation of volume rate
+v_cell = cell(1, numCircles); % Top velocity
+dv_cell = cell(1, numCircles); % Standard deviation of velocity
+v_profiles_cell = cell(1, numCircles); % Top velocity
+dv_profiles_cell = cell(1, numCircles); % Standard deviation of velocity
+A_cell = cell(1, numCircles); % Cross-sectional area
+D_cell = cell(1, numCircles); % Cross-section width
+dD_cell = cell(1, numCircles); % Standard deviation of cross-section width
+mask_mat = zeros(numX, numY, numCircles); % Cross-section mask
+rejected_mask = zeros(numX, numY, 3); % Cross-section mask
+subImg_cell = cell(1, numCircles); % Sub-images of vessels
 
 % Cross-Section Analysis of the arteries
 parfor c_idx = 1:numCircles
@@ -27,28 +29,22 @@ parfor c_idx = 1:numCircles
     [results] = crossSectionAnalysis2(TB, locs{c_idx}, mask, v_RMS, circleName);
 
     % Map outputs to variables
-    vr_avg_r{c_idx} = results.Q;
-    vr_std_r{c_idx} = results.Q_std;
-    vtop_avg_r{c_idx} = results.v;
-    vtop_std_r{c_idx} = results.v_std;
-    area_r{c_idx} = results.A;
-    mask_r(:, :, c_idx) = results.crossSectionMask;
-    rejected_mask_all_rad = results.rejected_masks + rejected_mask_all_rad;
-    v_profiles_avg_r{c_idx} = results.v_profiles;
-    v_profiles_std_r{c_idx} = results.v_profiles_std;
-    sub_images_r{c_idx} = results.subImg_cell;
-    width_avg_r{c_idx} = results.D;
-    width_std_r{c_idx} = results.D_std;
+    v_cell{c_idx} = results.v;
+    dv_cell{c_idx} = results.dv;
+    v_profiles_cell{c_idx} = results.v_profiles;
+    dv_profiles_cell{c_idx} = results.dv_profiles;
+    Q_cell{c_idx} = results.Q;
+    dQ_cell{c_idx} = results.dQ;
+
+    A_cell{c_idx} = results.A;
+    D_cell{c_idx} = results.D;
+    dD_cell{c_idx} = results.dD;
+
+    mask_mat(:, :, c_idx) = results.crossSectionMask;
+    rejected_mask = results.rejected_masks + rejected_mask;
+    subImg_cell{c_idx} = results.subImg_cell;
 end
 
-% Rescale sub-images
-for c_idx = 1:numCircles
-    sub_images = sub_images_r{c_idx};
-    for sectionIdx = 1:size(sub_images, 2)
-        sub_images_r{c_idx}{sectionIdx} = rescale(sub_images{sectionIdx});
-    end
-end
-
-imwrite(rejected_mask_all_rad, fullfile(TB.path_png, 'volumeRate', sprintf("%s_rejected_masks_%s.png", TB.main_foldername, vesselName)))
+imwrite(rejected_mask, fullfile(TB.path_png, 'volumeRate', sprintf("%s_rejected_masks_%s.png", TB.main_foldername, vesselName)))
 
 end

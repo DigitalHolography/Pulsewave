@@ -46,8 +46,8 @@ interp_std_BvrT2 = repmat(interp_std_BvrT, 1, 3);
 pulseTime2 = dt * (-numInterp + 1:numInterp * 2) * avgLength / numInterp;
 
 hold on
-curve1 = circshift(interp_BvrT2, cshiftn) + 0.5 * circshift(interp_std_BvrT2, cshiftn);
-curve2 = circshift(interp_BvrT2, cshiftn) - 0.5 * circshift(interp_std_BvrT2, cshiftn);
+curve1 = circshift(interp_BvrT2, cshiftn) + circshift(interp_std_BvrT2, cshiftn);
+curve2 = circshift(interp_BvrT2, cshiftn) - circshift(interp_std_BvrT2, cshiftn);
 ft2 = [pulseTime2, fliplr(pulseTime2)];
 inBetween = [curve1, fliplr(curve2)]';
 cSTD = [0.7 0.7 0.7];

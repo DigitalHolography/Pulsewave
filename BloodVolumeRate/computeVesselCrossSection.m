@@ -1,4 +1,4 @@
-function [D, D_std, A, A_std, c1, c2, rsquare] = computeVesselCrossSection(subImg, figName, TB)
+function [D, dD, A, dA, c1, c2, rsquare] = computeVesselCrossSection(subImg, figName, TB)
 
 % Parameters
 params = TB.getParams;
@@ -34,23 +34,23 @@ end
 % Determine cross-section width
 if rsquare < 0.6 || isnan(r1) || isnan(r2)
     D = mean(sum(subImg ~= 0, 2));
-    D_std = std(sum(subImg ~= 0, 2));
+    dD = std(sum(subImg ~= 0, 2));
 else
     D = abs(r1 - r2) / px_size;
-    D_std = sqrt(r1_err ^ 2 + r2_err ^ 2) / px_size;
+    dD = sqrt(r1_err ^ 2 + r2_err ^ 2) / px_size;
 end
 
 % Compute cross-sectional area
 A = pi * (px_size / 2) ^ 2 * D ^ 2;
-A_std = pi * (px_size / 2) ^ 2 * sqrt(D_std ^ 4 + 2 * D_std ^ 2 * D ^ 2);
+dA = pi * (px_size / 2) ^ 2 * sqrt(dD ^ 4 + 2 * dD ^ 2 * D ^ 2);
 
 % Calculate x-axis values (position in µm)
 r_ = ((1:L) - centt) * px_size * 1000;
 
 % Calculate standard deviation and confidence interval
-stdprofile = std(subImg, [], 1);
-curve1 = profile + 0.5 * stdprofile;
-curve2 = profile - 0.5 * stdprofile;
+dprofile = std(subImg, [], 1);
+curve1 = profile + dprofile;
+curve2 = profile - dprofile;
 
 % Create figure
 f = figure('Visible', 'off');

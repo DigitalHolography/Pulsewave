@@ -78,8 +78,8 @@ for ii = 1:nb_section
     average_velocity_profile_diastole = average_velocity_profile(:, end);
 
     %
-    % curve1 = total_avg_blood_volume_rate_vein+0.5*total_std_blood_volume_rate_vein;
-    % curve2 = total_avg_blood_volume_rate_vein-0.5*total_std_blood_volume_rate_vein;
+    % curve1 = total_avg_blood_volume_rate_vein+total_std_blood_volume_rate_vein;
+    % curve2 = total_avg_blood_volume_rate_vein-total_std_blood_volume_rate_vein;
     % fullTime2 = [fullTime, fliplr(fullTime)];
     % inBetween = [curve1', fliplr(curve2')];
     % fill(fullTime2, inBetween, Color_std);
@@ -99,8 +99,8 @@ for ii = 1:nb_section
 
         for frameIdx = 1:numFrames
             tmp_velocity_profile = squeeze(average_velocity_profile(:, frameIdx));
-            tmp_velocity_profile_plus_std = tmp_velocity_profile + 0.5 * average_velocity_profile_std(:, frameIdx);
-            tmp_velocity_profile_minus_std = tmp_velocity_profile - 0.5 * average_velocity_profile_std(:, frameIdx);
+            tmp_velocity_profile_plus_std = tmp_velocity_profile + average_velocity_profile_std(:, frameIdx);
+            tmp_velocity_profile_minus_std = tmp_velocity_profile - average_velocity_profile_std(:, frameIdx);
             inBetween = [tmp_velocity_profile_plus_std', fliplr(tmp_velocity_profile_minus_std')];
             fullTime2 = [fullTime, fliplr(fullTime)];
 
@@ -162,10 +162,10 @@ for ii = 1:nb_section
     % video = subVideo;
 
     % Systole/Diastole velocity profile
-    average_velocity_profile_systole_plus_std = average_velocity_profile_systole + 0.5 * average_velocity_profile_std(:, idx_syst);
-    average_velocity_profile_systole_minus_std = average_velocity_profile_systole - 0.5 * average_velocity_profile_std(:, idx_syst);
-    average_velocity_profile_diastole_plus_std = average_velocity_profile_diastole + 0.5 * average_velocity_profile_std(:, end);
-    average_velocity_profile_diastole_minus_std = average_velocity_profile_diastole - 0.5 * average_velocity_profile_std(:, end);
+    average_velocity_profile_systole_plus_std = average_velocity_profile_systole + average_velocity_profile_std(:, idx_syst);
+    average_velocity_profile_systole_minus_std = average_velocity_profile_systole - average_velocity_profile_std(:, idx_syst);
+    average_velocity_profile_diastole_plus_std = average_velocity_profile_diastole + average_velocity_profile_std(:, end);
+    average_velocity_profile_diastole_minus_std = average_velocity_profile_diastole - average_velocity_profile_std(:, end);
     inBetween_syst = [average_velocity_profile_systole_plus_std', fliplr(average_velocity_profile_systole_minus_std')];
     inBetween_diast = [average_velocity_profile_diastole_plus_std', fliplr(average_velocity_profile_diastole_minus_std')];
     fullTime2 = [fullTime, fliplr(fullTime)];
