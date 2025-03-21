@@ -239,7 +239,7 @@ methods (Access = public)
             app.file.OverWrite = app.OverWriteCheckBox.Value;
 
             try
-                app.file.ToolBox = ToolBoxClass(app.file.directory, app.file.param_name, app.file.OverWrite);
+                app.file.ToolBoxMaster = ToolBoxClass(app.file.directory, app.file.param_name, app.file.OverWrite);
 
                 if ~app.file.is_preprocessed
                     app.file = app.file.preprocessData();

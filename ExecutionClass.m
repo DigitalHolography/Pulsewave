@@ -253,7 +253,7 @@ methods
             fprintf("\n----------------------------------\nBlood Volume Rate Figures\n----------------------------------\n");
             bloodVolumeRateTimer = tic;
 
-            bloodVolumeRateFigures(obj.Q_results_A, obj.maskArtery, 'Artery', obj.M0_ff_video, obj.xy_barycenter, obj.sysIdxList);
+            bloodVolumeRateFigures(obj.Q_results_A, obj.maskArtery, 'Artery', obj.M0_ff_video, obj.xy_barycenter, obj.sysIdxList, obj.sysIdx, obj.diasIdx);
 
             if veins_analysis
                 bloodVolumeRateFigures(obj.Q_results_V, obj.maskVein, 'Vein', obj.M0_ff_video, obj.xy_barycenter, obj.sysIdxList, obj.sysIdx, obj.diasIdx);

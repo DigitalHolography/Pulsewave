@@ -1,5 +1,7 @@
 function diasysVelocityProfile(v_cell, dv_cell, sysIdx, diasIdx, numSections, name, numInterp)
 
+return
+
 ToolBox = getGlobalToolBox;
 numCircles = size(v_cell, 2);
 
