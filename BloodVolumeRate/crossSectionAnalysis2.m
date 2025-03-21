@@ -3,7 +3,7 @@ function [results] = crossSectionAnalysis2(ToolBox, locs, mask, v_RMS, circleNam
 % Perform cross-section analysis on blood vessels.
 %
 % Inputs:
-%   TB          - Struct, contains parameters and paths.
+%   ToolBox     - Struct, contains parameters and paths.
 %   locs        - Nx2 array, locations of vessel centers.
 %   mask        - 2D array, mask for the region of interest.
 %   v_RMS       - 3D array, velocity data over time.
@@ -44,7 +44,7 @@ results.mask_sections = zeros(numX, numY, numSections);
 v_RMS_mean_masked = squeeze(mean(v_RMS, 3)) .* mask;
 
 % Define sub-image dimensions
-subImgHW = round(0.01 * size(v_RMS_mean_masked, 1) * params.cropSection_scaleFactorWidth);
+subImgHW = round(0.01 * size(v_RMS_mean_masked, 1) * params.json.BloodVolumeRateAnalysis.ScaleFactorWidth);
 
 % Initialize rejected masks
 rejected_masks = zeros(numX, numY, 3);
@@ -52,8 +52,8 @@ crossSectionMask = zeros(numX, numY);
 
 for n = 1:numSections
     % Define sub-image dimensions
-    xRange = max(round(-subImgHW / 2) + locs(n, 2), 1):min(round(subImgHW / 2) + locs(n, 2), numX);
-    yRange = max(round(-subImgHW / 2) + locs(n, 1), 1):min(round(subImgHW / 2) + locs(n, 1), numY);
+    xRange = max(round(-subImgHW / 2) + locs(n, 1), 1):min(round(subImgHW / 2) + locs(n, 1), numX);
+    yRange = max(round(-subImgHW / 2) + locs(n, 2), 1):min(round(subImgHW / 2) + locs(n, 2), numY);
     subImg = v_RMS_mean_masked(yRange, xRange);
 
     % Crop and rotate sub-image
@@ -74,7 +74,7 @@ for n = 1:numSections
     results.dA(n) = dA;
 
     % Generate figures
-    saveCrossSectionFigure(subImg, D, ToolBox, circleName, figName);
+    saveCrossSectionFigure(subImg, D, ToolBox, figName);
 
     % Update rejected masks
     if rsquare < 0.6 || isnan(D) || D > mean(sum(subImg ~= 0, 2))

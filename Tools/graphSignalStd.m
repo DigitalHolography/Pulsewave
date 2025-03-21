@@ -15,7 +15,7 @@ arguments
     NameValueArgs.fullTime
 end
 
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 mean_signal = mean(U);
 
 if NameValueArgs.cropIndx > 0
@@ -25,11 +25,13 @@ end
 
 Color_std = [0.7, 0.7, 0.7];
 figure(figId);
-if ~isempty(TB)
-    fullTime = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
+
+if ~isempty(ToolBox)
+    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 else % in a parfor no ToolBox
     fullTime = NameValueArgs.fullTime;
 end
+
 axss = [fullTime(1), fullTime(end), NameValueArgs.ylimm];
 
 if length(U) ~= numFrames % for a variable length of the signal

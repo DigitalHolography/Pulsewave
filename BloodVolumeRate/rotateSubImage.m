@@ -19,7 +19,7 @@ projx = zeros(size(subImg, 1), length(angles)); % Horizontal projections
 for theta = 1:length(angles)
     % Rotate the image by the current angle
     tmpImg = imrotate(subImg, angles(theta), 'bilinear', 'crop');
-    
+
     % Compute the projection
     projx(:, theta) = squeeze(sum(tmpImg, 1));
 end

@@ -1,15 +1,15 @@
 function [] = spectrum_analysis(SH_cube, data_M0)
 
-TB = getGlobalToolBox;
-fs = TB.fs / 2;
-f1 = TB.f1;
-f2 = (TB.f1 + TB.f2) / 2;
-f3 = TB.f2;
+ToolBox = getGlobalToolBox;
+fs = ToolBox.fs / 2;
+f1 = ToolBox.f1;
+f2 = (ToolBox.f1 + ToolBox.f2) / 2;
+f3 = ToolBox.f2;
 cubeFrameLength = size(SH_cube, 4);
 batch_size = size(SH_cube, 3);
 % gw = 3;
 SH_ColorVideoRGB = zeros(size(SH_cube, 1), size(SH_cube, 2), 3, size(SH_cube, 4));
-ImRef = imresize(mean(data_M0, 3),[size(SH_cube, 1), size(SH_cube, 2)]);
+ImRef = imresize(mean(data_M0, 3), [size(SH_cube, 1), size(SH_cube, 2)]);
 
 %%
 
@@ -99,11 +99,10 @@ end
 
 %% save video
 
-writeVideoOnDisc(SH_ColorVideoRGB, fullfile(TB.path_avi, strcat(TB.main_foldername, '_SH_ColorVideo')));
+writeVideoOnDisc(SH_ColorVideoRGB, fullfile(ToolBox.path_avi, strcat(ToolBox.main_foldername, '_SH_ColorVideo')));
 writeGifOnDisc(SH_ColorVideoRGB, (strcat('ColorVideo.gif')), 0.1);
 
-imwrite(ImHSVscaled, fullfile(TB.path_png, [TB.main_foldername, '_ColorDoppler.png']), 'png');
-
+imwrite(ImHSVscaled, fullfile(ToolBox.path_png, [ToolBox.main_foldername, '_ColorDoppler.png']), 'png');
 
 close([15, 16 17])
 end

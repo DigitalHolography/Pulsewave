@@ -1,9 +1,9 @@
 function [Q_cell, dQ_cell, v_cell, dv_cell, v_profiles_cell, dv_profiles_cell, ...
-    A_cell, D_cell, dD_cell, mask_mat, subImg_cell] = ...
+              A_cell, D_cell, dD_cell, mask_mat, subImg_cell] = ...
     crossSectionAnalysisAllRad(numSections, locs, mask, v_RMS, vesselName)
 
 % Parameters
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 [numX, numY, ~] = size(v_RMS);
 numCircles = size(numSections, 2);
 
@@ -26,7 +26,7 @@ subImg_cell = cell(1, numCircles); % Sub-images of vessels
 parfor c_idx = 1:numCircles
     % Call crossSectionAnalysis2
     circleName = sprintf('C%d_%s', c_idx, vesselName);
-    [results] = crossSectionAnalysis2(TB, locs{c_idx}, mask, v_RMS, circleName);
+    [results] = crossSectionAnalysis2(ToolBox, locs{c_idx}, mask, v_RMS, circleName);
 
     % Map outputs to variables
     v_cell{c_idx} = results.v;
@@ -45,6 +45,6 @@ parfor c_idx = 1:numCircles
     subImg_cell{c_idx} = results.subImg_cell;
 end
 
-imwrite(rejected_mask, fullfile(TB.path_png, 'volumeRate', sprintf("%s_rejected_masks_%s.png", TB.main_foldername, vesselName)))
+imwrite(rejected_mask, fullfile(ToolBox.path_png, 'volumeRate', sprintf("%s_rejected_masks_%s.png", ToolBox.main_foldername, vesselName)))
 
 end

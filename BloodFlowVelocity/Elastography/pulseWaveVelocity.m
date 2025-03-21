@@ -5,16 +5,16 @@ function PWV = pulseWaveVelocity(U, mask)
 
 % U(x,y,t) usually M0
 % center the [x,y] barycenter (the center of the CRA)
-TB = getGlobalToolBox;
-params = TB.getParams;
+ToolBox = getGlobalToolBox;
+params = ToolBox.getParams;
 
 implay(rescale(U) .* mask);
 
 [numX, numY] = size(mask);
 N_frame = size(U, 3);
 
-x_bary = TB.x_barycenter;
-y_bary = TB.y_barycenter;
+x_bary = ToolBox.x_barycenter;
+y_bary = ToolBox.y_barycenter;
 
 % radii approach
 % m = floor((numX+numY)/2/10);
@@ -66,7 +66,7 @@ for kb = 2:numpoints
 end
 
 for kb = 2:numpoints
-    abs_dist(kb) = abs_dist(kb - 1) + sqrt((absx(kb) - absx(kb - 1)) ^ 2 + (absy(kb) - absy(kb - 1)) ^ 2) * params.cropSection_pixelSize / 2 ^ params.k;
+    abs_dist(kb) = abs_dist(kb - 1) + sqrt((absx(kb) - absx(kb - 1)) ^ 2 + (absy(kb) - absy(kb - 1)) ^ 2) * params.px_size;
 end
 
 figure(73)

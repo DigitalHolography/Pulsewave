@@ -1,6 +1,6 @@
 function [Q_t, dQ_t] = plotRadius(Q_mat, dQ_mat, fullTime, rad, idx_start, idx_end, name)
 % Get global toolbox and parameters
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 numCircles = size(Q_mat, 1); % Number of circles (radii)
 
 % Define color for shaded regions
@@ -13,7 +13,7 @@ dQ_rt = squeeze(sqrt(sum(dQ_mat .^ 2, 2, "omitnan"))); % Quadratic sum of uncert
 % Compute time-averaged mean and standard deviation
 Q_r = squeeze(mean(Q_rt(:, idx_start:idx_end), 2))'; % Mean over time
 N = size(dQ_rt, 2);
-dQ_r = squeeze(sqrt(sum(dQ_rt(:, idx_start:idx_end).^2, 2)))' / N; % RMS of uncertainties
+dQ_r = squeeze(sqrt(sum(dQ_rt(:, idx_start:idx_end) .^ 2, 2)))' / N; % RMS of uncertainties
 
 % Create shaded region for uncertainty
 curve1 = Q_r + dQ_r; % Upper bound
@@ -44,14 +44,16 @@ title("Time-Averaged Blood Volume Rate");
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1], 'LineWidth', 2);
 
 % Export plot
-exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_mean_%s_radius.png", TB.main_foldername, name)));
+exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', sprintf("%s_mean_%s_radius.png", ToolBox.main_foldername, name)));
 
 % Plot radial variations of blood volume rate over time
 figure("Visible", "off");
 hold on;
+
 for circleIdx = 1:numCircles
     plot(fullTime, squeeze(mean(Q_mat(circleIdx, :, :), 2, "omitnan")), 'LineWidth', 2);
 end
+
 axis padded;
 axP = axis;
 axis tight;
@@ -64,18 +66,18 @@ title("Radial Variations of Blood Volume Rate");
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1], 'LineWidth', 2);
 
 % Export plot
-exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_variance_%s_time.png", TB.main_foldername, name)));
+exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', sprintf("%s_variance_%s_time.png", ToolBox.main_foldername, name)));
 
 % Compute total blood volume rate over time
-Q_t  = squeeze(mean(Q_rt, 1)); % Mean over time
+Q_t = squeeze(mean(Q_rt, 1)); % Mean over time
 N = size(dQ_rt, 1);
-dQ_t = squeeze(sqrt(sum(dQ_rt.^2, 1))) / N; % RMS of uncertainties
+dQ_t = squeeze(sqrt(sum(dQ_rt .^ 2, 1))) / N; % RMS of uncertainties
 
 % Compute statistics for the time range
 mean_Q = mean(Q_t(idx_start:idx_end)); % Time-averaged mean
 max_Q = max(Q_t(idx_start:idx_end)); % Maximum value in the range
 N = size(dQ_t(idx_start:idx_end), 1);
-mean_dQ = sqrt(sum(dQ_t(idx_start:idx_end).^2)) / N; % RMS of the uncertainty
+mean_dQ = sqrt(sum(dQ_t(idx_start:idx_end) .^ 2)) / N; % RMS of the uncertainty
 
 % Plot total blood volume rate over time
 figure("Visible", "off");
@@ -110,10 +112,10 @@ title(sprintf("Total Blood Volume Rate (Avg. %0.2f µL/min)", mean_Q));
 set(gca, 'PlotBoxAspectRatio', [1.618 1 1], 'LineWidth', 2);
 
 % Export plot
-exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', sprintf("%s_allrad_%s_time.png", TB.main_foldername, name)));
+exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', sprintf("%s_allrad_%s_time.png", ToolBox.main_foldername, name)));
 
 % Write results to a text file
-fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
+fileID = fopen(fullfile(ToolBox.path_txt, strcat(ToolBox.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
 fprintf(fileID, 'Flow Rate %s : %f (µL/min) \r\n', name, mean_Q);
 fprintf(fileID, 'Flow Rate Standard Deviation %s : %f (µL/min) \r\n', name, mean_dQ);
 fclose(fileID);

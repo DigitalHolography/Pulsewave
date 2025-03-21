@@ -13,9 +13,9 @@
       "FrameHeight": -1,
       "VideoLength": -1
     },
-    "ValueOfTheInterpolationParameter": 1,
     "Preprocess": {
-      "RemoveOutliersOption": true,
+      "Interpolation Factor": 1,
+      "RemoveOutliers Option": true,
       "WindowSize": 10 
     },
     "VeinsAnalysis": 1,
@@ -41,14 +41,14 @@
       "Improve Mask": 1,
       "DiaSys Analysis": 1,
       "Arterial Threshold": -2,
-      "Arterial Classes": [-1, 0, 1],
+      "Arterial Classes": [-1, 1],
       "Venous Threshold": -2,
       "Venous Classes": [1, 0, -1],
       "Min Pixel Size": 150,
       "CRA CRV Threshold": 3,
       "Imclose Radius": 1,
       "Minimum Vessel Width": 3,
-      "Final Dilation": 3,
+      "Final Dilation": 0,
       "Force VesselWidth": 0
     },
     "SystoleDetection": {
@@ -67,21 +67,20 @@
       "SmallRadiusRatio": 0.15,
       "BigRadiusRatio": 0.35
     },
-    "BloodVolumeRate": {
+    "BloodVolumeRateAnalysis": {
       "NumberOfCircles": 10,
-      "RadiusRatio": 0.18,
-      "RadiusGap": 0.01,
       "ScaleFactorWidth": 3,
-      "ScaleFactorSize": 0.004,
       "MaskSliceThreshold": 0.01,
       "PixelSize": 0.0191,
-      "SliceHalfThickness": 10,
+      "SliceHalfThickness": 10
+    },
+    "BloodVolumeRateFigures": {
       "sectionImage" : false,
       "widthImage" : false,
       "crossSectionImages" : true,
-      "widthHistogram" : false,
-      "BloodFlowProfiles" : false,
-      "ARIBVR" : false,
+      "widthHistogram" : true,
+      "BloodFlowProfiles" : true,
+      "ARIBVR" : true,
       "strokeAndTotalVolume" : true
     },
     "PulseAnalysis": {
@@ -124,7 +123,6 @@
     },
     "Other": {
       "NumberOfSides": 120,
-      "AllCircles": 0,
       "MinimumGifPeriod": 0.04,
       "NumberOfWorkers": 0
     }

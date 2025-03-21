@@ -27,8 +27,10 @@ end
 
 % Open VideoWriter and write frames
 open(w);
+
 for jj = 1:size(data, 4)
     writeVideo(w, squeeze(data(:, :, :, jj)));
 end
+
 close(w);
 end

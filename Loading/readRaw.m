@@ -11,9 +11,11 @@ fprintf('- reading : %s\n', RefAviFilePath);
 
 V = VideoReader(fullfile(dir_path_avi, [NameRefAviFile, ext]));
 M0_disp_video = zeros(V.Height, V.Width, V.NumFrames);
+
 for n = 1:V.NumFrames
     M0_disp_video(:, :, n) = rgb2gray(read(V, n));
 end
+
 obj.M0_ff_video = M0_disp_video;
 
 clear V M0_disp_video
@@ -58,7 +60,7 @@ try
 
 catch ME
     disp(['ID: ' ME.identifier])
-    % 
+    %
     rethrow(ME)
 
 end

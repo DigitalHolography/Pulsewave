@@ -1,7 +1,7 @@
 function obj = VideoRegistering(obj)
 tic
 % Registers the video using intensity based registration
-params = Parameters_json(obj.directory,obj.param_name);
+params = Parameters_json(obj.directory, obj.param_name);
 
 if ~params.registerVideoFlag
     return % do nothing if not required
@@ -22,10 +22,10 @@ video_reg = video_reg ./ (max(abs(video_reg), [], [1, 2])); % rescaling each fra
 image_ref = mean(video_reg(:, :, params.refAvgStart:params.refAvgEnd), 3); % ref image is from 10 to 20 for example
 [~, shifts, scores] = register_video_from_reference(video_reg, image_ref);
 
-figure(16),plot(scores/mean(scores),'k'),ylim([0 max(0.1,1.2*max(scores)/mean(scores))]),title('Registration Correlation Score (1 is good) (u.a.)');
-saveas(16,fullfile(obj.directory,'eyeflow', sprintf("%s_%s", obj.filenames, 'RegistrationCorrelationScore.png')));
-figure(17),plot(shifts(1,:)),hold on,plot(shifts(2,:))
-imwrite(17,fullfile(obj.directory,'eyeflow', sprintf("%s_%s", obj.filenames, 'RegistrationShiftsXY.png')));
+figure(16), plot(scores / mean(scores), 'k'), ylim([0 max(0.1, 1.2 * max(scores) / mean(scores))]), title('Registration Correlation Score (1 is good) (u.a.)');
+saveas(16, fullfile(obj.directory, 'eyeflow', sprintf("%s_%s", obj.filenames, 'RegistrationCorrelationScore.png')));
+figure(17), plot(shifts(1, :)), hold on, plot(shifts(2, :))
+imwrite(17, fullfile(obj.directory, 'eyeflow', sprintf("%s_%s", obj.filenames, 'RegistrationShiftsXY.png')));
 
 obj.M0_ff_video = register_video_from_shifts(video, shifts);
 

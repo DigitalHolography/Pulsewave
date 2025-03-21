@@ -1,8 +1,8 @@
-function [D, dD, A, dA, c1, c2, rsquare] = computeVesselCrossSection(subImg, figName, TB)
+function [D, dD, A, dA, c1, c2, rsquare] = computeVesselCrossSection(subImg, figName, ToolBox)
 
 % Parameters
-params = TB.getParams;
-px_size = params.cropSection_pixelSize / (2 ^ params.k);
+params = ToolBox.getParams;
+px_size = params.px_size;
 
 % Compute velocity profile
 profile = mean(subImg, 1);
@@ -98,8 +98,8 @@ title('velocity profile and laminar flow model fit');
 
 % Save figure
 
-exportgraphics(gca, fullfile(TB.path_png, 'volumeRate', 'projection', ...
-    sprintf('%s_proj_poiseuille_%s.png', TB.main_foldername, figName)))
+exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', 'projection', ...
+    sprintf('%s_proj_poiseuille_%s.png', ToolBox.main_foldername, figName)))
 
 % Close figure
 close(f);

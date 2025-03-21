@@ -1,18 +1,20 @@
-function [] = bloodVolumeRate(maskArtery, maskVein, v_RMS, M0_ff_video, xy_barycenter, systolesIndexes)
+function [Q_results] = bloodVolumeRate(mask, name, v_RMS, M0_ff_video, xy_barycenter)
 
-TB = getGlobalToolBox;
-if ~isfolder(fullfile(TB.path_png, 'volumeRate'))
-    mkdir(TB.path_png, 'volumeRate')
-    mkdir(TB.path_eps, 'volumeRate')
+ToolBox = getGlobalToolBox;
+
+if ~isfolder(fullfile(ToolBox.path_png, 'volumeRate'))
+    mkdir(ToolBox.path_png, 'volumeRate')
+    mkdir(ToolBox.path_eps, 'volumeRate')
 end
 
-params = TB.getParams;
-veins_analysis = params.json.VeinsAnalysis;
+params = ToolBox.getParams;
+
+initial = name(1);
 
 [numX, numY, numFrames] = size(v_RMS);
 x_barycenter = xy_barycenter(1);
 y_barycenter = xy_barycenter(2);
-t = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
+t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 M0_ff_video = rescale(M0_ff_video);
 M0_ff_img = rescale(mean(M0_ff_video, 3));
 
@@ -20,277 +22,88 @@ M0_ff_img = rescale(mean(M0_ff_video, 3));
 
 % for the all circles output
 tic
-numCircles = params.nbCircles;
+numCircles = params.json.BloodVolumeRateAnalysis.NumberOfCircles;
 r1 = params.json.SizeOfField.SmallRadiusRatio;
 r2 = params.json.SizeOfField.BigRadiusRatio;
 maskSectionCircles = zeros(numX, numY, numCircles);
 
 dr = (r2 - r1) / numCircles;
-if veins_analysis
-    createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'mask_all_sections', maskArtery, maskVein);
+
+if strcmp(name, 'Artery')
+    createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, sprintf('mask%s_all_sections', name), mask);
 else
-    createMaskSection(TB, M0_ff_img, r1, r2, xy_barycenter, 'mask_artery_all_sections', maskArtery);
+    createMaskSection(ToolBox, M0_ff_img, r1, r2, xy_barycenter, sprintf('mask%s_all_sections', name), [], mask);
 end
 
 parfor circleIdx = 1:numCircles
     r_in = r1 + (circleIdx - 1) * dr;
     r_out = r_in + dr;
-    maskSectionCircles(:, :, circleIdx) = diskMask(numX, numY, r_in, r_out, center = [x_barycenter/numX, y_barycenter/numY]);
+    maskSectionCircles(:, :, circleIdx) = diskMask(numX, numY, r_in, r_out, center = [x_barycenter / numX, y_barycenter / numY]);
 
     % save mask image
-    if veins_analysis
-        createMaskSection(TB, M0_ff_img, r_in, r_out, xy_barycenter, ...
-            sprintf('mask_vessel_section_circle_%d', circleIdx), maskArtery, maskVein);
+    if strcmp(name, 'Artery')
+        createMaskSection(ToolBox, M0_ff_img, r_in, r_out, xy_barycenter, sprintf('mask%s_section_circle_%d', name, circleIdx), mask);
     else
-        createMaskSection(TB, M0_ff_img, r_in, r_out, xy_barycenter, ...
-            sprintf('mask_artery_section_circle_%d', circleIdx), maskArtery);
+        createMaskSection(ToolBox, M0_ff_img, r_in, r_out, xy_barycenter, sprintf('mask%s_section_circle_%d', name, circleIdx), [], mask);
     end
-
 end
 
-fprintf("    1. Mask Sectionning for all circles output took %ds\n", round(toc))
+fprintf("    1. Mask Sectionning for all circles (%s) output took %ds\n", name, round(toc))
 
 %% 2. Properties of the sections for all circles output
 
 tic
 
-locs_A = cell(numCircles, 1);
-numSections_A = zeros(1, numCircles);
-
-if veins_analysis
-    locs_V = cell(numCircles, 1);
-    numSections_V = zeros(1, numCircles);
-end
+locs = cell(numCircles, 1);
+numSections = zeros(1, numCircles);
 
 parfor circleIdx = 1:numCircles
-
-    maskSection_A = maskSectionCircles(:, :, circleIdx) .* maskArtery;
-    [labels_A, numSection_A] = bwlabel(maskSection_A);
-    row_A = zeros(numSection_A, 1);
-    col_A = zeros(numSection_A, 1);
-
-    for sectionIdx = 1:numSection_A
-        [row, col] = find(labels_A == sectionIdx);
-        row_A(sectionIdx) = round(mean(row));
-        col_A(sectionIdx) = round(mean(col));
-    end
-
-    locs_A{circleIdx} = [row_A col_A];
-    numSections_A(circleIdx) = numSection_A;
-
-    if veins_analysis
-        maskSection_V = maskSectionCircles(:, :, circleIdx) .* maskVein;
-        [labels_V, numSection_V] = bwlabel(maskSection_V);
-        row_V = zeros(numSection_V, 1);
-        col_V = zeros(numSection_V, 1);
-
-        for sectionIdx = 1:numSection_V
-            [row, col] = find(labels_V == sectionIdx);
-            row_V(sectionIdx) = round(mean(row));
-            col_V(sectionIdx) = round(mean(col));
-        end
-
-        locs_V{circleIdx} = [row_V col_V];
-        numSections_V(circleIdx) = numSection_V;
-
-    end
-
+    maskSection = logical(maskSectionCircles(:, :, circleIdx) .* mask);
+    s = regionprops(maskSection, 'centroid');
+    locs{circleIdx} = round(cat(1, s.Centroid));
+    numSections(circleIdx) = size(locs{circleIdx}, 1);
 end
 
-fprintf("    2. Initialisation of the sections for all circles output took %ds\n", round(toc))
+fprintf("    2. Initialisation of the sections for all circles (%s) took %ds\n", name, round(toc))
 
 %% 3. Cross-sections analysis for all circles output
 
 tic
-if ~isfolder(fullfile(TB.path_png, 'volumeRate', 'crossSection'))
-    mkdir(fullfile(TB.path_png, 'volumeRate'), 'crossSection')
-    mkdir(fullfile(TB.path_png, 'volumeRate'), 'projection')
+
+if ~isfolder(fullfile(ToolBox.path_png, 'volumeRate', 'crossSection'))
+    mkdir(fullfile(ToolBox.path_png, 'volumeRate'), 'crossSection')
+    mkdir(fullfile(ToolBox.path_png, 'volumeRate'), 'projection')
 end
 
 % 3.0. Does the cross Section Analysis circle by circle
 % To inspect the code of crossSectionAnalysis remember to disable the
 % parallel loops
 
-[Q_cell_A, dQ_cell_A, v_cell_A, dv_cell_A, v_profiles_cell_A, dv_profiles_cell_A, ...
-    A_cell_A, D_cell_A, dD_cell_A, mask_mat_A, subImg_cell_A] = ...
-    crossSectionAnalysisAllRad(numSections_A, locs_A, maskArtery, v_RMS, 'A');
-
-if veins_analysis
-    [Q_cell_V, dQ_cell_V, v_cell_V, dv_cell_V, v_profiles_cell_V, dv_profiles_cell_V, ...
-        A_cell_V, D_cell_V, dD_cell_V, mask_mat_V, subImg_cell_V] = ...
-        crossSectionAnalysisAllRad(numSections_V, locs_V, maskVein, v_RMS, 'V');
-end
+[Q_cell, dQ_cell, v_cell, dv_cell, v_profiles_cell, dv_profiles_cell, A_cell, D_cell, dD_cell, mask_mat, subImg_cell] = crossSectionAnalysisAllRad(numSections, locs, mask, v_RMS, initial);
 
 % 3.1. Transform the cell objects generated by crossSectionAnalysisAllRad
 % to arrays for the following functions
-[area_mat_A, Q_mat_A, dQ_mat_A] = reshapeSections(numFrames, ...
-    numSections_A, A_cell_A, Q_cell_A, dQ_cell_A);
-if veins_analysis
-    [area_mat_V, Q_mat_V, dQ_mat_V] = reshapeSections(numFrames, ...
-        numSections_V, A_cell_V, Q_cell_V, dQ_cell_V);
-end
+[area_mat, Q_mat, dQ_mat] = reshapeSections(numFrames, numSections, A_cell, Q_cell, dQ_cell);
 
 % 3.2. Creates the csv files for post processing outside Eyeflow
 
-plot2csvForAllRadSection(t, Q_cell_A, dQ_cell_A, Q_mat_A, dQ_mat_A, 'A')
-if veins_analysis
-    plot2csvForAllRadSection(t, Q_cell_V, dQ_cell_V, Q_mat_V, dQ_mat_V, 'V')
-end
+plot2csvForAllRadSection(t, Q_cell, dQ_cell, Q_mat, dQ_mat, initial)
 
-topvel2csv(t, v_cell_A, dv_cell_A, 'A');
-if veins_analysis
-    topvel2csv(t, v_cell_V, dv_cell_V, 'V');
-end
+topvel2csv(t, v_cell, dv_cell, initial);
 
-fprintf("    3. Cross-sections analysis for all circles output took %ds\n", round(toc))
+Q_results.numSections = numSections;
+Q_results.locs = locs;
+Q_results.v_cell = v_cell;
+Q_results.v_profiles_cell = v_profiles_cell;
+Q_results.dv_profiles_cell = dv_profiles_cell;
+Q_results.D_cell = D_cell;
+Q_results.dD_cell = dD_cell;
+Q_results.mask_mat = mask_mat;
+Q_results.subImg_cell = subImg_cell;
+Q_results.area_mat = area_mat;
+Q_results.Q_mat = Q_mat;
+Q_results.dQ_mat = dQ_mat;
 
-%% 4. Sections Image
-tic
-
-if ~isempty(systolesIndexes)
-    index_start = systolesIndexes(1);
-    index_end = systolesIndexes(end);
-else
-    index_start = 1;
-    index_end = numFrames;
-end
-
-try
-    if params.json.BloodVolumeRate.sectionImage
-        sectionImage(M0_ff_img, mask_mat_A, 'A')
-        if veins_analysis
-            sectionImage(M0_ff_img, mask_mat_V, 'V')
-        end
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-subImageSize = checkSubImgSize(subImg_cell_A);
-
-try
-    if params.json.BloodVolumeRate.widthImage
-        widthImage(subImageSize, subImg_cell_A, numSections_A, 'artery')
-        if veins_analysis
-            widthImage(subImageSize, subImg_cell_V, numSections_V, 'vein')
-        end
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-try
-    if params.json.BloodVolumeRate.crossSectionImages
-
-        path_png = TB.path_png;
-        path_eps = TB.path_eps;
-
-        if ~isfolder(fullfile(TB.path_png, 'volumeRate', 'sectionsImages'))
-            mkdir(fullfile(path_png, 'volumeRate'), 'sectionsImages')
-            mkdir(fullfile(path_eps, 'volumeRate'), 'sectionsImages')
-            mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'widths')
-            mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'widths')
-            mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'num')
-            mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'num')
-            mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'bvr')
-            mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'bvr')
-            mkdir(fullfile(path_png, 'volumeRate', 'sectionsImages'), 'vel')
-            mkdir(fullfile(path_eps, 'volumeRate', 'sectionsImages'), 'vel')
-        end
-
-        crossSectionImages(M0_ff_img, xy_barycenter, area_mat_A, Q_mat_A, ...
-            v_cell_A, mask_mat_A, locs_A, 'Artery')
-        if veins_analysis
-            crossSectionImages(M0_ff_img, xy_barycenter, area_mat_V, Q_mat_V, ...
-                v_cell_V, mask_mat_V, locs_V, 'Vein')
-        end
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-try
-    if params.json.BloodVolumeRate.widthHistogram
-        widthHistogram(D_cell_A, dD_cell_A,area_mat_A, 'artery');
-        if veins_analysis
-            widthHistogram(D_cell_V, dD_cell_V,area_mat_V, 'artery');
-        end
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-rad = linspace(r1, r2 - dr, numCircles);
-
-[Q_t_A, dQ_t_A] = plotRadius(Q_mat_A, dQ_mat_A, t, rad, index_start, index_end, 'Artery');
-if veins_analysis
-    [Q_t_V, dQ_t_V] = plotRadius(Q_mat_V, dQ_mat_V, t, rad, index_start, index_end, 'Vein');
-end
-
-try
-    if params.json.BloodVolumeRate.BloodFlowProfiles
-        if ~isfolder(fullfile(TB.path_png, 'volumeRate', 'velocityProfiles'))
-            mkdir(fullfile(TB.path_png, 'volumeRate', 'velocityProfiles'));
-        end
-
-        interpolatedBloodVelocityProfile(v_profiles_cell_A, dv_profiles_cell_A, numSections_A, 'A', rad, 50)
-        if veins_analysis
-            interpolatedBloodVelocityProfile(v_profiles_cell_V, dv_profiles_cell_V, numSections_V, 'V', rad, 50)
-        end
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-fprintf("    4. Sections Images Generation took %ds\n", round(toc))
-
-%% 5. Arterial Indicators
-tic
-
-% Call for arterial analysis
-graphCombined(M0_ff_video, imdilate(maskArtery, strel('disk', params.local_background_width)), ...
-    Q_t_A, dQ_t_A, xy_barycenter, 'arterial_vr', ...
-    'etiquettes_locs', [], ...
-    'etiquettes_values', [], ...
-    'ylabl', 'Volume Rate (µL/min)', ...
-    'xlabl', 'Time (s)', ...
-    'fig_title', 'Blood Volume Rate', ...
-    'unit', 'µL/min', ...
-    'skip', ~params.exportVideos, ...
-    'Color', 'Artery', ...
-    'Visible', false);
-
-% Call for venous analysis (if veins_analysis is true)
-if veins_analysis
-    graphCombined(M0_ff_video, imdilate(maskVein, strel('disk', params.local_background_width)), ...
-        Q_t_V, dQ_t_V, xy_barycenter, 'venous_vr', ...
-        'etiquettes_locs', [], ...
-        'etiquettes_values', [], ...
-        'ylabl', 'Volume Rate (µL/min)', ...
-        'xlabl', 'Time (s)', ...
-        'fig_title', 'Blood Volume Rate', ...
-        'unit', 'µL/min', ...
-        'skip', ~params.exportVideos, ...
-        'Color', 'Vein', ...
-        'Visible', false);
-end
-
-try
-    if params.json.BloodVolumeRate.ARIBVR
-        ArterialResistivityIndex(t, Q_t_A, maskArtery, 'BVR', 'volumeRate');
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-try
-    if params.json.BloodVolumeRate.strokeAndTotalVolume && ~isempty(systolesIndexes)
-        strokeAndTotalVolume(Q_t_A, dQ_t_A, systolesIndexes, t, 1000);
-    end
-catch ME
-    MEdisp(ME, TB.path_dir)
-end
-
-fprintf("    5. Arterial Indicators Images Generation took %ds\n", round(toc))
+fprintf("    3. Cross-sections analysis for all circles (%s) output took %ds\n", name, round(toc))
 
 end

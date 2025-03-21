@@ -1,12 +1,12 @@
-function generateHealthReport(TB, vRMS, maskArtery, ~)
+function generateHealthReport(ToolBox, vRMS, maskArtery, ~)
 % Define file paths
-dataFilePath = fullfile(TB.path_txt, strcat(TB.main_foldername, '_EF_main_outputs.txt'));
-pdfPath = fullfile(TB.path_pdf, sprintf("%s_EyeFlowReport.pdf", TB.main_foldername));
-directoryName = TB.main_foldername;
-%     params = TB.getParams;
+dataFilePath = fullfile(ToolBox.path_txt, strcat(ToolBox.main_foldername, '_EF_main_outputs.txt'));
+pdfPath = fullfile(ToolBox.path_pdf, sprintf("%s_EyeFlowReport.pdf", ToolBox.main_foldername));
+directoryName = ToolBox.main_foldername;
+%     params = ToolBox.getParams;
 %     veinsAnalysis = params.json.VeinsAnalysis;
 [~, ~, numFrames] = size(vRMS);
-t = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
+t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
 % Set A4 dimensions in centimeters
 a4Width = 21.0; % A4 width in cm
@@ -39,10 +39,10 @@ addSubtitle(fig, subtitleText, margin, a4Width, a4Height);
 % Add data fields
 yPos = 0.85 - (margin / a4Height); % Starting vertical position for annotations (normalized units)
 yPos = addField(fig, sprintf('Heart Beat: %.1f bpm', data.heartBeat), yPos, margin, a4Width);
-yPos = addField(fig, sprintf('Systoles: %s', mat2str(round(data.systoleIndices * TB.stride / TB.fs / 1000, 2))), yPos, margin, a4Width); % 2 decimal places
+yPos = addField(fig, sprintf('Systoles: %s', mat2str(round(data.systoleIndices * ToolBox.stride / ToolBox.fs / 1000, 2))), yPos, margin, a4Width); % 2 decimal places
 yPos = addField(fig, sprintf('Number of Cycles: %d', data.numCycles), yPos, margin, a4Width);
-yPos = addField(fig, sprintf('Max Systole Indices: %s', mat2str(round(data.maxSystoleIndices * TB.stride / TB.fs / 1000, 2))), yPos, margin, a4Width); % 2 decimal places
-yPos = addField(fig, sprintf('Min Systole Indices: %s', mat2str(round(data.minSystoleIndices * TB.stride / TB.fs / 1000, 2))), yPos, margin, a4Width); % 2 decimal places
+yPos = addField(fig, sprintf('Max Systole Indices: %s', mat2str(round(data.maxSystoleIndices * ToolBox.stride / ToolBox.fs / 1000, 2))), yPos, margin, a4Width); % 2 decimal places
+yPos = addField(fig, sprintf('Min Systole Indices: %s', mat2str(round(data.minSystoleIndices * ToolBox.stride / ToolBox.fs / 1000, 2))), yPos, margin, a4Width); % 2 decimal places
 yPos = addField(fig, sprintf('Mean Blood Volume Rate (Artery): %.1f ± %.1f µL/min', data.meanBloodVolumeRateArtery, data.stdBloodVolumeRateArtery / 2), yPos, margin, a4Width);
 yPos = addField(fig, sprintf('Mean Blood Volume Rate (Vein): %.1f ± %.1f µL/min', data.meanBloodVolumeRateVein, data.stdBloodVolumeRateVein / 2), yPos, margin, a4Width);
 yPos = addField(fig, sprintf('Max Systole Blood Volume Rate (Artery): %.1f µL/min', data.maxSystoleBloodVolumeRateArtery), yPos, margin, a4Width);

@@ -1,9 +1,9 @@
-function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, circle_num, TB)
+function [] = bloodSectionProfile(SubImage_cell, SubVideo_cell, type_of_vessel, circle_num, ToolBox)
 
 nb_section = size(SubImage_cell, 2);
 numFrames = size(SubVideo_cell{1}, 3);
 n_interp = 100;
-params = TB.getParams;
+params = ToolBox.getParams;
 %interpolation parameter
 k = 2;
 
@@ -114,7 +114,7 @@ for ii = 1:nb_section
             [tmp_fit, R2_tmp_fit] = fit(x', tmp_velocity_profile, tmp_fittype, 'StartPoint', [40 0.7 2], 'Lower', [0 -5 1.5], 'Upper', [80 3 6]);
             R2_tmp_fit = R2_tmp_fit.rsquare;
 
-            fifig = figure("Visible","off");
+            fifig = figure("Visible", "off");
 
             fill(fullTime2, inBetween, Color_std);
             hold on
@@ -174,7 +174,7 @@ for ii = 1:nb_section
     fit_velocity_profile_systole = Vmax_list(idx_syst) * (1 - (1 - alpha_list(idx_syst)) .* abs(x_section) .^ beta_list(idx_syst));
     fit_velocity_profile_diastole = Vmax_list(end) * (1 - (1 - alpha_list(end)) .* abs(x_section) .^ beta_list(end));
 
-    figure("Visible","off")
+    figure("Visible", "off")
     % plot(x_section,average_velocity_profile_systole,'-k',...
     % x_section,average_velocity_profile_diastole,'-k',...
     %     x_section,fit_velocity_profile_systole,'-r',...
@@ -210,12 +210,12 @@ for ii = 1:nb_section
     ylim([0.9 * mimin 1.1 * mamax]);
     ylabel('velocity (mm/s)', 'FontSize', 14);
 
-%     exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.png', nameFig))))
-%     exportgraphics(gca, fullfile(ToolBox.path_eps, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.eps', nameFig))))
+    %     exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.png', nameFig))))
+    %     exportgraphics(gca, fullfile(ToolBox.path_eps, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('viscosity_%s.eps', nameFig))))
 
-    fullTime = linspace(0, numFrames * TB.stride / TB.fs / 1000, numFrames);
+    fullTime = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
-    figure("Visible","off")
+    figure("Visible", "off")
     plot(fullTime, viscosity_list, 'k-', 'LineWidth', 2)
     pbaspect([1.618 1 1]);
 
@@ -230,8 +230,7 @@ for ii = 1:nb_section
     set(gca, 'LineWidth', 2);
     axis tight;
 
-%     exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
-%     exportgraphics(gca, fullfile(ToolBox.path_eps, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
-
+    %     exportgraphics(gca, fullfile(ToolBox.path_png, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
+    %     exportgraphics(gca, fullfile(ToolBox.path_eps, 'volumeRate', 'rheology', sprintf("%s_%s", ToolBox.main_foldername, sprintf('velocityCrossSection_%s.png', nameFig))))
 
 end

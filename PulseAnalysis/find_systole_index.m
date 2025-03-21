@@ -53,11 +53,11 @@ sys_min_list = zeros(1, numel(sys_index_list) - 1);
 
 for i = 1:(numel(sys_index_list) - 1)
     % Find the maximum within the current cycle
-    [~, amax] = max(pulse_init(sys_index_list(i):sys_index_list(i+1)));
+    [~, amax] = max(pulse_init(sys_index_list(i):sys_index_list(i + 1)));
     sys_max_list(i) = sys_index_list(i) + amax - 1;
-    
+
     % Find the minimum within the current cycle
-    [~, amin] = min(pulse_init(sys_index_list(i):sys_index_list(i+1)));
+    [~, amin] = min(pulse_init(sys_index_list(i):sys_index_list(i + 1)));
     sys_min_list(i) = sys_index_list(i) + amin - 1;
 end
 
@@ -72,25 +72,33 @@ end
 function y = hampel_manual(x, k)
 n = length(x);
 y = x; % Initialize output
-for i = (k+1):(n-k)
-    window = x(i-k:i+k);
+
+for i = (k + 1):(n - k)
+    window = x(i - k:i + k);
     med = median(window);
     sigma = median(abs(window - med));
     threshold = 3 * sigma;
+
     if abs(x(i) - med) > threshold
         y(i) = med;
     end
+
 end
+
 end
 
 %% **Validate Peaks (Removes peaks that are too close)**
 function sys_index_list = validate_peaks(sys_index_list, min_distance)
 i = 1;
+
 while i < numel(sys_index_list)
-    if sys_index_list(i+1) - sys_index_list(i) < min_distance
-        sys_index_list(i+1) = [];
+
+    if sys_index_list(i + 1) - sys_index_list(i) < min_distance
+        sys_index_list(i + 1) = [];
     else
         i = i + 1;
     end
+
 end
+
 end

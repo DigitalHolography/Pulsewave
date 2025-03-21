@@ -14,20 +14,20 @@ isLengthResized = out_numFrames > 0;
 
 if isHeightResized && ~isWidthResized
     out_width = numX;
-    
+
 elseif ~isHeightResized && isWidthResized
     out_height = numY;
-    
+
 elseif ~isHeightResized && ~isWidthResized
     out_width = max(numX, numY);
     out_height = max(numX, numY);
-    
+
     if (numX == numY) && ~isLengthResized
         % If the video is spatially isomorphic and no Heigth/Width/Length
         % is inputed then the function has no more job to do
         return
     end
-    
+
 end
 
 if ~isLengthResized

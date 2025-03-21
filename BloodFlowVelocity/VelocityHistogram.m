@@ -21,8 +21,8 @@ end
 
 tVelocityVideo = tic;
 
-TB = getGlobalToolBox;
-params = TB.getParams;
+ToolBox = getGlobalToolBox;
+params = ToolBox.getParams;
 exportVideos = params.exportVideos;
 
 [numX, numY, numFrames] = size(v_video);
@@ -44,7 +44,7 @@ yAx = [v_min v_max];
 %% Velocity Histogram
 
 X = linspace(v_min, v_max, n);
-xAx = [0 numFrames * TB.stride / (1000 * TB.fs)];
+xAx = [0 numFrames * ToolBox.stride / (1000 * ToolBox.fs)];
 histo = zeros(n, numFrames);
 D = (v_max - v_min) / (n - 1);
 
@@ -78,6 +78,7 @@ if exportVideos
             end
 
         end
+
         figure(fDistrib)
         imagesc(xAx, yAx, histo(indexMin:indexMax, :))
         set(gca, 'YDir', 'normal')
@@ -94,9 +95,10 @@ if exportVideos
     gifWriter.generate();
     gifWriter.delete();
 
-    exportgraphics(gca, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", TB.main_foldername, name)))
-    exportgraphics(gca, fullfile(TB.path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", TB.main_foldername, name)))
+    exportgraphics(gca, fullfile(ToolBox.path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", ToolBox.main_foldername, name)))
+    exportgraphics(gca, fullfile(ToolBox.path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", ToolBox.main_foldername, name)))
 else
+
     for frameIdx = 1:numFrames
 
         for xx = 1:numX
@@ -104,7 +106,7 @@ else
             for yy = 1:numY
 
                 if mask(xx, yy) ~= 0
-                    i = find( and(X >= v_histo(xx, yy, frameIdx), X < v_histo(xx, yy, frameIdx) + D));
+                    i = find(and(X >= v_histo(xx, yy, frameIdx), X < v_histo(xx, yy, frameIdx) + D));
                     histo(i, frameIdx) = histo(i, frameIdx) + 1;
                 end
 
@@ -123,8 +125,8 @@ else
     set(gca, 'PlotBoxAspectRatio', [2.5 1 1])
     f = getframe(gcf);
     histoVideo = f.cdata;
-    exportgraphics(gca, fullfile(TB.path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", TB.main_foldername, name)))
-    exportgraphics(gca, fullfile(TB.path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", TB.main_foldername, name)))
+    exportgraphics(gca, fullfile(ToolBox.path_png, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.png", ToolBox.main_foldername, name)))
+    exportgraphics(gca, fullfile(ToolBox.path_eps, 'bloodFlowVelocity', sprintf("%s_histogramVelocity%s.eps", ToolBox.main_foldername, name)))
 
 end
 

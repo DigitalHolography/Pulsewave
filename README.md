@@ -1,6 +1,6 @@
 # PulseWave
 
-PulseWave is a software used to extract biomarkers from videos created by HoloDoppler. It process determines the Blood Flow Rate, the Velocity, or the Arterial Resistivity Index of the blood vessel in the eye of a patient with the help of an automatic segmentation of the arteries and veins.
+PulseWave is a software used to extract biomarkers from videos created by HoloDoppler. It process determines the Blood Volume Rate, the Velocity, or the Arterial Resistivity Index of the blood vessel in the eye of a patient with the help of an automatic segmentation of the arteries and veins.
 
 ## Problem It Solves
 

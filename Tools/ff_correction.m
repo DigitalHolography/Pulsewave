@@ -1,4 +1,5 @@
 function corrected_image = ff_correction(image, gw)
+
 if gw ~= 0
     ms = sum(image, [1 2]);
     image = image ./ imgaussfilt(image, gw);
@@ -7,4 +8,5 @@ if gw ~= 0
 else
     corrected_image = image;
 end
+
 end

@@ -3,7 +3,7 @@ function graphThreshHistogram(R, thresholds, mask, colors, name)
 %   Detailed explanation goes here
 % Set the threshold
 
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 numLevel = size(thresholds, 2);
 numColors = size(colors, 1);
 
@@ -15,15 +15,14 @@ else
     cmap = cmapLAB(256, [0 0 0], 0, [1 1 1], 1);
 end
 
-figure('Visible','off')
+figure('Visible', 'off')
 imagesc(R .* mask)
 title('Map with Colorbar');
 colormap(cmap)
 colorbar
 axis off
 axis image
-exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_%s", TB.main_foldername, sprintf('%s_MapColorbar.png', name))))
-
+exportgraphics(gca, fullfile(ToolBox.path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_MapColorbar.png', name))))
 
 if size(colors, 1) ~= numLevel + 1
     error('Wrong size for colors, there should be N+1 colors for N levels\n numLevel = %d and numColors = %d', numLevel, numColors)
@@ -39,7 +38,7 @@ edges = linspace(m, M, 50); % Set bin edges (modify as needed)
 counts = [counts 0];
 
 % Plot the histogram with different colors based on threshold
-figure (Visible="off");
+figure (Visible = "off");
 hold on;
 
 for ii = 1:(numLevel + 1)
@@ -73,7 +72,7 @@ set(gca, 'Linewidth', 2)
 pbaspect([1.68 1 1])
 box on
 hold off;
-exportgraphics(gca, fullfile(TB.path_png, 'mask', 'steps', sprintf("%s_%s", TB.main_foldername, sprintf('%s_Histo.png', name))))
-exportgraphics(gca, fullfile(TB.path_eps, 'mask', 'steps', sprintf("%s_%s", TB.main_foldername, sprintf('%s_Histo.eps', name))))
+exportgraphics(gca, fullfile(ToolBox.path_png, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.png', name))))
+exportgraphics(gca, fullfile(ToolBox.path_eps, 'mask', 'steps', sprintf("%s_%s", ToolBox.main_foldername, sprintf('%s_Histo.eps', name))))
 
 end

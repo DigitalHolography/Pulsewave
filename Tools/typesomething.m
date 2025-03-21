@@ -1,11 +1,11 @@
-function typesomething(str,robot)
+function typesomething(str, robot)
 %typesomething
 % function to type a string with a matlab robot
 % made for azerty keyboards
 % all charaecters are included for path : / \ (not so obvious)
 
-if nargin<2
-   
+if nargin < 2
+
     robot = java.awt.Robot;
 end
 
@@ -13,7 +13,7 @@ str = char(str);
 % Loop through each character in the string
 for i = 1:length(str)
     charValue = str(i);
-    
+
     % Convert character to the appropriate Java key code
     keyCode = getKeyCode(charValue);
 
@@ -21,26 +21,29 @@ for i = 1:length(str)
         continue; % Skip non recognised characters
     end
 
-    HoldShift = ischar(charValue) && (isstrprop(charValue, 'upper') || isstrprop(charValue, 'digit')|| charValue=='.');
+    HoldShift = ischar(charValue) && (isstrprop(charValue, 'upper') || isstrprop(charValue, 'digit') || charValue == '.');
+
     if HoldShift
         robot.keyPress(java.awt.event.KeyEvent.VK_SHIFT); % Press Shift
     end
-    HoldAltGr = ischar(charValue) && charValue=='\';
+
+    HoldAltGr = ischar(charValue) && charValue == '\';
+
     if HoldAltGr
-        robot.keyPress(17);robot.keyPress(18); % Press Ctrl AND Alt
+        robot.keyPress(17); robot.keyPress(18); % Press Ctrl AND Alt
     end
-   
-    robot.keyPress(keyCode); 
-    robot.keyRelease(keyCode); 
-    
-    
+
+    robot.keyPress(keyCode);
+    robot.keyRelease(keyCode);
+
     if HoldShift
         robot.keyRelease(java.awt.event.KeyEvent.VK_SHIFT); % Release Shift
     end
+
     if HoldAltGr
-        robot.keyRelease(17);robot.keyRelease(18); % Press Ctrl AND Alt
+        robot.keyRelease(17); robot.keyRelease(18); % Press Ctrl AND Alt
     end
-    
+
 end
 
 function keyCode = getKeyCode(character)
@@ -72,7 +75,7 @@ function keyCode = getKeyCode(character)
         case 'x', keyCode = java.awt.event.KeyEvent.VK_X;
         case 'y', keyCode = java.awt.event.KeyEvent.VK_Y;
         case 'z', keyCode = java.awt.event.KeyEvent.VK_Z;
-        
+
         case 'A', keyCode = java.awt.event.KeyEvent.VK_A;
         case 'B', keyCode = java.awt.event.KeyEvent.VK_B;
         case 'C', keyCode = java.awt.event.KeyEvent.VK_C;
@@ -118,14 +121,16 @@ function keyCode = getKeyCode(character)
         case '/', keyCode = 111;
 
         case ':', keyCode = java.awt.event.KeyEvent.VK_COLON;
-            
+
         case '_', keyCode = java.awt.event.KeyEvent.VK_8;
 
         case '.', keyCode = java.awt.event.KeyEvent.VK_SEMICOLON;
 
         case ']', keyCode = java.awt.event.KeyEvent.VK_SEMICOLON;
-        
-        otherwise, keyCode = [];  % Skip characters that don't have keycodes
+
+        otherwise , keyCode = []; % Skip characters that don't have keycodes
     end
+
 end
+
 end

@@ -1,6 +1,6 @@
 function [results, log] = segmentationScores(maskArtery, maskVein)
 % This function calculates Dice Score, Jaccard Index, Accuracy, and Precision
-% for artery and vein masks compared to target masks. The results are saved 
+% for artery and vein masks compared to target masks. The results are saved
 % in a log file and also returned for further processing.
 %
 % Inputs:
@@ -12,11 +12,11 @@ function [results, log] = segmentationScores(maskArtery, maskVein)
 %   log - A string indicating the status of the logging operation
 
 % Ensure Toolbox is initialized
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 
 % Check if the target masks exist, otherwise return an error message
-targetMaskArteryPath = fullfile(TB.path_main, 'mask', 'targetMaskArtery.png');
-targetMaskVeinPath = fullfile(TB.path_main, 'mask', 'targetMaskVein.png');
+targetMaskArteryPath = fullfile(ToolBox.path_main, 'mask', 'targetMaskArtery.png');
+targetMaskVeinPath = fullfile(ToolBox.path_main, 'mask', 'targetMaskVein.png');
 
 if ~isfile(targetMaskArteryPath) || ~isfile(targetMaskVeinPath)
     return
@@ -55,7 +55,7 @@ PrecisionArtery = 100 * TPArtery / (TPArtery + FPArtery);
 PrecisionVein = 100 * TPVein / (TPVein + FPVein);
 
 % Define the log file path and open for writing
-logFilePath = fullfile(TB.path_log, sprintf("%s_confusionMatrix.txt", TB.main_foldername));
+logFilePath = fullfile(ToolBox.path_log, sprintf("%s_confusionMatrix.txt", ToolBox.main_foldername));
 fileID = fopen(logFilePath, 'w+');
 
 if fileID == -1
@@ -83,9 +83,9 @@ fclose(fileID);
 
 % Return results as a struct for further processing
 results = struct('DiceArtery', DiceArtery, 'DiceVein', DiceVein, ...
-                 'JaccardArtery', JaccardArtery, 'JaccardVein', JaccardVein, ...
-                 'AccuracyArtery', AccuracyArtery, 'AccuracyVein', AccuracyVein, ...
-                 'PrecisionArtery', PrecisionArtery, 'PrecisionVein', PrecisionVein);
+    'JaccardArtery', JaccardArtery, 'JaccardVein', JaccardVein, ...
+    'AccuracyArtery', AccuracyArtery, 'AccuracyVein', AccuracyVein, ...
+    'PrecisionArtery', PrecisionArtery, 'PrecisionVein', PrecisionVein);
 
 log = 'Results logged successfully.';
 

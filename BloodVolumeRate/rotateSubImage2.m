@@ -1,4 +1,4 @@
-function [rotatedImg, orientation] = rotateSubImage2(subImg,discMask)
+function [rotatedImg, orientation] = rotateSubImage2(subImg, discMask)
 % Rotate the sub-image to align the blood vessel vertically.
 % The orientation is determined by maximizing the number of zero pixels in the horizontal projection.
 %
@@ -19,7 +19,7 @@ projx = zeros(size(subImg, 1), length(angles)); % Horizontal projections
 for theta = 1:length(angles)
     % Rotate the image by the current angle
     tmpImg = imrotate(subImg, angles(theta), 'bilinear', 'crop');
-    
+
     % Compute the projection
     projx(:, theta) = squeeze(sum(tmpImg, 1));
 end

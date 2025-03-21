@@ -1,11 +1,11 @@
 function [ArterySpectrum, BgSpectrum, DeltaSpectrum, sizeSHFreq, Lorenz_Arteries, Lorenz_BKG, M0_artery, M0_background, M1M0_artery, M1M0_background, M2M0_artery, M2M0_background] = createSpectrum(maskArtery, maskBackground, SH)
 
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 SH_arteries = SH .* maskArtery;
 SH_background = SH .* maskBackground;
-fs = TB.fs;
-f1 = TB.f1;
-f2 = TB.f2;
+fs = ToolBox.fs;
+f1 = ToolBox.f1;
+f2 = ToolBox.f2;
 [numY, numX, ~] = size(SH);
 
 sizeSHFreq = size(SH, 3);
@@ -36,11 +36,11 @@ f_range_sym = (-n2:-n1) .* (fs / sizeSHFreq);
 for ii = 1:size(SH_arteries, 3)
     ArterySpectrum(ii) = sum(SH_arteries(:, :, ii), 'all') / nnz(SH_arteries(:, :, ii));
     BgSpectrum(ii) = sum(SH_background(:, :, ii), 'all') / nnz(SH_background(:, :, ii));
-    
+
     % moment = gather(squeeze(sum(abs(SH(:, :, n1:n2)), 3))) + gather(squeeze(sum(abs(SH(:, :, n3:n4)), 3)));
     M0_artery = gather(squeeze(sum(SH_arteries(:, :, n1:n2), 3))) + gather(squeeze(sum(SH_arteries(:, :, n3:n4), 3)));
     M0_background = gather(squeeze(sum(SH_background(:, :, n1:n2), 3))) + gather(squeeze(sum(SH_background(:, :, n3:n4), 3)));
-    
+
 end
 
 %% Calcul spectrum M1/M0

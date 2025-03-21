@@ -1,8 +1,9 @@
 function interpolatedBloodVelocityProfile(v_profiles_cell, dv_profiles_cell, numSections, name, rad, numInterp)
 
-TB = getGlobalToolBox;
-path_png = TB.path_png;
-params = TB.getParams;
+ToolBox = getGlobalToolBox;
+path_png = ToolBox.path_png;
+main_folder = ToolBox.main_foldername;
+params = ToolBox.getParams;
 numCircles = size(v_profiles_cell, 2);
 Color_err = [0.7 0.7 0.7];
 
@@ -18,7 +19,7 @@ parfor cIdx = 1:numCircles
 
     title(sprintf('measured time-averaged velocity profiles at radius = %d pix', rad(cIdx)))
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", TB.main_foldername, name, cIdx)))
+    exportgraphics(gca, fullfile(path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_bloodVelocity_profiles_%s%d.png", main_folder, name, cIdx)))
     % interpolatedBloodVelocityProfile Figure
 
     figure("Visible", "off");
@@ -58,7 +59,7 @@ parfor cIdx = 1:numCircles
     end
 
     mean_v_interp_profile = sum(v_profile_interp, 1);
-    rms_dv_interp_profile = sqrt(sum(dv_interp_profile.^2, 1));
+    rms_dv_interp_profile = sqrt(sum(dv_interp_profile .^ 2, 1));
 
     curve1 = mean_v_interp_profile + rms_dv_interp_profile;
     curve2 = mean_v_interp_profile - rms_dv_interp_profile;
@@ -85,12 +86,12 @@ parfor cIdx = 1:numCircles
     axP = axis;
     axis tight
     axT = axis;
-    axis([axT(1), axT(2), axP(3) , 1.07 * axP(4)])
+    axis([axT(1), axT(2), axP(3), 1.07 * axP(4)])
     hold off
 
     title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(cIdx)), ' pix'])
     set(gca, 'Linewidth', 2)
-    exportgraphics(gca, fullfile(path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_interp_profile_%s%d.png", TB.main_foldername, name, cIdx)))
+    exportgraphics(gca, fullfile(path_png, 'volumeRate', 'velocityProfiles', sprintf("%s_interp_profile_%s%d.png", ToolBox.main_foldername, name, cIdx)))
 
 end
 
@@ -118,10 +119,11 @@ if params.exportVideos
         video = zeros(420, 560, 3, numFrames, 'single'); % Preallocate video array
         title(['interpolated time-averaged velocity profile at radius = ', num2str(rad(cIdx)), ' pix'])
 
+        % Precompute profiles
+        v_profile_interp = zeros([numSections(cIdx), numInterp], 'double');
+        dv_interp_profile = zeros([numSections(cIdx), numInterp], 'double');
+
         for frameIdx = 1:numFrames
-            % Precompute profiles
-            v_profile_interp = zeros([numSections(cIdx), numInterp], 'double');
-            dv_interp_profile = zeros([numSections(cIdx), numInterp], 'double');
 
             for sectionIdx = 1:numSections(cIdx)
                 v_profile = v_profiles_cell{cIdx}{sectionIdx, frameIdx};
@@ -156,7 +158,7 @@ if params.exportVideos
 
             % Compute new plot data
             mean_v_interp_profile = mean(v_profile_interp, 1);
-            rms_dv_interp_profile = sqrt(sum(dv_interp_profile.^2, 1)) / size(dv_interp_profile, 1);
+            rms_dv_interp_profile = sqrt(sum(dv_interp_profile .^ 2, 1)) / size(dv_interp_profile, 1);
             curve1 = mean_v_interp_profile + rms_dv_interp_profile;
             curve2 = mean_v_interp_profile - rms_dv_interp_profile;
             inBetween = [curve1, fliplr(curve2)]';
@@ -183,7 +185,7 @@ if params.exportVideos
         end
 
         % Write only once per circle
-        writeGifOnDisc(video, sprintf("interp_profile_%s%d", name, cIdx), "ToolBox", TB);
+        writeGifOnDisc(video, sprintf("interp_profile_%s%d", name, cIdx), "ToolBox", ToolBox);
     end
 
 end

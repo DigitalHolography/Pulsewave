@@ -1,6 +1,6 @@
 function [] = ArterialResistivityIndex(t, v_video, maskArtery, name, folder)
 
-TB = getGlobalToolBox;
+ToolBox = getGlobalToolBox;
 % Color Maps
 cArtery = [255 22 18] / 255;
 
@@ -80,14 +80,14 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
     imagesc(RGBARI), axis off, axis image;
     colorbar, colormap(cmapARI), clim([0 1]);
     title(sprintf('ARI %s = %0.2f', name, ARI));
-    saveas(fig, fullfile(TB.path_png, folder, strcat(TB.main_foldername, '_', 'ARI', '_', name)), 'png');
+    saveas(fig, fullfile(ToolBox.path_png, folder, strcat(ToolBox.main_foldername, '_', 'ARI', '_', name)), 'png');
 
     % Display and save the API image
     f = figure(211354 + 1);
     imagesc(RGBAPI), axis off, axis image;
     colorbar, colormap(cmapARI), clim([0 3]);
     title(sprintf('API %s = %0.2f', name, API));
-    saveas(f, fullfile(TB.path_png, folder, strcat(TB.main_foldername, '_', 'API', '_', name)), 'png');
+    saveas(f, fullfile(ToolBox.path_png, folder, strcat(ToolBox.main_foldername, '_', 'API', '_', name)), 'png');
 
     % Close figures
     close(f), close(fig);
@@ -95,13 +95,15 @@ if size(v_video, 3) > 1 % if given a video, output the image of ARI / API
 else
 
     % Save txt
-    fileID = fopen(fullfile(TB.path_txt, strcat(TB.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
-    if strcmp(name,'velocity')
-        fprintf(fileID, 'Mean Velocity artery : %f (mm/s) \r\n',vMean);
-        fprintf(fileID, 'Std Velocity artery : %f (mm/s) \r\n',vStd);
-        fprintf(fileID, 'Max Velocity artery : %f (mm/s) \r\n',vMax);
-        fprintf(fileID, 'Min Velocity artery : %f (mm/s) \r\n',vMin);
+    fileID = fopen(fullfile(ToolBox.path_txt, strcat(ToolBox.main_foldername, '_', 'EF_main_outputs', '.txt')), 'a');
+
+    if strcmp(name, 'velocity')
+        fprintf(fileID, 'Mean Velocity artery : %f (mm/s) \r\n', vMean);
+        fprintf(fileID, 'Std Velocity artery : %f (mm/s) \r\n', vStd);
+        fprintf(fileID, 'Max Velocity artery : %f (mm/s) \r\n', vMax);
+        fprintf(fileID, 'Min Velocity artery : %f (mm/s) \r\n', vMin);
     end
+
     fprintf(fileID, 'Arterial Resistivity Index (%s) : %f  \r\n', name, ARI);
     fprintf(fileID, 'Arterial Pulsatility Index (%s) : %f  \r\n', name, API);
     fclose(fileID);

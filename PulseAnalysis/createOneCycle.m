@@ -2,8 +2,8 @@ function [oneCycleVideo, selectedPulseIdx, cyclesSignal, oneCycleVideoM0] = crea
 %   one_cycle() : identifies pulse cycles and average them to one video
 %   sys_index_list : list of systole indexes in video
 
-TB = getGlobalToolBox;
-params = TB.getParams;
+ToolBox = getGlobalToolBox;
+params = ToolBox.getParams;
 
 tic
 
@@ -20,6 +20,7 @@ if numSys > 0 % we have detected at least two systoles
         tmp = squeeze(sum(video(:, :, frame_range) .* mask, [1 2]) / nnz(mask));
         cyclesSignal(ii, :) = interp1(frame_range, tmp, interp_range);
     end
+
     clear tmp
 
     %check pulse integrity

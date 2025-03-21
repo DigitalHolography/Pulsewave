@@ -1,21 +1,21 @@
 function [mask, RG_video] = region_growing_for_vessel(img, seed_map, conditionMask)
-    % Input
-    %   img (double, numX x numY) : filtered image to segment
-    %   seed_map (logical, numX x numY)  : initialisation of the region growing
-    %   alpha (double) : adjust the region growing
-    %   conditionMask : pixels were we follow positive gradient
-    % Output :
-    %   mask (logical, numX x numY) : result of the region growing segmentation
+% Input
+%   img (double, numX x numY) : filtered image to segment
+%   seed_map (logical, numX x numY)  : initialisation of the region growing
+%   alpha (double) : adjust the region growing
+%   conditionMask : pixels were we follow positive gradient
+% Output :
+%   mask (logical, numX x numY) : result of the region growing segmentation
 
 %% INITIALISATION
-TB = getGlobalToolBox;
-params = TB.getParams;
+ToolBox = getGlobalToolBox;
+params = ToolBox.getParams;
 
-    [numX, numY] = size(img);
-    mask = seed_map; % will be update at each step ;  represents the pixels already visited
-    max_iter = round(numX / 4);
-    floor = params.json.RegionGrowing.FloorThreshold * mean2(img(conditionMask));
-    alpha = params.json.RegionGrowing.Alpha;
+[numX, numY] = size(img);
+mask = seed_map; % will be update at each step ;  represents the pixels already visited
+max_iter = round(numX / 4);
+floor = params.json.RegionGrowing.FloorThreshold * mean2(img(conditionMask));
+alpha = params.json.RegionGrowing.Alpha;
 
 %Represents the seeds points as a list of coordinates
 [row, col] = find(seed_map);

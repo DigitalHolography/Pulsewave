@@ -1,12 +1,12 @@
 function crossSectionImages(M0_ff_img, xy_barycenter, area, Q, v, mask, locs, name)
 
 % Get global toolbox and parameters
-TB = getGlobalToolBox;
-path_png = TB.path_png;
-path_eps = TB.path_eps;
-path_txt = TB.path_txt;
-params = TB.getParams;
-main_folder = TB.main_foldername;
+ToolBox = getGlobalToolBox;
+path_png = ToolBox.path_png;
+path_eps = ToolBox.path_eps;
+path_txt = ToolBox.path_txt;
+params = ToolBox.getParams;
+main_folder = ToolBox.main_foldername;
 exportVideos = params.exportVideos;
 
 % Determine color and title based on vessel type
@@ -97,13 +97,13 @@ parfor cIdx = 1:numCircles
         sprintf("%s_circle_%d_Numerotation%sImage.eps", main_folder, cIdx, name)));
 end
 
-% Plot mean blood flow rate (Q)
+% Plot mean blood volume rate (Q)
 figure(312)
 
 parfor cIdx = 1:numCircles
     etiquettes_frame_values = round(mean(Q(cIdx, 1:find(area(cIdx, :), 1, 'last'), :), 3), 1);
     graphMaskTags(312, M0_ff_img, squeeze(mask(:, :, cIdx)), locs{cIdx}, etiquettes_frame_values, ...
-        x_barycenter, y_barycenter, Color = name, Title = sprintf("Avergae Blood Flow Rate in %s (µL/min)", titleFig));
+        x_barycenter, y_barycenter, Color = name, Title = sprintf("Average Blood Volume Rate in %s (µL/min)", titleFig));
 
     % Capture and resize frame for video
     capturedFrame = frame2im(getframe(gca));

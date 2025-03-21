@@ -1,5 +1,5 @@
 function writeGifOnDisc(data, filename, timePeriodMin, numFramesFixed, opt)
-% Writing function for gif to make use of parallel capacities 
+% Writing function for gif to make use of parallel capacities
 % with parfeval
 %  filename - - path to file and file name with '.gif' extension
 
@@ -11,10 +11,11 @@ arguments
     opt.ToolBox = []
 end
 
-if size(size(data)) == [1,3]
-    data = reshape(data,size(data,1),size(data,2),1,size(data,3));
+if size(size(data)) == [1, 3]
+    data = reshape(data, size(data, 1), size(data, 2), 1, size(data, 3));
 end
-numFrames = size(data,4);
+
+numFrames = size(data, 4);
 
 gifWriter = GifWriter(filename, numFrames, ...
     timePeriodMin, numFramesFixed, "ToolBox", opt.ToolBox);

@@ -17,11 +17,13 @@ if N ~= size(cmaps, 2)
 end
 
 if ~isempty(opt.circles)
+
     for i = 1:N
         masks{N + i} = masks{i} & opt.circles;
         masks{i} = masks{i} & ~opt.circles;
         cmaps{N + i} = flip(cmaps{i}, 1);
     end
+
     N = 2 * N;
 end
 
@@ -36,6 +38,7 @@ for i = 1:size(masks, 2)
 end
 
 maskVessel = zeros(numX, numY);
+
 for i = 1:N
     maskVessel = maskVessel + masks{i};
 end
@@ -43,6 +46,7 @@ end
 if isempty(opt.circles)
     opt.circles = zeros(numX, numY);
 end
+
 if isempty(opt.background)
     opt.background = zeros(numX, numY);
 end
