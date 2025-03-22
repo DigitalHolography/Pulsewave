@@ -16,7 +16,7 @@ params = ToolBox.getParams;
 initial = name(1);
 M0_ff_video = rescale(M0_ff_video);
 M0_ff_img = rescale(mean(M0_ff_video, 3));
-[~, ~, numFrames] = size(M0_ff_video);
+[numX, ~, numFrames] = size(M0_ff_video);
 t = linspace(0, numFrames * ToolBox.stride / ToolBox.fs / 1000, numFrames);
 
 numSections = Q_results.numSections;
@@ -105,10 +105,12 @@ fprintf("    1. Sections Images Generation (%s) took %ds\n", name, round(toc))
 tic
 
 numCircles = params.json.BloodVolumeRateAnalysis.NumberOfCircles;
+px_size = params.px_size;
 r1 = params.json.SizeOfField.SmallRadiusRatio;
 r2 = params.json.SizeOfField.BigRadiusRatio;
 dr = (r2 - r1) / numCircles;
-rad = linspace(r1, r2 - dr, numCircles);
+rad = linspace(r1, r2 - dr, numCircles) * numX / px_size;
+
 [Q_t, dQ_t] = plotRadius(Q_mat, dQ_mat, t, rad, index_start, index_end, name);
 
 try
@@ -119,9 +121,7 @@ try
             mkdir(fullfile(ToolBox.path_png, 'volumeRate', 'velocityProfiles'));
         end
 
-        interpolatedBloodVelocityProfile(v_profiles_cell, dv_profiles_cell, numSections, initial, rad, 50)
-
-        diasysVelocityProfile(v_profiles_cell, dv_profiles_cell, sysIdx, diasIdx, numSections, name, 50)
+        interpolatedBloodVelocityProfile(v_profiles_cell, dv_profiles_cell, sysIdx, diasIdx, numSections, name, rad)
     end
 
 catch ME
@@ -129,7 +129,7 @@ catch ME
 end
 
 % Call for arterial analysis
-graphCombined(M0_ff_video, imdilate(mask, strel('disk', params.local_background_width)), ...
+graphCombined(M0_ff_video, imdilate(mask, strel('disk', params.json.PulseAnalysis.LocalBackgroundWidth)), ...
     Q_t, dQ_t, xy_barycenter, sprintf('%s_vr', name), ...
     'etiquettes_locs', [], ...
     'etiquettes_values', [], ...

@@ -24,7 +24,6 @@ properties
     fs double
     f1 double
     f2 double
-    ScalingFactorVelocityInPlane double
 end
 
 methods
@@ -42,9 +41,6 @@ methods
 
         % Load parameters from cache or fall back to defaults
         obj.loadParameters(path);
-
-        % Calculate Scaling Factors for velocity
-        obj.calculateScalingFactors;
 
         % Set up logging (diary)
         obj.setupLogging();
@@ -175,13 +171,6 @@ methods
             obj.f2 = 15;
         end
 
-    end
-
-    function calculateScalingFactors(obj)
-        % Calculate scaling factors based on eyeflow parameters
-
-        params = obj.getParams;
-        obj.ScalingFactorVelocityInPlane = 1000 * 1000 * 2 * params.lambda / sin(params.phi); % 6.9 mm/s / kHz
     end
 
     function setupLogging(obj)

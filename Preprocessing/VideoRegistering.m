@@ -3,7 +3,7 @@ tic
 % Registers the video using intensity based registration
 params = Parameters_json(obj.directory, obj.param_name);
 
-if ~params.registerVideoFlag
+if ~params.json.Preprocess.Register.Flag
     return % do nothing if not required
 end
 
@@ -19,7 +19,10 @@ video_reg = reshape(video_reg, size(video, 1), size(video, 2), 1, size(video, 3)
 
 video_reg = video_reg ./ (max(abs(video_reg), [], [1, 2])); % rescaling each frame but keeps mean at zero
 
-image_ref = mean(video_reg(:, :, params.refAvgStart:params.refAvgEnd), 3); % ref image is from 10 to 20 for example
+refStart = params.json.Preprocess.Register.RefStart;
+refEnd = params.json.Preprocess.Register.RefEnd;
+
+image_ref = mean(video_reg(:, :, refStart:refEnd), 3); % ref image is from 10 to 20 for example
 [~, shifts, scores] = register_video_from_reference(video_reg, image_ref);
 
 figure(16), plot(scores / mean(scores), 'k'), ylim([0 max(0.1, 1.2 * max(scores) / mean(scores))]), title('Registration Correlation Score (1 is good) (u.a.)');

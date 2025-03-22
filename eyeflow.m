@@ -208,8 +208,8 @@ methods (Access = public)
         app.file.params_names = checkEyeFlowParamsFromJson(app.file.directory); % checks compatibility between found EF params and Default EF params of this version of EF.
         params = Parameters_json(app.file.directory, app.file.params_names{1});
 
-        if params.json.Other.NumberOfWorkers > 0 && params.json.Other.NumberOfWorkers < app.NumberofWorkersSpinner.Limits(2)
-            app.NumberofWorkersSpinner.Value = params.json.Other.NumberOfWorkers;
+        if params.json.NumberOfWorkers > 0 && params.json.NumberOfWorkers < app.NumberofWorkersSpinner.Limits(2)
+            app.NumberofWorkersSpinner.Value = params.json.NumberOfWorkers;
         end
 
         parfor_arg = app.NumberofWorkersSpinner.Value;

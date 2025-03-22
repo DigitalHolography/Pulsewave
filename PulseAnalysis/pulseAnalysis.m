@@ -48,7 +48,7 @@ else
     maskVessel = maskArtery;
 end
 
-w = params.local_background_width;
+w = params.json.PulseAnalysis.LocalBackgroundWidth;
 k = params.json.Preprocess.InterpolationFactor;
 
 parfor frameIdx = 1:numFrames
@@ -84,13 +84,13 @@ fprintf("    1. Local BKG Artery and Veins calculation took %ds\n", round(toc))
 
 tic
 
-if params.DiffFirstCalculationsFlag == 0 %SIGNED DIFFERENCE FIRST
+if params.json.PulseAnalysis.DifferenceMethods == 0 %SIGNED DIFFERENCE FIRST
 
     tmp = f_RMS_video .^ 2 - f_RMS_background .^ 2;
     delta_f_RMS = sign(tmp) .* sqrt(abs(tmp));
     clear tmp
 
-elseif params.DiffFirstCalculationsFlag == 1 % DIFFERENCE FIRST
+elseif params.json.PulseAnalysis.DifferenceMethods == 1 % DIFFERENCE FIRST
 
     tmp = f_RMS_video .^ 2 - f_RMS_background .^ 2;
     tmp = tmp .* (tmp > 0);
@@ -103,7 +103,8 @@ else % DIFFERENCE LAST
 
 end
 
-v_RMS_video = ToolBox.ScalingFactorVelocityInPlane * delta_f_RMS;
+scalingFactor = 1000 * 1000 * 2 * params.json.PulseAnalysis.Lambda / sin(params.json.PulseAnalysis.Phi);
+v_RMS_video =  scalingFactor * delta_f_RMS;
 
 if veinsAnalysis
     graphSignal('2_Vessels_velocity', folder, ...

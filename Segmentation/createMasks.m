@@ -41,7 +41,7 @@ minPixelSize = params.json.Mask.MinPixelSize;
 CRACRV_Threshold = params.json.Mask.CRACRVThreshold;
 forceVesselWidth = params.json.Mask.ForceVesselWidth;
 
-bgWidth = params.json.Velocity.LocalBackgroundWidth;
+bgWidth = params.json.PulseAnalysis.LocalBackgroundWidth;
 r1 = params.json.SizeOfField.SmallRadiusRatio;
 r2 = params.json.SizeOfField.BigRadiusRatio;
 

@@ -5,60 +5,8 @@ properties
     path
     name
     json
-    registerVideoFlag
-    refAvgStart
-    refAvgEnd
-    videoStartFrameIndex
-    videoEndFrameIndex
-    NormTempMode
-    alphaConvolveNorm
-    frameWidth
-    frameHeight
-    videoLength
-    oneCycleNinterp
-    oneCycle_outNoiseThreshold
-    oneCycle_dataReliabilityThreshold
-    local_background_width
-    elasWave_nDomFreq
-    elasWave_pixelSize
-    elasWave_gaussFiltPadding
-    elasWave_butterFiltOrder
-    elasWave_butterFiltBand
     exportVideos
-    systoleThreshold
-    flatField_gwRatio
-    flatField_border
-    flatField_borderDMap
-    flatField_borderPulseAnal
-    pupilRadius
-    iris2retinaDist
-    theta
-    opticalIndex
-    lambda
-    phi
-    pulseAnal_dataReliabilityFactor
-    pulseAnal_peakHeightThreshold
-    pulseAnal_outNoiseThreshold
-    pulseAnal_blurScaleFactor
-    pulseAnal_frameMinDiastole
-    pulseAnal_framePeakSystole
-    pulseAnal_exp
     veins_analysis
-    velocitySmallRadiusRatio
-    velocityBigRadiusRatio
-    video2vessels_radiusRatio
-    video2vessels_gaussFiltPadding
-    video2vessels_gaussFiltFactor
-    viscosity_Ninterp
-    viscosity_interpParam
-    viscosity_interpSizeFactor
-    viscosity_projimThreshold
-    viscosity_fctnFactor
-    viscosity_fitMatrix
-    viscosity_listParamA
-    viscosity_listParamB
-    nbSides
-    DiffFirstCalculationsFlag
     timePeriodMin
     px_size
 end
@@ -84,77 +32,11 @@ methods
             parsedData = jsondecode(jsonData);
 
             obj.json = parsedData;
-            % Recherche de chaque paramètre
-            obj.registerVideoFlag = parsedData.Video.Register;
-            obj.refAvgStart = parsedData.Video.RefStart;
-            obj.refAvgEnd = parsedData.Video.RefEnd;
-
-            obj.videoStartFrameIndex = parsedData.Video.StartFrame;
-            obj.videoEndFrameIndex = parsedData.Video.EndFrame;
-
-            obj.NormTempMode = parsedData.NormalizeByTimeAverage;
-            obj.alphaConvolveNorm = parsedData.MomentNormalizeConvolutionParameter;
-
-            obj.frameWidth = parsedData.ResizeVideo.FrameWidth;
-            obj.frameHeight = parsedData.ResizeVideo.FrameHeight;
-            obj.videoLength = parsedData.ResizeVideo.VideoLength;
+            % Recherche de chaque paramètre dans le fichier json
 
             obj.veins_analysis = parsedData.VeinsAnalysis;
             obj.exportVideos = parsedData.ExportVideos;
-
-            obj.flatField_gwRatio = parsedData.FlatFieldCorrection.GWRatio;
-            obj.flatField_border = parsedData.FlatFieldCorrection.Border;
-            obj.flatField_borderDMap = parsedData.FlatFieldCorrection.BorderDMAP;
-            obj.flatField_borderPulseAnal = parsedData.FlatFieldCorrection.BorderPulseAnalysis;
-
-            obj.systoleThreshold = parsedData.SystoleDetection.SystoleThresholdRatioOfMaximum;
-
-            obj.oneCycleNinterp = parsedData.CreationOfOneCycle.InterpolationPoints;
-            obj.oneCycle_outNoiseThreshold = parsedData.CreationOfOneCycle.OutOfNoiseThreshold;
-            obj.oneCycle_dataReliabilityThreshold = parsedData.CreationOfOneCycle.DataReliabilityIndexThreshold;
-
-            obj.DiffFirstCalculationsFlag = parsedData.Velocity.DiffFirstCalculationsFlag;
-            obj.local_background_width = parsedData.Velocity.LocalBackgroundWidth;
-
-            obj.velocitySmallRadiusRatio = parsedData.SizeOfField.SmallRadiusRatio;
-            obj.velocityBigRadiusRatio = parsedData.SizeOfField.BigRadiusRatio;
-
-            obj.pupilRadius = parsedData.PulseAnalysis.RadiusPupil;
-            obj.iris2retinaDist = parsedData.PulseAnalysis.DistanceIrisRetina;
-            obj.theta = parsedData.PulseAnalysis.Theta;
-            obj.opticalIndex = parsedData.PulseAnalysis.OpticalIndex;
-            obj.lambda = parsedData.PulseAnalysis.Lambda;
-            obj.phi = parsedData.PulseAnalysis.Phi;
-            obj.pulseAnal_dataReliabilityFactor = parsedData.PulseAnalysis.DataReliatibilityFactor; %?
-            obj.pulseAnal_peakHeightThreshold = parsedData.PulseAnalysis.PeakHeightThreshold;
-            obj.pulseAnal_outNoiseThreshold = parsedData.PulseAnalysis.OutOfNoiseThreshold;
-            obj.pulseAnal_blurScaleFactor = parsedData.PulseAnalysis.BlurScaleFactor;
-            obj.pulseAnal_frameMinDiastole = parsedData.PulseAnalysis.FramePercentageBeforeMinimumOfDiastole;
-            obj.pulseAnal_framePeakSystole = parsedData.PulseAnalysis.FramePercentageAroundPeakSystole;
-            obj.pulseAnal_exp = parsedData.PulseAnalysis.Exponentiel;
-
-            obj.video2vessels_radiusRatio = parsedData.VesselsVideo.RadiusRatioFactor;
-            obj.video2vessels_gaussFiltPadding = parsedData.VesselsVideo.GaussianFilterPadding;
-            obj.video2vessels_gaussFiltFactor = parsedData.VesselsVideo.GaussianFilterFactor;
-
-            obj.viscosity_Ninterp = parsedData.Viscosity.NumberOfInterpolation;
-            obj.viscosity_interpParam = parsedData.Viscosity.InterpolationParameter;
-            obj.viscosity_interpSizeFactor = parsedData.Viscosity.InterpolationSizeFactor;
-            obj.viscosity_projimThreshold = parsedData.Viscosity.ImageProjectionThreshold;
-            obj.viscosity_fctnFactor = parsedData.Viscosity.ViscosityFunctionFactor;
-            obj.viscosity_fitMatrix = parsedData.Viscosity.FitFunctionParameterMatrix;
-            obj.viscosity_listParamA = parsedData.Viscosity.ViscosityListParameterA;
-            obj.viscosity_listParamB = parsedData.Viscosity.ViscosityListParameterB;
-
-            obj.elasWave_nDomFreq = parsedData.ElasticWaves.NumberOfDominantFrequency;
-            obj.elasWave_pixelSize = parsedData.ElasticWaves.PixelSize;
-            obj.elasWave_gaussFiltPadding = parsedData.ElasticWaves.GaussianFilterPadding;
-            obj.elasWave_butterFiltOrder = parsedData.ElasticWaves.ButterworthFilterOrder;
-            obj.elasWave_butterFiltBand = parsedData.ElasticWaves.ButterworthFilterThicknessBand;
-
-            obj.nbSides = parsedData.Other.NumberOfSides;
-            obj.timePeriodMin = parsedData.Other.MinimumGifPeriod;
-
+            obj.timePeriodMin = parsedData.MinimumGifPeriod;
             obj.px_size = parsedData.BloodVolumeRateAnalysis.PixelSize / (2 ^ parsedData.Preprocess.InterpolationFactor);
 
         else

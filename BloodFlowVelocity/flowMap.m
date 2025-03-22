@@ -19,8 +19,8 @@ end
 % Precompute constants
 x_c = xy_barycenter(1) / numX;
 y_c = xy_barycenter(2) / numY;
-r1 = params.velocityBigRadiusRatio;
-r2 = params.velocitySmallRadiusRatio;
+r1 = params.json.SizeOfField.BigRadiusRatio;
+r2 = params.json.SizeOfField.SmallRadiusRatio;
 w = 0.01;
 
 % Precompute circles

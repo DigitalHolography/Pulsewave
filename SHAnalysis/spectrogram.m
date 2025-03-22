@@ -5,7 +5,7 @@ function [] = spectrogram(maskArtery, maskSection, SH_cube)
 ToolBox = getGlobalToolBox;
 params = ToolBox.getParams;
 
-maskNeighbors = imdilate(maskArtery, strel('disk', params.local_background_width)) - maskArtery;
+maskNeighbors = imdilate(maskArtery, strel('disk', params.json.PulseAnalysis.LocalBackgroundWidth)) - maskArtery;
 
 cubeSize = size(SH_cube, 1);
 cubeFreqLength = size(SH_cube, 3);

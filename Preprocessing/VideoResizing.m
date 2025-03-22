@@ -2,9 +2,9 @@ function obj = VideoResizing(obj)
 
 params = Parameters_json(obj.directory, obj.param_name);
 
-out_height = params.frameHeight;
-out_width = params.frameWidth;
-out_numFrames = params.videoLength;
+out_height = params.json.Preprocess.Resize.FrameHeight;
+out_width = params.json.Preprocess.Resize.FrameWidth;
+out_numFrames = params.json.Preprocess.Resize.VideoLength;
 
 [numX, numY, numFrames] = size(obj.M0_ff_video);
 

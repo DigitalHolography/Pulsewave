@@ -3,7 +3,7 @@ function obj = VideoRemoveOutliers(obj)
 
 params = Parameters_json(obj.directory, obj.param_name);
 
-if ~params.json.Preprocess.RemoveOutliersOption
+if ~params.json.Preprocess.RemoveOutliersFlag
     return
 end
 

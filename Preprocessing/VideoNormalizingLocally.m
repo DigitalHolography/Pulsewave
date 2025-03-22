@@ -3,7 +3,7 @@ function obj = VideoNormalizingLocally(obj)
 params = Parameters_json(obj.directory,obj.param_name);
 
 [N, M, F] = size(obj.M0_data_video);
-alpha = params.alphaConvolveNorm;
+alpha = params.json.Preprocess.Normalizing.AlphaConvolveNorm;
 D = (M + N) / 2;
 
 if alpha == 1
@@ -29,12 +29,15 @@ else
     M0_data_convoluated = M0_data_convoluated .* S ./ S2; % normalizing to get the average with alpha = 0;
 end
 
-if params.NormTempMode
+if params.json.Preprocess.Normalizing.NormTempMode
         M0_data_convoluated = mean(M0_data_convoluated, 3);
 end
 
 obj.f_RMS_video = sqrt(double(obj.M2_data_video) ./ M0_data_convoluated);
 obj.f_AVG_video = double(obj.M1_data_video) ./ M0_data_convoluated;
+
+gwRatio = params.json.FlatFieldCorrection.GWRatio;
+border = params.json.FlatFieldCorrection.Border;
 
 % Apply flat-field correction using the fitted Gaussian parameters
 if params.json.FlatFieldCorrection.FittedParameters
@@ -45,9 +48,9 @@ if params.json.FlatFieldCorrection.FittedParameters
     % Perform the Gaussian fit
     fitParams = fitGaussian(binCenters, radialAverage);
 
-    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, params.flatField_border, 'fittedGaussian') ./ M0_data_convoluated;
+    obj.M0_ff_video = flat_field_correction(obj.M0_data_video, fitParams, border, 'fittedGaussian') ./ M0_data_convoluated;
 else
-    obj.M0_ff_video = flat_field_correction(obj.M0_ff_video, ceil(params.flatField_gwRatio * size(obj.M0_ff_video, 1)), params.flatField_border, 'gaussianBlur');
+    obj.M0_ff_video = flat_field_correction(obj.M0_ff_video, ceil(gwRatio * size(obj.M0_ff_video, 1)), border, 'gaussianBlur');
 end
 
 end
