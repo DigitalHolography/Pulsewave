@@ -63,7 +63,9 @@ axP = axis;
 axis tight
 axT = axis;
 axis([axT(1), axT(2), - 5, axP(4) * 1.07])
-xlim([pulseTime(1) -1/2 * pulseTime(end), 3/2 * pulseTime(end)])
+lower_bound = pulseTime(1) - 1/2 * pulseTime(end);
+upper_bound =  3/2 * pulseTime(end);
+xlim([lower_bound, upper_bound])
 box on
 
 fontsize(gca, 12, "points");
